@@ -484,7 +484,7 @@ function fw_attr_to_html( array $attr_array ) {
 function fw_stripslashes_deep_keys( $value ) {
 	static $magic_quotes = null;
 	if ( $magic_quotes === null ) {
-		$magic_quotes = false; //https://www.php.net/manual/en/function.get-magic-quotes-gpc.php - always returns FALSE as of PHP 5.4.0. false fixes https://github.com/UnysonPlus Community/Unyson/issues/3915
+		$magic_quotes = false; //https://www.php.net/manual/en/function.get-magic-quotes-gpc.php - always returns FALSE as of PHP 5.4.0. false fixes https://github.com/ThemeFuse/Unyson/issues/3915
 	}
 
 	if ( is_array( $value ) ) {
@@ -716,7 +716,7 @@ function fw_locate_theme_path( $rel_path ) {
 /**
  * There is a theme which does: if (!defined('FW')): function fw_render_view() { ... } endif;
  * It works fine, except in this case
- * https://github.com/UnysonPlus Community/Unyson/commit/07be8b1f4b50eaf0f1f7e85ea1c6912a0415d241#diff-cf866bf08b8f747e3120221a6b1b07cfR48
+ * https://github.com/ThemeFuse/Unyson/commit/07be8b1f4b50eaf0f1f7e85ea1c6912a0415d241#diff-cf866bf08b8f747e3120221a6b1b07cfR48
  * it throws fatal error because this function here is defined after that
  */
 if ( ! function_exists( 'fw_render_view' ) ):

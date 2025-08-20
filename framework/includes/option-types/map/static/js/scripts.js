@@ -409,7 +409,7 @@
 
 					/**
 					 * Lazy load script only on option init to prevent API request limit and error
-					 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/1675
+					 * Fixes https://github.com/ThemeFuse/Unyson/issues/1675
 					 */
 					$.ajax({
 						type: 'GET',

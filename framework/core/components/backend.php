@@ -181,7 +181,6 @@ final class _FW_Component_Backend {
 				 */
 				11
 			);
-			add_action( 'admin_menu', array( $this, '_action_admin_menu' ) );
 
 			// render and submit options from javascript
 			{
@@ -378,7 +377,7 @@ final class _FW_Component_Backend {
 				fw_get_framework_directory_uri( '/static/js/fw.js' ),
 				array( 'jquery', 'fw-events', 'backbone', 'qtip' ),
 				fw()->manifest->get_version(),
-				false // false fixes https://github.com/UnysonPlus Community/Unyson/issues/1625#issuecomment-224219454
+				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);
 
 			wp_localize_script( 'fw', '_fw_localized', array(
@@ -396,7 +395,7 @@ final class _FW_Component_Backend {
 						'ok'       => __( 'Ok', 'fw' )
 					),
 					/**
-					 * fixes https://github.com/UnysonPlus Community/Unyson/issues/2381
+					 * fixes https://github.com/ThemeFuse/Unyson/issues/2381
 					 * @since 2.6.14
 					 */
 					apply_filters('fw_js_l10n', $l10n)
@@ -479,7 +478,7 @@ final class _FW_Component_Backend {
 		/**
 		 * backwards compatibility, in case extensions are not up-to-date
 		 * todo: remove in next major version
-		 * https://github.com/UnysonPlus Community/Unyson/issues/2198
+		 * https://github.com/ThemeFuse/Unyson/issues/2198
 		 * @deprecated
 		 */
 		wp_register_style('fw-font-awesome', fw_get_framework_directory_uri( '/static/libs/font-awesome/css/font-awesome.min.css' ));
@@ -504,7 +503,7 @@ final class _FW_Component_Backend {
 			'fw-moment',
 			/**
 			 * IMPORTANT: At the end of the script is added this line:
-			 * moment.locale(document.documentElement.lang.slice(0, 2)); // fixes https://github.com/UnysonPlus Community/Unyson/issues/1767
+			 * moment.locale(document.documentElement.lang.slice(0, 2)); // fixes https://github.com/ThemeFuse/Unyson/issues/1767
 			 */
 			fw_get_framework_directory_uri( '/static/libs/moment/moment-with-locales.min.js' ),
 			array(),
@@ -624,7 +623,7 @@ final class _FW_Component_Backend {
 	public function _action_create_post_meta_boxes( $post_type, $post = null ) {
 		if ( 'comment' === $post_type || ( isset( $_GET['vc_action'] ) && $_GET['vc_action'] === 'vc_inline' ) ) {
 			/**
-			 * 1. https://github.com/UnysonPlus Community/Unyson/issues/3052
+			 * 1. https://github.com/ThemeFuse/Unyson/issues/3052
 			 * 2. This is wrong, comment is not a post(type) it is stored in a separate db table and has a separate meta (wp_comments and wp_commentmeta)
 			 */
 			return;

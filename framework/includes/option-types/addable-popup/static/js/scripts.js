@@ -227,7 +227,7 @@
 			}
 		);
 
-		$this.on('remove', function(){ // fixes https://github.com/UnysonPlus Community/Unyson/issues/2167
+		$this.on('remove', function(){ // fixes https://github.com/ThemeFuse/Unyson/issues/2167
 			utils.modal.frame.$el.closest('.fw-modal').remove(); // remove modal from DOM
 			nodes = data = utils = undefined; // clear memory
 		});

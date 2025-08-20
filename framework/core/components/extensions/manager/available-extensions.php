@@ -3,7 +3,7 @@
 }
 
 $thumbnails_uri = fw_get_framework_directory_uri( '/core/components/extensions/manager/static/img/thumbnails' );
-$github_account = 'UnysonPlus Community';
+$github_account = 'ThemeFuse';
 
 $extensions = array(
 	'page-builder' => array(
@@ -32,7 +32,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => 'UnysonPlus Community/Unyson-WP-Shortcodes-Extension',
+				'user_repo' => 'ThemeFuse/Unyson-WP-Shortcodes-Extension',
 			),
 		),
 	),

@@ -12,7 +12,7 @@ class FW_WP_Option
 	 * @param string $option_name
 	 * @param string|null $specific_multi_key 'ab/c/def'
 	 * @param null|mixed $default_value If no option found in the database, this value will be returned
-	 * @param bool|null $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
+	 * @param bool|null $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
 	 * @return mixed|null
 	 */
 	public static function get($option_name, $specific_multi_key = null, $default_value = null, $get_original_value = null)

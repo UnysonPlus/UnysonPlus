@@ -542,7 +542,7 @@ class FW_Form {
 	/**
 	 * Some forms (like Forms extension frontend form) uses the same FW_Form instance for all sub-forms
 	 * and they must be differentiated somehow.
-	 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/2033
+	 * Fixes https://github.com/ThemeFuse/Unyson/issues/2033
 	 *
 	 * @param array $render_data
 	 *

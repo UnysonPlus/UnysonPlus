@@ -2,7 +2,7 @@
 
 /**
  * @deprecated since 2.5.0
- * Will be removed soon https://github.com/UnysonPlus Community/Unyson/issues/1937
+ * Will be removed soon https://github.com/ThemeFuse/Unyson/issues/1937
  */
 interface FW_Option_Handler
 {

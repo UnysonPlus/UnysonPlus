@@ -167,7 +167,7 @@
 			loadingExtraMessage = $('#fw-settings-form-ajax-save-extra-message').attr('data-html'),
 			loadingModalId = 'fw-options-ajax-save-loading';
 
-		$(formSelector).addClass('prevent-all-tabs-init'); // fixes https://github.com/UnysonPlus Community/Unyson/issues/1491
+		$(formSelector).addClass('prevent-all-tabs-init'); // fixes https://github.com/ThemeFuse/Unyson/issues/1491
 
 		fwForm.initAjaxSubmit({
 			selector: formSelector,
@@ -202,7 +202,7 @@
 						}
 					);
 
-					return 500; // fixes https://github.com/UnysonPlus Community/Unyson/issues/1491
+					return 500; // fixes https://github.com/ThemeFuse/Unyson/issues/1491
 				} else {
 					// fw.soleModal.hide(loadingModalId); // we need to show loading until the form reset ajax will finish
 				}

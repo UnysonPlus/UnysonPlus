@@ -148,7 +148,7 @@ var fwEvents = new (function(){
 					(_events['all'] || []).map(dispatchSingleEvent);
 				} catch (e) {
 					console.log(
-						"%c [Events] Exception raised. Please contact support in https://github.com/UnysonPlus Community/Unyson/issues/new. Don't forget to attach this stack trace to the issue.",
+						"%c [Events] Exception raised. Please contact support in https://github.com/ThemeFuse/Unyson/issues/new. Don't forget to attach this stack trace to the issue.",
 						"color: red; font-weight: bold;"
 					);
 

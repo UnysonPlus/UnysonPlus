@@ -3239,7 +3239,7 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 
 /* end: SoleModal */
 
-/* Fixed: https://github.com/UnysonPlus Community/Unyson/issues/2888 */
+/* Fixed: https://github.com/ThemeFuse/Unyson/issues/2888 */
 .appearance_page_fw-settings .fw-sole-modal-content .wp-spinner{
 	-webkit-animation: fw-spin 1.2s linear infinite;
 	-moz-animation: fw-spin 1.2s linear infinite;
@@ -3267,7 +3267,7 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 		transform:rotate(360deg);
 	}
 }
-/* End Fixed: https://github.com/UnysonPlus Community/Unyson/issues/2888 */
+/* End Fixed: https://github.com/ThemeFuse/Unyson/issues/2888 */
 
 /* qtip custom style */
 

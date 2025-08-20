@@ -433,7 +433,7 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 
 	/**
 	 * {@inheritdoc}
-	 * fixes https://github.com/UnysonPlus Community/Unyson/issues/1440
+	 * fixes https://github.com/ThemeFuse/Unyson/issues/1440
 	 */
 	protected function _storage_load($id, array $option, $value, array $params) {
 		if (apply_filters('fw:option-type:multi-picker:fw-storage:process-inner-options', false)) {
@@ -451,7 +451,7 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 
 	/**
 	 * {@inheritdoc}
-	 * fixes https://github.com/UnysonPlus Community/Unyson/issues/1440
+	 * fixes https://github.com/ThemeFuse/Unyson/issues/1440
 	 */
 	protected function _storage_save($id, array $option, $value, array $params) {
 		if (apply_filters('fw:option-type:multi-picker:fw-storage:process-inner-options', false)) {

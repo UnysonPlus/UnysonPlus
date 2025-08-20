@@ -77,7 +77,7 @@ class FW_Option_Type_Rgba_Color_Picker extends FW_Option_Type {
 			is_null( $input_value )
 			||
 			(
-				// do not use `!is_null()` allow empty values https://github.com/UnysonPlus Community/Unyson/issues/2025
+				// do not use `!is_null()` allow empty values https://github.com/ThemeFuse/Unyson/issues/2025
 				! empty( $input_value )
 				&&
 				! (

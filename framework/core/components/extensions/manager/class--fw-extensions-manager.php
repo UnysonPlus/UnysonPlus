@@ -209,7 +209,7 @@ final class _FW_Extensions_Manager
 				$register = new _FW_Available_Extensions_Register( self::get_access_key()->get_key() );
 
 				/**
-				 * Usage: https://github.com/UnysonPlus Community/Unyson/issues/2900
+				 * Usage: https://github.com/ThemeFuse/Unyson/issues/2900
 				 * Create {theme}/framework-customizations/theme/available-extensions.php with the following contents:
 				 * $extension = new FW_Available_Extension();
 				 * $extension->set_...();
@@ -1046,7 +1046,7 @@ final class _FW_Extensions_Manager
 				if ($supported && $install_result === true) {
 					/**
 					 * @since 2.6.14
-					 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/2330
+					 * Fixes https://github.com/ThemeFuse/Unyson/issues/2330
 					 */
 					do_action( 'fw_after_supported_extensions_install_success' );
 				}
@@ -1633,7 +1633,7 @@ final class _FW_Extensions_Manager
 				 * If the script will continue, it will delete the root folder
 				 */
 				fw_print(
-					'Please report this to https://github.com/UnysonPlus Community/Unyson/issues',
+					'Please report this to https://github.com/ThemeFuse/Unyson/issues',
 					$extension_name,
 					$installed_extensions
 				);
@@ -2650,7 +2650,7 @@ final class _FW_Extensions_Manager
 					 * Source extension is empty
 					 * It happens when you merge a directory which contains child extensions
 					 * Do not delete current destination files, just go in the next child extensions level
-					 * Used by https://github.com/UnysonPlus Community/Unyson/issues/1874
+					 * Used by https://github.com/ThemeFuse/Unyson/issues/1874
 					 */
 				} else {
 					// the directory contains some files, delete everything
@@ -3237,7 +3237,7 @@ final class _FW_Extensions_Manager
 		);
 
 		/**
-		 * In v2.4.12 was done a terrible mistake https://github.com/UnysonPlus Community/Unyson-Extensions-Approval/issues/160
+		 * In v2.4.12 was done a terrible mistake https://github.com/ThemeFuse/Unyson-Extensions-Approval/issues/160
 		 * Show a warning with link to install theme supported extensions
 		 */
 		if (

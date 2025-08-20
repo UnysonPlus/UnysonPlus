@@ -72,7 +72,7 @@
 
 					editor.on('change', function(){
 						editor.save();
-						$textarea.trigger('change'); // fixes https://github.com/UnysonPlus Community/Unyson/issues/2273
+						$textarea.trigger('change'); // fixes https://github.com/ThemeFuse/Unyson/issues/2273
 					});
 
 					// Fixes when wpautop is false
@@ -124,10 +124,10 @@
 				return;
 			}
 
-			// fixes https://github.com/UnysonPlus Community/Unyson/issues/1615
+			// fixes https://github.com/ThemeFuse/Unyson/issues/1615
 			if (typeof window.wpLink != 'undefined') {
 				try {
-					// do not do .open() // fixes https://github.com/UnysonPlus Community/Unyson/issues/1901
+					// do not do .open() // fixes https://github.com/ThemeFuse/Unyson/issues/1901
 
 					window.wpLink.close();
 

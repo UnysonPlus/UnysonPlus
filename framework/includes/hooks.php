@@ -141,7 +141,7 @@
  * Custom Github API service
  * Provides the same responses but is "unlimited"
  * To prevent error: Github API rate limit exceeded 60 requests per hour
- * https://github.com/UnysonPlus Community/Unyson/issues/138
+ * https://github.com/ThemeFuse/Unyson/issues/138
  * @internal
  */
 function _fw_filter_github_api_url( $url ) {

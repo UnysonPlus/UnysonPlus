@@ -10,7 +10,7 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 	}
 
 	/**
-	 * @param array $set {user_repo: 'UnysonPlus Community/Unyson'}
+	 * @param array $set {user_repo: 'ThemeFuse/Unyson'}
 	 * @param string $zip_path
 	 *
 	 * @return WP_Error|boolean

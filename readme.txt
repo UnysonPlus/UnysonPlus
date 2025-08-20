@@ -91,6 +91,10 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 
 == Changelog ==
+= 1.0.01 =
+* Removed Brizy.
+
+== Changelog From Original Unyson==
 
 = 2.7.30 =
 * Security Issue
