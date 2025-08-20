@@ -3,31 +3,35 @@
 if (! defined('FW')) { die('Forbidden'); }
 
 class FW_Option_Type_Icon_v2 extends FW_Option_Type {
-	private $enqueued_font_styles = array();
-	public $packs_loader = null;
+    private $enqueued_font_styles = array();
+    public $packs_loader = null;
+    private $favorites = null; // previously dynamic property
 
-	public function get_type() {
-		return 'icon-v2';
-	}
+    public function get_type() {
+        return 'icon-v2';
+    }
 
-	protected function _get_data_for_js($id, $option, $data = array()) {
-		return false;
-	}
+    protected function _get_data_for_js($id, $option, $data = array()) {
+        return false;
+    }
 
-	public function _init() {
-		/**
-		 * CSS for each pack is not loaded by default in frontend.
-		 *
-		 * You should load it by yourself in your theme, like this:
-		 *
-		 * fw()->backend->option_type('icon-v2')->packs_loader->enqueue_frontend_css()
-		 */
-		$this->packs_loader = new FW_Icon_V2_Packs_Loader();
+    public function _init() {
+        /**
+         * CSS for each pack is not loaded by default in frontend.
+         *
+         * You should load it by yourself in your theme, like this:
+         *
+         * fw()->backend->option_type('icon-v2')->packs_loader->enqueue_frontend_css()
+         */
+        $this->packs_loader = new FW_Icon_V2_Packs_Loader();
 
-		if (! is_admin()) { return; }
+        if (! is_admin()) {
+            return;
+        }
 
-		$this->favorites = new FW_Icon_V2_Favorites_Manager();
-	}
+        // Properly declared property
+        $this->favorites = new FW_Icon_V2_Favorites_Manager();
+    }
 
 	protected function _enqueue_static($id, $option, $data) {
 		add_action(
