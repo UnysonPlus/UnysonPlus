@@ -16,6 +16,7 @@ $extensions = array(
 			'source' => 'github',
 			'opts' => array(
 				'user_repo' => $github_account . '/UnysonPlus-PageBuilder-Extension'
+				//'remote' => 'https://github.com/UnysonPlus/UnysonPlus-PageBuilder-Extension/archive/refs/tags/1.6.20.zip'
 			)
 		),
 	),

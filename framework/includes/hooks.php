@@ -145,7 +145,7 @@
  * @internal
  */
 function _fw_filter_github_api_url( $url ) {
-	return 'https://github-api-cache.unyson.io';
+	return 'https://api.github.com';
 }
 
 add_filter( 'fw_github_api_url', '_fw_filter_github_api_url' );
