@@ -3,7 +3,7 @@
 }
 
 $thumbnails_uri = fw_get_framework_directory_uri( '/core/components/extensions/manager/static/img/thumbnails' );
-$github_account = 'ThemeFuse';
+$github_account = 'UnysonPlus';
 
 $extensions = array(
 	'page-builder' => array(
@@ -15,7 +15,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-PageBuilder-Extension'
+				'user_repo' => $github_account . '/UnysonPlus-PageBuilder-Extension'
 			)
 		),
 	),
@@ -32,7 +32,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => 'ThemeFuse/Unyson-WP-Shortcodes-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-WP-Shortcodes-Extension',
 			),
 		),
 	),
@@ -46,7 +46,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Backups-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Backups-Extension',
 			),
 		),
 	),
@@ -60,7 +60,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Sidebars-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Sidebars-Extension',
 			),
 		),
 	),
@@ -74,7 +74,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Sliders-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Sliders-Extension',
 			),
 		),
 	),
@@ -88,7 +88,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Portfolio-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Portfolio-Extension',
 			),
 		),
 	),
@@ -102,7 +102,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-MegaMenu-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-MegaMenu-Extension',
 			),
 		),
 	),
@@ -116,7 +116,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Breadcrumbs-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Breadcrumbs-Extension',
 			),
 		),
 	),
@@ -130,7 +130,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-SEO-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-SEO-Extension',
 			),
 		),
 	),
@@ -144,7 +144,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Events-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Events-Extension',
 			),
 		),
 	),
@@ -158,7 +158,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Analytics-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Analytics-Extension',
 			),
 		),
 	),
@@ -172,7 +172,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Feedback-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Feedback-Extension',
 			),
 		),
 	),
@@ -186,7 +186,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Learning-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Learning-Extension',
 			),
 		),
 	),
@@ -200,7 +200,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Shortcodes-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Shortcodes-Extension',
 			),
 		),
 	),
@@ -214,7 +214,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Builder-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Builder-Extension',
 			),
 		),
 	),
@@ -228,7 +228,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Forms-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Forms-Extension',
 			),
 		),
 	),
@@ -242,7 +242,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Mailer-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Mailer-Extension',
 			),
 		),
 	),
@@ -256,13 +256,13 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Social-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Social-Extension',
 			),
 		),
 	),
 
 	'backup' => array(
-		'display'     => true,
+		'display'     => false,
 		'parent'      => null,
 		'name'        => __( 'Backup', 'fw' ),
 		'description' => __( 'This extension lets you set up daily, weekly or monthly backup schedule. You can choose between a full backup or a data base only backup.', 'fw' ),
@@ -270,7 +270,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Backup-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Backup-Extension',
 			),
 		),
 	),
@@ -284,7 +284,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Empty-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Empty-Extension',
 			),
 		),
 	),
@@ -298,7 +298,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-PopulationMethods-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-PopulationMethods-Extension',
 			),
 		),
 	),
@@ -328,7 +328,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => $github_account . '/Unyson-Styling-Extension',
+				'user_repo' => $github_account . '/UnysonPlus-Styling-Extension',
 			),
 		),
 	)
