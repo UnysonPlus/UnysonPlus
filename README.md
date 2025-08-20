@@ -72,7 +72,7 @@ Contributor guidelines will be published soon in `CONTRIBUTING.md`.
 ## Bug Reports
 
 Please submit issues here:  
-👉 [Unyson+ Issues](https://github.com/jonmlas/Unyson+/issues)
+👉 [Unyson+ Issues](https://github.com/UnysonPlus/UnysonPlus/issues)
 
 When reporting a bug:
 - Provide detailed steps to reproduce the issue
@@ -81,7 +81,7 @@ When reporting a bug:
 
 ## License
 
-Unyson+ is released under the [GPL-3.0 License](https://github.com/jonmlas/Unyson+/blob/master/framework/LICENSE).  
+Unyson+ is released under the [GPL-3.0 License](https://github.com/jonmlas/UnysonPlus/blob/master/framework/LICENSE).  
 
 Original code copyright © 2014 ThemeFuse LTD.  
 Fork maintained and extended by the Unyson+ community.  
