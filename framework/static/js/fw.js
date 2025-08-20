@@ -855,7 +855,7 @@ fw.getQueryString = function(name) {
 					}
 
 					// reset to initial css value
-					// fixes https://github.com/ThemeFuse/Unyson/issues/2167
+					// fixes https://github.com/UnysonPlus Community/Unyson/issues/2167
 					$modal.css('z-index', '');
 
 					/**
@@ -1123,7 +1123,7 @@ fw.getValuesFromServer = function (data) {
 
 						/**
 						 * Make sure the second set() will trigger the 'change' event
-						 * Fixes https://github.com/ThemeFuse/Unyson/issues/1998#issuecomment-248671721
+						 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/1998#issuecomment-248671721
 						 */
 						view.model.set('values', {}, {silent: true});
 						view.model.set('values', response.data.values);
@@ -1373,7 +1373,7 @@ fw.getValuesFromServer = function (data) {
 
 			promise.then(function (html, response) {
 				if (response && _.isEmpty(modal.get('values'))) {
-					// fixes https://github.com/ThemeFuse/Unyson/issues/1042#issuecomment-244364121
+					// fixes https://github.com/UnysonPlus Community/Unyson/issues/1042#issuecomment-244364121
 					modal.set(
 						'values',
 						response.data.default_values,

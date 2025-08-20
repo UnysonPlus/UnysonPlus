@@ -34,7 +34,7 @@
 		'<a href="#" class="dashicons fw-x clear-uploads-thumb"></a>'
 	); ?>">
 
-	<!-- fixes https://github.com/ThemeFuse/Unyson/issues/1309 -->
+	<!-- fixes https://github.com/UnysonPlus Community/Unyson/issues/1309 -->
 	<?php echo fw_html_tag('input', array(
 		'type' => 'hidden',
 		'name' => '_fake[url]',

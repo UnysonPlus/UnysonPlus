@@ -4,7 +4,7 @@
 
 var fwBackendOptions = {
 	/**
-	 * @deprecated Tabs are lazy loaded https://github.com/ThemeFuse/Unyson/issues/1174
+	 * @deprecated Tabs are lazy loaded https://github.com/UnysonPlus Community/Unyson/issues/1174
 	 */
 	openTab: function(tabId) { console.warn('deprecated'); }
 };
@@ -38,7 +38,7 @@ jQuery(document).ready(function($){
 					var $box = $(this).closest('.fw-postbox');
 
 					if ($box.parent().is('.fw-backend-postboxes') && !$box.siblings().length) {
-						// Do not close if only one box https://github.com/ThemeFuse/Unyson/issues/1094
+						// Do not close if only one box https://github.com/UnysonPlus Community/Unyson/issues/1094
 						$box.removeClass('closed');
 					} else {
 						$box.toggleClass('closed');
@@ -99,7 +99,7 @@ jQuery(document).ready(function($){
 			initAllTabs = function ($el) {
 				var selector = '.fw-options-tab[' + htmlAttrName + ']', $tabs;
 
-				// fixes https://github.com/ThemeFuse/Unyson/issues/1634
+				// fixes https://github.com/UnysonPlus Community/Unyson/issues/1634
 				$el.each(function(){
 					if ($(this).is(selector)) {
 						initTab($(this));

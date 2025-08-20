@@ -3,7 +3,7 @@
 }
 
 $thumbnails_uri = fw_get_framework_directory_uri( '/core/components/extensions/manager/static/img/thumbnails' );
-$github_account = 'ThemeFuse';
+$github_account = 'UnysonPlus Community';
 
 $extensions = array(
 	'page-builder' => array(
@@ -20,21 +20,6 @@ $extensions = array(
 		),
 	),
 
-	'brizy' => array(
-		'display'     => true,
-		'parent'      => null,
-		'name'        => __( 'Brizy - Visual Page Builder', 'fw' ),
-		'description' => __( 'Lets you build pages live on the front end. No designer or developer skills required. The only tools you’ll need to master are clicks and drags.', 'fw' ),
-		'thumbnail'   => $thumbnails_uri . '/brizy.jpg',
-		'download'    => array(
-			'source'  => 'custom',
-			'opts'    => array(
-				'plugin' => 'brizy/brizy.php',
-				'remote' => 'https://downloads.wordpress.org/plugin/brizy'
-			)
-		)
-	),
-
 	'wp-shortcodes' => array(
 		'display'     => true,
 		'parent'      => 'shortcodes',
@@ -47,7 +32,7 @@ $extensions = array(
 		'download'    => array(
 			'source' => 'github',
 			'opts' => array(
-				'user_repo' => 'ThemeFuse/Unyson-WP-Shortcodes-Extension',
+				'user_repo' => 'UnysonPlus Community/Unyson-WP-Shortcodes-Extension',
 			),
 		),
 	),

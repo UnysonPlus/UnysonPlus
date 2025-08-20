@@ -179,13 +179,13 @@ abstract class FW_Db_Options_Model {
 		if ( $options ) {
 			try {
 				FW_Cache::get(
-				// fixes https://github.com/ThemeFuse/Unyson/issues/2034
+				// fixes https://github.com/UnysonPlus Community/Unyson/issues/2034
 					$cache_key_values_processed = $this->get_cache_key( 'values:processed', $item_id, $extra_data )
 				);
 			} catch ( FW_Cache_Not_Found_Exception $e ) {
 				/**
 				 * Set cache value before processing options
-				 * Fixes https://github.com/ThemeFuse/Unyson/issues/2034#issuecomment-248571149
+				 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/2034#issuecomment-248571149
 				 */
 				FW_Cache::set( $cache_key_values_processed, true );
 
@@ -297,7 +297,7 @@ abstract class FW_Db_Options_Model {
 
 			if (empty($value)) {
 				// All options reset. Reset all fw-storage values too
-				// Fixes https://github.com/ThemeFuse/Unyson/issues/2179
+				// Fixes https://github.com/UnysonPlus Community/Unyson/issues/2179
 				foreach ($options as $_option_id => $_option) {
 					fw()->backend->option_type($options[$_option_id]['type'])->storage_save(
 						$_option_id,
@@ -322,7 +322,7 @@ abstract class FW_Db_Options_Model {
 			$this->set_values($item_id, $value, $extra_data);
 		}
 
-		FW_Cache::del($cache_key_values); // fixes https://github.com/ThemeFuse/Unyson/issues/1538
+		FW_Cache::del($cache_key_values); // fixes https://github.com/UnysonPlus Community/Unyson/issues/1538
 		FW_Cache::del($cache_key_values_processed);
 
 		$this->_after_set($item_id, $option_id, $sub_keys, $old_value, $extra_data);

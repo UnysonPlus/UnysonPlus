@@ -40,12 +40,12 @@ input.fw-option-type-color-picker.iris-error {
 	top: 4px !important;
 }
 
-/* Fixes https://github.com/ThemeFuse/Unyson/issues/2275 */
+/* Fixes https://github.com/UnysonPlus Community/Unyson/issues/2275 */
 #customize-controls .customize-pane-child > .customize-control:last-child > .fw-backend-customizer-option > div > .fw-backend-option-type-color-picker {
 	padding-bottom: 170px;
 }
 
-/* Fixes https://github.com/ThemeFuse/Unyson/issues/2905 */
+/* Fixes https://github.com/UnysonPlus Community/Unyson/issues/2905 */
 #customize-theme-controls > ul.customize-pane-child {
 	height: 100% !important;
 }

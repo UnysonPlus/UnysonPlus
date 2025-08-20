@@ -6,6 +6,6 @@
  */
 
 /**
- * https://github.com/ThemeFuse/Unyson/issues/1347
+ * https://github.com/UnysonPlus Community/Unyson/issues/1347
  */
 require dirname(__FILE__) .'/backend-option-design-default.php';

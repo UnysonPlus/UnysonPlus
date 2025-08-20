@@ -1,11 +1,11 @@
 <?php if ( ! defined( 'ABSPATH' ) ) die( 'Forbidden' );
 /**
- * Plugin Name: Unyson
- * Plugin URI: http://unyson.io/
+ * Plugin Name: UnysonPlus
+ * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
  * Version: 2.7.31
- * Author: ThemeFuse
- * Author URI: http://themefuse.com
+ * Author: UnysonPlus Community
+ * Author URI: http://lastimosa.com.ph
  * License: GPL2+
  * Text Domain: fw
  * Domain Path: /framework/languages

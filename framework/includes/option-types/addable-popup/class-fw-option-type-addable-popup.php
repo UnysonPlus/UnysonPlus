@@ -26,7 +26,7 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 
 		/**
 		 * Use hardcoded type because this class is extended and type is changed, but the paths must be the same
-		 * Fixes https://github.com/ThemeFuse/Unyson/issues/1769#issuecomment-247054955
+		 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/1769#issuecomment-247054955
 		 */
 		$option_type = 'addable-popup';
 
@@ -70,7 +70,7 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 			/**
 			 * Prevent js error when the generated html is used in another option type js template with {{...}}
 			 * Do this trick because {{ is not escaped/encoded by fw_htmlspecialchars()
-			 * Fixes https://github.com/ThemeFuse/Unyson/issues/1877
+			 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/1877
 			 */
 			json_encode(explode('{{',
 			json_encode(array(

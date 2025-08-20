@@ -58,7 +58,7 @@ function fw_db_option_storage_load($id, array $option, $value, array $params = a
 		&&
 		($storage_type = fw_db_option_storage_type($storage['type']))
 	) {
-		// Fixes https://github.com/ThemeFuse/Unyson/issues/2265
+		// Fixes https://github.com/UnysonPlus Community/Unyson/issues/2265
 		if (isset($params['customizer']) && is_customize_preview()) {
 			/** @var WP_Customize_Manager $wp_customize */
 			global $wp_customize;

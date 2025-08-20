@@ -57,7 +57,7 @@ class FW_Db_Options_Model_Settings extends FW_Db_Options_Model {
 		 *
 		 * @param string|null $option_id Specific option id (accepts multikey). null - all options
 		 * @param null|mixed $default_value If no option found in the database, this value will be returned
-		 * @param null|bool $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
+		 * @param null|bool $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
 		 *
 		 * @return mixed|null
 		 */
@@ -220,7 +220,7 @@ class FW_Db_Options_Model_Post extends FW_Db_Options_Model {
 		 * @param null|int $post_id
 		 * @param string|null $option_id Specific option id (accepts multikey). null - all options
 		 * @param null|mixed $default_value If no option found in the database, this value will be returned
-		 * @param null|bool $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
+		 * @param null|bool $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
 		 *
 		 * @return mixed|null
 		 */
@@ -406,7 +406,7 @@ class FW_Db_Options_Model_Term extends FW_Db_Options_Model {
 		 * @param string $taxonomy
 		 * @param string|null $option_id Specific option id (accepts multikey). null - all options
 		 * @param null|mixed $default_value If no option found in the database, this value will be returned
-		 * @param null|bool $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
+		 * @param null|bool $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
 		 *
 		 * @return mixed|null
 		 */
@@ -477,7 +477,7 @@ class FW_Db_Options_Model_Extension extends FW_Db_Options_Model {
 		 * @param string $extension_name
 		 * @param string|null $option_id
 		 * @param null|mixed $default_value If no option found in the database, this value will be returned
-		 * @param null|bool $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
+		 * @param null|bool $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
 		 *
 		 * @return mixed|null
 		 */
@@ -589,9 +589,9 @@ class FW_Db_Options_Model_Customizer extends FW_Db_Options_Model {
 			FW_Db_Options_Model::_get_instance('customizer')->set(null, $option_id, $value);
 		}
 
-		// Fixes https://github.com/ThemeFuse/Unyson/issues/2053
+		// Fixes https://github.com/UnysonPlus Community/Unyson/issues/2053
 		add_action('customize_preview_init', array($this, '_reset_cache'),
-			1 // Fixes https://github.com/ThemeFuse/Unyson/issues/2104
+			1 // Fixes https://github.com/UnysonPlus Community/Unyson/issues/2104
 		);
 	}
 }
@@ -668,7 +668,7 @@ new FW_Db_Options_Model_Customizer();
 	 * @param string $extension_name
 	 * @param string|null $multi_key The key of the data you want to get. null - all data
 	 * @param null|mixed $default_value If no option found in the database, this value will be returned
-	 * @param null|bool $get_original_value REMOVED https://github.com/ThemeFuse/Unyson/issues/1676
+	 * @param null|bool $get_original_value REMOVED https://github.com/UnysonPlus Community/Unyson/issues/1676
 	 *
 	 * @return mixed|null
 	 */

@@ -17,7 +17,7 @@ if ($option['sortable']) {
 $increment_placeholder = '###-addable-popup-increment-'. fw_rand_md5() .'-###';
 ?>
 <div <?php echo fw_attr_to_html($attr); ?>>
-	<!-- Fixes https://github.com/ThemeFuse/Unyson/issues/1278 -->
+	<!-- Fixes https://github.com/UnysonPlus Community/Unyson/issues/1278 -->
 	<?php echo fw()->backend->option_type('hidden')->render($id, array('value' => '~'), array(
 		'id_prefix' => $data['id_prefix'],
 		'name_prefix' => $data['name_prefix'],

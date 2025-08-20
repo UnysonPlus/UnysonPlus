@@ -129,7 +129,7 @@ try {
 	FW_Cache::set(
 		$cache_key,
 		/**
-		 * Fixes https://github.com/ThemeFuse/Unyson/issues/2143
+		 * Fixes https://github.com/UnysonPlus Community/Unyson/issues/2143
 		 * @since 2.6.9
 		 */
 		$desc_under_label = apply_filters('fw:backend-option-view:design-default:desc-under-label', false)

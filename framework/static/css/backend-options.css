@@ -931,7 +931,7 @@ body.rtl .fw-postbox .handlediv:before {
 
 .fw-postbox .toggle-indicator {
 	display: none;
-	/* fixes https://github.com/ThemeFuse/Unyson/issues/1261 */
+	/* fixes https://github.com/UnysonPlus Community/Unyson/issues/1261 */
 }
 
 /* end copy from: .js .meta-box-sortables .postbox .handlediv */
@@ -1271,7 +1271,7 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 
 /* end: Add Term page */
 
-/* modal fix https://github.com/ThemeFuse/Unyson/issues/1353 */
+/* modal fix https://github.com/UnysonPlus Community/Unyson/issues/1353 */
 
 @media (min-width: 1200px) {
 	.media-frame-content .fw-backend-option>.fw-backend-option-label.fw-col-lg-2 {

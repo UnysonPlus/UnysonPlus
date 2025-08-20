@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ACCOUNT='ThemeFuse'
+ACCOUNT='UnysonPlus Community'
 
 EXTENSIONS='
 blog:Unyson-Blog-Extension
