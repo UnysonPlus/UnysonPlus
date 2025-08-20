@@ -4,6 +4,8 @@ UnysonPlus is a community-maintained fork of the original [Unyson](https://wordp
 
 This project continues where the original Unyson (by [ThemeFuse](http://themefuse.com/)) left off after development was discontinued, with the goal of keeping the framework alive, stable, and more developer-friendly.
 
+This version doesn't include Brizy or any reference to it. It has been stripped of it.
+
 ## Table of Contents
 
 * [Installation](#installation)
