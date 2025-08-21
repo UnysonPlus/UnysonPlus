@@ -1,12 +1,38 @@
 # [Unyson+](https://github.com/jonmlas/Unyson+) Framework
 
-Unyson+ is a community-maintained fork of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](http://wordpress.org/).  
+Unyson+ is a **community-maintained fork** of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](http://wordpress.org/).  
 
 This project continues where the original Unyson (by [ThemeFuse](http://themefuse.com/)) left off after development was discontinued, with the goal of keeping the framework alive, stable, and more developer-friendly.
 
-Difference from original Unyson Framework:
-* Removed Brizy or any reference to it. It has been stripped of it.
-* Upgraded Bootstrap 3 to Bootstrap 5.
+---
+
+## 🔹 Key Differences from the Original Unyson
+* Removed Brizy and all references to it.
+* Upgraded from **Bootstrap 3 → Bootstrap 5**.
+* Ongoing compatibility work with **modern PHP (8.x+)**.
+
+---
+
+## 🔹 Plans for This Project
+* **Full PHP 8.x+ support**: update and refactor functions (`create_function`, `each`, curly braces `{}`, `implode()` argument order, etc.).
+* **Shortcode improvements**: add more features, flexibility, and developer-friendly APIs.
+* **Gutenberg integration**: improve compatibility with the Block Editor while keeping Classic Editor support.
+* **Modernize the codebase**:
+  - Remove deprecated PHP patterns.
+  - Add strict typing where possible.
+  - Ensure better code organization and readability.
+* **Upgrade dependencies**:
+  - jQuery usage cleanup.
+  - Keep Bootstrap updated to the latest stable version.
+* **Options Framework improvements**: make the admin options system more developer-friendly (inspired by ACF / Carbon Fields).
+* **Migration tools**: help existing Unyson users transition smoothly to Unyson+ without breaking sites.
+* **Automated testing**: introduce PHPUnit + WordPress test suite for long-term stability.
+* **Changelog and releases**: maintain semantic versioning (e.g., v1.1.0, v1.2.0).
+* **Extension registry**: create an open system for community-driven add-ons and modules.
+* **Multisite support**: ensure full compatibility in multisite environments.
+* **Backward compatibility**: maintain support for legacy themes and shortcodes while adding modern features.
+
+---
 
 ## Table of Contents
 
