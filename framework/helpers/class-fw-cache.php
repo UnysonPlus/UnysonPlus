@@ -131,7 +131,7 @@ class FW_Cache
 			'init' => true,
 			'updated_postmeta' => true,
 			'deleted_postmeta' => true,
-			'setted_transient' => true,
+			'set_transient' => true,
 			'registered_post_type' => true,
 			'wp_count_posts' => true,
 			'wp_count_attachments' => true,

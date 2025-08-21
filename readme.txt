@@ -91,7 +91,11 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 
 == Changelog ==
-= 1.0.01 =
+= 2.7.32 =
+* Fixed Github API not allowing extensions to be downloaded.
+* changed deprecated 'setted_transient' to 'set_transient'.
+
+= 2.7.31 =
 * Removed Brizy.
 
 == Changelog From Original Unyson==
