@@ -14,7 +14,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 ## 🔹 Plans for This Project
 * **Full PHP 8.x+ support**: update and refactor functions (`create_function`, `each`, curly braces `{}`, `implode()` argument order, etc.).
-* Upgrad from **Bootstrap 3 → Bootstrap 5**.
+* Upgrade from **Bootstrap 3 → Bootstrap 5**.
 * **Shortcode improvements**: add more features, flexibility, and developer-friendly APIs.
 * **Gutenberg integration**: improve compatibility with the Block Editor while keeping Classic Editor support.
 * **Modernize the codebase**:
