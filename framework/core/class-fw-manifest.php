@@ -1,17 +1,20 @@
 <?php if (!defined('FW')) die('Forbidden');
+/**
+ * PHP Version: 7.4 or higher
+ */
 
 abstract class FW_Manifest
 {
 	/**
 	 * @var array
 	 */
-	protected $manifest;
+	protected array $manifest;
 
 	/**
 	 * The first requirement that was not met
 	 * (that marks that the requirements are not met)
 	 *
-	 * @var array
+	 * @var array|null
 	 * array(
 	 *  'requirement'  => 'wordpress|framework',
 	 *  'requirements' => array('min_version' => '1.2.3', ...)
@@ -23,28 +26,28 @@ abstract class FW_Manifest
 	 *  'requirements' => array('min_version' => '1.2.3', ...)
 	 * )
 	 */
-	private $not_met_requirement;
+	private ?array $not_met_requirement = null;
 
 	/**
 	 * When an requirement that sure will not change is not met and have no sense to execute check_requirements() again
 	 * @var bool
 	 */
-	private $not_met_is_final = false;
+	private bool $not_met_is_final = false;
 
 	/**
 	 * Not met requirement and skipped (not verified) requirements after $this->not_met_requirement was found
 	 * @var array
 	 */
-	private $requirements_for_verification;
+	private array $requirements_for_verification = [];
 
-	private $requirements_verification_never_called = true;
+	private bool $requirements_verification_never_called = true;
 
 	/**
 	 * @param array $manifest
 	 */
 	protected function __construct(array $manifest)
 	{
-		$manifest = array_merge(array(
+		$manifest = array_merge([
 			'name'        => null, // title
 			'uri'         => null,
 			'description' => null,
@@ -53,8 +56,8 @@ abstract class FW_Manifest
 			'author_uri'  => null,
 
 			// Custom fields
-			'requirements' => array(),
-		), $manifest);
+			'requirements' => [],
+		], $manifest);
 
 		/**
 		 * Merge $manifest['requirements']
@@ -62,7 +65,7 @@ abstract class FW_Manifest
 		{
 			$requirements = $manifest['requirements'];
 
-			$manifest['requirements'] = array();
+			$manifest['requirements'] = [];
 
 			foreach ($this->get_default_requirements() as $default_requirement => $default_requirements) {
 				$manifest['requirements'][ $default_requirement ] = isset($requirements[$default_requirement])
@@ -84,12 +87,12 @@ abstract class FW_Manifest
 	/**
 	 * @return array { 'requirement' => array('min_version' => '..', 'max_version' => '..') }
 	 */
-	abstract protected function get_default_requirements();
+	abstract protected function get_default_requirements(): array;
 
 	/**
 	 * @return bool
 	 */
-	public function requirements_met()
+	public function requirements_met(): bool
 	{
 		if ($this->not_met_is_final) {
 			return false;
@@ -107,7 +110,7 @@ abstract class FW_Manifest
 	/**
 	 * @return bool
 	 */
-	public function check_requirements()
+	public function check_requirements(): bool
 	{
 		if ($this->not_met_is_final) {
 			return false;
@@ -117,14 +120,14 @@ abstract class FW_Manifest
 			return true;
 		}
 
-		$this->not_met_requirement = array();
+		$this->not_met_requirement = [];
 
 		global $wp_version;
 
 		foreach ($this->requirements_for_verification as $requirement => $requirements) {
 			switch ($requirement) {
 				case 'php':
-					if ( ! function_exists( 'phpversion' ) ) {
+					if (!function_exists('phpversion')) {
 						break;
 					}
 					if (
@@ -132,10 +135,10 @@ abstract class FW_Manifest
 						&&
 						version_compare(phpversion(), $requirements['min_version'], '<')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -145,10 +148,10 @@ abstract class FW_Manifest
 						&&
 						version_compare(phpversion(), $requirements['max_version'], '>')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -162,10 +165,10 @@ abstract class FW_Manifest
 						&&
 						version_compare($wp_version, $requirements['min_version'], '<')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -175,10 +178,10 @@ abstract class FW_Manifest
 						&&
 						version_compare($wp_version, $requirements['max_version'], '>')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -192,10 +195,10 @@ abstract class FW_Manifest
 						&&
 						version_compare(fw()->manifest->get_version(), $requirements['min_version'], '<')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -205,10 +208,10 @@ abstract class FW_Manifest
 						&&
 						version_compare(fw()->manifest->get_version(), $requirements['max_version'], '>')
 					) {
-						$this->not_met_requirement = array(
+						$this->not_met_requirement = [
 							'requirement'  => $requirement,
 							'requirements' => $requirements
-						);
+						];
 						$this->not_met_is_final = true;
 						break 2;
 					}
@@ -227,11 +230,11 @@ abstract class FW_Manifest
 							 * extension in requirements does not exists
 							 * maybe try call this method later and maybe will exist, or it really does not exists
 							 */
-							$this->not_met_requirement = array(
+							$this->not_met_requirement = [
 								'requirement'  => $requirement,
 								'extension'    => $extension,
 								'requirements' => $extension_requirements
-							);
+							];
 							break 3;
 						}
 
@@ -240,11 +243,11 @@ abstract class FW_Manifest
 							&&
 							version_compare($extension_instance->manifest->get_version(), $extension_requirements['min_version'], '<')
 						) {
-							$this->not_met_requirement = array(
+							$this->not_met_requirement = [
 								'requirement'  => $requirement,
 								'extension'    => $extension,
 								'requirements' => $extension_requirements
-							);
+							];
 							$this->not_met_is_final = true;
 							break 3;
 						}
@@ -254,11 +257,11 @@ abstract class FW_Manifest
 							&&
 							version_compare($extension_instance->manifest->get_version(), $extension_requirements['max_version'], '>')
 						) {
-							$this->not_met_requirement = array(
+							$this->not_met_requirement = [
 								'requirement'  => $requirement,
 								'extension'    => $extension,
 								'requirements' => $extension_requirements
-							);
+							];
 							$this->not_met_is_final = true;
 							break 3;
 						}
@@ -278,12 +281,12 @@ abstract class FW_Manifest
 		return $this->requirements_met();
 	}
 
-	public function get_version()
+	public function get_version(): string
 	{
 		return $this->manifest['version'];
 	}
 
-	public function get_name()
+	public function get_name(): ?string
 	{
 		return $this->manifest['name'];
 	}
@@ -293,23 +296,25 @@ abstract class FW_Manifest
 	 * @param mixed $default_value
 	 * @return mixed
 	 */
-	public function get( $multi_key, $default_value = null ) {
-		return fw_akg( $multi_key, $this->manifest, $default_value );
+	public function get(string $multi_key, $default_value = null)
+	{
+		return fw_akg($multi_key, $this->manifest, $default_value);
 	}
 
 	/**
 	 * Get entire manifest.
 	 * @return array
 	 */
-	public function get_manifest() {
+	public function get_manifest(): array
+	{
 		return $this->manifest;
 	}
 
 	/**
 	 * Call this only after check_requirements() failed
-	 * @return array
+	 * @return array|null
 	 */
-	public function get_not_met_requirement()
+	public function get_not_met_requirement(): ?array
 	{
 		return $this->not_met_requirement;
 	}
@@ -319,30 +324,30 @@ abstract class FW_Manifest
 	 * Call this only after check_requirements() failed
 	 * @return string
 	 */
-	public function get_not_met_requirement_text()
+	public function get_not_met_requirement_text(): string
 	{
 		if (!$this->not_met_requirement) {
 			return '';
 		}
 
-		$requirement = array();
+		$requirement = [];
 
 		foreach ($this->not_met_requirement['requirements'] as $req_key => $req) {
 			switch ($req_key) {
 				case 'min_version':
-					$requirement[] = __('minimum required version is', 'fw') .' '. $req;
+					$requirement[] = __('minimum required version is', 'fw') . ' ' . $req;
 					break;
 				case 'max_version':
-					$requirement[] = __('maximum required version is', 'fw') .' '. $req;
+					$requirement[] = __('maximum required version is', 'fw') . ' ' . $req;
 					break;
 			}
 		}
 
-		$requirement = implode(' '. __('and', 'fw') .' ', $requirement);
+		$requirement = implode(' ' . __('and', 'fw') . ' ', $requirement);
 
 		switch ($this->not_met_requirement['requirement']) {
 			case 'php':
-				if ( ! function_exists( 'phpversion' ) ) {
+				if (!function_exists('phpversion')) {
 					break;
 				}
 
@@ -388,7 +393,7 @@ abstract class FW_Manifest
 				}
 				break;
 			default:
-				$requirement = 'Unknown requirement "'. $this->not_met_requirement['requirement'] .'"';
+				$requirement = 'Unknown requirement "' . $this->not_met_requirement['requirement'] . '"';
 		}
 
 		return $requirement;
@@ -406,18 +411,18 @@ class FW_Framework_Manifest extends FW_Manifest
 		parent::__construct($manifest);
 	}
 
-	protected function get_default_requirements()
+	protected function get_default_requirements(): array
 	{
-		return array(
-			'php' => array(
+		return [
+			'php' => [
 				'min_version' => '5.2.4',
 				/*'max_version' => '10000.0.0',*/
-			),
-			'wordpress' => array(
+			],
+			'wordpress' => [
 				'min_version' => '4.0',
 				/*'max_version' => '10000.0.0',*/
-			),
-		);
+			],
+		];
 	}
 }
 
@@ -425,7 +430,7 @@ class FW_Theme_Manifest extends FW_Manifest
 {
 	public function __construct(array $manifest)
 	{
-		$manifest_defaults = array(
+		$manifest_defaults = [
 			/**
 			 * You can use this in a wp_option id,
 			 * so that option value will be different on a theme with different id.
@@ -435,26 +440,26 @@ class FW_Theme_Manifest extends FW_Manifest
 			 * changing this default value will result in Theme Settings options "reset".
 			 */
 			'id' => 'default',
-			'supported_extensions' => array(
+			'supported_extensions' => [
 				/*
 				'extension_name' => array(),
 				*/
-			),
-		);
+			],
+		];
 
 		$theme = wp_get_theme();
 
-		foreach(array(
+		foreach([
 			'name'        => 'Name',
 			'uri'         => 'ThemeURI',
 			'description' => 'Description',
 			'version'     => 'Version',
 			'author'      => 'Author',
 			'author_uri'  => 'AuthorURI',
-		) as $manifest_key => $stylesheet_header) {
+		] as $manifest_key => $stylesheet_header) {
 			$header_value = trim($theme->get($stylesheet_header));
 
-			if ( is_child_theme() && $theme->parent() ) {
+			if (is_child_theme() && $theme->parent()) {
 				switch ($manifest_key) {
 					case 'version':
 					case 'uri':
@@ -480,31 +485,31 @@ class FW_Theme_Manifest extends FW_Manifest
 		parent::__construct(array_merge($manifest_defaults, $manifest));
 	}
 
-	protected function get_default_requirements()
+	protected function get_default_requirements(): array
 	{
-		return array(
-			'php' => array(
+		return [
+			'php' => [
 				'min_version' => '5.2.4',
 				/*'max_version' => '10000.0.0',*/
-			),
-			'wordpress' => array(
+			],
+			'wordpress' => [
 				'min_version' => '4.0',
 				/*'max_version' => '10000.0.0',*/
-			),
-			'framework' => array(
+			],
+			'framework' => [
 				/*'min_version' => '0.0.0',
 				'max_version' => '1000.0.0'*/
-			),
-			'extensions' => array(
+			],
+			'extensions' => [
 				/*'extension_name' => array(
 					'min_version' => '0.0.0',
 					'max_version' => '1000.0.0'
 				)*/
-			)
-		);
+			]
+		];
 	}
 
-	public function get_id()
+	public function get_id(): string
 	{
 		return $this->manifest['id'];
 	}
@@ -521,7 +526,7 @@ class FW_Extension_Manifest extends FW_Manifest
 		// unset unnecessary keys
 		unset($this->manifest['id']);
 
-		$this->manifest = array_merge(array(
+		$this->manifest = array_merge([
 			/**
 			 * @type bool Display on the Extensions page or it's a hidden extension
 			 */
@@ -533,39 +538,39 @@ class FW_Extension_Manifest extends FW_Manifest
 			 */
 			'standalone' => false,
 			/**
-			 * @type string Thumbnail used on the Extensions page
+			 * @type string|null Thumbnail used on the Extensions page
 			 * All framework extensions has thumbnails set in the available extensions list
 			 * but if your extension is not in that list and id located in the theme, you can set the thumbnail via this parameter
 			 */
 			'thumbnail' => null,
-		), $this->manifest);
+		], $this->manifest);
 	}
 
-	protected function get_default_requirements()
+	protected function get_default_requirements(): array
 	{
-		return array(
-			'php' => array(
+		return [
+			'php' => [
 				'min_version' => '5.2.4',
 				/*'max_version' => '10000.0.0',*/
-			),
-			'wordpress' => array(
+			],
+			'wordpress' => [
 				'min_version' => '4.0',
 				/*'max_version' => '10000.0.0',*/
-			),
-			'framework' => array(
+			],
+			'framework' => [
 				/*'min_version' => '0.0.0',
 				'max_version' => '1000.0.0'*/
-			),
-			'extensions' => array(
+			],
+			'extensions' => [
 				/*'extension_name' => array(
 					'min_version' => '0.0.0',
 					'max_version' => '1000.0.0'
 				)*/
-			)
-		);
+			]
+		];
 	}
 
-	public function get_required_extensions()
+	public function get_required_extensions(): array
 	{
 		return $this->manifest['requirements']['extensions'];
 	}

@@ -8,6 +8,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 ## 🔹 Key Differences from the Original Unyson
 * Removed Brizy and all references to it.
+* Updated to PHP 7.4+/8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3.
 * Ongoing compatibility work with **modern PHP (8.x+)**.
 
 ---
@@ -49,11 +50,13 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 2. Activate **Unyson+** from the WordPress dashboard under **Plugins**.
 3. Configure the framework by going to the **Unyson+ menu**.
 
+⚠ Warning: If you currently have the original Unyson plugin installed, create a staging site or backup your site first. Unyson+ shares the same function names as Unyson, so running both at the same time will cause fatal errors. Uninstall Unyson before installing Unyson+.
+
 ## Documentation
 
 Currently, the original Unyson documentation is still a useful reference:  
 👉 http://manual.unyson.io/  
-
+ 
 Future Unyson+-specific documentation will be published here in the repository’s **/docs** folder. Contributions are welcome.
 
 ## Extensions

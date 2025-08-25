@@ -1,4 +1,6 @@
-<?php if ( !defined( 'WP_UNINSTALL_PLUGIN' ) ) die('Forbidden');
+<?php if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	die('Forbidden');
+}
 
 /**
  * Remove all plugin and extensions data
@@ -9,24 +11,31 @@
  * <?php if ( !defined( 'FW' ) ) die('Forbidden');
  * because the framework is not loaded at this point, use:
  * <?php if ( !defined( 'WP_UNINSTALL_PLUGIN' ) ) die('Forbidden');
+ * PHP Version: 7.4 or higher
  */
 
-function _include_file_isolated($path) {
-	include $path;
+if ( ! function_exists( '_include_file_isolated' ) ) {
+	/**
+	 * Isolated include to avoid variable conflicts.
+	 *
+	 * @param string $path File path.
+	 * @return void
+	 */
+	function _include_file_isolated( string $path ): void {
+		include $path;
+	}
 }
 
-class FW_Plugin_Uninstall
-{
+final class FW_Plugin_Uninstall {
 	/**
 	 * All extensions with uninstall.php
-	 * @var array
+	 * @var array<string, string>
 	 */
-	private $extensions = array();
+	private array $extensions = [];
 
-	public function __construct()
-	{
+	public function __construct() {
 		$this->read_extensions(
-			dirname(__FILE__) .'/framework/extensions',
+			__DIR__ . '/framework/extensions',
 			$this->extensions
 		);
 
@@ -36,15 +45,12 @@ class FW_Plugin_Uninstall
 
 			$this->uninstall();
 
+			// Handle multisite uninstall
 			if ( is_multisite() ) { // http://wordpress.stackexchange.com/a/80351/60424
 				$original_blog_id = get_current_blog_id();
 
-				foreach (
-					$wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" )
-					as $blog_id
-				) {
-					switch_to_blog( $blog_id );
-
+				foreach ( $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" ) as $blog_id ) {
+					switch_to_blog( (int) $blog_id );
 					$this->uninstall();
 				}
 
@@ -53,39 +59,49 @@ class FW_Plugin_Uninstall
 		}
 	}
 
-	private function read_extensions($dir, &$extensions)
-	{
-		$ext_dirs = glob($dir .'/*', GLOB_ONLYDIR);
+	/**
+	 * Recursively read extensions and find uninstall.php
+	 *
+	 * @param string $dir
+	 * @param array  $extensions
+	 * @return void
+	 */
+	private function read_extensions( string $dir, array &$extensions ): void {
+		$ext_dirs = glob( $dir . '/*', GLOB_ONLYDIR ) ?: [];
 
-		if (empty($ext_dirs)) {
+		if ( empty( $ext_dirs ) ) {
 			return;
 		}
 
-		foreach ($ext_dirs as $ext_dir) {
+		foreach ( $ext_dirs as $ext_dir ) {
 			if (
-				file_exists($ext_dir .'/manifest.php')
-				&&
-				file_exists($ext_dir .'/uninstall.php')
+				file_exists( $ext_dir . '/manifest.php' ) &&
+				file_exists( $ext_dir . '/uninstall.php' )
 			) {
-				$extensions[ basename($ext_dir) ] = $ext_dir .'/uninstall.php';
+				$extensions[ basename( $ext_dir ) ] = $ext_dir . '/uninstall.php';
 			}
 
-			$this->read_extensions($ext_dir .'/extensions', $extensions);
+			$this->read_extensions( $ext_dir . '/extensions', $extensions );
 		}
 	}
 
-	private function uninstall()
-	{
+	/**
+	 * Perform uninstall process
+	 *
+	 * @return void
+	 */
+	private function uninstall(): void {
 		// Remove framework data
 		{
 			// ...
 		}
 
 		// Remove extensions data
-		foreach ($this->extensions as $uninstall_file) {
-			_include_file_isolated($uninstall_file);
+		foreach ( $this->extensions as $uninstall_file ) {
+			_include_file_isolated( $uninstall_file );
 		}
 	}
 }
 
+// Run uninstall handler
 new FW_Plugin_Uninstall();
