@@ -4,6 +4,7 @@
 
 /**
  * Backend functionality
+ * PHP Version: 7.4 or higher
  */
 final class _FW_Component_Backend {
 

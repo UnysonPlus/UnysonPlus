@@ -1,4 +1,10 @@
-<?php if (!defined('FW')) die('Forbidden');
+<?php declare(strict_types=1);
+
+if (!defined('FW')) die('Forbidden');
+
+/**
+ * PHP Version: 7.4 or higher
+ */
 
 /**
  * Used in fw()->backend
@@ -12,9 +18,9 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 			->set_string( 'title', __('Theme Settings', 'fw') );
 
 		{
-			add_action('admin_init', array($this, '_action_get_title_from_menu'));
-			add_action('admin_menu', array($this, '_action_admin_menu'));
-			add_action('admin_enqueue_scripts', array($this, '_action_admin_enqueue_scripts'),
+			add_action('admin_init', [$this, '_action_get_title_from_menu']);
+			add_action('admin_menu', [$this, '_action_admin_menu']);
+			add_action('admin_enqueue_scripts', [$this, '_action_admin_enqueue_scripts'],
 				/**
 				 * In case some custom defined option types are using script/styles registered
 				 * in actions with default priority 10 (make sure the enqueue is executed after register)
@@ -50,10 +56,10 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 
 			if (fw()->theme->manifest->get('author')) {
 				if (fw()->theme->manifest->get('author_uri')) {
-					$title .= ' '. fw_html_tag('a', array(
+					$title .= ' '. fw_html_tag('a', [
 							'href' => fw()->theme->manifest->get('author_uri'),
 							'target' => '_blank'
-						), '<small>' . __('by', 'fw') . ' ' . fw()->theme->manifest->get('author') . '</small>');
+						], '<small>' . __('by', 'fw') . ' ' . fw()->theme->manifest->get('author') . '</small>');
 				} else {
 					$title .= ' <small>' . fw()->theme->manifest->get('author') . '</small>';
 				}
@@ -96,11 +102,11 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 	 * @internal
 	 */
 	public function _action_admin_menu() {
-		$data = array(
+		$data = [
 			'capability'       => 'manage_options',
 			'slug'             => fw()->backend->_get_settings_page_slug(),
-			'content_callback' => array( $this, 'render' ),
-		);
+			'content_callback' => [$this, 'render'],
+		];
 
 		if ( ! current_user_can( $data['capability'] ) ) {
 			return;
@@ -121,7 +127,7 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 		{
 			global $_registered_pages;
 
-			$found_hooknames = array();
+			$found_hooknames = [];
 
 			if ( ! empty( $_registered_pages ) ) {
 				foreach ( $_registered_pages as $hookname => $b ) {
@@ -170,7 +176,7 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 			$data['content_callback']
 		);
 
-		add_action( 'admin_menu', array( $this, '_action_admin_change_theme_settings_order' ), 9999 );
+		add_action( 'admin_menu', [$this, '_action_admin_change_theme_settings_order'], 9999 );
 	}
 
 	/**
