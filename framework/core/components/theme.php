@@ -3,14 +3,16 @@
 /**
  * Theme Component
  * Works with framework customizations / theme directory
+ *
+ * PHP Version: 7.4 or higher
  */
 final class _FW_Component_Theme {
-	private static $cache_key = 'fw_theme';
+	private static string $cache_key = 'fw_theme';
 
 	/**
 	 * @var FW_Theme_Manifest
 	 */
-	public $manifest;
+	public FW_Theme_Manifest $manifest;
 
 	public function __construct() {
 		$manifest = array();
@@ -32,14 +34,14 @@ final class _FW_Component_Theme {
 	/**
 	 * @internal
 	 */
-	public function _init() {
+	public function _init(): void {
 		add_action( 'admin_notices', array( $this, '_action_admin_notices' ) );
 	}
 
 	/**
 	 * @internal
 	 */
-	public function _after_components_init() {
+	public function _after_components_init(): void {
 	}
 
 	/**
@@ -47,9 +49,9 @@ final class _FW_Component_Theme {
 	 *
 	 * @param string $rel_path
 	 *
-	 * @return false|string
+	 * @return string|false
 	 */
-	public function locate_path( $rel_path ) {
+	public function locate_path(string $rel_path): string|false {
 		if ( is_child_theme() && file_exists( fw_get_stylesheet_customizations_directory( '/theme' . $rel_path ) ) ) {
 			return fw_get_stylesheet_customizations_directory( '/theme' . $rel_path );
 		} elseif ( file_exists( fw_get_template_customizations_directory( '/theme' . $rel_path ) ) ) {
@@ -67,19 +69,19 @@ final class _FW_Component_Theme {
 	 *
 	 * @return array
 	 */
-	public function get_options( $name, array $variables = array() ) {
+	public function get_options(string $name, array $variables = []): array {
 		$path = $this->locate_path( '/options/' . $name . '.php' );
 
 		if ( ! $path ) {
-			return array();
+			return [];
 		}
 
-		$variables = fw_get_variables_from_file( $path, array( 'options' => array() ), $variables );
+		$variables = fw_get_variables_from_file( $path, array( 'options' => [] ), $variables );
 
-		return $variables['options'];
+		return $variables['options'] ?? [];
 	}
 
-	public function get_settings_options() {
+	public function get_settings_options(): array {
 		$cache_key = self::$cache_key . '/options/settings';
 
 		try {
@@ -93,7 +95,7 @@ final class _FW_Component_Theme {
 		}
 	}
 
-	public function get_customizer_options() {
+	public function get_customizer_options(): array {
 		$cache_key = self::$cache_key . '/options/customizer';
 
 		try {
@@ -107,7 +109,7 @@ final class _FW_Component_Theme {
 		}
 	}
 
-	public function get_post_options( $post_type ) {
+	public function get_post_options(string $post_type): array {
 		$cache_key = self::$cache_key . '/options/posts/' . $post_type;
 
 		try {
@@ -125,7 +127,7 @@ final class _FW_Component_Theme {
 		}
 	}
 
-	public function get_taxonomy_options( $taxonomy ) {
+	public function get_taxonomy_options(string $taxonomy): array {
 		$cache_key = self::$cache_key . '/options/taxonomies/' . $taxonomy;
 
 		try {
@@ -148,28 +150,28 @@ final class _FW_Component_Theme {
 	 * Config array is merged from child configs
 	 *
 	 * @param string|null $key Multi key format accepted: 'a/b/c'
-	 * @param mixed       $default_value
+	 * @param mixed|null  $default_value
 	 *
-	 * @return mixed|null
+	 * @return mixed
 	 */
-	final public function get_config( $key = null, $default_value = null ) {
+	final public function get_config(?string $key = null, mixed $default_value = null): mixed {
 		$cache_key = self::$cache_key . '/config';
 
 		try {
 			$config = FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
 			// default values
-			$config = array(
+			$config = [
 				/** Toggle Theme Settings form ajax submit */
 				'settings_form_ajax_submit' => true,
 				/** Toggle Theme Settings side tabs */
 				'settings_form_side_tabs'   => false,
 				/** Toggle Tabs rendered all at once, or initialized only on open/display */
 				'lazy_tabs'                 => true,
-			);
+			];
 
 			if ( file_exists( fw_get_template_customizations_directory( '/theme/config.php' ) ) ) {
-				$variables = fw_get_variables_from_file( fw_get_template_customizations_directory( '/theme/config.php' ), array( 'cfg' => null ) );
+				$variables = fw_get_variables_from_file( fw_get_template_customizations_directory( '/theme/config.php' ), [ 'cfg' => null ] );
 
 				if ( ! empty( $variables['cfg'] ) ) {
 					$config = array_merge( $config, $variables['cfg'] );
@@ -178,15 +180,13 @@ final class _FW_Component_Theme {
 			}
 
 			if ( is_child_theme() && file_exists( fw_get_stylesheet_customizations_directory( '/theme/config.php' ) ) ) {
-				$variables = fw_get_variables_from_file( fw_get_stylesheet_customizations_directory( '/theme/config.php' ), array( 'cfg' => null ) );
+				$variables = fw_get_variables_from_file( fw_get_stylesheet_customizations_directory( '/theme/config.php' ), [ 'cfg' => null ] );
 
 				if ( ! empty( $variables['cfg'] ) ) {
 					$config = array_merge( $config, $variables['cfg'] );
 					unset( $variables );
 				}
 			}
-
-			unset( $path );
 
 			FW_Cache::set( $cache_key, $config );
 		}
@@ -197,8 +197,7 @@ final class _FW_Component_Theme {
 	/**
 	 * @internal
 	 */
-	public function _action_admin_notices() {
-
+	public function _action_admin_notices(): void {
 		if ( is_admin() && ! fw()->theme->manifest->check_requirements() && current_user_can( 'manage_options' ) ) {
 			echo '<div class="notice notice-warning">
 					<p>' .
