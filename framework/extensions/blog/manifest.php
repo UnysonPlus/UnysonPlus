@@ -3,17 +3,15 @@
 $manifest = array();
 
 $manifest['name']        = __( 'Blog Posts', 'fw' );
-$manifest['slug']        = 'unysonplus-blog';
-$manifest['description'] = __( 'Blog Posts extension for UnysonPlus.', 'fw' );
+$manifest['description'] = __( 'This extension adds Blog Posts functionality.', 'fw' );
 
-$manifest['version']     = '1.0.2';
+$manifest['version']     = '1.0.3';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Blog-Extension';
 $manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-Blog-Extension';
-$manifest['github_branch'] = 'master';
 
 // Author Info
 $manifest['author']     = 'UnysonPlus';

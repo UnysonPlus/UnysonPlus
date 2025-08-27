@@ -1,4 +1,8 @@
-<?php if (!defined('FW')) die('Forbidden');
+<?php 
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
 
 /**
  * @deprecated since 2.5.0
@@ -6,8 +10,24 @@
  */
 interface FW_Option_Handler
 {
-	function get_option_value($option_id, $option, $data = array());
+    /**
+     * Get option value
+     *
+     * @param string $option_id
+     * @param array  $option
+     * @param array  $data
+     * @return mixed
+     */
+    public function get_option_value(string $option_id, array $option, array $data = []): mixed;
 
-	function save_option_value($option_id, $option, $value, $data = array());
+    /**
+     * Save option value
+     *
+     * @param string $option_id
+     * @param array  $option
+     * @param mixed  $value
+     * @param array  $data
+     * @return void
+     */
+    public function save_option_value(string $option_id, array $option, mixed $value, array $data = []): void;
 }
-

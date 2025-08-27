@@ -1,6 +1,9 @@
-<?php if ( ! defined( 'FW' ) ) {
-	die( 'Forbidden' );
-}
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
+
 /**
  * Base class for displaying a list of items in an ajaxified HTML table.
  *

@@ -1,4 +1,10 @@
-<?php if (! defined('FW')) { die('Forbidden'); }
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (! defined('FW')) {
+    die('Forbidden');
+}
 
 class _FW_Ext_Download_Source_Register extends FW_Type_Register
 {

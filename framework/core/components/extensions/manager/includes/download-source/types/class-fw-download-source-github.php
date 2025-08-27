@@ -1,5 +1,7 @@
-<?php if ( ! defined( 'FW' ) ) {
-	die( 'Forbidden' );
+<?php
+// PHP Version: 7.4 or higher
+if (!defined('FW')) {
+    die('Forbidden');
 }
 
 class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
@@ -15,7 +17,7 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 	 *
 	 * @return WP_Error
 	 */
-	public function download( array $set, $zip_path ) {
+		public function download( array $set, $zip_path ) {
 		$wp_error_id            = 'fw_ext_github_download_source';
 		$theme_ext_requirements = fw()->theme->manifest->get( 'requirements/extensions' );
 
@@ -39,38 +41,35 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 			$cache = get_site_transient( $transient_name );
 
 			if ( $cache === false ) {
-				$cache = array();
+				$cache = [];
 			}
 		}
 
 		if ( isset( $cache[ $set['user_repo'] ] ) ) {
 			$download_link = $cache[ $set['user_repo'] ]['zipball_url'];
 		} else {
-			$http = new WP_Http();
-
+			// Pick version tag
 			if (
 				isset( $theme_ext_requirements[ $extension_name ] )
-				&&
-				isset( $theme_ext_requirements[ $extension_name ]['max_version'] )
+				&& isset( $theme_ext_requirements[ $extension_name ]['max_version'] )
 			) {
 				$tag = 'tags/v' . $theme_ext_requirements[ $extension_name ]['max_version'];
 			} else {
 				$tag = 'latest';
 			}
 
-			$response = $http->get(
+			// GitHub API request
+			$response = wp_remote_get(
 				apply_filters( 'fw_github_api_url', 'https://api.github.com' )
 				. '/repos/' . $set['user_repo'] . '/releases/' . $tag,
-                [ 'timeout' => 25 ]
+				[ 'timeout' => 25 ]
 			);
-
-			unset( $http );
 
 			$response_code = intval( wp_remote_retrieve_response_code( $response ) );
 
 			if ( $response_code !== 200 ) {
 				if ( $response_code === 403 ) {
-					if ( $json_response = json_decode( $response['body'], true ) ) {
+					if ( $json_response = json_decode( wp_remote_retrieve_body( $response ), true ) ) {
 						return new WP_Error(
 							$wp_error_id,
 							__( 'Github error:', 'fw' ) . ' ' . $json_response['message']
@@ -111,9 +110,7 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 				}
 			}
 
-			$release = json_decode( $response['body'], true );
-
-			unset( $response );
+			$release = json_decode( wp_remote_retrieve_body( $response ), true );
 
 			if ( empty( $release ) ) {
 				return new WP_Error(
@@ -126,64 +123,62 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 			}
 
 			{
-				$cache[ $set['user_repo'] ] = array(
+				$cache[ $set['user_repo'] ] = [
 					'zipball_url' => 'https://github.com/' . $set['user_repo'] . '/archive/' . $release['tag_name'] . '.zip',
 					'tag_name'    => $release['tag_name']
-				);
+				];
 
 				set_site_transient( $transient_name, $cache, $transient_ttl );
 			}
 
 			$download_link = $cache[ $set['user_repo'] ]['zipball_url'];
-
-
-			unset( $release );
 		}
 
-		{
-			$http = new WP_Http();
+		// Download the zip
+		$response = wp_remote_get(
+			$download_link,
+			[ 'timeout' => $this->download_timeout ]
+		);
 
-			$response = $http->request( $download_link, array(
-				'timeout' => $this->download_timeout,
-			) );
+		$response_code = intval( wp_remote_retrieve_response_code( $response ) );
 
-			unset( $http );
-
-			if ( ( $response_code = intval( wp_remote_retrieve_response_code( $response ) ) ) !== 200 ) {
-				if ( $response_code ) {
-					return new WP_Error(
-						$wp_error_id,
-						sprintf( __( 'Cannot download the "%s" extension zip. (Response code: %d)', 'fw' ),
-							$extension_title, $response_code
-						)
-					);
-				} elseif ( is_wp_error( $response ) ) {
-					return new WP_Error(
-						$wp_error_id,
-						sprintf( __( 'Cannot download the "%s" extension zip. %s', 'fw' ),
-							$extension_title,
-							$response->get_error_message()
-						)
-					);
-				} else {
-					return new WP_Error(
-						$wp_error_id,
-						sprintf( __( 'Cannot download the "%s" extension zip.', 'fw' ),
-							$extension_title
-						)
-					);
-				}
-			}
-
-			// save zip to file
-			if ( ! $wp_filesystem->put_contents( $zip_path, $response['body'] ) ) {
+		if ( $response_code !== 200 ) {
+			if ( $response_code ) {
 				return new WP_Error(
 					$wp_error_id,
-					sprintf( __( 'Cannot save the "%s" extension zip.', 'fw' ), $extension_title )
+					sprintf( __( 'Cannot download the "%s" extension zip. (Response code: %d)', 'fw' ),
+						$extension_title, $response_code
+					)
+				);
+			} elseif ( is_wp_error( $response ) ) {
+				return new WP_Error(
+					$wp_error_id,
+					sprintf( __( 'Cannot download the "%s" extension zip. %s', 'fw' ),
+						$extension_title,
+						$response->get_error_message()
+					)
+				);
+			} else {
+				return new WP_Error(
+					$wp_error_id,
+					sprintf( __( 'Cannot download the "%s" extension zip.', 'fw' ),
+						$extension_title
+					)
 				);
 			}
-
-			unset( $response );
 		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		// save zip to file
+		if ( ! $wp_filesystem->put_contents( $zip_path, $body ) ) {
+			return new WP_Error(
+				$wp_error_id,
+				sprintf( __( 'Cannot save the "%s" extension zip.', 'fw' ), $extension_title )
+			);
+		}
+
+		return true;
 	}
+
 }

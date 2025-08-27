@@ -1,4 +1,8 @@
-<?php if (!defined('FW')) die('Forbidden');
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
 
 class FW_Container_Type_Box extends FW_Container_Type {
 	public function get_type() {
@@ -6,9 +10,7 @@ class FW_Container_Type_Box extends FW_Container_Type {
 	}
 
 	protected function _get_defaults() {
-		return array(
-			'title' => '',
-		);
+		return ['title' => ''];
 	}
 
 	protected function _enqueue_static($id, $option, $values, $data) {

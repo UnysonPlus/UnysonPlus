@@ -1,4 +1,8 @@
-<?php if (!defined('FW')) die('Forbidden');
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
 
 /**
  * Alternative to WordPress get_option() and update_option() functions

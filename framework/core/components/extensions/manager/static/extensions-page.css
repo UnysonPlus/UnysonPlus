@@ -85,6 +85,29 @@
 	vertical-align: top;
 }
 
+.fw-extensions-list-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fw-extensions-list-item-links {
+    flex: 1;
+}
+
+.fw-extensions-list-item-version {
+    white-space: nowrap; /* prevents wrapping */
+    font-size: 90%;
+    color: #666;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.fw-extensions-list-item:hover .fw-extensions-list-item-version {
+    opacity: 1;
+}
+
+
 /*.fw-extensions-list .fw-extensions-list-item .fw-extension-list-item-table > .fw-extension-list-item-table-row > .fw-extension-list-item-table-cell.cell-2,
 .fw-extensions-list .fw-extensions-list-item .fw-extension-list-item-table > .fw-extension-list-item-table-row > .fw-extension-list-item-table-cell.cell-3 {
 	vertical-align: middle;

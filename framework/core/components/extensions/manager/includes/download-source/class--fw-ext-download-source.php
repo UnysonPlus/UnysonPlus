@@ -1,4 +1,10 @@
-<?php if (! defined('FW')) { die('Forbidden'); }
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (! defined('FW')) {
+    die('Forbidden');
+}
 
 /**
  * User to specify multiple download sources for an extension.

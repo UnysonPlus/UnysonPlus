@@ -1,5 +1,9 @@
-<?php if ( ! defined( 'FW' ) ) {
-	die( 'Forbidden' );
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) {
+    die('Forbidden');
 }
 
 class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
@@ -38,7 +42,10 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 			$tag = $this->get_version( $set['user_repo'] );
 		}
 
-		$response = wp_remote_get( "https://bitbucket.org/{$set['user_repo']}/get/{$tag}.zip", array( 'timeout' => $this->download_timeout ) );
+		$response = wp_remote_get(
+            "https://bitbucket.org/{$set['user_repo']}/get/{$tag}.zip",
+            ['timeout' => $this->download_timeout]
+        );
 
 		if ( ( $response_code = intval( wp_remote_retrieve_response_code( $response ) ) ) !== 200 ) {
 			if ( $response_code ) {
@@ -92,7 +99,7 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 		}
 
 		$url = $next_page ? $next_page : "https://api.bitbucket.org/2.0/repositories/{$user_repo}/refs/tags/";
-		$request = wp_remote_get( $url, array( 'timeout' => $this->download_timeout ) );
+		$request = wp_remote_get($url, ['timeout' => $this->download_timeout]);
 
 		if ( is_wp_error( $request ) ) {
 			if ( $request->get_error_code() === 'http_request_failed' ) {

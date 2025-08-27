@@ -1,4 +1,8 @@
 <?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
 
 // original source: https://code.google.com/p/prado3/source/browse/trunk/framework/Util/TVar_dumper.php
 

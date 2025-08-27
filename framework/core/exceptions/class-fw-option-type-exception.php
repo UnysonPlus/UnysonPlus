@@ -1,4 +1,9 @@
-<?php if ( ! defined( 'FW' ) ) {
+<?php 
+/**
+ * PHP Version: 7.4 or higher
+ */
+
+if ( ! defined( 'FW' ) ) {
 	die( 'Forbidden' );
 }
 

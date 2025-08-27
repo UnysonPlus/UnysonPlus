@@ -69,13 +69,13 @@ jQuery(function($){
 
 							fw.soleModal.show(
 								'fw-extension-install-error',
-								'<p class="fw-text-danger">'+ error +'</p>'
+								'<p class="fw-text-danger">Error: '+ error +'</p>'
 							);
 						}
 					}).fail(function(jqXHR, textStatus, errorThrown){
 						fw.soleModal.show(
 							'fw-extension-install-error',
-							'<p class="fw-text-danger">'+ String(errorThrown) +'</p>'
+							'<p class="fw-text-danger">Error: '+ String(errorThrown) +'</p>'
 						);
 						inst.isBusy = false;
 						inst.loading($form, false);

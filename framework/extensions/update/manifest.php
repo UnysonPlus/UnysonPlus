@@ -3,17 +3,14 @@
 $manifest = array();
 
 $manifest['name']        = __( 'Update', 'fw' );
-$manifest['slug']        = 'unysonplus-update';
 $manifest['description'] = __( 'Keep your framework, extensions, and theme up to date.', 'fw' );
 
-$manifest['version']     = '1.0.2';
-$manifest['display']     = true;
+$manifest['version']     = '1.0.14';
 $manifest['standalone']  = true;
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Update-Extension';
 $manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-Update-Extension';
-$manifest['github_branch'] = 'master';
 
 // Author Info
 $manifest['author']     = 'UnysonPlus';

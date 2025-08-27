@@ -1,6 +1,8 @@
-<?php if ( ! defined( 'FW' ) ) {
-	die( 'Forbidden' );
-}
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) die('Forbidden');
 
 // Theme Settings Options
 class FW_Db_Options_Model_Settings extends FW_Db_Options_Model {

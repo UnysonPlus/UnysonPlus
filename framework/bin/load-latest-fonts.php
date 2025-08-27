@@ -1,13 +1,13 @@
 #!/usr/bin/env php
 
 <?php
+/**
+ * PHP Version: 7.4 or higher
+ */
 
 if ( php_sapi_name() != 'cli' ) {
 	die();
 }
-/**
- * PHP Version: 7.4 or higher
- */
 
 /**
  * Download latest font packs from their sources.

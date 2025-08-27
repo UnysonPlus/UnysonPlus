@@ -1,11 +1,17 @@
-<?php defined( 'FW' ) or die();
+<?php
+/**
+ * PHP Version: 7.4 or higher
+ */
+if (!defined('FW')) {
+    die('Forbidden');
+}
 
 class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
-	private $download_timeout = 300;
-	// Used in filter http_request_args when extension is as plugin we use api worpdress Plugin_Upgrader.
-	private $set              = array();
+	private int $download_timeout = 300; // type-hinted for PHP 7.4+
+	// Used in filter http_request_args when extension is as plugin we use api wordpress Plugin_Upgrader.
+	private array $set = [];
 
-	public function get_type() {
+	public function get_type(): string {
 		return 'custom';
 	}
 
@@ -24,41 +30,43 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 		$requirements   = fw()->theme->manifest->get( 'requirements/extensions' );
 		$set['type']    = 'extension';
 
-		if ( isset( $requirements[ $set['extension_name'] ] ) && isset( $requirements[ $set['extension_name'] ]['max_version'] ) ) {
+		if ( isset( $requirements[ $set['extension_name'] ]['max_version'] ) ) {
 			$set['tag'] = $requirements[ $set['extension_name'] ]['max_version'];
 		} else {
 			$set['tag'] = $this->get_version( $set );
-
 			if ( is_wp_error( $set['tag'] ) ) {
 				return $set['tag'];
 			}
 		}
 
-		$cache = ( $c = get_site_transient( $transient_name ) ) && $c !== false ? $c : array();
-		$cache[ $set['item'] ] = array( 'tag_name' => $set['tag'] );
+		$cache = get_site_transient( $transient_name ) ?: [];
+		$cache[ $set['item'] ] = [ 'tag_name' => $set['tag'] ];
 		set_site_transient( $transient_name, $cache, HOUR_IN_SECONDS );
 
-		if ( $set['plugin'] ) {
+		if ( ! empty( $set['plugin'] ) ) {
 			return $this->install_plugin( $set, $set['remote'] );
 		}
 
 		$request = wp_remote_post(
 			$set['remote'],
-			array(
+			[
 				'timeout' => $this->download_timeout,
-				'body'    => json_encode( array_merge( $set, array( 'pull' => 'zip' ) ) )
-			)
+				'body'    => wp_json_encode( array_merge( $set, [ 'pull' => 'zip' ] ) ),
+			]
 		);
 
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		}
 
-		if ( ! ( $body = wp_remote_retrieve_body( $request ) ) || is_wp_error( $body ) ) {
-			return ! $body ? new WP_Error( $wp_error_id, sprintf( esc_html__( 'Empty zip body for extension: %s', 'fw' ), $set['extension_title'] ) ) : $body;
+		$body = wp_remote_retrieve_body( $request );
+		if ( ! $body || is_wp_error( $body ) ) {
+			return ! $body
+				? new WP_Error( $wp_error_id, sprintf( esc_html__( 'Empty zip body for extension: %s', 'fw' ), $set['extension_title'] ) )
+				: $body;
 		}
 
-		// Try to extract error if server returned json with key error, if not then is an archive zip.
+		// Try to extract error if server returned json with key error, if not then it's an archive zip.
 		if ( ( $error = json_decode( $body, true ) ) && isset( $error['error'] ) ) {
 			return new WP_Error( $wp_error_id, $error['error'] );
 		}
@@ -68,20 +76,18 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 			return new WP_Error( $wp_error_id, sprintf( __( 'Cannot save the "%s" extension zip.', 'fw' ), $set['name'] ) );
 		}
 
-		return '';
+		return true;
 	}
 
 	public function get_version( $set ) {
-
 		if ( $this->is_wp_org( $set['remote'] ) ) {
-
-			include ABSPATH . 'wp-admin/includes/plugin-install.php';
+			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
 
 			$wp_org = plugins_api(
 				'plugin_information',
-				array(
+				[
 					'slug'   => $set['extension_name'],
-					'fields' => array(
+					'fields' => [
 						'downloaded'        => false,
 						'versions'          => false,
 						'reviews'           => false,
@@ -103,12 +109,12 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 						'tested'            => false,
 						'requires'          => false,
 						'downloadlink'      => true,
-					)
-				)
+					],
+				]
 			);
 
 			if ( is_wp_error( $wp_org ) ) {
-				return new WP_Error( sprintf( __( 'Cannot get latest versions for extension: %s', 'fw' ), $set['extension_title'] ) );
+				return new WP_Error( sprintf( __( 'Cannot get latest version for extension: %s', 'fw' ), $set['extension_title'] ) );
 			}
 
 			return $wp_org->version;
@@ -116,34 +122,37 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 
 		$request = wp_remote_post(
 			$set['remote'],
-			array(
+			[
 				'timeout' => $this->download_timeout,
-				'body'    => json_encode( array_merge( $set, array( 'pull' => 'version' ) ) )
-			)
+				'body'    => wp_json_encode( array_merge( $set, [ 'pull' => 'version' ] ) ),
+			]
 		);
 
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		}
 
-		if ( ! ( $version = wp_remote_retrieve_body( $request ) ) || is_wp_error( $version ) ) {
-			return ! $version ? new WP_Error( sprintf( esc_html__( 'Empty version for extension: %s', 'fw' ), $set['extension_title'] ) ) : $version;
+		$version = wp_remote_retrieve_body( $request );
+		if ( ! $version || is_wp_error( $version ) ) {
+			return ! $version
+				? new WP_Error( sprintf( esc_html__( 'Empty version for extension: %s', 'fw' ), $set['extension_title'] ) )
+				: $version;
 		}
 
 		return $version;
 	}
 
 	public function install_plugin( $set, $source ) {
-
 		if ( ! function_exists( 'is_plugin_active' ) ) {
-			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
 		if ( is_plugin_active( $set['plugin'] ) ) {
-			return '';
+			return true;
 		}
 
-		if ( ! ( $installed = get_plugins() ) || ! isset( $installed[ $set['plugin'] ] ) ) {
+		$installed = get_plugins();
+		if ( ! $installed || ! isset( $installed[ $set['plugin'] ] ) ) {
 			if ( ! class_exists( 'Plugin_Upgrader', false ) ) {
 				require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 			}
@@ -153,23 +162,23 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 			}
 
 			$upgrader = new Plugin_Upgrader( new Automatic_Upgrader_Skin() );
-			// To easy access download settings in function http_request_args.
-			$this->set = $set;
-			add_filter( 'http_request_args', array( $this, 'http_request_args' ) );
+			$this->set = $set; // for http_request_args
+			add_filter( 'http_request_args', [ $this, 'http_request_args' ] );
 
 			$install = $upgrader->install( $source );
 
-			remove_filter( 'http_request_args', array( $this, 'http_request_args' ) );
+			remove_filter( 'http_request_args', [ $this, 'http_request_args' ] );
 
 			if ( ! $install || is_wp_error( $install ) ) {
 				return new WP_Error( sprintf( __( 'Cannot install plugin: %s', 'fw' ), $set['extension_title'] ) );
 			}
 
-			if ( ! ( $installed = get_plugins() ) || ! isset( $installed[ $set['plugin'] ] ) ) {
+			$installed = get_plugins();
+			if ( ! $installed || ! isset( $installed[ $set['plugin'] ] ) ) {
 				return new WP_Error( sprintf( __( 'Cannot find plugin: %s', 'fw' ), $set['extension_title'] ) );
 			}
 
-			$cache_plugins = ( $c = wp_cache_get( 'plugins', 'plugins' ) ) && ! empty( $c ) ? $c : array();
+			$cache_plugins = wp_cache_get( 'plugins', 'plugins' ) ?: [];
 			$cache_plugins[''][ $set['plugin'] ] = $installed[ $set['plugin'] ];
 			wp_cache_set( 'plugins', $cache_plugins, 'plugins' );
 		}
@@ -183,32 +192,11 @@ class FW_Ext_Download_Source_Custom extends FW_Ext_Download_Source {
 	}
 
 	public function http_request_args( $r ) {
-		$r['fw_set'] = json_encode( array_merge( $this->set, array( 'type' => 'extension' ) ) );
+		$r['fw_set'] = wp_json_encode( array_merge( $this->set, [ 'type' => 'extension' ] ) );
 		return $r;
 	}
 
-	public function is_wp_org( $url ) {
+	public function is_wp_org( $url ): bool {
 		return strpos( $url, 'downloads.wordpress.org' ) !== false;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

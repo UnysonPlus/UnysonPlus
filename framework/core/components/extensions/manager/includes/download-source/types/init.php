@@ -1,4 +1,5 @@
 <?php defined( 'FW' ) or die();
+// PHP Version: 7.4 or higher
 
 if ( ! function_exists( '_action_fw_register_ext_download_sources' ) ) {
 	function _action_fw_register_ext_download_sources( _FW_Ext_Download_Source_Register $download_sources ) {

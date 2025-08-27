@@ -42,7 +42,7 @@ $extensions = [
     ],
 
     'backups' => [
-        'display'     => true,
+        'display'     => false,
         'parent'      => null,
         'name'        => __('Backup & Demo Content', 'fw'),
         'description' => __('This extension lets you create an automated backup schedule, import demo content or even create a demo content archive for migration purposes.', 'fw'),
@@ -98,7 +98,7 @@ $extensions = [
     ],
 
     'megamenu' => [
-        'display'     => true,
+        'display'     => false,
         'parent'      => null,
         'name'        => __('Mega Menu', 'fw'),
         'description' => __('The Mega Menu extension adds a user-friendly drop down menu that will let you easily create highly customized menu configurations.', 'fw'),
