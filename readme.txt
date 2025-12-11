@@ -1,9 +1,16 @@
 === UnysonPlus ===
 Contributors: unyson
 Tags: page builder, widgets, sidebar, backup, seo
+<<<<<<< HEAD
 Requires at least: 4.4
 Tested up to: 6.0
 Stable tag: 2.7.41
+=======
+Requires at least: 5.8
+Tested up to: 6.7
+Stable tag: 2.7.41
+Requires PHP: 7.4
+>>>>>>> b0a3ba75 (Updated to PHP 7.4+/8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3.)
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,6 +21,10 @@ A simple and easy way to build a powerful website.
 > Did you find this plugin helpful? Please consider [leaving a 5-star review](https://wordpress.org/support/plugin/unyson/reviews/).
 
 [UnysonPlus](http://unyson.io/) - A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
+
+[Sponsored by: BitBlox.me](http://bitblox.me/)
+
+[vimeo https://vimeo.com/113008662]
 
 **Features include:**
 
@@ -31,7 +42,7 @@ A simple and easy way to build a powerful website.
 
 **Get involved**
 
-Developers can contribute to the source code on the [UnysonPlus GitHub Repository](https://github.com/UnysonPlus/UnysonPlus/blob/master/CONTRIBUTING.md).
+Developers can contribute to the source code on the [UnysonPlus GitHub Repository](https://github.com/UnysonPlus Community/UnysonPlus/blob/master/CONTRIBUTING.md).
 
 Translators can contribute new languages to UnysonPlus through [Transifex](https://www.transifex.com/projects/p/unyson/).
 
@@ -46,13 +57,13 @@ Theme developers can test the compatibility of their themes with new extensions 
 
 = Minimum Requirements =
 
-* WordPress 4.4 or greater
-* PHP version 8.2 or greater
-* MySQL version 5.6 or greater
+* WordPress 5.8 or greater
+* PHP version 7.4 or greater
+* MySQL version 5.7 or greater
 
 = Installation =
 
-1. Upload the `unysonplus` folder to the `/wp-content/plugins/` directory
+1. Upload the `unyson` folder to the `/wp-content/plugins/` directory
 1. Activate the UnysonPlus plugin through the 'Plugins' menu in WordPress
 1. Configure the plugin by going to the `UnysonPlus` menu that appears in your admin menu
 
@@ -297,13 +308,13 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 = 2.5.0 =
 * Added the possibility to save options in separate database location [#838](https://github.com/UnysonPlus Community/UnysonPlus/issues/838)
 
-	Will be used in next release of the PageBuilder extension, the builder value will be moved to a separate post meta.
+        Will be used in next release of the PageBuilder extension, the builder value will be moved to a separate post meta.
 
 * Lazy Tabs: Render only the visible tabs [#1174](https://github.com/UnysonPlus Community/UnysonPlus/issues/1174)
 
-	This feature can be disabled by adding in `{theme}/framework-customizations/theme/config.php`:
+        This feature can be disabled by adding in `{theme}/framework-customizations/theme/config.php`:
 
-		$cfg['lazy_tabs'] = false;
+                $cfg['lazy_tabs'] = false;
 
 * Added the [`.pot` file](https://github.com/UnysonPlus Community/UnysonPlus/tree/master/framework/languages) [#1256](https://github.com/UnysonPlus Community/UnysonPlus/issues/1256)
 

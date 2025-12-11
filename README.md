@@ -8,7 +8,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 ## 🔹 Key Differences from the Original Unyson
 * Removed Brizy and all references to it.
-* Updated to PHP 8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3/7.4.
+* Updated to PHP 7.4+/8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3.
 * Ongoing compatibility work with **modern PHP (8.x+)**.
 
 ---
