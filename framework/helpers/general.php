@@ -1296,46 +1296,48 @@ function fw_get_google_fonts() {
  * @return string JSON encoded array with Google fonts
  */
 function fw_get_google_fonts_v2() {
-	$saved_data = get_option( 'fw_google_fonts', false );
-	$ttl        = 7 * DAY_IN_SECONDS;
+    $saved_data = get_option( 'fw_google_fonts', array() ); // Default to empty array
+    $ttl        = 7 * DAY_IN_SECONDS;
 
-	if (
-		false === $saved_data
-		||
-		( $saved_data['last_update'] + $ttl < time() )
-	) {
-		$response = wp_remote_get( apply_filters( 'fw_googleapis_webfonts_url',
-			'https://google-webfonts-cache.unyson.io/v1/webfonts' ) );
-		$body     = wp_remote_retrieve_body( $response );
+    // Ensure $saved_data is an array
+    if ( ! is_array( $saved_data ) ) {
+        $saved_data = array();
+    }
 
-		if (
-			200 === wp_remote_retrieve_response_code( $response )
-			&&
-			! is_wp_error( $body ) && ! empty( $body )
-		) {
-			update_option( 'fw_google_fonts',
-				array(
-					'last_update' => time(),
-					'fonts'       => $body
-				),
-				false );
+    // Check if we need to update the fonts
+    if (
+        empty( $saved_data['last_update'] ) ||
+        ( $saved_data['last_update'] + $ttl < time() )
+    ) {
+        $response = wp_remote_get(
+            apply_filters(
+                'fw_googleapis_webfonts_url',
+                'https://google-webfonts-cache.unyson.io/v1/webfonts'
+            )
+        );
+        $body = wp_remote_retrieve_body( $response );
 
-			return $body;
-		} else {
-			if ( empty( $saved_data['fonts'] ) ) {
-				$saved_data['fonts'] = json_encode( array( 'items' => array() ) );
-			}
+        if ( 200 === wp_remote_retrieve_response_code( $response ) && ! is_wp_error( $body ) && ! empty( $body ) ) {
+            $saved_data = array(
+                'last_update' => time(),
+                'fonts'       => $body
+            );
+            update_option( 'fw_google_fonts', $saved_data, false );
 
-			update_option( 'fw_google_fonts',
-				array(
-					'last_update' => time() - $ttl + MINUTE_IN_SECONDS,
-					'fonts'       => $saved_data['fonts']
-				),
-				false );
-		}
-	}
+            return $body;
+        } else {
+            // Make sure fonts key exists
+            if ( empty( $saved_data['fonts'] ) ) {
+                $saved_data['fonts'] = json_encode( array( 'items' => array() ) );
+            }
 
-	return $saved_data['fonts'];
+            $saved_data['last_update'] = time() - $ttl + MINUTE_IN_SECONDS;
+            update_option( 'fw_google_fonts', $saved_data, false );
+        }
+    }
+
+    // Return fonts JSON
+    return isset( $saved_data['fonts'] ) ? $saved_data['fonts'] : json_encode( array( 'items' => array() ) );
 }
 
 /**

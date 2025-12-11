@@ -13,8 +13,8 @@ class FW_WP_Editor_Manager {
 
 	private $qt_settings = null;
 	private $mce_settings = null;
-
 	private $priority = 999999999999999;
+	private $editor_id = null; // declare editor_id to avoid dynamic property deprecation
 
 	public function __construct($id, $option, $data) {
 		$this->id = $id;
@@ -163,7 +163,7 @@ class FW_WP_Editor_Manager {
 
 		if ( isset($mce_settings['formats']) ) {
 			/**
-			 * https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-editor.php#L522
+			 * https://github.com/WordPress/WordPress/blob/wp-includes/class-wp-editor.php#L522
 			 *
 			 * _WP_Editors outputs JavaScript notation object, we want a valid JSON.
 			 *
@@ -258,4 +258,3 @@ class FW_WP_Editor_Manager {
 		return $mce_settings;
 	}
 }
-

@@ -1,16 +1,51 @@
-/framework/extensions/*
+# Composer
+composer.phar
+/vendor/
 
-!/framework/extensions/blog/
-!/framework/extensions/update/
-!/framework/extensions/clone-all.bash
+# CakePHP 3
 
-.idea
-node_modules/
-package.json
-yarn.lock
+/vendor/*
+/config/app.php
 
-# Ignore VS Code settings
-.vscode/
+/tmp/cache/models/*
+!/tmp/cache/models/empty
+/tmp/cache/persistent/*
+!/tmp/cache/persistent/empty
+/tmp/cache/views/*
+!/tmp/cache/views/empty
+/tmp/sessions/*
+!/tmp/sessions/empty
+/tmp/tests/*
+!/tmp/tests/empty
 
-# Ignore GitHub workflow and config files
-.github/
+/logs/*
+!/logs/empty
+
+# CakePHP 2
+
+/app/tmp/*
+/app/Config/core.php
+/app/Config/database.php
+/vendors/*
+
+# the composer package lock file and install directory
+# Commit your application's lock file http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file
+# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
+# /composer.lock
+/fuel/vendor
+
+# the fuelphp document
+/docs/
+
+# you may install these packages with `oil package`.
+# http://fuelphp.com/docs/packages/oil/package.html
+# /fuel/packages/auth/
+# /fuel/packages/email/
+# /fuel/packages/oil/
+# /fuel/packages/orm/
+# /fuel/packages/parser/
+
+# dynamically generated files
+/fuel/app/logs/*/*/*
+/fuel/app/cache/*/*
+/fuel/app/config/crypt.php

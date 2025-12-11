@@ -1,0 +1,13 @@
+{
+    "name": "zoomgamingstg.sftp.wpengine.com",
+    "host": "zoomgamingstg.sftp.wpengine.com",
+    "protocol": "sftp",
+    "port": 2222,
+    "username": "zoomgamingstg-admin",
+    "password": "(pT3k(!+123!@#",
+    "remotePath": "/wp-content/plugins/unysonplus",
+    "passive": true,
+    "uploadOnSave": true,
+    "useTempFile": false,
+    "openSsh": false
+}
