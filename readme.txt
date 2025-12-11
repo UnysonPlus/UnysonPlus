@@ -15,10 +15,6 @@ A simple and easy way to build a powerful website.
 
 [UnysonPlus](http://unyson.io/) - A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
 
-[Sponsored by: BitBlox.me](http://bitblox.me/)
-
-[vimeo https://vimeo.com/113008662]
-
 **Features include:**
 
 * **Drag & Drop Page Builder.** Create countless pages using the content and media shortcodes.
@@ -35,7 +31,7 @@ A simple and easy way to build a powerful website.
 
 **Get involved**
 
-Developers can contribute to the source code on the [UnysonPlus GitHub Repository](https://github.com/UnysonPlus Community/UnysonPlus/blob/master/CONTRIBUTING.md).
+Developers can contribute to the source code on the [UnysonPlus GitHub Repository](https://github.com/UnysonPlus/UnysonPlus/blob/master/CONTRIBUTING.md).
 
 Translators can contribute new languages to UnysonPlus through [Transifex](https://www.transifex.com/projects/p/unyson/).
 
@@ -51,12 +47,12 @@ Theme developers can test the compatibility of their themes with new extensions 
 = Minimum Requirements =
 
 * WordPress 4.4 or greater
-* PHP version 5.2.4 or greater
+* PHP version 8.2 or greater
 * MySQL version 5.6 or greater
 
 = Installation =
 
-1. Upload the `unyson` folder to the `/wp-content/plugins/` directory
+1. Upload the `unysonplus` folder to the `/wp-content/plugins/` directory
 1. Activate the UnysonPlus plugin through the 'Plugins' menu in WordPress
 1. Configure the plugin by going to the `UnysonPlus` menu that appears in your admin menu
 
