@@ -1644,7 +1644,7 @@ final class _FW_Extensions_Manager
 				 * If the script will continue, it will delete the root folder
 				 */
 				fw_print(
-					'Please report this to https://github.com/ThemeFuse/Unyson/issues',
+					'Please report this to https://github.com/UnysonPlus/UnysonPlus/issues',
 					$extension_name,
 					$installed_extensions
 				);
