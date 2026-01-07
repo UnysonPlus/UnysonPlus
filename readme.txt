@@ -1,16 +1,10 @@
 === UnysonPlus ===
 Contributors: unyson
 Tags: page builder, widgets, sidebar, backup, seo
-<<<<<<< HEAD
-Requires at least: 4.4
-Tested up to: 6.0
-Stable tag: 2.7.41
-=======
 Requires at least: 5.8
 Tested up to: 6.7
 Stable tag: 2.7.41
 Requires PHP: 7.4
->>>>>>> b0a3ba75 (Updated to PHP 7.4+/8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3.)
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
