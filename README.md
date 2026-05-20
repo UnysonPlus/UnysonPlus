@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # [Unyson+](https://github.com/jonmlas/Unyson+) Framework
 
 Unyson+ is a **community-maintained fork** of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](http://wordpress.org/).  
@@ -117,3 +118,6 @@ Fork maintained and extended by the Unyson+ community.
 
 ---
 > ⚡ *Unyson+ — carrying on the legacy of Unyson for modern WordPress development.*
+=======
+# UnysonPlus-Full-Install
+>>>>>>> 1fb23c23783a765c86e55ed7c2ff8968b9174c62

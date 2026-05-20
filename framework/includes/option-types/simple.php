@@ -186,6 +186,12 @@ class FW_Option_Type_Number extends FW_Option_Type {
     protected function _render( $id, $option, $data ) {
         $option['attr']['value'] = (string) $data['value'];
 
+        foreach ( array( 'min', 'max', 'step' ) as $attr ) {
+            if ( $option[ $attr ] !== null && $option[ $attr ] !== '' ) {
+                $option['attr'][ $attr ] = $option[ $attr ];
+            }
+        }
+
         return '<input ' . fw_attr_to_html( $option['attr'] ) . ' type="number" />';
     }
 
@@ -193,12 +199,31 @@ class FW_Option_Type_Number extends FW_Option_Type {
      * @param array $option
      * @param array|null|string $input_value
      *
-     * @return string
+     * @return int|float
      *
      * @internal
      */
     protected function _get_value_from_input( $option, $input_value ) {
-        return (string) ( is_null( $input_value ) ? $option['value'] : $input_value );
+        $raw = is_null( $input_value ) ? $option['value'] : $input_value;
+
+        $cast  = ( $option['numeric_type'] === 'integer' ) ? 'intval' : 'floatval';
+        $value = $cast( $raw );
+
+        if ( $option['min'] !== null && $option['min'] !== '' && $value < $option['min'] ) {
+            $value = $cast( $option['min'] );
+        }
+        if ( $option['max'] !== null && $option['max'] !== '' && $value > $option['max'] ) {
+            $value = $cast( $option['max'] );
+        }
+
+        return $value;
+    }
+
+    /**
+     * @internal
+     */
+    public function _get_backend_width_type() {
+        return 'auto';
     }
 
     /**
@@ -206,7 +231,11 @@ class FW_Option_Type_Number extends FW_Option_Type {
      */
     protected function _get_defaults() {
         return array(
-            'value' => ''
+            'value'        => 0,
+            'min'          => null,
+            'max'          => null,
+            'step'         => null,
+            'numeric_type' => 'float',
         );
     }
 }

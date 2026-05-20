@@ -1,0 +1,32 @@
+/* Code-editor option type — minimal styling.
+   Most visuals come from WP core's CodeMirror CSS (loaded by wp_enqueue_code_editor()). */
+
+/* Fallback textarea look — used when CodeMirror is disabled in user profile,
+   or briefly before the editor finishes initialising. */
+textarea.fw-option-code-editor {
+	width: 100%;
+	min-height: 200px;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	tab-size: 2;
+	-moz-tab-size: 2;
+}
+
+/* CodeMirror inside an Unyson option box — give it a subtle frame so it
+   reads as a field rather than free-floating text. */
+.fw-backend-option .CodeMirror,
+.fw-option-box .CodeMirror,
+.CodeMirror {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+/* Editor focus state — match WP's standard focus blue. */
+.CodeMirror-focused {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}

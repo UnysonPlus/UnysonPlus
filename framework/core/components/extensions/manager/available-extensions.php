@@ -55,6 +55,20 @@ $extensions = [
         ],
     ],
 
+    'asset-optimizer' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Asset Optimizer', 'fw'),
+        'description' => __('Combines enqueued frontend assets into single cached files to reduce HTTP requests. Currently merges CSS stylesheets', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/asset-optimizer.jpg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Asset-Optimizer-Extension',
+            ],
+        ],
+    ],
+
     'sidebars' => [
         'display'     => true,
         'parent'      => null,
@@ -138,7 +152,7 @@ $extensions = [
             ],
         ],
     ],
-	    'events' => [
+	'events' => [
         'display'     => true,
         'parent'      => null,
         'name'        => __('Events', 'fw'),

@@ -2641,6 +2641,7 @@ a.fw-wp-link,
 	transition-duration: .05s;
 	-webkit-transition-timing-function: ease-in-out;
 	transition-timing-function: ease-in-out;
+	border-radius: .25rem .25rem 0 0;
 }
 
 a.fw-wp-link:active,
@@ -3378,3 +3379,11 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 }
 
 /* end: fw.loading */
+
+/* load-styles.php overrides */
+
+.postbox {
+    border-radius: .25rem;
+}
+
+/* end: load-styles.php overrides */
