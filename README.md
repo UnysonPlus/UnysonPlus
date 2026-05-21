@@ -12,7 +12,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 * Ongoing shortcode upgrades.
 
 ## 🔹 Updates Done
-* Addressed Security Issues
+* Addressed Security Issues with the help of AI agents.
   - Missing Authorization & Access Violation (CVE-2023-44472): A massive flaw where the plugin failed to properly validate user permissions. Unauthenticated users or low-level accounts (like basic subscribers) could access restricted backend functions, modify data, and trigger administrative actions they shouldn't have access to.
   - Cross-Site Request Forgery (CSRF - CVE-2024-34814): Missing or incorrect nonce validation allowed attackers to trick logged-in administrators into executing unwanted, malicious actions on the site via simple phishing or malicious links.
   - Reflected Cross-Site Scripting (XSS - CVE-2022-2219): Insufficient input sanitization and output escaping in its extension-handling code allowed malicious scripts to be injected and executed directly in an admin's browser session.
