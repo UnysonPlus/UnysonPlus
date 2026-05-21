@@ -16,29 +16,28 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
   - Missing Authorization & Access Violation (CVE-2023-44472): A massive flaw where the plugin failed to properly validate user permissions. Unauthenticated users or low-level accounts (like basic subscribers) could access restricted backend functions, modify data, and trigger administrative actions they shouldn't have access to.
   - Cross-Site Request Forgery (CSRF - CVE-2024-34814): Missing or incorrect nonce validation allowed attackers to trick logged-in administrators into executing unwanted, malicious actions on the site via simple phishing or malicious links.
   - Reflected Cross-Site Scripting (XSS - CVE-2022-2219): Insufficient input sanitization and output escaping in its extension-handling code allowed malicious scripts to be injected and executed directly in an admin's browser session.
-
 * **Full PHP 8.x+ support**: update and refactor functions (`create_function`, `each`, curly braces `{}`, `implode()` argument order, etc.).
 * Upgrade from **Bootstrap 3 → Bootstrap 5**.
 *  **Modernize the codebase**:
   - Remove deprecated PHP patterns.
   - Add strict typing where possible.
   - Ensure better code organization and readability.
+* **Backward compatibility**: maintain support for legacy themes and shortcodes while adding modern features.
+* **Upgrade dependencies**:
+  - jQuery usage cleanup.
+  - Keep Bootstrap updated to the latest stable version.
 
 ---
 
 ## 🔹 Plans for This Project
 * **Ongoing Shortcode improvements**: add more features, flexibility, and developer-friendly APIs.
 * **Gutenberg integration**: improve compatibility with the Block Editor while keeping Classic Editor support.
-* **Upgrade dependencies**:
-  - jQuery usage cleanup.
-  - Keep Bootstrap updated to the latest stable version.
 * **Options Framework improvements**: make the admin options system more developer-friendly (inspired by ACF / Carbon Fields).
 * **Migration tools**: help existing Unyson users transition smoothly to Unyson+ without breaking sites.
 * **Automated testing**: introduce PHPUnit + WordPress test suite for long-term stability.
 * **Changelog and releases**: maintain semantic versioning (e.g., v1.1.0, v1.2.0).
 * **Extension registry**: create an open system for community-driven add-ons and modules.
 * **Multisite support**: ensure full compatibility in multisite environments.
-* **Backward compatibility**: maintain support for legacy themes and shortcodes while adding modern features.
 
 ---
 
