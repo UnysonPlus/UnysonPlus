@@ -11,17 +11,24 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 * Updated to PHP 8.x compatible. Dropped support for PHP 5.6/7.0/7.1/7.2/7.3.
 * Ongoing shortcode upgrades.
 
----
+## 🔹 Updates Done
+* Addressed Security Issues
+  - Missing Authorization & Access Violation (CVE-2023-44472): A massive flaw where the plugin failed to properly validate user permissions. Unauthenticated users or low-level accounts (like basic subscribers) could access restricted backend functions, modify data, and trigger administrative actions they shouldn't have access to.
+  - Cross-Site Request Forgery (CSRF - CVE-2024-34814): Missing or incorrect nonce validation allowed attackers to trick logged-in administrators into executing unwanted, malicious actions on the site via simple phishing or malicious links.
+  - Reflected Cross-Site Scripting (XSS - CVE-2022-2219): Insufficient input sanitization and output escaping in its extension-handling code allowed malicious scripts to be injected and executed directly in an admin's browser session.
 
-## 🔹 Plans for This Project
 * **Full PHP 8.x+ support**: update and refactor functions (`create_function`, `each`, curly braces `{}`, `implode()` argument order, etc.).
 * Upgrade from **Bootstrap 3 → Bootstrap 5**.
-* **Shortcode improvements**: add more features, flexibility, and developer-friendly APIs.
-* **Gutenberg integration**: improve compatibility with the Block Editor while keeping Classic Editor support.
-* **Modernize the codebase**:
+*  **Modernize the codebase**:
   - Remove deprecated PHP patterns.
   - Add strict typing where possible.
   - Ensure better code organization and readability.
+
+---
+
+## 🔹 Plans for This Project
+* **Ongoing Shortcode improvements**: add more features, flexibility, and developer-friendly APIs.
+* **Gutenberg integration**: improve compatibility with the Block Editor while keeping Classic Editor support.
 * **Upgrade dependencies**:
   - jQuery usage cleanup.
   - Keep Bootstrap updated to the latest stable version.
