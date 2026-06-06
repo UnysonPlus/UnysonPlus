@@ -9,6 +9,7 @@
 					ajaxurl,
 					{
 						action: 'fw_option_type_multi_select_autocomplete',
+						_nonce: (typeof _fw_option_type_multi_select !== 'undefined' ? _fw_option_type_multi_select.nonce : ''),
 						data: {
 							string: value,
 							type: population,

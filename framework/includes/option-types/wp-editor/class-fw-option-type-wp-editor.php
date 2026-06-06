@@ -24,6 +24,9 @@ class FW_Option_Type_Wp_Editor extends FW_Option_Type {
 			'wpautop' => true,
 			'editor_type' => false, // tinymce, html
 
+			// Show the Dynamic Content picker by default; set false per field to hide.
+			'dynamic_content' => true,
+
 			/**
 			 * By default, you don't have any shortcodes into the editor.
 			 *

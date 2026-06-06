@@ -49,6 +49,13 @@ if ($ext && $ext->get_settings_options()) {
     $url_set = admin_url($lists['available'][$name ?? '']['download']['url_set']);
 }
 
+/**
+ * Let an extension expose a custom Settings link on its card (e.g. one that
+ * points to a dedicated admin page instead of the built-in settings form).
+ * Return a URL to show the link, or '' to hide it.
+ */
+$url_set = apply_filters('fw_ext_manager_settings_url', $url_set, $name ?? '', $ext);
+
 // Installed and available data references
 $installed_data = $lists['installed'][$name ?? ''] ?? false;
 $available_data = $lists['available'][$name ?? ''] ?? false;

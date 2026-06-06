@@ -68,6 +68,7 @@
 			url: ajaxurl,
 			data: {
 				action: 'fw_backend_options_get_values',
+				_nonce: (typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 				name_prefix: 'fw_options',
 				options: [
 					options

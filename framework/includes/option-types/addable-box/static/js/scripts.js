@@ -203,6 +203,7 @@ jQuery(document).ready(function ($) {
 				type: 'POST',
 				data: [
 					'action=fw_backend_options_get_values',
+					'_nonce='+ encodeURIComponent(typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 					'options='+ encodeURIComponent(JSON.stringify(data.options)),
 					'name_prefix='+ encodeURIComponent($dataWrapper.attr('data-name-prefix')),
 					$box.find('> .inside > .fw-option-box-options').find('input, select, textarea').serialize()

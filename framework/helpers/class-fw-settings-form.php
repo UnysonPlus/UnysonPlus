@@ -58,6 +58,7 @@ abstract class FW_Settings_Form {
 	private $strings;
 
 	private static $input_name_reset = '_fw_reset_options';
+	private static $input_name_reset_tab = '_fw_reset_tab_options';
 	private static $input_name_save = '_fw_save_options';
 
 	final public function __construct($id) {
@@ -78,6 +79,9 @@ abstract class FW_Settings_Form {
 			'save_button' => __('Save Changes', 'fw'),
 			'reset_button' => __('Reset Options', 'fw'),
 			'reset_warning' => __("Click OK to reset.\nAll settings will be lost and replaced with default settings!", 'fw'),
+			'reset_tab_button' => __('Reset Tab Options', 'fw'),
+			/* %s is replaced in js with the name of the currently open tab */
+			'reset_tab_warning' => __("Reset the \"%s\" tab?\nIts options will be replaced with their default values. Other tabs are not affected.", 'fw'),
 		);
 
 		$this->_init();
@@ -248,6 +252,7 @@ abstract class FW_Settings_Form {
 			),
 			'is_theme_settings' => $this->is_theme_settings(),
 			'input_name_reset' => self::$input_name_reset,
+			'input_name_reset_tab' => self::$input_name_reset_tab,
 			'input_name_save' => self::$input_name_save,
 			'js_form_selector' => 'form[data-fw-form-id="'. esc_js($this->fw_form->get_id()) .'"]',
 		), false );
@@ -277,7 +282,78 @@ abstract class FW_Settings_Form {
 		$flash_id   = 'fw-settings-form:save:'. $this->get_id();
 		$old_values = (array)$this->get_values();
 
-		if ( ! empty( $_POST[ self::$input_name_reset ] ) ) { // The "Reset" button was pressed
+		if ( ! empty( $_POST[ self::$input_name_reset_tab ] ) ) { // The "Reset Tab Options" button was pressed
+			/**
+			 * Reset to defaults only the options that belong to the currently open tab.
+			 * The open tab is identified by its full container path sent in the hidden
+			 * input, e.g. "general_settings_container/tab_layout" (see the view). Tab ids
+			 * are NOT unique across the form (e.g. "tab_layout" exists under several
+			 * top-level tabs), so we walk the path level by level - scoping each lookup
+			 * to the previous container's subtree - to land on the exact tab. All other
+			 * tabs keep their values.
+			 */
+			$tab_path = isset( $_POST['_fw_reset_tab_id'] )
+				? sanitize_text_field( (string) $_POST['_fw_reset_tab_id'] )
+				: '';
+
+			$path_ids = array_values( array_filter( explode( '/', $tab_path ), 'strlen' ) );
+			$target   = null;
+
+			if ( $path_ids ) {
+				$current_options = $this->get_options();
+
+				foreach ( $path_ids as $container_id ) {
+					$containers = array();
+					// fw_collect_options() takes $options by reference, so pass a plain variable
+					fw_collect_options( $containers, $current_options, array(
+						'info_wrapper'          => true,
+						'limit_container_types' => array( 'tab', 'box', 'group' ),
+						'limit_option_types'    => array(), // collect containers only
+					) );
+
+					if ( ! isset( $containers[ 'container:' . $container_id ]['option']['options'] ) ) {
+						$target = null;
+						break;
+					}
+
+					$target          = $containers[ 'container:' . $container_id ]['option'];
+					$current_options = $target['options'];
+				}
+			}
+
+			if ( $target !== null ) {
+				$tab_options  = $target['options'];
+				$tab_defaults = fw_get_options_values_from_input( $tab_options, array() );
+
+				$new_values = $old_values;
+				foreach ( array_keys( fw_extract_only_options( $tab_options ) ) as $option_id ) {
+					unset( $new_values[ $option_id ] );
+				}
+				$new_values = array_merge( $new_values, $tab_defaults );
+
+				$this->set_values( $new_values );
+
+				FW_Flash_Messages::add(
+					$flash_id,
+					__( 'The tab options were successfully reset', 'fw' ),
+					'success'
+				);
+			} else {
+				$new_values = $old_values; // tab not found / not determined - change nothing
+
+				FW_Flash_Messages::add(
+					$flash_id,
+					__( 'Could not reset: the open tab was not found', 'fw' ),
+					'warning'
+				);
+			}
+
+			if ( $this->is_theme_settings() ) {
+				do_action( 'fw_settings_form_reset', $old_values, $new_values );
+			} else {
+				do_action( 'fw:settings-form:' . $this->get_id() . ':reset', $old_values, $new_values );
+			}
+		} elseif ( ! empty( $_POST[ self::$input_name_reset ] ) ) { // The "Reset" button was pressed
 			/**
 			 * Some values that don't relate to design, like API credentials, are useful to not be wiped out.
 			 *

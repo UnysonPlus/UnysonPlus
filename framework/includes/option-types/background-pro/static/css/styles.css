@@ -1,0 +1,182 @@
+/**
+ * Option Type: Background Pro
+ * Tab UI mirrored after Avada / Elementor background panels, with explicit
+ * row wrappers around each sub-control (label + control + desc + help).
+ */
+
+.fw-option-type-background-pro {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+/* ----- Tabs ----- */
+
+.fw-option-type-background-pro .bg-pro__tabs {
+	display: flex;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background: #f6f7f7;
+	border-bottom: 1px solid #dcdcde;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+}
+
+.fw-option-type-background-pro .bg-pro__tab {
+	flex: 1 1 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 10px 8px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #646970;
+	border-right: 1px solid #dcdcde;
+	background: transparent;
+	transition: background-color 0.15s ease, color 0.15s ease;
+	user-select: none;
+	position: relative;
+	margin-bottom: 0;
+}
+
+.fw-option-type-background-pro .bg-pro__tab:last-child {
+	border-right: none;
+}
+
+.fw-option-type-background-pro .bg-pro__tab:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+.fw-option-type-background-pro .bg-pro__tab.is-active {
+	background: #fff;
+	color: #2271b1;
+}
+
+.fw-option-type-background-pro .bg-pro__tab.is-active::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -1px;
+	height: 2px;
+	background: #2271b1;
+}
+
+.fw-option-type-background-pro .bg-pro__tab-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: transparent;
+	border: 1px solid #c3c4c7;
+	flex: 0 0 8px;
+	transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.fw-option-type-background-pro .bg-pro__tab.has-value .bg-pro__tab-dot {
+	background: #00a32a;
+	border-color: #00a32a;
+	transform: scale(1.1);
+}
+
+.fw-option-type-background-pro .bg-pro__tab.is-active.has-value .bg-pro__tab-dot {
+	background: #2271b1;
+	border-color: #2271b1;
+}
+
+/* ----- Panels ----- */
+
+.fw-option-type-background-pro .bg-pro__panels {
+	padding: 0;
+}
+
+.fw-option-type-background-pro .bg-pro__panel {
+	display: none;
+}
+
+.fw-option-type-background-pro .bg-pro__panel.is-active {
+	display: block;
+}
+
+/* ----- Row layout (label | control + desc) ----- */
+
+.fw-option-type-background-pro .bg-pro__row {
+	display: grid;
+	grid-template-columns: 180px 1fr;
+	gap: 18px;
+	padding: 14px 18px;
+	border-bottom: 1px solid #f0f0f1;
+	align-items: start;
+}
+
+.fw-option-type-background-pro .bg-pro__row:last-child {
+	border-bottom: none;
+}
+
+.fw-option-type-background-pro .bg-pro__row-label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 4px;
+}
+
+.fw-option-type-background-pro .bg-pro__row-label label {
+	font-weight: 600;
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 1.4;
+	margin: 0;
+}
+
+.fw-option-type-background-pro .bg-pro__row-help {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #dcdcde;
+	color: #50575e;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: help;
+	user-select: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fw-option-type-background-pro .bg-pro__row-help:hover,
+.fw-option-type-background-pro .bg-pro__row-help:focus {
+	background: #2271b1;
+	color: #fff;
+	outline: none;
+}
+
+.fw-option-type-background-pro .bg-pro__row-control {
+	min-width: 0; /* let nested controls shrink properly */
+}
+
+.fw-option-type-background-pro .bg-pro__row-desc {
+	margin: 6px 0 0;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
+	font-style: italic;
+}
+
+/* ----- Responsive: stack on narrow panels ----- */
+
+@media (max-width: 720px) {
+	.fw-option-type-background-pro .bg-pro__row {
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+	.fw-option-type-background-pro .bg-pro__tab-label {
+		font-size: 11px;
+	}
+}

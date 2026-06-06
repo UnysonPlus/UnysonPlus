@@ -79,6 +79,13 @@ textarea.fw-option-type-textarea {
 	width: 100px !important;
 }
 
+/* `medium-text`: ~half the regular text width, but at least ~3x short-text. */
+.fw-option-width-medium {
+	width: 50% !important;
+	min-width: 300px;
+	max-width: 100%;
+}
+
 /* Radio and Checkboxes inline */
 
 .fw-option-type-checkboxes.fw-option-type-checkboxes-inline > div,
@@ -115,10 +122,11 @@ body.rtl .fw-option-type-radio.fw-option-type-radio-inline > div:not(:last-child
 }
 
 .fw-modal .media-frame select {
-	line-height: 28px;
+	line-height: 24px;
 	height: 28px;
 	padding: 2px;
 	margin: 1px;
+	min-height: auto;
 }
 
 .fw-modal .media-frame select[multiple] {
@@ -133,6 +141,7 @@ body.rtl .fw-option-type-radio.fw-option-type-radio-inline > div:not(:last-child
 .fw-modal .media-frame input[type=url] {
 	height: 28px;
 	padding: 3px 5px;
+	min-height: auto;
 }
 
 .fw-modal .media-frame textarea {
@@ -156,3 +165,12 @@ body.rtl .fw-option-type-radio.fw-option-type-radio-inline > div:not(:last-child
 }
 
 /* end: modal fixes */
+
+/* load-styles.php overrides */
+
+input[type=date], input[type=datetime-local], input[type=datetime], input[type=email], input[type=month], input[type=number], input[type=password], input[type=search], input[type=tel], input[type=text], input[type=time], input[type=url], input[type=week] {
+    min-height: auto;
+    line-height: 28px;
+}
+
+/* end: load-styles.php overrides */

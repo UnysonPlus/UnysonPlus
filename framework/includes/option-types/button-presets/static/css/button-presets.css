@@ -1,0 +1,225 @@
+/* Button Presets option type — editor UI */
+
+.fw-option-type-button-presets-list { margin-bottom: 12px; }
+
+.fw-option-type-button-presets-item {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+/* header — the whole bar toggles collapse/expand (except handle + remove) */
+.fw-option-type-button-presets-item-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	background: #f6f7f7;
+	border-bottom: 1px solid #dcdcde;
+	cursor: pointer;
+}
+.fw-option-type-button-presets-item-header .fw-option-type-button-presets-item-handle { cursor: move; }
+.fw-option-type-button-presets-item-header .fw-option-type-button-presets-item-remove { cursor: pointer; }
+.fw-option-type-button-presets-item.is-collapsed .fw-option-type-button-presets-item-header {
+	border-bottom: 0;
+}
+.fw-option-type-button-presets-item-handle {
+	width: 16px;
+	height: 16px;
+	cursor: move;
+	background: radial-gradient(#b0b3b8 1.2px, transparent 1.2px) 0 0/6px 6px;
+	opacity: .7;
+	flex: 0 0 auto;
+}
+/* The title doubles as the quick preview button: it carries the generated
+   `.uid` rule (default-state look) and stays clickable to collapse/expand.
+   align-self keeps it from stretching to the header's full height. */
+.fw-option-type-button-presets-item-title {
+	flex: 0 1 auto;
+	align-self: center;
+	margin-right: auto;          /* push the toggle/remove icons to the right */
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 280px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding: 5px 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	background: #f0f0f1;
+	color: #1d2327;
+	cursor: pointer;
+}
+.fw-option-type-button-presets-item-toggle,
+.fw-option-type-button-presets-item-remove {
+	text-decoration: none;
+	line-height: 1;
+	color: #787c82;
+	flex: 0 0 auto;
+}
+.fw-option-type-button-presets-item-toggle:hover { color: #2271b1; }
+.fw-option-type-button-presets-item-remove { color: #b32d2e; }
+.fw-option-type-button-presets-item-remove:hover { color: #d63638; }
+/* caret flips when collapsed */
+.fw-option-type-button-presets-item.is-collapsed .fw-option-type-button-presets-item-toggle.dashicons-arrow-up-alt2:before {
+	content: "\f347"; /* dashicons-arrow-down-alt2 */
+}
+
+/* body collapse */
+.fw-option-type-button-presets-item-body { padding: 12px; }
+.fw-option-type-button-presets-item.is-collapsed .fw-option-type-button-presets-item-body {
+	display: none;
+}
+
+/* shared blocks */
+.fw-bp-shared { margin: 0 0 4px; }
+
+/* preview */
+.fw-bp-preview {
+	border: 1px solid #e8e8e8;
+	border-radius: 6px;
+	overflow: hidden;
+	margin: 10px 0;
+}
+.fw-bp-preview-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 6px 8px;
+	background: #f6f7f7;
+	border-bottom: 1px solid #e8e8e8;
+}
+.fw-bp-swatch-toggle { display: flex; gap: 4px; }
+.fw-bp-swatch {
+	width: 20px; height: 20px;
+	border-radius: 50%;
+	border: 1px solid #ccd0d4;
+	cursor: pointer;
+	background: #fff;
+	padding: 0;
+}
+.fw-bp-swatch-dark { background: #1d2327; }
+.fw-bp-swatch.is-active { box-shadow: 0 0 0 2px #2271b1; }
+
+.fw-bp-preview-stage {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background-color: #fff;
+	background-image:
+		linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+		linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+		linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+	background-size: 18px 18px;
+	background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+}
+.fw-bp-preview-stage.is-dark { background-color: #1d2327; background-image: none; }
+
+/* baseline so an unstyled preview still reads as a button; injected rules win */
+.fw-bp-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
+	flex: 0 0 auto;
+	height: auto;
+	line-height: 1.4;
+	white-space: nowrap;
+	padding: 10px 20px;
+	border: 1px solid #ccd0d4;
+	border-radius: 6px;
+	background: #f0f0f1;
+	color: #1d2327;
+	text-decoration: none;
+	cursor: default;
+	box-sizing: border-box;
+}
+
+/* ===== state tabs (Background-Pro style) ===== */
+.fw-bp-states {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	overflow: hidden;
+	margin: 10px 0;
+}
+.fw-bp-tabs {
+	display: flex;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background: #f6f7f7;
+	border-bottom: 1px solid #dcdcde;
+}
+.fw-bp-tab {
+	flex: 1 1 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 9px 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: .02em;
+	text-transform: uppercase;
+	color: #646970;
+	border-right: 1px solid #dcdcde;
+	user-select: none;
+	position: relative;
+	margin: 0;
+}
+.fw-bp-tab:last-child { border-right: none; }
+.fw-bp-tab:hover { background: #f0f0f1; color: #1d2327; }
+.fw-bp-tab.is-active { background: #fff; color: #2271b1; }
+.fw-bp-tab.is-active::after {
+	content: '';
+	position: absolute;
+	left: 0; right: 0; bottom: -1px;
+	height: 2px;
+	background: #2271b1;
+}
+.fw-bp-panel { display: none; padding: 6px 10px; }
+.fw-bp-panel.is-active { display: block; }
+
+/* Explicit display rows inside each state panel. A 2-field row renders its two
+   options side-by-side; a 1-field row spans full width. */
+.fw-bp-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	align-items: flex-start;
+}
+.fw-bp-row + .fw-bp-row {
+	margin-top: 4px;
+}
+.fw-bp-row > .fw-backend-option {
+	flex: 1 1 0;
+	min-width: 0;
+	margin: 0 !important;
+	box-sizing: border-box;
+}
+.fw-bp-row-1 > .fw-backend-option { flex-basis: 100%; }
+
+/* Drop the framework's per-option full-width divider + heavy padding inside the
+   state panels — same effect as wrapping the fields in a borderless `group`
+   (.fw-backend-options-group:not(.show-borders)), but without restructuring the
+   render. Keeps the panel tidy: no stray border-bottoms between fields. */
+.fw-bp-panel .fw-backend-option-design-default {
+	border-bottom: 0 !important;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.fw-option-type-button-presets-add {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 4px;
+}

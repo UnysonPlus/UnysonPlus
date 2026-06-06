@@ -45,7 +45,7 @@
 		        class="fw-option-typography-option-family-input"></select>
 	</div>
 
-	<div class="fw-option-typography-option fw-option-typography-option-style fw-border-box-sizing fw-col-sm-3" style="display: <?php echo (!isset($option['components']['family']) || $option['components']['family'] != false) ? 'block' : 'none'; ?>;">
+	<div class="fw-option-typography-option fw-option-typography-option-style fw-border-box-sizing fw-col-sm-3" style="display: <?php echo (!isset($option['components']['style']) || $option['components']['style'] != false) ? 'block' : 'none'; ?>;">
 		<select data-type="style" name="<?php echo esc_attr($option['attr']['name']) ?>[style]" class="fw-option-typography-option-style-input">
 		<?php if (in_array($data['value']['family'], $fonts['standard'])): ?>
 		<?php foreach (

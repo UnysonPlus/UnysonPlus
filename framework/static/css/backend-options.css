@@ -29,6 +29,8 @@ Included on pages where backend options are rendered
 .fw-backend-option .fw-backend-option-input textarea {
 	width: 100%;
 	max-width: 100%;
+	line-height: 25px;
+    min-height: auto;
 }
 
 .fw-backend-postboxes.metabox-holder,
@@ -146,6 +148,21 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents {
 	margin-top: 20px;
+}
+
+/*
+ * Options modal scroll panel — bottom breathing room.
+ *
+ * In the popup (page-builder element / shortcode options), resizeTabsContent()
+ * in fw.js turns `.fw-options-tabs-contents` into a fixed-height scroll area
+ * sized to the media-frame. With a tall set of options the last field ended up
+ * flush against (or just under) the bottom fold and read as "clipped". Adding
+ * bottom padding to the scrollable inner content gives the final field room to
+ * clear the fold on every shortcode. Scoped to `.media-modal` so the Theme
+ * Settings page / postbox layouts are unaffected.
+ */
+.media-modal .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner {
+	padding-bottom: 30px;
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list {
@@ -889,7 +906,7 @@ form#post .fw-options-tabs-wrapper>.fw-options-tabs-contents .fw-backend-postbox
 .fw-postbox .handlediv:before {
 	top: 0;
 	right: 0;
-	padding: 8px 9px 8px 7px;
+	/*padding: 8px 9px 8px 7px;*/
 	font: 400 20px/1 dashicons;
 	speak: none;
 	display: inline-block;

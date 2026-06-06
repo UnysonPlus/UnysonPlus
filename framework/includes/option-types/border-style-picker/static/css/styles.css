@@ -1,0 +1,137 @@
+/* Border Style Picker option type — a popover-style dropdown whose trigger + rows
+   are real bordered-box previews. The .colb-{slug} border-preset CSS (already
+   loaded in admin) paints the border / corners / shadow; here we only lay out the
+   dropdown and give every preview a uniform swatch size so borders compare cleanly. */
+
+.fw-option-type-border-style-picker {
+	position: relative;
+	display: inline-block;
+	font-size: 13px;
+	max-width: 100%;
+}
+
+/* ----- Trigger ----- */
+.fw-option-type-border-style-picker .bsp__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 240px;
+	max-width: 340px;
+	padding: 5px 8px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	cursor: pointer;
+	user-select: none;
+	font: inherit;
+	line-height: 1.4;
+	text-align: left;
+}
+.fw-option-type-border-style-picker .bsp__trigger:hover { border-color: #2271b1; }
+.fw-option-type-border-style-picker .bsp__trigger:focus,
+.fw-option-type-border-style-picker .bsp__trigger[aria-expanded="true"] {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.fw-option-type-border-style-picker .bsp__trigger-placeholder {
+	flex: 1 1 auto;
+	color: #646970;
+}
+.fw-option-type-border-style-picker .bsp__caret {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 10px;
+	color: #646970;
+}
+
+/* ----- Panel ----- */
+.fw-option-type-border-style-picker .bsp__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 320px;
+	max-width: 90vw;
+	max-height: 360px;
+	overflow-y: auto;
+	padding: 6px;
+	background: #f6f7f7;   /* light backdrop so white swatches + soft shadows pop */
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fw-option-type-border-style-picker .bsp__panel[hidden] { display: none; }
+
+/* ----- Option rows ----- */
+.fw-option-type-border-style-picker .bsp__option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 6px;
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	text-align: left;
+	cursor: pointer;
+	font: inherit;
+	line-height: 1.4;
+}
+.fw-option-type-border-style-picker .bsp__option:hover,
+.fw-option-type-border-style-picker .bsp__option:focus {
+	background: #e9eaed;
+	outline: none;
+}
+.fw-option-type-border-style-picker .bsp__option.is-selected {
+	background: #e0eaf5;
+	box-shadow: inset 0 0 0 1px #2271b1;
+}
+.fw-option-type-border-style-picker .bsp__option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.fw-option-type-border-style-picker .bsp__option--empty .bsp__option-label {
+	color: #646970;
+	font-style: italic;
+	padding: 4px 4px;
+}
+
+/* ----- The real border preview (trigger + rows) -----
+   A uniform white swatch; the .colb-{slug} class supplies border / radius / shadow.
+   Its own (per-preset) padding is overridden here so every swatch is the same size
+   and you compare borders, not box sizes. Higher specificity than .colb-{slug}, so
+   no !important needed. Pointer-inert so the row handles the click. */
+.fw-option-type-border-style-picker .bsp__preview {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	box-sizing: border-box;
+	min-width: 180px;
+	max-width: 220px;
+	min-height: 38px;
+	padding: 8px 14px;
+	background: #fff;
+	color: #2c3338;
+	font-size: 12px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-align: center;
+	pointer-events: none;
+	transition: none !important;
+	transform: none !important;
+	animation: none !important;
+}
+/* Trigger preview takes the remaining width before the caret. */
+.fw-option-type-border-style-picker .bsp__trigger .bsp__preview {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 260px;
+}

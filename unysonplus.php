@@ -3,7 +3,7 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 2.7.64
+ * Version: 2.9.54
  * Author: Lastimosa.com.ph
  * Author URI: http://lastimosa.com.ph
  * License: GPL2+
@@ -84,8 +84,12 @@ if ( defined( 'FW' ) ) {
                         if ( $drop ) {
                                 global $wpdb; /** @var wpdb $wpdb */
 
-                                // delete old termmeta table
-                                $wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}fw_termmeta`;" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                                // delete old termmeta table.
+                                // DROP TABLE is DDL — cannot be parameterised via $wpdb->prepare().
+                                // Table identifier is built from $wpdb->prefix (internal value); run
+                                // through esc_sql() defensively.
+                                $_termmeta_table = esc_sql( $wpdb->prefix . 'fw_termmeta' );
+                                $wpdb->query( "DROP TABLE IF EXISTS `{$_termmeta_table}`;" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                         }
                 }
                 add_action( 'delete_blog', '_action_fw_delete_blog', 10, 2 );
@@ -112,6 +116,100 @@ if ( defined( 'FW' ) ) {
                         return __DIR__ . '/tmp';
                 }
                 add_filter( 'fw_tmp_dir', '_filter_fw_tmp_dir' );
+
+                /**
+                 * Recommend the Classic Editor plugin if it isn't active.
+                 *
+                 * The Unyson Page Builder sits in a meta box below the post
+                 * editor. With Gutenberg active, authors see two editors at
+                 * once. Classic Editor restores WordPress's pre-5.0 editor,
+                 * which works much better alongside the Page Builder.
+                 *
+                 * The notice is shown only to users with `install_plugins`
+                 * capability and is persistently dismissible per-user via the
+                 * `_fw_dismissed_classic_editor_notice` user_meta key.
+                 *
+                 * @internal
+                 */
+                function _action_fw_classic_editor_notice(): void {
+                        if ( ! current_user_can( 'install_plugins' ) ) {
+                                return;
+                        }
+
+                        if ( get_user_meta( get_current_user_id(), '_fw_dismissed_classic_editor_notice', true ) ) {
+                                return;
+                        }
+
+                        if ( ! function_exists( 'is_plugin_active' ) ) {
+                                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                        }
+
+                        $plugin_file = 'classic-editor/classic-editor.php';
+
+                        if ( is_plugin_active( $plugin_file ) ) {
+                                return;
+                        }
+
+                        $is_installed = file_exists( WP_PLUGIN_DIR . '/' . $plugin_file );
+
+                        if ( $is_installed ) {
+                                $action_url   = wp_nonce_url(
+                                        self_admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $plugin_file ) ),
+                                        'activate-plugin_' . $plugin_file
+                                );
+                                $action_label = __( 'Activate Classic Editor', 'fw' );
+                        } else {
+                                $action_url   = wp_nonce_url(
+                                        self_admin_url( 'update.php?action=install-plugin&plugin=classic-editor' ),
+                                        'install-plugin_classic-editor'
+                                );
+                                $action_label = __( 'Install Classic Editor', 'fw' );
+                        }
+
+                        $dismiss_url = wp_nonce_url(
+                                add_query_arg( 'fw-dismiss-classic-editor-notice', '1' ),
+                                'fw-dismiss-classic-editor-notice'
+                        );
+                        ?>
+                        <div class="notice notice-info is-dismissible">
+                                <p>
+                                        <strong>Unyson+:</strong>
+                                        <?php esc_html_e( 'For the best Page Builder experience we recommend installing the Classic Editor plugin. It replaces the Gutenberg block editor with WordPress\'s original editor, which works much better alongside the Unyson Page Builder.', 'fw' ); ?>
+                                </p>
+                                <p>
+                                        <a href="<?php echo esc_url( $action_url ); ?>" class="button button-primary"><?php echo esc_html( $action_label ); ?></a>
+                                        <a href="https://en-gb.wordpress.org/plugins/classic-editor/" target="_blank" rel="noopener" class="button button-secondary" style="margin-left: 6px;"><?php esc_html_e( 'Learn more', 'fw' ); ?></a>
+                                        <a href="<?php echo esc_url( $dismiss_url ); ?>" class="button-link" style="margin-left: 12px;"><?php esc_html_e( 'Dismiss this notice', 'fw' ); ?></a>
+                                </p>
+                        </div>
+                        <?php
+                }
+                add_action( 'admin_notices', '_action_fw_classic_editor_notice' );
+
+                /** @internal */
+                function _action_fw_classic_editor_notice_dismiss(): void {
+                        if ( empty( $_GET['fw-dismiss-classic-editor-notice'] ) ) {
+                                return;
+                        }
+                        if ( ! current_user_can( 'install_plugins' ) ) {
+                                return;
+                        }
+                        if (
+                                ! isset( $_GET['_wpnonce'] )
+                                || ! wp_verify_nonce(
+                                        sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ),
+                                        'fw-dismiss-classic-editor-notice'
+                                )
+                        ) {
+                                return;
+                        }
+
+                        update_user_meta( get_current_user_id(), '_fw_dismissed_classic_editor_notice', 1 );
+
+                        wp_safe_redirect( remove_query_arg( array( 'fw-dismiss-classic-editor-notice', '_wpnonce' ) ) );
+                        exit;
+                }
+                add_action( 'admin_init', '_action_fw_classic_editor_notice_dismiss' );
 
                 /** @internal */
                 final class _FW_Update_Hooks {

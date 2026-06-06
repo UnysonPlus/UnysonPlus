@@ -1,0 +1,310 @@
+/* gradient-v2 option type — read-only output input + dropdown editor */
+
+.fw-option-type-gradient-v2 {
+	box-sizing: border-box;
+	position: relative;          /* anchor for the absolutely-positioned panel */
+	display: inline-block;
+	min-width: 480px; /* 1.5x — long enough to show the full gradient CSS output */
+	max-width: 100%;
+}
+
+.fw-option-type-gradient-v2 * {
+	box-sizing: border-box;
+}
+
+/* ----- Trigger row: read-only CSS output + clear (×) + caret ----- */
+.fw-option-type-gradient-v2 .gv2-trigger {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.fw-option-type-gradient-v2 .gv2-output {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 5px 8px;
+	font-family: Menlo, Consolas, monospace;
+	font-size: 12px;
+	color: #1d2327;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	cursor: text; /* editable: paste/type a CSS gradient string */
+}
+.fw-option-type-gradient-v2 .gv2-output:focus,
+.fw-option-type-gradient-v2.gv2-open .gv2-output {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+/* Unparseable text while typing — overrides the focus ring. */
+.fw-option-type-gradient-v2 .gv2-output.is-invalid,
+.fw-option-type-gradient-v2 .gv2-output.is-invalid:focus {
+	border-color: #d63638;
+	box-shadow: 0 0 0 1px #d63638;
+}
+.fw-option-type-gradient-v2 .gv2-clear {
+	flex: 0 0 auto;
+	width: 24px;
+	height: 24px;
+	line-height: 1;
+	font-size: 16px;
+	color: #b32d2e;
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 3px;
+	cursor: pointer;
+}
+.fw-option-type-gradient-v2 .gv2-clear:hover { color: #d63638; border-color: #d63638; }
+.fw-option-type-gradient-v2 .gv2-clear[hidden] { display: none; }
+.fw-option-type-gradient-v2 .gv2-trigger-caret {
+	flex: 0 0 auto;
+	font-size: 10px;
+	color: #646970;
+	padding: 0 2px;
+	pointer-events: none;
+}
+
+/* ----- Dropdown panel: the editor ----- */
+.fw-option-type-gradient-v2 .gv2-panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 360px;
+	max-width: 90vw;
+	padding: 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fw-option-type-gradient-v2 .gv2-panel[hidden] { display: none; }
+
+/* ----- Panel footer: Clear gradient link ----- */
+.fw-option-type-gradient-v2 .gv2-panel-footer {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px dashed #e5e5e5;
+	text-align: right;
+}
+.fw-option-type-gradient-v2 .gv2-panel-clear {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	padding: 2px 4px;
+	font-size: 12px;
+	color: #b32d2e;
+	cursor: pointer;
+}
+.fw-option-type-gradient-v2 .gv2-panel-clear:hover { color: #d63638; text-decoration: underline; }
+
+/* Preview bar */
+.fw-option-type-gradient-v2 .gv2-preview {
+	position: relative;
+	height: 32px;
+	border-radius: 4px;
+	border: 1px solid #d5d5d5;
+	margin-bottom: 12px;
+	cursor: crosshair;
+	background-color: #fff;
+}
+
+.fw-option-type-gradient-v2 .gv2-preview-stops {
+	position: absolute;
+	top: 0; left: 0; right: 0; bottom: 0;
+	pointer-events: none;
+}
+
+.fw-option-type-gradient-v2 .gv2-preview-stop-marker {
+	position: absolute;
+	top: -4px;
+	width: 14px;
+	height: 40px;
+	margin-left: -7px;
+	border: 2px solid #fff;
+	border-radius: 3px;
+	box-shadow: 0 0 0 1px #555, 0 1px 3px rgba(0,0,0,.3);
+	cursor: ew-resize;
+	pointer-events: auto;
+}
+
+/* Controls row */
+.fw-option-type-gradient-v2 .gv2-controls {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 12px;
+	flex-wrap: wrap;
+}
+
+.fw-option-type-gradient-v2 .gv2-mode {
+	display: inline-flex;
+	border: 1px solid #c5c5c5;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.fw-option-type-gradient-v2 .gv2-mode-btn {
+	appearance: none;
+	background: #fff;
+	border: 0;
+	padding: 6px 14px;
+	font-size: 13px;
+	cursor: pointer;
+	color: #444;
+}
+
+.fw-option-type-gradient-v2 .gv2-mode-btn + .gv2-mode-btn {
+	border-left: 1px solid #c5c5c5;
+}
+
+.fw-option-type-gradient-v2 .gv2-mode-btn.is-active {
+	background: #2271b1;
+	color: #fff;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-label {
+	font-size: 13px;
+	color: #444;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-knob {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid #c5c5c5;
+	background: #fafafa;
+	position: relative;
+	cursor: grab;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-knob:active {
+	cursor: grabbing;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-knob-dot {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 2px;
+	height: 12px;
+	margin-left: -1px;
+	margin-top: -12px;
+	background: #444;
+	transform-origin: 50% 100%;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-input {
+	width: 64px;
+	padding: 4px 6px;
+	font-size: 13px;
+}
+
+.fw-option-type-gradient-v2 .gv2-angle-unit {
+	color: #777;
+	font-size: 13px;
+}
+
+/* Stops panel */
+.fw-option-type-gradient-v2 .gv2-stops-panel {
+	border-top: 1px dashed #e5e5e5;
+	padding-top: 12px;
+}
+
+.fw-option-type-gradient-v2 .gv2-stops-header {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #888;
+	margin-bottom: 8px;
+	letter-spacing: 0.5px;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid #f1f1f1;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop:last-child {
+	border-bottom: 0;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop-swatch {
+	width: 32px;
+	height: 32px;
+	border-radius: 4px;
+	border: 1px solid #c5c5c5;
+	background-image:
+		linear-gradient(45deg, #ccc 25%, transparent 25%),
+		linear-gradient(-45deg, #ccc 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #ccc 75%),
+		linear-gradient(-45deg, transparent 75%, #ccc 75%);
+	background-size: 8px 8px;
+	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+	flex-shrink: 0;
+}
+
+/* The wpColorPicker wraps our input — keep the wrapper compact in the row. */
+.fw-option-type-gradient-v2 .gv2-stop .wp-picker-container {
+	display: inline-block;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop-position {
+	width: 64px;
+	padding: 4px 6px;
+	font-size: 13px;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop-unit {
+	color: #777;
+	font-size: 13px;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop-remove {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	color: #999;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 2px 6px;
+	margin-left: auto;
+}
+
+.fw-option-type-gradient-v2 .gv2-stop-remove:hover {
+	color: #d63638;
+}
+
+.fw-option-type-gradient-v2 .gv2-add-stop {
+	margin-top: 8px;
+	appearance: none;
+	background: #f6f7f7;
+	border: 1px dashed #c5c5c5;
+	border-radius: 4px;
+	padding: 6px 12px;
+	font-size: 13px;
+	color: #2271b1;
+	cursor: pointer;
+	width: 100%;
+}
+
+.fw-option-type-gradient-v2 .gv2-add-stop:hover {
+	background: #f0f6fc;
+	border-color: #2271b1;
+}
+
+.fw-option-type-gradient-v2 .wp-picker-container .wp-color-result.button {
+    margin: 0 6px 0 0;
+    min-height: 32px;
+}

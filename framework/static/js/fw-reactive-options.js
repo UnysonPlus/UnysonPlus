@@ -198,6 +198,7 @@ fw.options = (function($, currentFwOptions) {
 			type: 'POST',
 			data: {
 				action: 'fw_backend_options_render',
+				_nonce: (typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 				options: JSON.stringify(options),
 				values: JSON.stringify(
 					typeof values == 'undefined' ? {} : values
@@ -250,6 +251,7 @@ fw.options = (function($, currentFwOptions) {
 			type: 'POST',
 			data: {
 				action: 'fw_backend_options_get_values_json',
+				_nonce: (typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 				options: JSON.stringify(options),
 				values: JSON.stringify(
 					typeof values == 'undefined' ? {} : values

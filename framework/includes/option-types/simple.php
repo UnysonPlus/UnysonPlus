@@ -47,7 +47,10 @@ class FW_Option_Type_Hidden extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _get_value_from_input( $option, $input_value ) {
-		return (string) ( is_null( $input_value ) ? $option['value'] : $input_value );
+		$value = is_null( $input_value ) ? $option['value'] : $input_value;
+		// Coerce non-scalars (stale array/object data) to '' instead of casting
+		// an array to string (which warns and yields the useless "Array").
+		return is_scalar( $value ) ? (string) $value : '';
 	}
 
 	/**
@@ -93,7 +96,11 @@ class FW_Option_Type_Text extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _render( $id, $option, $data ) {
-		$option['attr']['value'] = (string) $data['value'];
+		// A text field can only hold a scalar. Guard against an array/object value
+		// (e.g. stale saved data where this key was migrated to a composite option
+		// type) so casting doesn't emit an "Array to string conversion" warning.
+		$value = $data['value'];
+		$option['attr']['value'] = is_scalar( $value ) ? (string) $value : '';
 
 		return '<input ' . fw_attr_to_html( $option['attr'] ) . ' type="text" />';
 	}
@@ -115,7 +122,9 @@ class FW_Option_Type_Text extends FW_Option_Type {
 	 */
 	protected function _get_defaults() {
 		return array(
-			'value' => ''
+			'value' => '',
+			// Show the Dynamic Content picker by default; set false per field to hide.
+			'dynamic_content' => true,
 		);
 	}
 }
@@ -140,6 +149,39 @@ class FW_Option_Type_Short_Text extends FW_Option_Type_Text {
 	 */
 	protected function _render( $id, $option, $data ) {
 		$option['attr']['class'] .= ' fw-option-width-short';
+
+		return parent::_render( $id, $option, $data );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 * @internal
+	 */
+	public function _get_backend_width_type() {
+		return 'auto';
+	}
+}
+
+/**
+ * A text input sized between `short-text` (~100px) and the full-width `text`.
+ * Roughly half the width of a regular text field, with a sensible minimum, for
+ * inputs like labels that are too cramped in `short-text` but don't need the
+ * whole column.
+ */
+class FW_Option_Type_Medium_Text extends FW_Option_Type_Text {
+	public function get_type() {
+		return 'medium-text';
+	}
+
+	protected function _get_data_for_js( $id, $option, $data = array() ) {
+		return false;
+	}
+
+	/**
+	 * @internal
+	 */
+	protected function _render( $id, $option, $data ) {
+		$option['attr']['class'] .= ' fw-option-width-medium';
 
 		return parent::_render( $id, $option, $data );
 	}
@@ -348,7 +390,9 @@ class FW_Option_Type_Textarea extends FW_Option_Type {
 	 */
 	protected function _get_defaults() {
 		return array(
-			'value' => ''
+			'value' => '',
+			// Show the Dynamic Content picker by default; set false per field to hide.
+			'dynamic_content' => true,
 		);
 	}
 }
@@ -410,7 +454,10 @@ class FW_Option_Type_Html extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _get_value_from_input( $option, $input_value ) {
-		return (string) ( is_null( $input_value ) ? $option['value'] : $input_value );
+		$value = is_null( $input_value ) ? $option['value'] : $input_value;
+		// Coerce non-scalars (stale array/object data) to '' instead of casting
+		// an array to string (which warns and yields the useless "Array").
+		return is_scalar( $value ) ? (string) $value : '';
 	}
 
 	/**

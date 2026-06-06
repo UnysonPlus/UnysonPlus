@@ -1,0 +1,39 @@
+/**
+ * Prefix (namespace) all css rules with ".fw-option-type-{$option_type}"
+ * This guarantees that there will be no conflicts with other styles.
+ */
+.fw-multi-inline-group{
+	display:block;
+}
+.fw-backend-option-type-fw-multi-inline{
+	display:block;
+}
+.fw-backend-option-type-fw-multi-inline .fw-multi-inline-holder{
+	display:block;
+	float:left;
+	margin:0 10px 0 0;
+}
+.fw-backend-option-type-fw-multi-inline .fw-multi-holding-spinner{
+	margin:0;
+}
+.fw-backend-option-type-fw-multi-inline .fw-multi-inline-title{
+	display:block;
+	clear:both;
+	margin: 0 5px 5px 0;
+	font-weight: bold;
+}
+
+.fw-backend-option-type-fw-multi-inline .fw-multi-inline-holder .thz-spinners-holder{
+	display:block;
+	margin:0;
+	padding:0;
+}
+
+.fw-backend-option-type-fw-multi-inline .fw-multi-holding-select select{
+	height:27px;
+	line-height:27px;
+}
+
+.fw-backend-option-type-fw-multi-inline input[type="text"].fw-option-type-thz-color-picker{
+	max-width:160px;
+}

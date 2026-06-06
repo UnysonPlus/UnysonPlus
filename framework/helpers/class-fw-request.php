@@ -28,6 +28,30 @@ if (!defined('FW')) die('Forbidden');
         json_decode(FW_Request::GET('test'))
     ));
  * and access: http://your-site.com/?test={'a':1}
+ *
+ * ============================================================================
+ * SECURITY NOTE — output escaping is the CALLER's responsibility.
+ * ============================================================================
+ *
+ * The methods on this class (GET / POST / REQUEST / COOKIE / SERVER) return
+ * RAW user input with only `stripslashes_deep_keys()` applied. They DO NOT
+ * sanitise content. They DO NOT escape for HTML / SQL / JS / URL contexts.
+ *
+ * Every caller MUST escape the value at the point of output using the right
+ * function for the destination context:
+ *
+ *   - HTML text content:   esc_html( FW_Request::GET( 'foo' ) )
+ *   - HTML attribute:      esc_attr( FW_Request::GET( 'foo' ) )
+ *   - href / src URL:      esc_url( FW_Request::GET( 'foo' ) )
+ *   - Inline JavaScript:   esc_js( FW_Request::GET( 'foo' ) )
+ *   - Database query:      $wpdb->prepare( '... %s ...', FW_Request::GET( 'foo' ) )
+ *   - Trusted HTML allowed: wp_kses_post( FW_Request::GET( 'foo' ) )
+ *
+ * Failing to do this leads to XSS / SQLi vulnerabilities. There is no
+ * automatic sanitisation layer; this class is intentionally a thin wrapper.
+ *
+ * For typed integer / boolean values, cast after retrieval:
+ *   $page = max( 1, (int) FW_Request::GET( 'page', 1 ) );
  */
 class FW_Request
 {

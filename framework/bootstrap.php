@@ -56,6 +56,36 @@ if (defined('FW')) {
             fw();
 
             require $dir . '/includes/hooks.php';
+            require $dir . '/includes/presets.php';
+            require $dir . '/includes/css-tokens.php';
+            require $dir . '/includes/dynamic-css.php';
+            require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
+            require $dir . '/includes/dynamic-content/classic-editor.php';
+            require $dir . '/includes/bootstrap.php';
+            require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
+            // unysonplus-theme ships its own (un-guarded) copy of the
+            // fw-multi-inline option type. Loading the plugin's copy first
+            // would cause a fatal "Cannot redeclare class" when the theme
+            // later declares it again. So skip the plugin's copy whenever
+            // unysonplus-theme (or a child of it) is active — the theme will
+            // declare and register it itself.
+            if ( 'unysonplus-theme' !== get_template() ) {
+                require $dir . '/includes/option-types/fw-multi-inline/class-fw-option-type-fw-multi-inline.php';
+            }
+            // background-pro lives only in the plugin — load unconditionally.
+            // The class itself is wrapped in a class_exists guard, so a stale
+            // theme-side copy on a partially-upgraded deploy won't fatal.
+            require $dir . '/includes/option-types/background-pro/class-fw-option-type-background-pro.php';
+            // spacing — same story as background-pro. Plugin-only composite,
+            // class_exists guard inside the file, eager-required so the
+            // FW_Option_Type::register() call at the end of the class file
+            // fires before any options.php tries to use type 'spacing'.
+            require $dir . '/includes/option-types/spacing/class-fw-option-type-spacing.php';
+            // Canonical, plugin-owned schema for the shortcode preset libraries
+            // (Color/Typography/Spacing/Buttons/Borders/Tables). Rendered by the
+            // Shortcodes extension's settings form (settings-options.php) and
+            // stored theme-independently in fw_ext_settings_options:shortcodes.
+            require $dir . '/extensions/shortcodes/includes/components-options.php';
 
             /**
              * Init components

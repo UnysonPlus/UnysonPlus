@@ -343,10 +343,24 @@ function fw_aku( $keys, &$array_or_object, $keys_delimiter = '/' ) {
 }
 
 /**
- * Generate random unique md5
+ * Generate a random unique 32-char hex token.
+ *
+ * Uses random_bytes() (CSPRNG) on PHP 7+, falling back to wp_generate_password()
+ * if random_bytes is unavailable. Previously built from rand()/mt_rand()/uniqid()
+ * which are not cryptographically secure and would be flagged by security review
+ * if this token ever ends up in a security-sensitive context.
+ *
+ * @return string 32-character hexadecimal string.
  */
 function fw_rand_md5() {
-	return md5( time() . '-' . uniqid( rand(), true ) . '-' . mt_rand( 1, 1000 ) );
+	if ( function_exists( 'random_bytes' ) ) {
+		try {
+			return bin2hex( random_bytes( 16 ) );
+		} catch ( Exception $e ) {
+			// CSPRNG unavailable — fall through to wp_generate_password.
+		}
+	}
+	return md5( wp_generate_password( 32, false ) );
 }
 
 function fw_unique_increment() {
@@ -1296,6 +1310,15 @@ function fw_get_google_fonts() {
  * @return string JSON encoded array with Google fonts
  */
 function fw_get_google_fonts_v2() {
+    // Prefer a static catalog bundled with the framework (refreshed manually from Google's Web Fonts API).
+    $bundled = fw_get_framework_directory() . '/includes/option-types/typography-v2/google-fonts.json';
+    if ( file_exists( $bundled ) ) {
+        $body = @file_get_contents( $bundled );
+        if ( ! empty( $body ) ) {
+            return $body;
+        }
+    }
+
     $saved_data = get_option( 'fw_google_fonts', array() ); // Default to empty array
     $ttl        = 7 * DAY_IN_SECONDS;
 
@@ -1385,7 +1408,7 @@ function fw_is_valid_domain_name( $domain_name ) {
  * @return string
  */
 function fw_htmlspecialchars( $string ) {
-	return htmlspecialchars( $string, ENT_QUOTES, 'UTF-8' );
+	return htmlspecialchars( (string) $string, ENT_QUOTES, 'UTF-8' );
 }
 
 /**

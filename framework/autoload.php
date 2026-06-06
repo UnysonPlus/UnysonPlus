@@ -247,6 +247,7 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Hidden':
 			case 'FW_Option_Type_Text':
 			case 'FW_Option_Type_Short_Text':
+			case 'FW_Option_Type_Medium_Text':
 			case 'FW_Option_Type_Number':
 			case 'FW_Option_Type_Password':
 			case 'FW_Option_Type_Textarea':
@@ -265,6 +266,33 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 				break;
 			case 'FW_Option_Type_Addable_Box':
 				require_once __DIR__ . '/includes/option-types/addable-box/class-fw-option-type-addable-box.php';
+				break;
+			case 'FW_Option_Type_Button_Presets':
+				require_once __DIR__ . '/includes/option-types/button-presets/class-fw-option-type-button-presets.php';
+				break;
+			case 'FW_Option_Type_Border_Presets':
+				require_once __DIR__ . '/includes/option-types/border-presets/class-fw-option-type-border-presets.php';
+				break;
+			case 'FW_Option_Type_Box_Shadow':
+				require_once __DIR__ . '/includes/option-types/box-shadow/class-fw-option-type-box-shadow.php';
+				break;
+			case 'FW_Option_Type_Unit_Input':
+				require_once __DIR__ . '/includes/option-types/unit-input/class-fw-option-type-unit-input.php';
+				break;
+			case 'FW_Option_Type_Button_Style_Picker':
+				require_once __DIR__ . '/includes/option-types/button-style-picker/class-fw-option-type-button-style-picker.php';
+				break;
+			case 'FW_Option_Type_Border_Style_Picker':
+				require_once __DIR__ . '/includes/option-types/border-style-picker/class-fw-option-type-border-style-picker.php';
+				break;
+			case 'FW_Option_Type_Table_Presets':
+				require_once __DIR__ . '/includes/option-types/table-presets/class-fw-option-type-table-presets.php';
+				break;
+			case 'FW_Option_Type_Table_Style_Picker':
+				require_once __DIR__ . '/includes/option-types/table-style-picker/class-fw-option-type-table-style-picker.php';
+				break;
+			case 'FW_Option_Type_Button_Hover_Animation':
+				require_once __DIR__ . '/includes/option-types/button-hover-animation/class-fw-option-type-button-hover-animation.php';
 				break;
 			case 'FW_Option_Type_Addable_Popup':
 			case 'FW_Option_Type_Addable_Popup_Full':
@@ -290,6 +318,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 				break;
 			case 'FW_Option_Type_Gradient':
 				require_once __DIR__ . '/includes/option-types/gradient/class-fw-option-type-gradient.php';
+				break;
+			case 'FW_Option_Type_Gradient_V2':
+				require_once __DIR__ . '/includes/option-types/gradient-v2/class-fw-option-type-gradient-v2.php';
 				break;
 			case 'FW_Option_Type_Icon':
 				require_once __DIR__ . '/includes/option-types/icon/class-fw-option-type-icon.php';
@@ -320,6 +351,18 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 				break;
 			case 'FW_Option_Type_Popup':
 				require_once __DIR__ . '/includes/option-types/popup/class-fw-option-type-popup.php';
+				break;
+			case 'FW_Option_Type_Popover':
+				require_once __DIR__ . '/includes/option-types/popover/class-fw-option-type-popover.php';
+				break;
+			case 'FW_Option_Type_Predefined_Colors':
+				require_once __DIR__ . '/includes/option-types/predefined-colors/class-fw-option-type-predefined-colors.php';
+				break;
+			case 'FW_Option_Type_Predefined_Colors_Color_Picker':
+				require_once __DIR__ . '/includes/option-types/predefined-colors-color-picker/class-fw-option-type-predefined-colors-color-picker.php';
+				break;
+			case 'FW_Option_Type_Predefined_Colors_Color_Picker_Compact':
+				require_once __DIR__ . '/includes/option-types/predefined-colors-color-picker-compact/class-fw-option-type-predefined-colors-color-picker-compact.php';
 				break;
 			case 'FW_Option_Type_Radio_Text':
 				require_once __DIR__ . '/includes/option-types/radio-text/class-fw-option-type-radio-text.php';

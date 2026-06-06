@@ -1,0 +1,209 @@
+/**
+ * Option Type: Predefined Colors Color Picker (Compact)
+ *
+ * Compact dropdown for presets + the inline custom color picker, side by side.
+ * Layout: row of [ trigger button | radio | wp-color-picker input ].
+ * The dropdown panel is absolutely positioned under the trigger and shown
+ * when JS removes its [hidden] attribute.
+ */
+
+.fw-option-type-predefined-colors-color-picker-compact {
+	position: relative;
+	display: inline-block;
+	font-size: 13px;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: nowrap;
+}
+
+/* ----- Trigger button ----- */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 160px;
+	max-width: 220px;
+	padding: 4px 8px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	color: #2c3338;
+	font: inherit;
+	line-height: 1.4;
+	cursor: pointer;
+	user-select: none;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger:hover {
+	border-color: #2271b1;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger:focus {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger[aria-expanded="true"] {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger-swatch {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: var(--pccpc-color, transparent);
+	/*background-image:
+		linear-gradient(45deg, #ddd 25%, transparent 25%),
+		linear-gradient(-45deg, #ddd 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #ddd 75%),
+		linear-gradient(-45deg, transparent 75%, #ddd 75%);*/
+	background-size: 8px 8px;
+	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+/* When a color is set, paint over the checkerboard with the chosen color */
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger[style*="--pccpc-color: transparent"] .pccpc__trigger-swatch {
+	/* Keep the checkerboard visible when no color is picked. Hack: when
+	   --pccpc-color is 'transparent', the background-color layer is
+	   transparent so the gradient checkerboard underneath shows through. */
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger-label {
+	flex: 1 1 auto;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+	color: var(--pccpc-color, inherit);
+	font-weight: 600;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__caret {
+	flex: 0 0 auto;
+	font-size: 10px;
+	color: #646970;
+}
+
+/* ----- Mutual-exclusion radio ----- */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__radio {
+	margin: 0 !important;
+	flex: 0 0 auto;
+}
+
+/* ----- Custom picker ----- */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__custom {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+/* The wp-color-picker rendered inside is its own widget; we just give it
+   breathing room. No special styling needed. */
+
+/* ----- Dropdown panel ----- */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 220px;
+	max-height: 280px;
+	overflow-y: auto;
+	padding: 4px 0;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__panel[hidden] {
+	display: none;
+}
+
+/* ----- Option rows in the panel ----- */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: calc(100% - 22.6px);
+	padding: 6px 10px;
+	background: transparent;
+	border: none;
+	border-left: 3px solid transparent;
+	color: #2c3338;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	line-height: 1.4;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option:hover,
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option:focus {
+	background: #f0f0f1;
+	outline: none;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option.is-selected {
+	border-left-color: #2271b1;
+	background: #f0f6fc;
+	font-weight: 600;
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option-swatch {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: var(--pccpc-color, transparent);
+}
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: var(--pccpc-color, inherit);
+	font-weight: 600;
+}
+
+/* The "— None —" option has no swatch span on purpose */
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option--empty {
+	color: #646970;
+	font-style: italic;
+}
+
+/* ----- Placeholder fallback -----
+   When no preset is picked (--pccpc-color = transparent), labels render
+   in the default text color instead of an invisible / inherited paint. */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger[style*="--pccpc-color: transparent"] .pccpc__trigger-label,
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option[style*="--pccpc-color: transparent"] .pccpc__option-label {
+	color: #2c3338;
+	font-weight: normal;
+}
+
+/* ----- Light-color readability chip -----
+   When the preset color is light enough (luminance > 0.95, computed in
+   PHP) the colored label is hard to read on the panel's white background.
+   PHP emits `pccpc__option--light` on those options and JS mirrors it
+   onto the trigger when such a preset is picked. Paint a subtle gray
+   chip behind the label so the text stays legible. */
+
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__option--light .pccpc__option-label,
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger--light .pccpc__trigger-label {
+	background: #dbdbdb;
+	padding: 1px 6px;
+	border-radius: 3px;
+}

@@ -283,6 +283,8 @@ if ( ! class_exists( 'FW_Option_Type_Multi_Select' ) ):
 		 * @internal
 		 */
 		public static function _ajax_autocomplete() {
+			check_ajax_referer( 'fw_option_type_multi_select_autocomplete', '_nonce' );
+
 			if ( ! current_user_can( 'edit_posts' ) ) {
 				wp_send_json_error();
 			}
@@ -477,6 +479,14 @@ if ( ! class_exists( 'FW_Option_Type_Multi_Select' ) ):
 				array( 'jquery', 'fw-events', 'fw-selectize' ),
 				fw()->manifest->get_version(),
 				true
+			);
+
+			wp_localize_script(
+				$this->get_type() . '-styles',
+				'_fw_option_type_multi_select',
+				array(
+					'nonce' => wp_create_nonce( 'fw_option_type_multi_select_autocomplete' ),
+				)
 			);
 
 			fw()->backend->option_type( 'text' )->enqueue_static();

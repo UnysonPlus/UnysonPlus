@@ -71,7 +71,38 @@ jQuery( document ).ready( function ( $ ) {
 			// CodeMirror needs a kick when it's instantiated in an initially
 			// hidden container (Unyson popup). Refresh once on the next tick.
 			setTimeout( function () { editor.codemirror.refresh(); }, 50 );
+
+			initPlaceholder( $option, textarea, editor.codemirror );
 		}
+	}
+
+	/**
+	 * Greyed-out sample shown only while the document is empty AND the editor is
+	 * unfocused. Clears as soon as the user focuses or types. CodeMirror has no
+	 * native placeholder in WP's bundle, so we overlay one on the wrapper.
+	 */
+	function initPlaceholder ( $option, textarea, cm ) {
+		var text = textarea.getAttribute( 'data-placeholder' ) || '';
+		if ( ! text ) { return; }
+
+		var $wrap = $( cm.getWrapperElement() );
+		$wrap.css( 'position', 'relative' );
+
+		var $ph = $( '<pre class="fw-code-editor-placeholder"></pre>' ).text( text );
+		$wrap.append( $ph );
+
+		function sync () {
+			var empty = cm.getValue().length === 0;
+			$ph.toggle( empty && ! cm.hasFocus() );
+		}
+
+		cm.on( 'focus', function () { $ph.hide(); } );
+		cm.on( 'blur', sync );
+		cm.on( 'change', sync );
+		// Clicking the overlay should drop into the editor.
+		$ph.on( 'mousedown', function () { cm.focus(); } );
+
+		sync();
 	}
 
 	fwEvents.on( 'fw:options:init', function ( data ) {

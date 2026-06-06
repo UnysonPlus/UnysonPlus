@@ -16,6 +16,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Hidden' );
 		FW_Option_Type::register( 'FW_Option_Type_Text' );
 		FW_Option_Type::register( 'FW_Option_Type_Short_Text' );
+		FW_Option_Type::register( 'FW_Option_Type_Medium_Text' );
         FW_Option_Type::register( 'FW_Option_Type_Number' );
 		FW_Option_Type::register( 'FW_Option_Type_Password' );
 		FW_Option_Type::register( 'FW_Option_Type_Textarea' );
@@ -31,6 +32,15 @@
 		FW_Option_Type::register( 'FW_Option_Type_Unique' );
 		FW_Option_Type::register( 'FW_Option_Type_GMap_Key' );
 		FW_Option_Type::register( 'FW_Option_Type_Addable_Box' );
+		FW_Option_Type::register( 'FW_Option_Type_Button_Presets' );
+		FW_Option_Type::register( 'FW_Option_Type_Border_Presets' );
+		FW_Option_Type::register( 'FW_Option_Type_Box_Shadow' );
+		FW_Option_Type::register( 'FW_Option_Type_Unit_Input' );
+		FW_Option_Type::register( 'FW_Option_Type_Button_Style_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Border_Style_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Table_Presets' );
+		FW_Option_Type::register( 'FW_Option_Type_Table_Style_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Button_Hover_Animation' );
 		FW_Option_Type::register( 'FW_Option_Type_Addable_Option' );
 		FW_Option_Type::register( 'FW_Option_Type_Addable_Popup' );
 		FW_Option_Type::register( 'FW_Option_Type_Addable_Popup_Full' );
@@ -40,6 +50,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Range' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient' );
+		FW_Option_Type::register( 'FW_Option_Type_Gradient_V2' );
 		FW_Option_Type::register( 'FW_Option_Type_Icon' );
 		FW_Option_Type::register( 'FW_Option_Type_Image_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Map' );
@@ -47,6 +58,10 @@
 		FW_Option_Type::register( 'FW_Option_Type_Multi_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Multi_Upload' );
 		FW_Option_Type::register( 'FW_Option_Type_Popup' );
+		FW_Option_Type::register( 'FW_Option_Type_Popover' );
+		FW_Option_Type::register( 'FW_Option_Type_Predefined_Colors' );
+		FW_Option_Type::register( 'FW_Option_Type_Predefined_Colors_Color_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Predefined_Colors_Color_Picker_Compact' );
 		FW_Option_Type::register( 'FW_Option_Type_Radio_Text' );
 		FW_Option_Type::register( 'FW_Option_Type_Range_Slider' );
 		FW_Option_Type::register( 'FW_Option_Type_Rgba_Color_Picker' );

@@ -1,0 +1,25 @@
+/* unit-input option type */
+
+.fw-option-type-unit-input { box-sizing: border-box; }
+.fw-option-type-unit-input * { box-sizing: border-box; }
+
+.fw-option-type-unit-input .fw-unit-input-row {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.fw-option-type-unit-input .fw-unit-input-value {
+	flex: 1 1 auto;
+	min-width: 70px;
+	max-width: 140px;
+}
+
+.fw-option-type-unit-input .fw-unit-input-unit {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 64px;
+}
+.fw-option-type-unit-input select.fw-unit-input-unit {
+    max-width: max-content;
+}

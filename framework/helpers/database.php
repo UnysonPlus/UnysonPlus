@@ -297,13 +297,22 @@ class FW_Db_Options_Model_Term extends FW_Db_Options_Model {
 			/** @var WPDB $wpdb */
 			global $wpdb;
 
-			$table_name = $wpdb->get_results( "show tables like '{$wpdb->prefix}fw_termmeta'", ARRAY_A );
+			// SHOW TABLES LIKE — can't use placeholders for table identifier; the LIKE
+			// pattern is parameterisable. Prefix is internal; pattern is properly escaped.
+			$table_name = $wpdb->get_results( $wpdb->prepare(
+				'SHOW TABLES LIKE %s',
+				$wpdb->esc_like( $wpdb->prefix . 'fw_termmeta' )
+			), ARRAY_A );
 			$table_name = $table_name ? array_pop($table_name[0]) : false;
 
-			if ( $table_name && ! $wpdb->get_results( "SELECT 1 FROM `{$table_name}` LIMIT 1" ) ) {
-				// The table is empty, delete it
-				$wpdb->query( "DROP TABLE `{$table_name}`" );
-				$table_name = false;
+			if ( $table_name ) {
+				// SELECT/DROP on a dynamic table — DDL/identifier can't be parameterised; defensively esc_sql.
+				$_safe_table = esc_sql( $table_name );
+				if ( ! $wpdb->get_results( "SELECT 1 FROM `{$_safe_table}` LIMIT 1" ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					// The table is empty, delete it
+					$wpdb->query( "DROP TABLE `{$_safe_table}`" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$table_name = false;
+				}
 			}
 
 			self::$old_table_name = $table_name;
@@ -361,7 +370,9 @@ class FW_Db_Options_Model_Term extends FW_Db_Options_Model {
 				$term_id
 			) ) )
 			&&
-			( $value = unserialize( $value[0] ) )
+			// allowed_classes:false blocks PHP object injection — termmeta stores
+			// arrays/scalars only; any object payload here would be suspicious.
+			( $value = unserialize( $value[0], array( 'allowed_classes' => false ) ) )
 		) {
 			$wpdb->delete( $old_table_name, array( 'fw_term_id' => $term_id ), array( '%d' ) );
 

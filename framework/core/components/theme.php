@@ -188,6 +188,19 @@ final class _FW_Component_Theme {
 				}
 			}
 
+			/**
+			 * Filter the resolved theme config after the theme's own
+			 * config.php (and child-theme override) have been merged in.
+			 *
+			 * Lets plugins set framework-level defaults like
+			 * `settings_form_side_tabs` on generic themes that don't ship
+			 * their own theme/config.php. Filter runs once per request
+			 * (result is cached).
+			 *
+			 * @param array $config Resolved config array.
+			 */
+			$config = apply_filters( 'fw_theme_config', $config );
+
 			FW_Cache::set( $cache_key, $config );
 		}
 

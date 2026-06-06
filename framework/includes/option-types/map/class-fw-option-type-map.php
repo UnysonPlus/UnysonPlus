@@ -20,6 +20,14 @@ class FW_Option_Type_Map extends FW_Option_Type {
 			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/css/style.css' )
 		);
 
+		// When no Google Maps API key is configured, fall back to a free
+		// Leaflet/OpenStreetMap picker (with Nominatim address search) so pins
+		// can still be added without a Google account / billing.
+		if ( '' === (string) self::api_key() ) {
+			$this->_enqueue_osm_picker();
+			return;
+		}
+
 		wp_enqueue_script(
 			$this->get_type() . '-scripts',
 			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
@@ -52,6 +60,47 @@ class FW_Option_Type_Map extends FW_Option_Type {
 				$url .= '&libraries=places';
 			}
 		}
+	}
+
+	/**
+	 * Free Leaflet + Nominatim picker, used when no Google Maps API key is set.
+	 * @internal
+	 */
+	protected function _enqueue_osm_picker() {
+		$leaflet_version = '1.9.4';
+
+		wp_enqueue_style(
+			'leaflet',
+			'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/leaflet.css',
+			array(),
+			$leaflet_version
+		);
+		wp_enqueue_script(
+			'leaflet',
+			'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/leaflet.js',
+			array(),
+			$leaflet_version,
+			true
+		);
+
+		wp_enqueue_script(
+			$this->get_type() . '-scripts-osm',
+			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts-osm.js' ),
+			array( 'jquery', 'fw-events', 'underscore', 'leaflet' ),
+			'1.0',
+			true
+		);
+
+		wp_localize_script(
+			$this->get_type() . '-scripts-osm',
+			'_fw_option_type_map_osm',
+			array(
+				'nominatim_search'  => 'https://nominatim.openstreetmap.org/search',
+				'nominatim_reverse' => 'https://nominatim.openstreetmap.org/reverse',
+				'language'          => substr( get_locale(), 0, 2 ),
+				'leaflet_images'    => 'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/images/',
+			)
+		);
 	}
 
 	/**

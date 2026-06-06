@@ -4,6 +4,7 @@
  * @var FW_Settings_Form $form
  * @var array $values
  * @var string $input_name_reset
+ * @var string $input_name_reset_tab
  * @var string $input_name_save
  * @var string $js_form_selector Form CSS selector safe to be used in js (js escaped)
  * @var bool $is_theme_settings Backwards compatibility with old Theme Settings hooks
@@ -41,9 +42,9 @@
 						array(
 							fw_html_tag('input', array(
 								'type' => 'submit',
-								'name' => $input_name_reset,
-								'value' => $form->get_string('reset_button'),
-								'class' => 'button-secondary button-large submit-button-reset fw-settings-form-reset-btn',
+								'name' => $input_name_reset_tab,
+								'value' => $form->get_string('reset_tab_button'),
+								'class' => 'button-secondary button-large submit-button-reset fw-settings-form-reset-tab-btn',
 							)),
 							fw_html_tag('input', array(
 								'type' => 'submit',
@@ -89,16 +90,87 @@
 				'value' => $form->get_string('save_button'),
 				'class' => 'button-primary button-large',
 			)),
-			fw_html_tag('input', array(
-				'type' => 'submit',
-				'name' => $input_name_reset,
-				'value' => $form->get_string('reset_button'),
-				'class' => 'button-secondary button-large fw-settings-form-reset-btn',
-			))
+			$form->get_is_side_tabs()
+				? fw_html_tag('input', array(
+					'type' => 'submit',
+					'name' => $input_name_reset_tab,
+					'value' => $form->get_string('reset_tab_button'),
+					'class' => 'button-secondary button-large fw-settings-form-reset-tab-btn',
+				))
+				: fw_html_tag('input', array(
+					'type' => 'submit',
+					'name' => $input_name_reset,
+					'value' => $form->get_string('reset_button'),
+					'class' => 'button-secondary button-large fw-settings-form-reset-btn',
+				))
 		)
 	)
 ); ?>
 </div>
+
+<?php if ($form->get_is_side_tabs()): ?>
+<!-- reset current tab -->
+<input type="hidden" name="_fw_reset_tab_id" value="" class="fw-reset-tab-id" />
+<script type="text/javascript">
+	jQuery( function ( $ ) {
+		// wp_json_encode (not esc_js) so literal " stay as " — esc_js turns them into &quot;
+		var resetTabWarning = <?php echo wp_json_encode( $form->get_string( 'reset_tab_warning' ) ); ?>;
+
+		$( document.body ).on(
+			'click.fw-settings-form-reset-tab',
+			'<?php echo $js_form_selector ?> input[name="<?php echo esc_js( $input_name_reset_tab ) ?>"]',
+			function ( e ) {
+				var $form = $( this ).closest( 'form' );
+
+				/**
+				 * Build the path of currently open tabs, outermost to innermost,
+				 * e.g. ["general_settings_container", "tab_layout"]. jQuery UI marks the
+				 * active nav item of each tab widget with .ui-state-active, and only the
+				 * active chain is rendered (other tabs are lazy/empty), so these anchors -
+				 * in DOM order - are exactly the open chain. We send the full path because
+				 * tab ids are not unique across the form.
+				 */
+				var ids = [], names = [];
+
+				$form.find( '.fw-options-tabs-list li.ui-state-active > a.nav-tab' ).each( function () {
+					var href = this.getAttribute( 'href' ) || '';
+
+					if ( href.indexOf( '#fw-options-tab-' ) === 0 ) {
+						ids.push( href.replace( /^#fw-options-tab-/, '' ) );
+						names.push( $.trim( $( this ).text() ) );
+					}
+				} );
+
+				var tabPath = ids.join( '/' ),
+					tabName = names.length ? names[ names.length - 1 ] : '';
+
+				$form.find( 'input.fw-reset-tab-id' ).val( tabPath );
+
+				/**
+				 * on confirm() the submit input looses focus, so mark the clicked
+				 * button to be sent in _POST (same approach as the full reset button)
+				 */
+				$form.find( '[clicked]:submit' ).removeAttr( 'clicked' );
+				$( this ).attr( 'clicked', '' );
+
+				if ( ! tabPath ) {
+					// Could not determine the open tab - don't risk a wide reset
+					e.preventDefault();
+					$( this ).removeAttr( 'clicked' );
+					alert( <?php echo wp_json_encode( __( 'Could not determine which tab is open. Please click inside the tab and try again.', 'fw' ) ); ?> );
+					return;
+				}
+
+				if ( ! confirm( resetTabWarning.replace( '%s', tabName ) ) ) {
+					e.preventDefault();
+					$( this ).removeAttr( 'clicked' );
+				}
+			}
+		);
+	} );
+</script>
+<!-- end: reset current tab -->
+<?php endif; ?>
 
 <!-- reset warning -->
 <script type="text/javascript">
@@ -160,7 +232,14 @@
 <script type="text/javascript">
 	jQuery(function ($) {
 		function isReset($submitButton) {
-			return $submitButton.length && $submitButton.attr('name') == '<?php echo esc_js($input_name_reset) ?>';
+			if (!$submitButton.length) {
+				return false;
+			}
+
+			var name = $submitButton.attr('name');
+
+			return name == '<?php echo esc_js($input_name_reset) ?>'
+				|| name == '<?php echo esc_js($input_name_reset_tab) ?>';
 		}
 
 		var formSelector = '<?php echo $js_form_selector ?>',

@@ -42,6 +42,10 @@ class FW_Option_Type_Code_Editor extends FW_Option_Type {
 			//   htmlmixed | html | javascript | js | css | php | json | xml
 			'mode'   => 'htmlmixed',
 			'height' => 300, // pixels
+			// Optional greyed-out sample shown only while the editor is empty AND
+			// unfocused; clears on focus/typing. Works for both CodeMirror and the
+			// plain-textarea fallback. Does not affect the saved value.
+			'placeholder' => '',
 		);
 	}
 
@@ -116,6 +120,8 @@ class FW_Option_Type_Code_Editor extends FW_Option_Type {
 
 		// Inner textarea — gets the form 'name', the editor data-* hints, and
 		// our JS hook class.
+		$placeholder = isset( $option['placeholder'] ) ? (string) $option['placeholder'] : '';
+
 		$input_attr = array(
 			'name'        => $option['attr']['name'],
 			'id'          => $option['attr']['id'],
@@ -124,6 +130,12 @@ class FW_Option_Type_Code_Editor extends FW_Option_Type {
 			'data-height' => isset( $option['height'] ) ? (int) $option['height']     : 300,
 			'rows'        => 12, // sensible fallback when CodeMirror is disabled
 		);
+		if ( $placeholder !== '' ) {
+			// Native attr powers the plain-textarea fallback; data-attr powers the
+			// CodeMirror overlay added by our JS.
+			$input_attr['placeholder']      = $placeholder;
+			$input_attr['data-placeholder'] = $placeholder;
+		}
 
 		// Wrapper div — picks up Unyson's framework-provided attrs (id/data-*/etc.)
 		// minus the input-only attrs that shouldn't leak onto a container.

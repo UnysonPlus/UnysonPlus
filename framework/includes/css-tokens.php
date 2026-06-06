@@ -1,0 +1,976 @@
+<?php if ( ! defined( 'FW' ) ) { die( 'Forbidden' ); }
+
+/**
+ * Plugin bridge — writes a hashed `presets-{hash}.css` to wp-content/uploads/unysonplus/
+ * and enqueues it under the handle `unysonplus-presets`. The Asset Optimizer
+ * extension absorbs the handle into the combined site CSS automatically.
+ *
+ * Contents: :root CSS variables and utility-class rules derived from the
+ * Font Size + Color + Spacing + Button presets (plugin defaults or
+ * user-overridden, see presets.php).
+ *
+ * Mobile auto-scaling: a second :root block under @media (max-width: 767.98px)
+ * shrinks every --font-size-* token via the tiered scaler. Utility classes
+ * reference the variables and inherit the mobile shrink for free.
+ *
+ * Fallback: if the uploads dir is not writable, the emit function falls back
+ * to the original behaviour of echoing an inline <style id="unysonplus-presets">
+ * during wp_head / admin_head.
+ */
+
+if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
+	/**
+	 * Builds the preset CSS as a string (no echo, no file write).
+	 *
+	 * @param bool $pretty When true emits indented/multi-line CSS. Defaults to WP_DEBUG.
+	 * @return string CSS body without the surrounding <style> tag. Empty string if no presets.
+	 */
+	function unysonplus_build_presets_css_string( $pretty = null ) {
+		if ( $pretty === null ) {
+			$pretty = defined( 'WP_DEBUG' ) && WP_DEBUG;
+		}
+		$font_sizes    = function_exists( 'unysonplus_get_font_size_presets' ) ? unysonplus_get_font_size_presets() : array();
+		$color_presets = function_exists( 'unysonplus_get_color_presets' )     ? unysonplus_get_color_presets()     : array();
+
+		$tokens        = array();
+		$utility_rules = array();
+
+		// --- Font size scale ---
+		if ( is_array( $font_sizes ) ) {
+			foreach ( $font_sizes as $entry ) {
+				if ( empty( $entry['size'] ) ) { continue; }
+
+				if ( ! empty( $entry['class'] ) ) {
+					$class_literal = preg_replace( '/[^a-zA-Z0-9_-]/', '', trim( $entry['class'] ) );
+					if ( $class_literal === '' ) { continue; }
+					$slug     = strtolower( $class_literal );
+					$selector = '.' . $class_literal;
+				} else {
+					if ( empty( $entry['name'] ) ) { continue; }
+					$slug = trim( preg_replace( '/[^a-z0-9]+/', '-', strtolower( $entry['name'] ) ), '-' );
+					if ( $slug === '' ) { continue; }
+					$selector = ".font-{$slug}";
+				}
+
+				$size_value = is_numeric( $entry['size'] ) ? $entry['size'] . 'px' : $entry['size'];
+				$var_name   = "--font-size-{$slug}";
+
+				$tokens[ $var_name ] = $size_value;
+				// Specificity boost (`:root`) + !important so preset utilities
+				// reliably override Bootstrap utilities and component CSS.
+				$utility_rules[ ":root {$selector}" ] = "font-size:var({$var_name}) !important;";
+			}
+		}
+
+		// --- Color presets ---
+		$color_slug_to_hex = array();
+		if ( is_array( $color_presets ) ) {
+			foreach ( $color_presets as $entry ) {
+				if ( empty( $entry['color'] ) || empty( $entry['name'] ) ) { continue; }
+				$slug = trim( preg_replace( '/[^a-z0-9]+/', '-', strtolower( $entry['name'] ) ), '-' );
+				if ( $slug === '' ) { continue; }
+
+				$hex = function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $entry['color'] ) : $entry['color'];
+				if ( empty( $hex ) ) { $hex = $entry['color']; }
+
+				$tokens[ "--color-{$slug}" ] = $hex;
+				// Specificity boost (`:root`) + !important so preset utilities
+				// reliably override Bootstrap utilities and component CSS.
+				$utility_rules[ ":root .text-{$slug}" ] = "color:var(--color-{$slug}) !important;";
+				$utility_rules[ ":root .bg-{$slug}" ]   = "background-color:var(--color-{$slug}) !important;";
+
+				$color_slug_to_hex[ $slug ] = $hex;
+			}
+		}
+
+		// --- Button color presets -> .btn-{id} + .btn-outline-{id} rules ---
+		// Each saved entry's color fields hold Color Preset slugs (Phase 5.1+).
+		// Resolver below also accepts raw hex (`#…`) for back-compat during the
+		// hex→slug migration window. Hover fields fall back to the normal value
+		// when empty.
+		$button_presets = function_exists( 'unysonplus_get_button_color_presets' )
+			? unysonplus_get_button_color_presets()
+			: array();
+		$resolve_btn_color = function ( $v ) use ( $color_slug_to_hex ) {
+			// Compact color picker shape: { predefined: slug|class, custom: hex }.
+			// Custom wins; otherwise resolve the predefined slug to a hex.
+			if ( is_array( $v ) ) {
+				$custom = isset( $v['custom'] ) ? trim( (string) $v['custom'] ) : '';
+				if ( $custom !== '' ) { return $custom; }
+				$v = isset( $v['predefined'] ) ? trim( (string) $v['predefined'] ) : '';
+			}
+			$v = (string) $v;
+			if ( $v === '' ) { return ''; }
+			if ( $v[0] === '#' ) { return $v; }
+			if ( isset( $color_slug_to_hex[ $v ] ) ) { return $color_slug_to_hex[ $v ]; }
+			// Tolerate utility-class style values like text-blue / bg-blue / border-blue.
+			$slug = preg_replace( '/^(text|bg|background|border|btn)-/', '', $v );
+			return isset( $color_slug_to_hex[ $slug ] ) ? $color_slug_to_hex[ $slug ] : '';
+		};
+		$button_extra_css = ''; // freeform per-preset custom CSS, appended at assembly
+
+		// numeric -> px; pass other CSS units through untouched.
+		$len = function ( $v ) {
+			$v = trim( (string) $v );
+			if ( $v === '' ) { return ''; }
+			return preg_match( '/^-?[0-9.]+$/', $v ) ? $v . 'px' : $v;
+		};
+
+		// Typography-v2 value -> declarations. Preset typography is IDENTITY only
+		// (family / weight / letter-spacing / style). font-size + line-height are
+		// the SIZE axis (.btn-{slug}); they are intentionally not emitted here so
+		// the two axes stay orthogonal even for presets saved before the split.
+		$font_decls = function ( $f ) use ( $len ) {
+			$d = array();
+			if ( ! is_array( $f ) ) { return $d; }
+			if ( ! empty( $f['family'] ) )                              { $d[] = 'font-family:' . $f['family'] . ' !important'; }
+			if ( ! empty( $f['weight'] ) )                             { $d[] = 'font-weight:' . $f['weight'] . ' !important'; }
+			if ( isset( $f['letter-spacing'] ) && $f['letter-spacing'] !== '' ) { $d[] = 'letter-spacing:' . $len( (string) $f['letter-spacing'] ) . ' !important'; }
+			if ( ! empty( $f['style'] ) && $f['style'] !== 'normal' )  { $d[] = 'font-style:' . $f['style'] . ' !important'; }
+			return $d;
+		};
+
+		// One interaction state -> declarations.
+		// SKIN only: colors / border (color, style, width) / box-shadow.
+		// Dimensional props (padding, font-size, border-radius) live on the SIZE
+		// axis (.btn-{slug}), so they are intentionally NOT emitted here.
+		$state_decls = function ( $st ) use ( $resolve_btn_color, $len ) {
+			$d = array();
+			if ( ! is_array( $st ) ) { return $d; }
+
+			$text = $resolve_btn_color( isset( $st['text_color'] )   ? $st['text_color']   : '' );
+			$bg   = $resolve_btn_color( isset( $st['bg_color'] )     ? $st['bg_color']     : '' );
+			$bdr  = $resolve_btn_color( isset( $st['border_color'] ) ? $st['border_color'] : '' );
+			$tt   = isset( $st['text_transform'] ) ? trim( (string) $st['text_transform'] ) : '';
+			$bs   = isset( $st['border_style'] )   ? (string) $st['border_style']           : '';
+			// border-width is a unit-input value { value, unit } (legacy: string).
+			$bw   = ( isset( $st['border_width'] ) && class_exists( 'FW_Option_Type_Unit_Input' ) )
+				? FW_Option_Type_Unit_Input::to_string( $st['border_width'] )
+				: ( isset( $st['border_width'] ) && ! is_array( $st['border_width'] ) ? (string) $st['border_width'] : '' );
+
+			if ( $text !== '' ) { $d[] = "color:{$text} !important"; }
+			if ( $bg !== '' )   { $d[] = "background-color:{$bg} !important"; }
+			// Optional gradient layers OVER the solid color (background-image), so the
+			// resolved bg_color above remains a fallback. Empty value emits nothing.
+			if ( isset( $st['gradient'] ) && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
+				$grad = FW_Option_Type_Gradient_V2::to_css( $st['gradient'] );
+				if ( $grad !== '' ) { $d[] = "background-image:{$grad} !important"; }
+			}
+			if ( $tt !== '' )   { $d[] = "text-transform:{$tt} !important"; }
+
+			if ( $bs !== '' && $bs !== 'none' ) {
+				$d[] = "border-style:{$bs} !important";
+				$w = $len( $bw );
+				if ( $w !== '' )   { $d[] = "border-width:{$w} !important"; }
+				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr} !important"; }
+			} elseif ( $bs === 'none' ) {
+				$d[] = 'border:0 !important';
+			} else {
+				if ( $bw !== '' )  { $d[] = 'border-width:' . $len( $bw ) . ' !important'; }
+				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr} !important"; }
+			}
+
+			if ( class_exists( 'FW_Option_Type_Box_Shadow' ) && isset( $st['box_shadow'] ) ) {
+				$sh = FW_Option_Type_Box_Shadow::to_css( $st['box_shadow'] );
+				if ( $sh !== '' ) { $d[] = "box-shadow:{$sh} !important"; }
+			}
+
+			return $d;
+		};
+
+		// id => readable css slug (preset name → .btn-primary, etc.).
+		$btn_slug_map = function_exists( 'unysonplus_button_preset_slug_map' )
+			? unysonplus_button_preset_slug_map()
+			: array();
+
+		if ( is_array( $button_presets ) ) {
+			foreach ( $button_presets as $bp ) {
+				if ( ! is_array( $bp ) || empty( $bp['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $bp['id'] );
+				if ( $id === '' ) { continue; }
+
+				// Name-based class slug (falls back to the id when unmapped).
+				$slug = isset( $btn_slug_map[ $id ] ) ? $btn_slug_map[ $id ] : $id;
+
+				// Migrate legacy flat presets (normal_*/hover_* keys) to states.
+				if ( ! isset( $bp['states'] ) && class_exists( 'FW_Option_Type_Button_Presets' ) ) {
+					$bp = FW_Option_Type_Button_Presets::maybe_migrate_flat( $bp );
+				}
+				$states = isset( $bp['states'] ) && is_array( $bp['states'] ) ? $bp['states'] : array();
+				$def    = isset( $states['default'] ) && is_array( $states['default'] ) ? $states['default'] : array();
+
+				$transition = isset( $bp['transition'] ) ? trim( (string) $bp['transition'] ) : '';
+				$font       = isset( $bp['font'] ) ? $bp['font'] : array();
+
+				/* ---- base: .btn-{slug} (font + transition + default state) ---- */
+				$base = $font_decls( $font );
+				if ( $transition !== '' ) {
+					$tv = preg_match( '/^[0-9.]+$/', $transition ) ? $transition . 'ms' : $transition;
+					$base[] = "transition:all {$tv} ease !important";
+				}
+				$base = array_merge( $base, $state_decls( $def ) );
+				if ( $base ) { $utility_rules[ ".btn-{$slug}" ] = implode( ';', $base ) . ';'; }
+
+				/* ---- interaction states (diffs) ---- */
+				$state_sel = array(
+					'hover'    => ".btn-{$slug}:hover",
+					'active'   => ".btn-{$slug}:active",
+					'focus'    => ".btn-{$slug}:focus",
+					'disabled' => ".btn-{$slug}:disabled,.btn-{$slug}.disabled",
+				);
+				foreach ( $state_sel as $state => $sel ) {
+					$sv = isset( $states[ $state ] ) ? $states[ $state ] : array();
+					$decls = $state_decls( $sv );
+					if ( $decls ) { $utility_rules[ $sel ] = implode( ';', $decls ) . ';'; }
+				}
+
+				/* ---- outline variant (text+border take the default bg; bg transparent) ---- */
+				$nb = $resolve_btn_color( isset( $def['bg_color'] ) ? $def['bg_color'] : '' );
+				$nt = $resolve_btn_color( isset( $def['text_color'] ) ? $def['text_color'] : '' );
+				if ( $nb !== '' ) {
+					$utility_rules[ ".btn-outline-{$slug}" ] = "color:{$nb} !important;background-color:transparent !important;border-color:{$nb} !important;";
+					$op = array();
+					if ( $nt !== '' ) { $op[] = "color:{$nt} !important"; }
+					$op[] = "background-color:{$nb} !important";
+					$op[] = "border-color:{$nb} !important";
+					$utility_rules[ ".btn-outline-{$slug}:hover" ] = implode( ';', $op ) . ';';
+				}
+
+				/* ---- freeform custom CSS ---- */
+				$custom_css = isset( $bp['custom_css'] ) ? (string) $bp['custom_css'] : '';
+				if ( trim( $custom_css ) !== '' ) {
+					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
+					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
+					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".btn-{$slug}", $custom_css );
+				}
+			}
+		}
+
+		// --- Button size presets -> .btn-{slug} typography/box rules ---
+		// Each saved entry's `slug` becomes the CSS class suffix. Properties
+		// are emitted with `!important` so Bootstrap's stock .btn-sm/.btn-lg
+		// can't fight the user's customised sizes.
+		$button_sizes = function_exists( 'unysonplus_get_button_size_presets' )
+			? unysonplus_get_button_size_presets()
+			: array();
+		if ( is_array( $button_sizes ) ) {
+			// A size value may be a unit-input array { value, unit } (current),
+			// a 4-side padding array { top,right,bottom,left } (legacy padding),
+			// or a plain string (legacy font_size/radius). Resolve any of them.
+			$size_len = function ( $v ) {
+				if ( is_array( $v ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) {
+					return FW_Option_Type_Unit_Input::to_string( $v );
+				}
+				return is_array( $v ) ? '' : trim( (string) $v );
+			};
+
+			foreach ( $button_sizes as $bs ) {
+				if ( ! is_array( $bs ) || empty( $bs['slug'] ) ) { continue; }
+				$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $bs['slug'] );
+				if ( $slug === '' ) { continue; }
+
+				$parts = array();
+
+				$fs = $size_len( $bs['font_size'] ?? '' );
+				if ( $fs !== '' ) { $parts[] = "font-size:{$fs} !important"; }
+
+				if ( ! empty( $bs['line_height'] ) ) { $parts[] = "line-height:{$bs['line_height']} !important"; }
+
+				// Padding: new shape is padding_y / padding_x; legacy is a 4-side
+				// padding{top,right,bottom,left} array.
+				$py = $size_len( $bs['padding_y'] ?? '' );
+				$px = $size_len( $bs['padding_x'] ?? '' );
+				if ( $py !== '' || $px !== '' ) {
+					$parts[] = 'padding:' . ( $py !== '' ? $py : '0' ) . ' ' . ( $px !== '' ? $px : '0' ) . ' !important';
+				} elseif ( is_array( $bs['padding'] ?? null )
+				     && isset( $bs['padding']['top'], $bs['padding']['right'], $bs['padding']['bottom'], $bs['padding']['left'] )
+				     && ( $bs['padding']['top'] !== '' || $bs['padding']['right'] !== '' || $bs['padding']['bottom'] !== '' || $bs['padding']['left'] !== '' ) ) {
+					$parts[] = "padding:{$bs['padding']['top']} {$bs['padding']['right']} {$bs['padding']['bottom']} {$bs['padding']['left']} !important";
+				}
+
+				$rad = $size_len( $bs['border_radius'] ?? '' );
+				if ( $rad !== '' ) { $parts[] = "border-radius:{$rad} !important"; }
+
+				$min_w = $size_len( $bs['min_width'] ?? '' );
+				if ( $min_w !== '' ) { $parts[] = "min-width:{$min_w} !important"; }
+
+				$max_w = $size_len( $bs['max_width'] ?? '' );
+				if ( $max_w !== '' ) { $parts[] = "max-width:{$max_w} !important"; }
+
+				if ( ! empty( $parts ) ) {
+					$utility_rules[ ".btn-{$slug}" ] = implode( ';', $parts ) . ';';
+				}
+			}
+		}
+
+		// --- Column border presets -> .colb-{slug} + .colb-{slug}:hover rules ---
+		// Each saved preset is a reusable column "card" border (Theme Settings →
+		// General → Borders). border_color is a compact-picker value resolved via
+		// $resolve_btn_color; border_width / border_radius are unit-input; box_shadow
+		// rides FW_Option_Type_Box_Shadow::to_css. The hover state holds only the
+		// diffs (border/shadow) and transitions from the base via `transition`.
+		$border_presets  = function_exists( 'unysonplus_get_border_presets' )      ? unysonplus_get_border_presets()      : array();
+		$border_slug_map = function_exists( 'unysonplus_border_preset_slug_map' )  ? unysonplus_border_preset_slug_map()  : array();
+
+		// 'all' -> `border`, otherwise the single physical side.
+		$border_side_prop = function ( $sides ) {
+			switch ( $sides ) {
+				case 'top':    return 'border-top';
+				case 'end':    return 'border-right';
+				case 'bottom': return 'border-bottom';
+				case 'start':  return 'border-left';
+				default:       return 'border';
+			}
+		};
+		// One state -> border declarations on the chosen side(s) + box-shadow.
+		$border_state_decls = function ( $st, $sides ) use ( $resolve_btn_color, $len, $border_side_prop ) {
+			$d = array();
+			if ( ! is_array( $st ) ) { return $d; }
+			$prop  = $border_side_prop( $sides );
+			$style = isset( $st['border_style'] ) ? (string) $st['border_style'] : '';
+			$color = $resolve_btn_color( isset( $st['border_color'] ) ? $st['border_color'] : '' );
+			$bw    = ( isset( $st['border_width'] ) && class_exists( 'FW_Option_Type_Unit_Input' ) )
+				? FW_Option_Type_Unit_Input::to_string( $st['border_width'] )
+				: ( isset( $st['border_width'] ) && ! is_array( $st['border_width'] ) ? (string) $st['border_width'] : '' );
+			$w = $len( $bw );
+
+			if ( $style !== '' ) {
+				$d[] = "{$prop}:" . ( $w !== '' ? $w : '1px' ) . " {$style} " . ( $color !== '' ? $color : 'currentColor' ) . ' !important';
+			} else {
+				if ( $w !== '' )     { $d[] = "{$prop}-width:{$w} !important"; }
+				if ( $color !== '' ) { $d[] = "{$prop}-color:{$color} !important"; }
+			}
+
+			if ( class_exists( 'FW_Option_Type_Box_Shadow' ) && isset( $st['box_shadow'] ) ) {
+				$sh = FW_Option_Type_Box_Shadow::to_css( $st['box_shadow'] );
+				if ( $sh !== '' ) { $d[] = "box-shadow:{$sh} !important"; }
+			}
+			return $d;
+		};
+
+		// Resolve a spacing 'padding' class (p-4 / pt-2 …) to a CSS declaration,
+		// looking the slug's size up in the spacing scale — the same source the
+		// spacing widget uses (Theme Settings → Spacing, else plugin defaults, else
+		// Bootstrap 0–5). Returns e.g. 'padding:1.5rem' or null.
+		$pad_scale_map = array();
+		$pad_scale_src = function_exists( 'unysonplus_get_spacing_scale' ) ? unysonplus_get_spacing_scale() : array();
+		if ( ! is_array( $pad_scale_src ) || empty( $pad_scale_src ) ) {
+			$pad_scale_src = array(
+				array( 'name' => '0', 'size' => '0' ),      array( 'name' => '1', 'size' => '0.25rem' ),
+				array( 'name' => '2', 'size' => '0.5rem' ), array( 'name' => '3', 'size' => '1rem' ),
+				array( 'name' => '4', 'size' => '1.5rem' ), array( 'name' => '5', 'size' => '3rem' ),
+			);
+		}
+		foreach ( $pad_scale_src as $e ) {
+			if ( ! is_array( $e ) || ! isset( $e['name'] ) || $e['name'] === '' ) { continue; }
+			$sslug = strtolower( preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $e['name'] ) );
+			if ( $sslug !== '' ) { $pad_scale_map[ $sslug ] = isset( $e['size'] ) ? (string) $e['size'] : ''; }
+		}
+		$pad_prop = array( 'p' => 'padding', 'pt' => 'padding-top', 'pe' => 'padding-right', 'pb' => 'padding-bottom', 'ps' => 'padding-left' );
+		$resolve_pad_class = function ( $cls ) use ( $pad_prop, $pad_scale_map ) {
+			$cls = trim( (string) $cls );
+			if ( $cls === '' ) { return null; }
+			if ( ! preg_match( '/^(p|pt|pe|pb|ps)-(.+)$/', $cls, $m ) ) { return null; }
+			$slug = strtolower( $m[2] );
+			if ( ! isset( $pad_scale_map[ $slug ] ) ) { return null; }
+			return $pad_prop[ $m[1] ] . ':' . $pad_scale_map[ $slug ];
+		};
+
+		if ( is_array( $border_presets ) ) {
+			foreach ( $border_presets as $bp ) {
+				if ( ! is_array( $bp ) || empty( $bp['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $bp['id'] );
+				if ( $id === '' ) { continue; }
+				$slug = isset( $border_slug_map[ $id ] ) ? $border_slug_map[ $id ] : $id;
+
+				$states = isset( $bp['states'] ) && is_array( $bp['states'] ) ? $bp['states'] : array();
+				$def    = isset( $states['default'] ) && is_array( $states['default'] ) ? $states['default'] : array();
+				$hover  = isset( $states['hover'] )   && is_array( $states['hover'] )   ? $states['hover']   : array();
+
+				$sides      = isset( $bp['border_sides'] ) ? (string) $bp['border_sides'] : 'all';
+				$transition = isset( $bp['transition'] ) ? trim( (string) $bp['transition'] ) : '';
+
+				/* ---- base: .colb-{slug} (radius + transition + default state) ---- */
+				$base   = array();
+				$radius = ( isset( $bp['border_radius'] ) && class_exists( 'FW_Option_Type_Unit_Input' ) )
+					? FW_Option_Type_Unit_Input::to_string( $bp['border_radius'] )
+					: ( isset( $bp['border_radius'] ) && ! is_array( $bp['border_radius'] ) ? (string) $bp['border_radius'] : '' );
+				$radius = $len( $radius );
+				if ( $radius !== '' ) { $base[] = "border-radius:{$radius} !important"; }
+
+				// Padding (spacing value, mode 'padding') -> per-side declarations.
+				// Emitted WITHOUT !important on purpose: the column's own Margin &
+				// Padding (Bootstrap `.p-*` utilities, which ARE !important) then
+				// overrides the preset's padding whenever set, while the preset still
+				// supplies a sensible default when it isn't. 'all' (shorthand) is
+				// emitted first so a per-side value overrides it.
+				$pad_tree = ( isset( $bp['padding']['padding'] ) && is_array( $bp['padding']['padding'] ) ) ? $bp['padding']['padding'] : array();
+				foreach ( array( 'all', 'top', 'right', 'bottom', 'left' ) as $slot ) {
+					$dec = $resolve_pad_class( isset( $pad_tree[ $slot ] ) ? $pad_tree[ $slot ] : '' );
+					if ( $dec !== null ) { $base[] = $dec; }
+				}
+
+				if ( $transition !== '' ) {
+					$tv     = preg_match( '/^[0-9.]+$/', $transition ) ? $transition . 'ms' : $transition;
+					$base[] = "transition:all {$tv} ease !important";
+				}
+				$base = array_merge( $base, $border_state_decls( $def, $sides ) );
+				if ( $base ) { $utility_rules[ ".colb-{$slug}" ] = implode( ';', $base ) . ';'; }
+
+				/* ---- hover diffs ---- */
+				$hov = $border_state_decls( $hover, $sides );
+				if ( $hov ) { $utility_rules[ ".colb-{$slug}:hover" ] = implode( ';', $hov ) . ';'; }
+
+				/* ---- freeform custom CSS ---- */
+				$custom_css = isset( $bp['custom_css'] ) ? (string) $bp['custom_css'] : '';
+				if ( trim( $custom_css ) !== '' ) {
+					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
+					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
+					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".colb-{$slug}", $custom_css );
+				}
+			}
+		}
+
+		// --- Table presets -> .tbl-{slug} rules (applied to the table wrapper) ---
+		// Each saved preset is a reusable table look (Theme Settings → Components →
+		// Tables). Colors are compact-picker values resolved via $resolve_btn_color;
+		// widths/radius/font-size are unit-input; box_shadow rides
+		// FW_Option_Type_Box_Shadow::to_css. The class sits on the .table wrapper and
+		// styles the inner <table> + thead/tbody/tfoot/caption via descendant rules.
+		$table_presets  = function_exists( 'unysonplus_get_table_presets' )     ? unysonplus_get_table_presets()     : array();
+		$table_slug_map = function_exists( 'unysonplus_table_preset_slug_map' ) ? unysonplus_table_preset_slug_map() : array();
+
+		$tp_len = function ( $u ) use ( $len ) {
+			if ( is_array( $u ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) {
+				return $len( FW_Option_Type_Unit_Input::to_string( $u ) );
+			}
+			return $len( is_array( $u ) ? '' : (string) $u );
+		};
+		// "{w} {style} {color}" border shorthand (or '' when style is empty).
+		$tp_border = function ( $style, $width, $color ) use ( $tp_len, $resolve_btn_color ) {
+			$style = (string) $style;
+			if ( $style === '' ) { return ''; }
+			$w = $tp_len( $width );
+			$c = $resolve_btn_color( $color );
+			return ( $w !== '' ? $w : '1px' ) . ' ' . $style . ' ' . ( $c !== '' ? $c : 'currentColor' );
+		};
+
+		if ( is_array( $table_presets ) ) {
+			foreach ( $table_presets as $tp ) {
+				if ( ! is_array( $tp ) || empty( $tp['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $tp['id'] );
+				if ( $id === '' ) { continue; }
+				$slug = isset( $table_slug_map[ $id ] ) ? $table_slug_map[ $id ] : $id;
+				$sel  = ".tbl-{$slug}";
+
+				$sec = ( isset( $tp['sections'] ) && is_array( $tp['sections'] ) ) ? $tp['sections'] : array();
+				$get = function ( $name ) use ( $sec ) { return isset( $sec[ $name ] ) && is_array( $sec[ $name ] ) ? $sec[ $name ] : array(); };
+				$header = $get( 'header' ); $body = $get( 'body' ); $striped = $get( 'striped' );
+				$hover = $get( 'hover' ); $footer = $get( 'footer' ); $caption = $get( 'caption' );
+
+				/* ---- wrapper frame: border + radius (clipped) + shadow ---- */
+				$frame = array();
+				$ob = $tp_border( $tp['outer_border_style'] ?? '', $tp['outer_border_width'] ?? '', $tp['outer_border_color'] ?? '' );
+				if ( $ob !== '' ) { $frame[] = "border:{$ob} !important"; }
+				$radius = $tp_len( $tp['border_radius'] ?? '' );
+				if ( $radius !== '' ) { $frame[] = "border-radius:{$radius} !important"; $frame[] = 'overflow:hidden !important'; }
+				if ( class_exists( 'FW_Option_Type_Box_Shadow' ) && isset( $tp['outer_shadow'] ) ) {
+					$sh = FW_Option_Type_Box_Shadow::to_css( $tp['outer_shadow'] );
+					if ( $sh !== '' ) { $frame[] = "box-shadow:{$sh} !important"; }
+				}
+				if ( $frame ) { $utility_rules[ $sel ] = implode( ';', $frame ) . ';'; }
+
+				/* ---- inner table ---- */
+				$tbl = array( 'width:100% !important', 'border-collapse:collapse !important', 'margin:0 !important' );
+				$fs  = $tp_len( $tp['cell_font_size'] ?? '' );
+				if ( $fs !== '' ) { $tbl[] = "font-size:{$fs} !important"; }
+				$utility_rules[ "{$sel} > table" ] = implode( ';', $tbl ) . ';';
+
+				/* ---- cell base: padding + grid lines ---- */
+				$cell = array();
+				$py = $tp_len( $tp['cell_padding_y'] ?? '' );
+				$px = $tp_len( $tp['cell_padding_x'] ?? '' );
+				if ( $py !== '' || $px !== '' ) {
+					$cell[] = 'padding:' . ( $py !== '' ? $py : '0' ) . ' ' . ( $px !== '' ? $px : '0' ) . ' !important';
+				}
+				$grid_lines = isset( $tp['grid_lines'] ) ? (string) $tp['grid_lines'] : 'none';
+				if ( $grid_lines !== 'none' ) {
+					$gstyle = isset( $tp['grid_style'] ) && $tp['grid_style'] !== '' ? (string) $tp['grid_style'] : 'solid';
+					$gline  = $tp_border( $gstyle, $tp['grid_width'] ?? '', $tp['grid_color'] ?? '' );
+					if ( $gline !== '' ) {
+						if ( $grid_lines === 'horizontal' || $grid_lines === 'both' ) { $cell[] = "border-bottom:{$gline} !important"; }
+						if ( $grid_lines === 'vertical'   || $grid_lines === 'both' ) { $cell[] = "border-right:{$gline} !important"; }
+					}
+				}
+				if ( $cell ) { $utility_rules[ "{$sel} th,{$sel} td" ] = implode( ';', $cell ) . ';'; }
+
+				/* ---- header ---- */
+				$hd = array();
+				$hbg = $resolve_btn_color( $header['bg_color'] ?? '' );   if ( $hbg !== '' ) { $hd[] = "background-color:{$hbg} !important"; }
+				$htc = $resolve_btn_color( $header['text_color'] ?? '' ); if ( $htc !== '' ) { $hd[] = "color:{$htc} !important"; }
+				if ( ! empty( $header['font_weight'] ) )    { $hd[] = 'font-weight:' . preg_replace( '/[^a-z0-9]/i', '', (string) $header['font_weight'] ) . ' !important'; }
+				if ( ! empty( $header['text_transform'] ) ) { $hd[] = 'text-transform:' . preg_replace( '/[^a-z]/i', '', (string) $header['text_transform'] ) . ' !important'; }
+				$hb = $tp_border( $header['border_style'] ?? '', $header['border_width'] ?? '', $header['border_color'] ?? '' );
+				if ( $hb !== '' ) { $hd[] = "border-bottom:{$hb} !important"; }
+				if ( $hd ) { $utility_rules[ "{$sel} > table > thead > tr > th,{$sel} > table > thead > tr > td" ] = implode( ';', $hd ) . ';'; }
+
+				/* ---- body ---- */
+				$bd = array();
+				$bbg = $resolve_btn_color( $body['bg_color'] ?? '' );   if ( $bbg !== '' ) { $bd[] = "background-color:{$bbg} !important"; }
+				$btc = $resolve_btn_color( $body['text_color'] ?? '' ); if ( $btc !== '' ) { $bd[] = "color:{$btc} !important"; }
+				$transition = isset( $tp['transition'] ) ? trim( (string) $tp['transition'] ) : '';
+				if ( $transition !== '' ) {
+					$tv   = preg_match( '/^[0-9.]+$/', $transition ) ? $transition . 'ms' : $transition;
+					$bd[] = "transition:background-color {$tv} ease,color {$tv} ease";
+				}
+				if ( $bd ) { $utility_rules[ "{$sel} > table > tbody > tr > td" ] = implode( ';', $bd ) . ';'; }
+
+				/* ---- striped ---- */
+				if ( isset( $striped['enabled'] ) && $striped['enabled'] === 'yes' ) {
+					$sbg = $resolve_btn_color( $striped['bg_color'] ?? '' );
+					if ( $sbg !== '' ) { $utility_rules[ "{$sel} > table > tbody > tr:nth-child(2n) > td" ] = "background-color:{$sbg} !important;"; }
+				}
+
+				/* ---- row hover ---- */
+				$hv = array();
+				$vbg = $resolve_btn_color( $hover['bg_color'] ?? '' );   if ( $vbg !== '' ) { $hv[] = "background-color:{$vbg} !important"; }
+				$vtc = $resolve_btn_color( $hover['text_color'] ?? '' ); if ( $vtc !== '' ) { $hv[] = "color:{$vtc} !important"; }
+				if ( $hv ) { $utility_rules[ "{$sel} > table > tbody > tr:hover > td" ] = implode( ';', $hv ) . ';'; }
+
+				/* ---- footer ---- */
+				$ft = array();
+				$fbg = $resolve_btn_color( $footer['bg_color'] ?? '' );   if ( $fbg !== '' ) { $ft[] = "background-color:{$fbg} !important"; }
+				$ftc = $resolve_btn_color( $footer['text_color'] ?? '' ); if ( $ftc !== '' ) { $ft[] = "color:{$ftc} !important"; }
+				if ( ! empty( $footer['font_weight'] ) ) { $ft[] = 'font-weight:' . preg_replace( '/[^a-z0-9]/i', '', (string) $footer['font_weight'] ) . ' !important'; }
+				$fb = $tp_border( $footer['border_style'] ?? '', $footer['border_width'] ?? '', $footer['border_color'] ?? '' );
+				if ( $fb !== '' ) { $ft[] = "border-top:{$fb} !important"; }
+				if ( $ft ) { $utility_rules[ "{$sel} > table > tfoot > tr > th,{$sel} > table > tfoot > tr > td" ] = implode( ';', $ft ) . ';'; }
+
+				/* ---- caption ---- */
+				$cp = array();
+				$cc = $resolve_btn_color( $caption['color'] ?? '' ); if ( $cc !== '' ) { $cp[] = "color:{$cc} !important"; }
+				$cfs = $tp_len( $caption['font_size'] ?? '' );       if ( $cfs !== '' ) { $cp[] = "font-size:{$cfs} !important"; }
+				if ( ! empty( $caption['font_style'] ) )             { $cp[] = 'font-style:' . preg_replace( '/[^a-z]/i', '', (string) $caption['font_style'] ) . ' !important'; }
+				if ( $cp ) { $utility_rules[ "{$sel} caption" ] = implode( ';', $cp ) . ';'; }
+
+				/* ---- freeform custom CSS ---- */
+				$custom_css = isset( $tp['custom_css'] ) ? (string) $tp['custom_css'] : '';
+				if ( trim( $custom_css ) !== '' ) {
+					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
+					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
+					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $sel, $custom_css );
+				}
+			}
+		}
+
+		// --- Custom hover animations -> .btnfx-c-{slug} rules ---
+		// User-authored effects (Theme Settings → Buttons → Hover Animations). Their
+		// CSS uses {{BTN}}/{{ANIM}} tokens, is scrubbed of markup/script tricks, and is
+		// appended to the preset stylesheet (loaded front end + admin), so they appear
+		// in the Button shortcode's Hover Animation dropdown next to the built-ins.
+		$custom_anims  = function_exists( 'unysonplus_get_custom_hover_animations' ) ? unysonplus_get_custom_hover_animations() : array();
+		$anim_slug_map = function_exists( 'unysonplus_custom_hover_animation_slug_map' ) ? unysonplus_custom_hover_animation_slug_map() : array();
+		if ( is_array( $custom_anims ) ) {
+			foreach ( $custom_anims as $ca ) {
+				if ( ! is_array( $ca ) || empty( $ca['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $ca['id'] );
+				if ( $id === '' || ! isset( $anim_slug_map[ $id ] ) ) { continue; }
+				$slug = $anim_slug_map[ $id ];
+
+				$anim_css = isset( $ca['css'] ) ? (string) $ca['css'] : '';
+				if ( trim( $anim_css ) === '' ) { continue; }
+
+				// Scrub: no markup, no script/import/expression/protocol tricks.
+				$anim_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $anim_css );
+				$anim_css = str_replace( array( '<', '>' ), '', $anim_css );
+				$anim_css = preg_replace( '/@import\b/i', '', $anim_css );
+				$anim_css = preg_replace( '/javascript\s*:/i', '', $anim_css );
+				$anim_css = preg_replace( '/expression\s*\(/i', '', $anim_css );
+
+				// Tokens -> concrete, per-entry namespaced selectors.
+				$anim_css = str_replace(
+					array( '{{BTN}}', '{{ANIM}}' ),
+					array( ".btnfx-c-{$slug}", "btnfxc-{$slug}" ),
+					$anim_css
+				);
+
+				$button_extra_css .= "\n" . $anim_css;
+			}
+		}
+
+		// --- Spacing scale -> CSS variables + Bootstrap-class overrides ---
+		// Emits `:root { --spacer-{slug} }` plus utility rules that override
+		// Bootstrap's `.m-N` / `.p-N` / `.mt-N` etc. Our presets-css now loads
+		// AFTER Bootstrap (`unysonplus_enqueue_preset_css` hooks priority 20
+		// in `framework/includes/bootstrap.php`'s sibling
+		// `unysonplus_enqueue_bootstrap` at priority 5), so plain `.m-N` at
+		// the same specificity as Bootstrap's `.m-N` wins via source order
+		// — no `:root` boost needed. We keep `!important` because user-saved
+		// custom slugs (`.m-huge` etc.) need to win over any utility rule
+		// regardless of cascading order from child themes or theme overrides.
+		//
+		// Rules are emitted in by-property order (least-specific shorthand
+		// first, single-side last) so that, with equal specificity, source
+		// order makes `.mt-N` reliably override `.m-M`. Matches Bootstrap's
+		// own utility ordering so users get the same mental model.
+		$spacing_scale = function_exists( 'unysonplus_get_spacing_scale' ) ? unysonplus_get_spacing_scale() : array();
+		if ( is_array( $spacing_scale ) ) {
+			$prop_order = array( 'm', 'mx', 'my', 'mt', 'mb', 'ms', 'me',
+			                     'p', 'px', 'py', 'pt', 'pb', 'ps', 'pe' );
+			$buckets    = array_fill_keys( $prop_order, array() );
+
+			foreach ( $spacing_scale as $entry ) {
+				if ( ! is_array( $entry ) ) { continue; }
+				if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
+				if ( ! isset( $entry['size'] ) || $entry['size'] === '' ) { continue; }
+
+				$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $entry['name'] );
+				if ( $slug === '' ) { continue; }
+				$slug = strtolower( $slug );
+
+				$value = $entry['size'];
+				$var   = "var(--spacer-{$slug})";
+
+				$tokens[ "--spacer-{$slug}" ] = $value;
+
+				// Margin
+				$buckets['m'][  ".m-{$slug}"  ] = "margin:{$var} !important;";
+				$buckets['mx'][ ".mx-{$slug}" ] = "margin-right:{$var} !important;margin-left:{$var} !important;";
+				$buckets['my'][ ".my-{$slug}" ] = "margin-top:{$var} !important;margin-bottom:{$var} !important;";
+				$buckets['mt'][ ".mt-{$slug}" ] = "margin-top:{$var} !important;";
+				$buckets['mb'][ ".mb-{$slug}" ] = "margin-bottom:{$var} !important;";
+				$buckets['ms'][ ".ms-{$slug}" ] = "margin-inline-start:{$var} !important;";
+				$buckets['me'][ ".me-{$slug}" ] = "margin-inline-end:{$var} !important;";
+
+				// Padding
+				$buckets['p'][  ".p-{$slug}"  ] = "padding:{$var} !important;";
+				$buckets['px'][ ".px-{$slug}" ] = "padding-right:{$var} !important;padding-left:{$var} !important;";
+				$buckets['py'][ ".py-{$slug}" ] = "padding-top:{$var} !important;padding-bottom:{$var} !important;";
+				$buckets['pt'][ ".pt-{$slug}" ] = "padding-top:{$var} !important;";
+				$buckets['pb'][ ".pb-{$slug}" ] = "padding-bottom:{$var} !important;";
+				$buckets['ps'][ ".ps-{$slug}" ] = "padding-inline-start:{$var} !important;";
+				$buckets['pe'][ ".pe-{$slug}" ] = "padding-inline-end:{$var} !important;";
+			}
+
+			foreach ( $prop_order as $prop ) {
+				foreach ( $buckets[ $prop ] as $sel => $body ) {
+					$utility_rules[ $sel ] = $body;
+				}
+			}
+		}
+
+		// --- Gap scale -> CSS variables + row gutter override machinery ---
+		// All three layers route through Bootstrap's `--bs-gutter-x` /
+		// `--bs-gutter-y` custom properties so that Bootstrap's own
+		// `.row > *` padding calc (and our `.fw-row > *` mirror in
+		// `framework/extensions/builder/static/css/frontend-grid.css`) reads
+		// the overridden values automatically — we never touch column
+		// padding rules directly.
+		//
+		// Presets-css loads AFTER Bootstrap (priority 20 vs Bootstrap's 5),
+		// so the cascade is decided by:
+		//
+		//   1. Site default (`.row, .fw-row`, specificity 0,1,0): beats
+		//      Bootstrap's own `.row` on source order.
+		//
+		//   2. Per-section modifier (`.section--gap-{slug} .row`,
+		//      specificity 0,2,0): beats the site default on specificity.
+		//
+		//   3. Per-row utility (`.g-{slug}` etc., specificity 0,1,0 + !important):
+		//      `!important` beats the per-section modifier's higher
+		//      specificity — this is the only layer that needs !important
+		//      because users add `.g-N` to one specific row to override the
+		//      section default it sits inside.
+		$gap_scale = function_exists( 'unysonplus_get_gap_scale' ) ? unysonplus_get_gap_scale() : array();
+		if ( is_array( $gap_scale ) && ! empty( $gap_scale ) ) {
+			$default_gap   = function_exists( 'unysonplus_get_default_gap' )   ? unysonplus_get_default_gap()   : '';
+			$default_gap_x = function_exists( 'unysonplus_get_default_gap_x' ) ? unysonplus_get_default_gap_x() : '';
+			$default_gap_y = function_exists( 'unysonplus_get_default_gap_y' ) ? unysonplus_get_default_gap_y() : '';
+
+			// Sanitize the picked slugs so a tampered DB value can't inject
+			// arbitrary chars into a selector or var() reference.
+			$default_gap   = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $default_gap );
+			$default_gap_x = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $default_gap_x );
+			$default_gap_y = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $default_gap_y );
+
+			// Tokens + utility / modifier classes per scale entry.
+			$valid_slugs = array();
+			foreach ( $gap_scale as $entry ) {
+				if ( ! is_array( $entry ) ) { continue; }
+				if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
+				if ( ! isset( $entry['size'] ) || $entry['size'] === '' ) { continue; }
+
+				$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $entry['name'] );
+				if ( $slug === '' ) { continue; }
+				$slug = strtolower( $slug );
+
+				$value = $entry['size'];
+				$var   = "var(--gap-{$slug})";
+
+				$tokens[ "--gap-{$slug}" ] = $value;
+				$valid_slugs[ $slug ]      = true;
+
+				// Per-row utility classes (override Bootstrap's stock `.g-N` AND
+				// our per-section modifier). `!important` because the per-section
+				// modifier below has higher specificity (0,2,0 > 0,1,0); without
+				// !important the per-section rule would win on a row inside a
+				// section, even though "user added .g-N to this specific row"
+				// is the more intentional override.
+				$utility_rules[ ".g-{$slug}" ]  = "--bs-gutter-x:{$var} !important;--bs-gutter-y:{$var} !important;";
+				$utility_rules[ ".gx-{$slug}" ] = "--bs-gutter-x:{$var} !important;";
+				$utility_rules[ ".gy-{$slug}" ] = "--bs-gutter-y:{$var} !important;";
+
+				// Per-section modifier classes — scope the gap to every .row
+				// inside a section. No !important: specificity (0,2,0) beats
+				// the site default's (0,1,0), and the per-row utility above
+				// uses !important to win over us when needed.
+				$utility_rules[ ".section--gap-{$slug} .row, .section--gap-{$slug} .fw-row" ]     = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
+				$utility_rules[ ".section--gap-x-{$slug} .row, .section--gap-x-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
+				$utility_rules[ ".section--gap-y-{$slug} .row, .section--gap-y-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
+			}
+
+			// Site-wide default gutter on every .row. Resolve the three fields
+			// (Default Gap / Default Gap X / Default Gap Y) to a single
+			// effective {X, Y} pair — X/Y win when set, fall through to
+			// Default Gap otherwise — and emit one combined rule. No
+			// !important: presets-css loads AFTER Bootstrap (priority 20 vs 5),
+			// so this `.row` rule beats Bootstrap's stock `.row { --bs-gutter-x: 1.5rem }`
+			// on source order at the same specificity.
+			$eff_x = ( $default_gap_x !== '' && isset( $valid_slugs[ $default_gap_x ] ) ) ? $default_gap_x : ( ( $default_gap !== '' && isset( $valid_slugs[ $default_gap ] ) ) ? $default_gap : '' );
+			$eff_y = ( $default_gap_y !== '' && isset( $valid_slugs[ $default_gap_y ] ) ) ? $default_gap_y : ( ( $default_gap !== '' && isset( $valid_slugs[ $default_gap ] ) ) ? $default_gap : '' );
+
+			if ( $eff_x !== '' || $eff_y !== '' ) {
+				$body = '';
+				if ( $eff_x !== '' ) { $body .= "--bs-gutter-x:var(--gap-{$eff_x});"; }
+				if ( $eff_y !== '' ) { $body .= "--bs-gutter-y:var(--gap-{$eff_y});"; }
+				$utility_rules[ ".row, .fw-row" ] = $body;
+			}
+		}
+
+		// --- Mobile overrides for font-size tokens (tiered scaling) ---
+		$mobile_overrides = array();
+		if ( function_exists( 'unysonplus_mobile_font_size_scale' ) ) {
+			foreach ( $tokens as $name => $value ) {
+				if ( strpos( $name, '--font-size-' ) !== 0 ) { continue; }
+				if ( ! preg_match( '/^(\d+(?:\.\d+)?)px$/', $value, $m ) ) { continue; }
+				$desktop_px = floatval( $m[1] );
+				$mobile_px  = unysonplus_mobile_font_size_scale( $desktop_px, 'font_size_preset' );
+				if ( $mobile_px != $desktop_px ) {
+					$mobile_overrides[ $name ] = $mobile_px . 'px';
+				}
+			}
+		}
+
+		// Site-wide Custom CSS (the theme contributes its Theme Settings → Misc
+		// → Custom CSS through this filter). Folded into the presets file so it
+		// rides the same combiner-absorbed, cacheable handle and is no longer
+		// emitted as its own inline <style> block in wp_head.
+		$global_extra = trim( (string) apply_filters( 'unysonplus_global_css', '' ) );
+
+		if ( empty( $tokens ) && empty( $utility_rules ) && $global_extra === '' ) { return ''; }
+
+		if ( $pretty ) {
+			$css = "";
+			if ( ! empty( $tokens ) ) {
+				$css .= ":root {\n";
+				foreach ( $tokens as $name => $value ) { $css .= "\t{$name}: {$value};\n"; }
+				$css .= "}\n";
+			}
+			foreach ( $utility_rules as $sel => $body ) { $css .= "{$sel} { {$body} }\n"; }
+			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ) . "\n"; }
+			if ( ! empty( $mobile_overrides ) ) {
+				$css .= "@media (max-width: 767.98px) {\n\t:root {\n";
+				foreach ( $mobile_overrides as $name => $value ) { $css .= "\t\t{$name}: {$value};\n"; }
+				$css .= "\t}\n}\n";
+			}
+		} else {
+			$css = '';
+			if ( ! empty( $tokens ) ) {
+				$css .= ':root{';
+				foreach ( $tokens as $name => $value ) { $css .= $name . ':' . $value . ';'; }
+				$css .= '}';
+			}
+			foreach ( $utility_rules as $sel => $body ) { $css .= $sel . '{' . $body . '}'; }
+			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ); }
+			if ( ! empty( $mobile_overrides ) ) {
+				$css .= '@media (max-width:767.98px){:root{';
+				foreach ( $mobile_overrides as $name => $value ) { $css .= $name . ':' . $value . ';'; }
+				$css .= '}}';
+			}
+		}
+
+		// Append site-wide Custom CSS last so it can override any preset rule.
+		if ( $global_extra !== '' ) {
+			$css .= ( $pretty ? "\n" : '' ) . $global_extra;
+		}
+
+		return $css;
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
+	/**
+	 * Stable content hash of every input that drives the preset CSS.
+	 * Used as the filename suffix so a preset change yields a new URL
+	 * (auto cache-bust for browsers, CDN, and the Asset Optimizer combiner).
+	 */
+	function unysonplus_preset_css_hash() {
+		$inputs = array(
+			'schema'    => 10, // bumped: table presets (.tbl-{slug}) folded in
+			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
+			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),
+			'colors'    => function_exists( 'unysonplus_get_color_presets' )        ? unysonplus_get_color_presets()        : array(),
+			'btn_color' => function_exists( 'unysonplus_get_button_color_presets' ) ? unysonplus_get_button_color_presets() : array(),
+			'border'    => function_exists( 'unysonplus_get_border_presets' )       ? unysonplus_get_border_presets()       : array(),
+			'table'     => function_exists( 'unysonplus_get_table_presets' )        ? unysonplus_get_table_presets()        : array(),
+			'btn_size'  => function_exists( 'unysonplus_get_button_size_presets' )  ? unysonplus_get_button_size_presets()  : array(),
+			'btn_anim'  => function_exists( 'unysonplus_get_custom_hover_animations' ) ? unysonplus_get_custom_hover_animations() : array(),
+			'spacing'   => function_exists( 'unysonplus_get_spacing_scale' )        ? unysonplus_get_spacing_scale()        : array(),
+			'gap'       => function_exists( 'unysonplus_get_gap_scale' )            ? unysonplus_get_gap_scale()            : array(),
+			'gap_def'   => function_exists( 'unysonplus_get_default_gap' )          ? unysonplus_get_default_gap()          : '',
+			'gap_def_x' => function_exists( 'unysonplus_get_default_gap_x' )        ? unysonplus_get_default_gap_x()        : '',
+			'gap_def_y' => function_exists( 'unysonplus_get_default_gap_y' )        ? unysonplus_get_default_gap_y()        : '',
+		);
+		return substr( md5( wp_json_encode( $inputs ) ), 0, 12 );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_ensure_preset_css_file' ) ) :
+	/**
+	 * Ensures `wp-content/uploads/unysonplus/presets-{hash}.css` exists for the
+	 * current preset state. Lazily purges stale `presets-*.css` files in the
+	 * same directory whenever a new hash is generated.
+	 *
+	 * @return array|false ['url' => string, 'path' => string, 'hash' => string] on success,
+	 *                     false on any filesystem failure (caller should fall back to inline).
+	 */
+	function unysonplus_ensure_preset_css_file() {
+		$upload = wp_upload_dir();
+		if ( ! empty( $upload['error'] ) ) {
+			return false;
+		}
+
+		$hash = unysonplus_preset_css_hash();
+		$dir  = trailingslashit( $upload['basedir'] ) . 'unysonplus';
+		$file = 'presets-' . $hash . '.css';
+		$path = $dir . '/' . $file;
+		$url  = trailingslashit( $upload['baseurl'] ) . 'unysonplus/' . $file;
+
+		if ( file_exists( $path ) ) {
+			return array( 'url' => $url, 'path' => $path, 'hash' => $hash );
+		}
+
+		if ( ! wp_mkdir_p( $dir ) ) {
+			return false;
+		}
+
+		// Build the CSS body and prepend a tiny header so the file is
+		// self-describing when opened in DevTools.
+		$css = unysonplus_build_presets_css_string();
+		if ( $css === '' ) {
+			return false;
+		}
+		$header = "/* unysonplus presets - auto-generated, do not edit. hash={$hash} */\n";
+
+		// Self-heal: delete any other presets-*.css from a previous hash so the
+		// uploads dir doesn't accumulate stale generations. Best-effort.
+		$old_files = glob( $dir . '/presets-*.css' );
+		if ( is_array( $old_files ) ) {
+			foreach ( $old_files as $old ) {
+				if ( $old !== $path ) {
+					@unlink( $old );
+				}
+			}
+		}
+
+		$written = @file_put_contents( $path, $header . $css, LOCK_EX );
+		if ( $written === false ) {
+			return false;
+		}
+
+		return array( 'url' => $url, 'path' => $path, 'hash' => $hash );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_styling_presets_enabled' ) ) :
+	/**
+	 * Master switch for the whole styling layer (Styling tab + preset pickers +
+	 * Component Presets editor + this preset stylesheet). Default ON. Off = the
+	 * "bare, structure-only page builder" mode (Page Builder settings →
+	 * Styling Presets). A non-null default short-circuits the ext-settings read so
+	 * it never loads the settings schema (avoids firing fw_option_types_init early).
+	 */
+	function unysonplus_styling_presets_enabled() {
+		if ( function_exists( 'fw_get_db_ext_settings_option' ) ) {
+			// Opt-OUT checkbox `disable_styling_presets` (default false = enabled).
+			$disabled = fw_get_db_ext_settings_option( 'page-builder', 'disable_styling_presets', false );
+			return ! ( $disabled === true || $disabled === '1' || $disabled === 1 || $disabled === 'yes' );
+		}
+		return true;
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_enqueue_preset_css' ) ) :
+	/**
+	 * Enqueues the generated preset CSS file under the handle `unysonplus-presets`.
+	 * Hooked early on wp_enqueue_scripts / admin_enqueue_scripts so the Asset
+	 * Optimizer absorbs the handle at its priority-9999 pass.
+	 *
+	 * If the file write fails, the inline fallback below handles emission.
+	 */
+	function unysonplus_enqueue_preset_css() {
+		if ( ! unysonplus_styling_presets_enabled() ) {
+			return; // bare mode — no preset stylesheet
+		}
+		$file = unysonplus_ensure_preset_css_file();
+		if ( $file === false ) {
+			return;
+		}
+		// Pass null for $ver because the hash is already in the filename — no
+		// need for a `?ver=` query string that would defeat the immutable URL.
+		wp_enqueue_style( 'unysonplus-presets', $file['url'], array(), null );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_inline_preset_css_fallback' ) ) :
+	/**
+	 * Inline `<style id="unysonplus-presets">` fallback that only fires when
+	 * the file-based enqueue didn't take (read-only filesystem, etc.).
+	 *
+	 * Hooked at wp_head / admin_head priority 2 — after wp_enqueue_scripts
+	 * has run at priority 1 — so wp_style_is( 'enqueued' ) is reliable here.
+	 */
+	function unysonplus_inline_preset_css_fallback() {
+		if ( ! unysonplus_styling_presets_enabled() ) {
+			return; // bare mode — no preset stylesheet
+		}
+		if ( wp_style_is( 'unysonplus-presets', 'enqueued' ) ) {
+			return;
+		}
+		$css = unysonplus_build_presets_css_string();
+		if ( $css === '' ) {
+			return;
+		}
+		echo '<style id="unysonplus-presets">' . $css . '</style>';
+	}
+endif;
+
+// Late priority so presets land AFTER:
+//   - Plugin-bundled Bootstrap (priority 5 in framework/includes/bootstrap.php)
+//   - Theme stylesheets (priority 10 by convention)
+//   - Plugin extension stylesheets (frontend-grid, breadcrumbs, forms — priority 10)
+//   - Per-shortcode CSS (priority 30, hard-coded by Unyson's shortcodes
+//     extension at framework/extensions/shortcodes/class-fw-extension-shortcodes.php
+//     so it can `wp_add_inline_style('theme-style-handle', ...)` in
+//     `fw_ext_shortcodes_enqueue_static:{name}` hooks)
+//
+// Priority 35 puts us past all four layers and gives child themes / late
+// per-page customisations a clean window (priority 40+) to override presets.
+// With presets winning source order, the spacing/gap utility rules drop
+// their previous `:root` boost and (mostly) `!important` — see the cascade
+// notes at the top of `unysonplus_build_presets_css_string()`.
+add_action( 'wp_enqueue_scripts',    'unysonplus_enqueue_preset_css', 35 );
+add_action( 'admin_enqueue_scripts', 'unysonplus_enqueue_preset_css', 35 );
+add_action( 'wp_head',               'unysonplus_inline_preset_css_fallback', 99 );
+add_action( 'admin_head',            'unysonplus_inline_preset_css_fallback', 99 );

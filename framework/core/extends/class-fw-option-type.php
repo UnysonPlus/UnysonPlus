@@ -226,10 +226,29 @@ abstract class FW_Option_Type
                         $html_attributes['data-fw-for-js'] = json_encode($data_for_js);
                 }
 
+                $inner_html = $this->_render( $id, $this->load_callbacks( $option ), $data );
+
+                /**
+                 * Dynamic Content picker trigger.
+                 *
+                 * Appended (in admin) for any option whose definition opts in with
+                 * 'dynamic_content' => true — by default the Text / Short Text /
+                 * Textarea / Rich Editor types. The surrounding descriptor wrapper
+                 * already carries data-fw-option-id / data-fw-option-type, which the
+                 * picker JS uses to know how to insert the {{token}}.
+                 */
+                if (
+                        !empty($option['dynamic_content'])
+                        && class_exists('FW_Dynamic_Content')
+                        && (is_admin() || (defined('DOING_AJAX') && DOING_AJAX))
+                ) {
+                        $inner_html .= FW_Dynamic_Content::trigger_html();
+                }
+
                 return fw_html_tag(
                         'div',
                         $html_attributes,
-                        $this->_render( $id, $this->load_callbacks( $option ), $data )
+                        $inner_html
                 );
         }
 
@@ -278,6 +297,39 @@ abstract class FW_Option_Type
                                         fw()->manifest->get_version(),
                                         true
                                 );
+
+                                /**
+                                 * Dynamic Content picker assets — enqueued once alongside the
+                                 * shared option-type static. The localized tag list is the same
+                                 * registry the frontend resolver uses (single source of truth).
+                                 */
+                                if (function_exists('fw_dynamic_content')) {
+                                        wp_enqueue_style('dashicons');
+                                        wp_enqueue_style(
+                                                'fw-dynamic-content',
+                                                fw_get_framework_directory_uri('/includes/dynamic-content/static/css/dynamic-content.css'),
+                                                array('fw'),
+                                                fw()->manifest->get_version()
+                                        );
+                                        wp_enqueue_script(
+                                                'fw-dynamic-content',
+                                                fw_get_framework_directory_uri('/includes/dynamic-content/static/js/dynamic-content.js'),
+                                                array('jquery', 'fw-events', 'fw', 'fw-reactive-options'),
+                                                fw()->manifest->get_version(),
+                                                true
+                                        );
+                                        wp_localize_script('fw-dynamic-content', '_fw_dynamic_content', array(
+                                                'tags' => fw_dynamic_content()->get_tags_for_js(),
+                                                'l10n' => array(
+                                                        'search'        => __('Search…', 'fw'),
+                                                        'no_results'    => __('No tags found', 'fw'),
+                                                        'insert'        => __('Insert', 'fw'),
+                                                        'back'          => __('Back', 'fw'),
+                                                        'fallback'      => __('Fallback', 'fw'),
+                                                        'editor_button' => __('Dynamic Content', 'fw'),
+                                                ),
+                                        ));
+                                }
 
                                 $option_types_static_enqueued = true;
                         }

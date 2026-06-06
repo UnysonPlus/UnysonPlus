@@ -81,6 +81,35 @@
 				"47": "?"
 			};
 
+		var loadedFonts = (typeof Set !== 'undefined') ? new Set() : null;
+		var googleFontNames = (typeof Set !== 'undefined') ? new Set() : null;
+		if (googleFontNames && googleFonts && googleFonts['items']) {
+			_.each(googleFonts['items'], function (item) {
+				googleFontNames.add(item['family']);
+			});
+		}
+
+		function loadGoogleFont(family) {
+			if (!loadedFonts || !googleFontNames) return;
+			if (loadedFonts.has(family) || !googleFontNames.has(family)) return;
+			loadedFonts.add(family);
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'https://fonts.googleapis.com/css?family=' +
+				encodeURIComponent(family).replace(/%20/g, '+') +
+				'&display=swap';
+			document.head.appendChild(link);
+		}
+
+		var fontObserver = (typeof IntersectionObserver !== 'undefined' && loadedFonts) ? new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				if (entry.isIntersecting) {
+					var family = entry.target.getAttribute('data-value');
+					if (family) loadGoogleFont(family);
+				}
+			});
+		}, { rootMargin: '50px' }) : null;
+
 		fwEvents.on('fw:options:init', function (data) {
 			data.$elements.find(optionTypeClass +':not(.initialized)').each(function(){
 				var $option = $(this);
@@ -117,6 +146,20 @@
 					$fontFamilySelect
 						.html(getFontsOptionHTML($fontFamilySelect.attr('data-value')))
 						.selectize({
+							render: {
+								option: function (item, escape) {
+									return '<div data-value="' + escape(item.value) + '" data-selectable="" class="option" style="font-family: \'' + escape(item.value) + '\', sans-serif;">' + escape(item.text) + '</div>';
+								},
+								item: function (item, escape) {
+									return '<div class="item" style="font-family: \'' + escape(item.value) + '\', sans-serif;">' + escape(item.text) + '</div>';
+								}
+							},
+							onDropdownOpen: function ($dropdown) {
+								if (!fontObserver) return;
+								$dropdown.find('.option').each(function () {
+									fontObserver.observe(this);
+								});
+							},
 							onChange: function (selected) {
 								var results = $.grep(googleFonts['items'], function (font) { return font['family'] === selected; }),
 									$variations = $option.find('.fw-option-typography-v2-option-variation'),

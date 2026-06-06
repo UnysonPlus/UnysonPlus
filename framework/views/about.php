@@ -57,10 +57,10 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 		<div class="feature-section one-col">
 			<div class="col" style="margin-top: 0;">
 				<h2>Try Brizy: <b>An effortless way</b> to create WordPress pages visually! &#x1F389</h2>
-				<p style="text-align: center;font-size: 16px;"><?php _e( 'No designer or coding skills required.' ); ?></p>
+				<p style="text-align: center;font-size: 16px;"><?php _e( 'No designer or coding skills required.', 'fw' ); ?></p>
 				<p class="fw-brz">
-					<a class="fw-brz__btn-install" href="<?php echo $url_install_plugin; ?>">
-						<?php _e( 'Install Now | for FREE' ); ?>
+					<a class="fw-brz__btn-install" href="<?php echo esc_url( $url_install_plugin ); ?>">
+						<?php _e( 'Install Now | for FREE', 'fw' ); ?>
 					</a>
 				</p>
 			</div>
@@ -72,7 +72,7 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 
 		<div class="floating-header-section" style="margin-bottom: 60px;">
 			<div class="section-header">
-				<h2><?php _e( 'Create & Edit Everything Visually' ); ?></h2>
+				<h2><?php _e( 'Create & Edit Everything Visually', 'fw' ); ?></h2>
 			</div>
 
 			<div class="section-content">
@@ -80,29 +80,29 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-1.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Choose from a lot of elements to create your own design' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Choose from a lot of elements to create your own design', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-2.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Start from over 150 pre-made blocks to create your page' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Start from over 150 pre-made blocks to create your page', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-3.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'The interface shows only what’s needed for the task at hand' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'The interface shows only what’s needed for the task at hand', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-4.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Know where your elements will drop when you drag them' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Know where your elements will drop when you drag them', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
-					<a class="fw-btn-install-border" href="<?php echo $url_install_plugin; ?>">
-						<?php _e( 'Install Now & Start Creating' ); ?>
+					<a class="fw-btn-install-border" href="<?php echo esc_url( $url_install_plugin ); ?>">
+						<?php _e( 'Install Now & Start Creating', 'fw' ); ?>
 					</a>
 				</div>
 			</div>
@@ -112,9 +112,9 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 		<div class="floating-header-section" style="margin-bottom: 50px;">
 			<div class="section-header">
 				<h2>
-					<?php _e( 'Fast & Easy' ); ?><br>
-					<?php _e( 'Using Only' ); ?><br>
-					<?php _e( 'Drag & Drop' ); ?>
+					<?php _e( 'Fast & Easy', 'fw' ); ?><br>
+					<?php _e( 'Using Only', 'fw' ); ?><br>
+					<?php _e( 'Drag & Drop', 'fw' ); ?>
 				</h2>
 			</div>
 
@@ -123,29 +123,29 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-5.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Brizy has the smartest text editor you’ll ever work with' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Brizy has the smartest text editor you’ll ever work with', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-6.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Try different fonts & colors across your pages in seconds' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Try different fonts & colors across your pages in seconds', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-7.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Changes in mobile view will be applied only on mobile devices' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Changes in mobile view will be applied only on mobile devices', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
 					<div class="inline-svg">
 						<img src="https://ps.w.org/brizy/assets/screenshot-8.gif?rev=1863674" alt="">
 					</div>
-					<h3 class="fw-brz-title-feature"><?php _e( 'Over 4000 icons separated in 27 categories are included' ); ?></h3>
+					<h3 class="fw-brz-title-feature"><?php _e( 'Over 4000 icons separated in 27 categories are included', 'fw' ); ?></h3>
 				</div>
 				<div class="section-item">
-					<a class="fw-btn-install-border" href="<?php echo $url_install_plugin; ?>">
-						<?php _e( 'Install Now & Start Creating' ); ?>
+					<a class="fw-btn-install-border" href="<?php echo esc_url( $url_install_plugin ); ?>">
+						<?php _e( 'Install Now & Start Creating', 'fw' ); ?>
 					</a>
 				</div>
 			</div>
@@ -153,7 +153,7 @@ $url_install_plugin = is_multisite() ? network_admin_url( 'plugin-install.php?s=
 
 		<div class="feature-section">
 			<h2>
-				<?php echo esc_html_e( 'Thanks for giving Brizy a Try!' ); ?>
+				<?php esc_html_e( 'Thanks for giving Brizy a Try!', 'fw' ); ?>
 			</h2>
 			<p style="font-size: 14px; text-align:center;">
 				Brizy is developed by the team behind the <a href="https://wordpress.org/plugins/unyson/" target="_blank">Unyson open source framework</a> for WordPress. The content created with the back end visual page builder from Unyson can’t be edited with Brizy. You can however use Brizy to create new pages. Consider joining our <a href="https://www.facebook.com/brizy.io/" target="_blank">Facebook community</a> where our members help us shape the development of Brizy.

@@ -422,7 +422,8 @@ final class _FW_Component_Backend {
 			);
 
 			wp_localize_script('fw', '_fw_backend_options_localized', [
-				'lazy_tabs' => fw()->theme->get_config('lazy_tabs')
+				'lazy_tabs' => fw()->theme->get_config('lazy_tabs'),
+				'nonce'     => wp_create_nonce( 'fw_backend_options' ),
 			]);
 		}
 
@@ -1133,6 +1134,8 @@ final class _FW_Component_Backend {
 	 */
 	public function _action_ajax_options_render(): void
 	{
+		check_ajax_referer( 'fw_backend_options', '_nonce' );
+
 		// options
 		{
 			if (!isset($_POST['options'])) {
@@ -1198,6 +1201,8 @@ final class _FW_Component_Backend {
 	 */
 	public function _action_ajax_options_get_values(): void
 	{
+		check_ajax_referer( 'fw_backend_options', '_nonce' );
+
 		// options
 		{
 			if (!isset($_POST['options'])) {
@@ -1243,6 +1248,8 @@ final class _FW_Component_Backend {
 	 */
 	public function _action_ajax_options_get_values_json(): void
 	{
+		check_ajax_referer( 'fw_backend_options', '_nonce' );
+
 		// options
 		{
 			if (!isset($_POST['options'])) {

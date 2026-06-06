@@ -1034,6 +1034,7 @@ fw.getValuesFromServer = function (data) {
 
 	var dataToSend = [
 		'action=fw_backend_options_get_values',
+		'_nonce='+ encodeURIComponent(typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 		'options='+ encodeURIComponent(JSON.stringify(opts.options)),
 		'name_prefix=fw_edit_options_modal'
 	];
@@ -1156,6 +1157,7 @@ fw.getValuesFromServer = function (data) {
 					type: 'POST',
 					data: [
 						'action=fw_backend_options_get_values',
+						'_nonce='+ encodeURIComponent(typeof _fw_backend_options_localized !== 'undefined' ? _fw_backend_options_localized.nonce : ''),
 						'options='+ encodeURIComponent(JSON.stringify(this.model.get('options'))),
 						'name_prefix=fw_edit_options_modal'
 					].join('&'),

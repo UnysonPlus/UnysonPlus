@@ -168,7 +168,7 @@ class FW_Option_Type_Typography_v2 extends FW_Option_Type {
 				'weight'         => '400',
 				'size'           => 12,
 				'line-height'    => 15,
-				'letter-spacing' => - 1,
+				'letter-spacing' => 0,
 				'color'          => '#000000'
 			),
 			'components' => array(

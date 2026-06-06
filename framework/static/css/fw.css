@@ -3273,7 +3273,7 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 /* qtip custom style */
 
 .qtip.qtip-fw {
-	border-radius: 3px;
+	border-radius: .5rem;
 	border: 5px solid #333333;
 	background-color: #333333;
 	max-width: none;
@@ -3386,4 +3386,11 @@ body > .fw-sole-modal .fw-sole-modal-content p {
     border-radius: .25rem;
 }
 
+.media-modal-content {
+    border-radius: .5rem;
+}
+
+#major-publishing-actions {
+    display: block;
+}
 /* end: load-styles.php overrides */

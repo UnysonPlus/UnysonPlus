@@ -1,0 +1,151 @@
+/* Popover option type — a compact trigger that expands an in-flow panel. */
+
+.fw-option-type-popover .fw-popover-trigger {
+	position: relative;
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	/* A definite, compact width so the trigger reads as a button-style control on
+	   the left of the (full-width) option cell — the in-flow panel below still uses
+	   the full width. Caps at 100% on narrow modals. */
+	width: 260px;
+	max-width: 100%;
+	min-height: 30px;
+	padding: 4px 28px 4px 10px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background-color: #fff;   /* active field look — not the grey readonly/disabled style */
+	color: #2c3338;
+	cursor: pointer;
+	line-height: 1.4;
+}
+
+.fw-option-type-popover .fw-popover-trigger:hover {
+	border-color: #2271b1;
+}
+
+.fw-option-type-popover .fw-popover-trigger:focus {
+	outline: none;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* The input cell is full-width (width-type 'full') so the in-flow panel spans the
+   whole option width. The framework's help "?" icon would then float to the far
+   right of that wide cell — pin it just after the compact trigger instead. The
+   left offset tracks the trigger width above. */
+.fw-backend-option-input-type-popover .fw-inner {
+	position: relative;
+}
+.fw-backend-option-input-type-popover .fw-option-help-in-input {
+	float: none;
+	position: absolute;
+	top: 8px;
+	left: 272px; /* 260px trigger + 12px gap */
+}
+
+.fw-option-type-popover .fw-popover-summary {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fw-option-type-popover .fw-popover-caret {
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	color: #50575e;
+	transition: transform .15s ease;
+}
+
+.fw-option-type-popover .fw-popover-panel {
+	display: none;
+	margin-top: 8px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.fw-option-type-popover.is-open .fw-popover-panel {
+	display: block;
+}
+
+/* The hosted option carries the framework's default option padding (24px 27px
+   21px), which is too much here. Trim it (scoped to the popover) to a modest,
+   uniform value so there's still breathing room between the control and the
+   panel border. */
+.fw-option-type-popover .fw-popover-panel .fw-backend-option-design-default {
+	padding: 10px;
+}
+
+/* Tabbed popover — styled like the Button / Border preset state tabs: a
+   full-width strip of equal-width tabs (uppercase), the active one white with a
+   blue underline. The strip's rounded top corners are clipped via overflow on
+   the <ul> (not the panel), so inner-option popups in .fw-popover-panels aren't
+   affected; the active underline uses an inset box-shadow so it survives that clip. */
+.fw-option-type-popover .fw-popover-tabs {
+	display: flex;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background: #f6f7f7;
+	border-bottom: 1px solid #dcdcde;
+	border-radius: 4px 4px 0 0;
+	overflow: hidden;
+}
+
+.fw-option-type-popover .fw-popover-tab {
+	flex: 1 1 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 9px 6px;
+	margin: 0;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: .02em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	color: #646970;
+	cursor: pointer;
+	border: 0;
+	border-right: 1px solid #dcdcde;
+	user-select: none;
+}
+
+.fw-option-type-popover .fw-popover-tab:last-child {
+	border-right: none;
+}
+
+.fw-option-type-popover .fw-popover-tab:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+.fw-option-type-popover .fw-popover-tab.is-active {
+	background: #fff;
+	color: #2271b1;
+	box-shadow: inset 0 -2px 0 #2271b1;
+}
+
+/* Panels sit below the tab strip; give them breathing room from it. */
+.fw-option-type-popover .fw-popover-panels {
+	margin-top: 8px;
+}
+
+.fw-option-type-popover .fw-popover-tab-panel {
+	display: none;
+}
+
+.fw-option-type-popover .fw-popover-tab-panel.is-active {
+	display: block;
+}
+
+.fw-option-type-popover.is-open .fw-popover-caret {
+	transform: translateY(-50%) rotate(180deg);
+}

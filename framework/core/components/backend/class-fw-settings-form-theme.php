@@ -116,7 +116,20 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 			return;
 		}
 
-		if ( ! fw()->theme->locate_path('/options/settings.php') ) {
+		/**
+		 * Whether the Theme Settings menu under Appearance should be registered.
+		 * Default: true only when the active theme ships its own
+		 * framework-customizations/theme/options/settings.php.
+		 *
+		 * Plugins that inject options via the `fw_settings_options` filter can
+		 * hook this to force the menu on themes that don't provide their own
+		 * settings.php — otherwise their injected options have no host.
+		 *
+		 * @param bool $should_register Default check result.
+		 */
+		$should_register = (bool) fw()->theme->locate_path('/options/settings.php');
+		$should_register = (bool) apply_filters( 'fw_theme_settings_menu_register', $should_register );
+		if ( ! $should_register ) {
 			return;
 		}
 

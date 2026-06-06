@@ -7,6 +7,7 @@
 
 $location_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['location'] ) ) ? $data['value']['location'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'Specify location', 'fw' ),
@@ -22,6 +23,7 @@ $location_html = fw()->backend->option_type('text')->render('location', $locatio
 
 $venue_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['venue'] ) ) ? $data['value']['venue'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'Location Venue', 'fw' ),
@@ -37,6 +39,7 @@ $venue_html = fw()->backend->option_type('text')->render('venue', $venue_option,
 
 $address_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['address'] ) ) ? $data['value']['address'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'Address', 'fw' ),
@@ -52,6 +55,7 @@ $address_html = fw()->backend->option_type('text')->render('address', $address_o
 
 $city_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['city'] ) ) ? $data['value']['city'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'City', 'fw' ),
@@ -67,6 +71,7 @@ $city_html = fw()->backend->option_type('text')->render('city', $city_option, $c
 
 $country_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['country'] ) ) ? $data['value']['country'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'Country', 'fw' ),
@@ -82,6 +87,7 @@ $country_html = fw()->backend->option_type('text')->render('country', $country_o
 
 $state_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['state'] ) ) ? $data['value']['state'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'State', 'fw' ),
@@ -98,6 +104,7 @@ $state_html = fw()->backend->option_type('text')->render('state', $state_option,
 
 $zip_option = array(
 	'type'  => 'text',
+	'dynamic_content' => false,
 	'value' => ( isset( $data['value']['zip'] ) ) ? $data['value']['zip'] : '',
 	'attr'  => array(
 		'placeholder'   => __( 'Zip Code', 'fw' ),

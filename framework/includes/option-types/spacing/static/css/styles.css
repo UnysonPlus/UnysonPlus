@@ -1,0 +1,134 @@
+/* -----------------------------------------------------------------------------
+ * fw-option-type-spacing
+ *
+ * Plus-cross layout: a centered "All Sides" select above, then a 3x3 grid
+ * with Top / Right / Bottom / Left selects positioned where they apply.
+ * Two columns side-by-side (Margin left, Padding right) by default; a single
+ * column when mode is 'margin' or 'padding'; stacks vertically on narrow
+ * editor panels.
+ *
+ * Layout uses CSS Grid. We override the stock .fw-option-width-short width
+ * (~100px) inside our wrapper so each slot fills its cell instead of leaving
+ * dead space on the right.
+ * -------------------------------------------------------------------------- */
+
+.fw-option-type-spacing {
+	box-sizing: border-box;
+	/* Extra bottom padding so the "Bottom" row of the cross doesn't get
+	   crowded by — or hidden behind — the popup form's sticky Save/Reset
+	   footer. Tested in the page-builder shortcode modal (~50px tall
+	   footer with shadow); 32px clears it without leaving an obvious
+	   empty band when the widget sits elsewhere. */
+	padding: 8px 4px 32px;
+}
+
+.fw-option-type-spacing *,
+.fw-option-type-spacing *::before,
+.fw-option-type-spacing *::after {
+	box-sizing: border-box;
+}
+
+/* Two-column outer grid. Each column gets its own padding so a vertical
+   divider can sit on the right column without offsetting the left one. */
+.fw-option-spacing-cols {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0;
+}
+
+.fw-option-type-spacing--mode-margin .fw-option-spacing-cols,
+.fw-option-type-spacing--mode-padding .fw-option-spacing-cols {
+	grid-template-columns: 1fr;
+}
+
+.fw-option-spacing-col {
+	padding: 0 16px;
+}
+
+.fw-option-type-spacing--mode-both .fw-option-spacing-col--padding {
+	border-left: 1px solid #e5e5e5;
+}
+
+.fw-option-spacing-col-title {
+	margin: 0 0 12px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.6px;
+	text-transform: uppercase;
+	color: #50575e;
+	text-align: center;
+}
+
+/* All-sides block — centered above the cross */
+.fw-option-spacing-all {
+	max-width: 220px;
+	margin: 0 auto 14px;
+	text-align: center;
+}
+
+.fw-option-spacing-all-hint {
+	margin: 6px 0 0;
+	font-size: 11px;
+	line-height: 1.4;
+	color: #787c82;
+	font-style: italic;
+}
+
+/* Cross — Top above, Bottom below, Left/Right beside */
+.fw-option-spacing-cross {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: auto auto auto;
+	gap: 8px 10px;
+	align-items: end;
+	justify-items: center;
+}
+
+.fw-option-spacing-slot--top    { grid-column: 2; grid-row: 1; }
+.fw-option-spacing-slot--left   { grid-column: 1; grid-row: 2; }
+.fw-option-spacing-slot--right  { grid-column: 3; grid-row: 2; }
+.fw-option-spacing-slot--bottom { grid-column: 2; grid-row: 3; }
+
+.fw-option-spacing-slot {
+	width: 100%;
+	max-width: 140px;
+	text-align: center;
+}
+
+.fw-option-spacing-slot-label {
+	margin: 0 0 4px;
+	font-size: 11px;
+	font-weight: 500;
+	color: #646970;
+	text-align: center;
+}
+
+.fw-option-spacing-slot-control {
+	width: 100%;
+}
+
+/* Make short-select fill its cell instead of using its fixed ~100px width.
+   Targets the wrapper class FW emits around short-select inputs. */
+.fw-option-type-spacing .fw-option-width-short {
+	width: 100% !important;
+	min-width: 0;
+}
+
+.fw-option-type-spacing .fw-option-width-short select {
+	width: 100%;
+	min-width: 0;
+}
+
+/* Narrow editor panel — stack columns vertically. The vertical divider on the
+   right column becomes a horizontal one when stacked. */
+@media (max-width: 600px) {
+	.fw-option-type-spacing--mode-both .fw-option-spacing-cols {
+		grid-template-columns: 1fr;
+	}
+	.fw-option-type-spacing--mode-both .fw-option-spacing-col--padding {
+		border-left: 0;
+		border-top: 1px solid #e5e5e5;
+		padding-top: 16px;
+		margin-top: 8px;
+	}
+}

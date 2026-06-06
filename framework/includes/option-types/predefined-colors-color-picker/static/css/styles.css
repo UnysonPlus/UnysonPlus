@@ -1,0 +1,15 @@
+/**
+ * Option Type Predefined Colors Color Picker
+ * @author Pavel Marhaunichy
+ * @url http://likeaprothemes.com
+ */
+
+.fw-option-type-predefined-colors-color-picker {}
+.fw-option-type-predefined-colors-color-picker__inner {
+	display: flex;
+    align-items: center;
+}
+
+.fw-option-type-predefined-colors-color-picker__radio {
+	margin: -5px 10px 0 !important;
+}

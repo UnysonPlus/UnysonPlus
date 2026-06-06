@@ -1,0 +1,143 @@
+/* Table Style Picker option type — a popover-style dropdown whose trigger + rows
+   are real mini-table previews. The .tbl-{slug} table-preset CSS (already loaded
+   in admin) paints the header / stripes / borders; here we only lay out the
+   dropdown and give every mini table a uniform size so looks compare cleanly. */
+
+.fw-option-type-table-style-picker {
+	position: relative;
+	display: inline-block;
+	font-size: 13px;
+	max-width: 100%;
+}
+
+/* ----- Trigger ----- */
+.fw-option-type-table-style-picker .tsp__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 260px;
+	max-width: 420px;
+	padding: 5px 8px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	cursor: pointer;
+	user-select: none;
+	font: inherit;
+	line-height: 1.4;
+	text-align: left;
+}
+.fw-option-type-table-style-picker .tsp__trigger:hover { border-color: #2271b1; }
+.fw-option-type-table-style-picker .tsp__trigger:focus,
+.fw-option-type-table-style-picker .tsp__trigger[aria-expanded="true"] {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.fw-option-type-table-style-picker .tsp__trigger-label {
+	flex: 0 0 auto;
+	font-weight: 600;
+	color: #2c3338;
+}
+.fw-option-type-table-style-picker .tsp__trigger-placeholder {
+	flex: 1 1 auto;
+	color: #646970;
+}
+.fw-option-type-table-style-picker .tsp__caret {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 10px;
+	color: #646970;
+}
+
+/* ----- Panel ----- */
+.fw-option-type-table-style-picker .tsp__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 380px;
+	max-width: 92vw;
+	max-height: 420px;
+	overflow-y: auto;
+	padding: 6px;
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fw-option-type-table-style-picker .tsp__panel[hidden] { display: none; }
+
+/* ----- Option rows ----- */
+.fw-option-type-table-style-picker .tsp__option {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	width: 100%;
+	padding: 8px;
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	text-align: left;
+	cursor: pointer;
+	font: inherit;
+	line-height: 1.4;
+}
+.fw-option-type-table-style-picker .tsp__option:hover,
+.fw-option-type-table-style-picker .tsp__option:focus {
+	background: #e9eaed;
+	outline: none;
+}
+.fw-option-type-table-style-picker .tsp__option.is-selected {
+	background: #e0eaf5;
+	box-shadow: inset 0 0 0 1px #2271b1;
+}
+.fw-option-type-table-style-picker .tsp__option-label {
+	flex: 0 0 auto;
+	font-weight: 600;
+	color: #2c3338;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+.fw-option-type-table-style-picker .tsp__option--empty .tsp__option-label {
+	color: #646970;
+	font-style: italic;
+	padding: 2px 0;
+}
+
+/* ----- The real mini-table preview (trigger + rows) -----
+   A compact white table; the .tbl-{slug} class supplies header/stripe/border/etc.
+   Scaled small and pointer-inert so the row handles the click. */
+.fw-option-type-table-style-picker .tsp__preview {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 340px;
+	overflow: hidden;
+	background: #fff;
+	pointer-events: none;
+}
+.fw-option-type-table-style-picker .tsp__preview table {
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 11px;
+	color: #50575e;
+	background: #fff;
+}
+.fw-option-type-table-style-picker .tsp__preview th,
+.fw-option-type-table-style-picker .tsp__preview td {
+	padding: 4px 8px;
+	text-align: left;
+	white-space: nowrap;
+}
+.fw-option-type-table-style-picker .tsp__preview thead th { font-weight: 600; color: #1d2327; }
+
+/* The trigger preview is smaller (single-line feel) */
+.fw-option-type-table-style-picker .tsp__trigger .tsp__preview {
+	max-width: 220px;
+}
+.fw-option-type-table-style-picker .tsp__trigger .tsp__preview tbody tr:last-child { display: none; }

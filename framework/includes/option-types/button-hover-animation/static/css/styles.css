@@ -1,0 +1,113 @@
+/* Button Hover Animation option type — a select-like trigger that opens a panel
+   with the effects in a 3-column grid of real buttons. Each cell animates on real
+   hover; the .btnfx-* effect classes and .btn paint come from already-loaded CSS
+   (the consumer's fx_css + the admin preset CSS), so we don't set button colors. */
+
+.fw-option-type-button-hover-animation {
+	position: relative;
+	display: inline-block;
+	font-size: 13px;
+	max-width: 100%;
+}
+
+/* ----- Trigger (looks like a select) ----- */
+.fw-option-type-button-hover-animation .bha__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 220px;
+	max-width: 320px;
+	padding: 6px 10px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	cursor: pointer;
+	user-select: none;
+	font: inherit;
+	line-height: 1.4;
+	text-align: left;
+}
+.fw-option-type-button-hover-animation .bha__trigger:hover { border-color: #2271b1; }
+.fw-option-type-button-hover-animation .bha__trigger:focus,
+.fw-option-type-button-hover-animation .bha__trigger[aria-expanded="true"] {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+.fw-option-type-button-hover-animation .bha__trigger-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.fw-option-type-button-hover-animation .bha__caret {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 10px;
+	color: #646970;
+}
+
+/* ----- Panel ----- */
+.fw-option-type-button-hover-animation .bha__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 420px;
+	max-width: 92vw;
+	max-height: 420px;
+	overflow-y: auto;
+	padding: 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fw-option-type-button-hover-animation .bha__panel[hidden] { display: none; }
+
+/* ----- 3-column grid ----- */
+.fw-option-type-button-hover-animation .bha__grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+}
+
+/* Each cell is a clickable option that contains a real preview button. */
+.fw-option-type-button-hover-animation .bha__option {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 56px;
+	padding: 8px;
+	background: #fff;
+	border: 1px solid #e2e4e7;
+	border-radius: 6px;
+	cursor: pointer;
+	overflow: visible;            /* let lift/scale shadows show */
+}
+.fw-option-type-button-hover-animation .bha__option:hover { border-color: #c3c4c7; background: #fbfbfc; }
+.fw-option-type-button-hover-animation .bha__option.is-selected {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	background: #f0f6fc;
+}
+
+/* The real preview button — interactive so its OWN :hover plays the effect; the
+   click bubbles up to the .bha__option button, so selection still works. */
+.fw-option-type-button-hover-animation .bha__preview {
+	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+	font-size: 12px;
+	pointer-events: auto;
+}
+
+/* "None" cell — a plain, no-effect choice. */
+.fw-option-type-button-hover-animation .bha__none {
+	color: #646970;
+	font-style: italic;
+}
