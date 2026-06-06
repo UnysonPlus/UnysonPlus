@@ -69,6 +69,34 @@ $extensions = [
         ],
     ],
 
+    'custom-fields' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Custom Fields', 'fw'),
+        'description' => __('An ACF-style custom fields builder for Unyson+. Create Field Groups, choose which post types they show on, and add fields (text, textarea, WYSIWYG, image, gallery, select, checkbox, color, date and more). Fields render as native meta boxes and save to post meta.', 'fw'),
+        'thumbnail'   => 'about:blank',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Custom-Fields-Extension',
+            ],
+        ],
+    ],
+
+    'post-types' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Post Types & Taxonomies', 'fw'),
+        'description' => __('Create custom post types and taxonomies from the WordPress admin — no code required. Add taxonomies (like Categories or Tags) and attach them to one or more post types. Post types created here can also be targeted by the Custom Fields extension.', 'fw'),
+        'thumbnail'   => 'about:blank',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Post-Types-Extension',
+            ],
+        ],
+    ],
+
     'sidebars' => [
         'display'     => true,
         'parent'      => null,
