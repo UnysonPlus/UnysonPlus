@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Update', 'fw' );
 $manifest['description'] = __( 'Keep your framework, extensions, and theme up to date.', 'fw' );
 
-$manifest['version']     = '1.0.14';
+$manifest['version']     = '1.0.15';
 $manifest['standalone']  = true;
 
 // Repository Info

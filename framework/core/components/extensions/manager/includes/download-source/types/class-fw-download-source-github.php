@@ -12,19 +12,23 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 	}
 
 	/**
-	 * @param array $set {user_repo: 'ThemeFuse/Unyson'}
+	 * Download an extension from GitHub using BRANCH mode.
+	 *
+	 * No GitHub release/tag is required — the repository's default branch
+	 * (master / main / ...) archive is downloaded, so pushing to that branch
+	 * is enough to publish an extension or an extension update.
+	 *
+	 * @param array $set {user_repo: 'UnysonPlus/UnysonPlus-Backups-Extension'}
 	 * @param string $zip_path
 	 *
-	 * @return WP_Error
+	 * @return WP_Error|true
 	 */
 		public function download( array $set, $zip_path ) {
-		$wp_error_id            = 'fw_ext_github_download_source';
-		$theme_ext_requirements = fw()->theme->manifest->get( 'requirements/extensions' );
+		$wp_error_id = 'fw_ext_github_download_source';
 
 		/** @var WP_Filesystem_Base $wp_filesystem */
 		global $wp_filesystem;
 
-		$extension_name  = $set['extension_name'];
 		$extension_title = $set['extension_title'];
 
 		if ( empty( $set['user_repo'] ) ) {
@@ -48,90 +52,61 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 		if ( isset( $cache[ $set['user_repo'] ] ) ) {
 			$download_link = $cache[ $set['user_repo'] ]['zipball_url'];
 		} else {
-			// Pick version tag
-			if (
-				isset( $theme_ext_requirements[ $extension_name ] )
-				&& isset( $theme_ext_requirements[ $extension_name ]['max_version'] )
-			) {
-				$tag = 'tags/v' . $theme_ext_requirements[ $extension_name ]['max_version'];
-			} else {
-				$tag = 'latest';
-			}
+			/**
+			 * Resolve the branch to download. Defaults to the repository's
+			 * GitHub default branch; override via the filter if needed.
+			 */
+			$branch = apply_filters( 'fw_ext_mngr_github_branch', '', $set['user_repo'] );
 
-			// GitHub API request
-			$response = wp_remote_get(
-				apply_filters( 'fw_github_api_url', 'https://api.github.com' )
-				. '/repos/' . $set['user_repo'] . '/releases/' . $tag,
-				[ 'timeout' => 25 ]
-			);
+			if ( empty( $branch ) ) {
+				$response = wp_remote_get(
+					apply_filters( 'fw_github_api_url', 'https://api.github.com' )
+					. '/repos/' . $set['user_repo'],
+					[ 'timeout' => 25 ]
+				);
 
-			$response_code = intval( wp_remote_retrieve_response_code( $response ) );
+				$response_code = intval( wp_remote_retrieve_response_code( $response ) );
 
-			if ( $response_code !== 200 ) {
-				if ( $response_code === 403 ) {
-					if ( $json_response = json_decode( wp_remote_retrieve_body( $response ), true ) ) {
+				if ( $response_code !== 200 ) {
+					if ( $response_code === 403 && ( $json_response = json_decode( wp_remote_retrieve_body( $response ), true ) ) ) {
 						return new WP_Error(
 							$wp_error_id,
 							__( 'Github error:', 'fw' ) . ' ' . $json_response['message']
 						);
-					} else {
+					} elseif ( $response_code ) {
 						return new WP_Error(
 							$wp_error_id,
 							sprintf(
-								__( 'Failed to access Github repository "%s" releases. (Response code: %d)', 'fw' ),
+								__( 'Failed to access Github repository "%s". (Response code: %d)', 'fw' ),
 								$set['user_repo'], $response_code
 							)
 						);
+					} elseif ( is_wp_error( $response ) ) {
+						return new WP_Error(
+							$wp_error_id,
+							sprintf(
+								__( 'Failed to access Github repository "%s". (%s)', 'fw' ),
+								$set['user_repo'], $response->get_error_message()
+							)
+						);
 					}
-				} elseif ( $response_code ) {
+
 					return new WP_Error(
 						$wp_error_id,
-						sprintf(
-							__( 'Failed to access Github repository "%s" releases. (Response code: %d)', 'fw' ),
-							$set['user_repo'], $response_code
-						)
-					);
-				} elseif ( is_wp_error( $response ) ) {
-					return new WP_Error(
-						$wp_error_id,
-						sprintf(
-							__( 'Failed to access Github repository "%s" releases. (%s)', 'fw' ),
-							$set['user_repo'], $response->get_error_message()
-						)
-					);
-				} else {
-					return new WP_Error(
-						$wp_error_id,
-						sprintf(
-							__( 'Failed to access Github repository "%s" releases.', 'fw' ),
-							$set['user_repo']
-						)
+						sprintf( __( 'Failed to access Github repository "%s".', 'fw' ), $set['user_repo'] )
 					);
 				}
+
+				$repo = json_decode( wp_remote_retrieve_body( $response ), true );
+
+				$branch = ( ! empty( $repo['default_branch'] ) ) ? $repo['default_branch'] : 'master';
 			}
 
-			$release = json_decode( wp_remote_retrieve_body( $response ), true );
+			$download_link = 'https://github.com/' . $set['user_repo'] . '/archive/refs/heads/' . $branch . '.zip';
 
-			if ( empty( $release ) ) {
-				return new WP_Error(
-					$wp_error_id,
-					sprintf(
-						__( '"%s" extension github repository "%s" has no releases.', 'fw' ),
-						$extension_title, $set['user_repo']
-					)
-				);
-			}
+			$cache[ $set['user_repo'] ] = [ 'zipball_url' => $download_link ];
 
-			{
-				$cache[ $set['user_repo'] ] = [
-					'zipball_url' => 'https://github.com/' . $set['user_repo'] . '/archive/' . $release['tag_name'] . '.zip',
-					'tag_name'    => $release['tag_name']
-				];
-
-				set_site_transient( $transient_name, $cache, $transient_ttl );
-			}
-
-			$download_link = $cache[ $set['user_repo'] ]['zipball_url'];
+			set_site_transient( $transient_name, $cache, $transient_ttl );
 		}
 
 		// Download the zip

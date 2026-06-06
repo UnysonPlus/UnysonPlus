@@ -1,9 +1,13 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 /**
- * Github Update
+ * Github Update (BRANCH mode)
  *
- * Add {'github_update' => 'user/repo'} to your manifest and this extension will handle it
+ * Add {'github_update' => 'user/repo'} to your manifest and this extension will handle it.
+ *
+ * No GitHub release/tag is required: the latest version is read from the
+ * repository's manifest.php on its default branch, and updates download that
+ * branch's archive. Pushing to the branch is enough to publish an update.
  */
 class FW_Extension_Github_Update extends FW_Ext_Update_Service
 {
@@ -42,14 +46,23 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 	}
 
 	/**
-	 * @param string $append '/foo/bar'
-	 * @return string
+	 * Branches to try (in order) when no explicit branch is configured.
+	 * raw.githubusercontent.com / codeload are not subject to the GitHub API rate limit.
+	 *
+	 * @param string $user_slash_repo
+	 * @return string[]
 	 */
-	private function get_github_api_url($append)
+	private function get_branches($user_slash_repo)
 	{
-		return apply_filters('fw_github_api_url', 'https://api.github.com') . $append;
+		return apply_filters('fw_ext_update_github_branches', array('master', 'main'), $user_slash_repo);
 	}
 
+	/**
+	 * Read the latest version from the repository manifest.php on its default branch.
+	 *
+	 * @param string $user_slash_repo
+	 * @return string|WP_Error Version string (e.g. "1.2.3")
+	 */
 	private function fetch_latest_version($user_slash_repo)
 	{
 		/**
@@ -65,69 +78,63 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 			return $this->fake_latest_version;
 		}
 
-		$http = new WP_Http();
+		$http       = new WP_Http();
+		$last_error = null;
 
-		$response = $http->get(
-			$this->get_github_api_url('/repos/'. $user_slash_repo .'/releases/latest')
-		);
+		foreach ($this->get_branches($user_slash_repo) as $branch) {
+			$response = $http->get(
+				'https://raw.githubusercontent.com/'. $user_slash_repo .'/'. $branch .'/manifest.php'
+			);
 
-		unset($http);
-
-		if (is_wp_error($response)) {
-			if ($response->get_error_code() === 'http_request_failed') {
-				$no_internet_connection = true;
-			}
-
-			return $response;
-		}
-
-		if (($response_code = intval(wp_remote_retrieve_response_code($response))) !== 200) {
-			if ($response_code === 403) {
-				$json_response = json_decode($response['body'], true);
-
-				if ($json_response) {
-					return new WP_Error(
-						'fw_ext_update_github_fetch_releases_failed',
-						__('Github error:', 'fw') .' '. $json_response['message']
-					);
+			if (is_wp_error($response)) {
+				if ($response->get_error_code() === 'http_request_failed') {
+					$no_internet_connection = true;
 				}
+
+				$last_error = $response;
+				continue;
 			}
 
-			if ($response_code) {
+			$response_code = intval(wp_remote_retrieve_response_code($response));
+
+			if ($response_code === 200) {
+				$body = wp_remote_retrieve_body($response);
+
+				if (preg_match('/\$manifest\s*\[\s*[\'"]version[\'"]\s*\]\s*=\s*[\'"]([^\'"]+)[\'"]/', $body, $m)) {
+					unset($http);
+					return $m[1];
+				}
+
+				unset($http);
+
 				return new WP_Error(
-					'fw_ext_update_github_fetch_releases_failed',
-					sprintf(
-						__( 'Failed to access Github repository "%s" releases. (Response code: %d)', 'fw' ),
-						$user_slash_repo, $response_code
-					)
-				);
-			} else {
-				return new WP_Error(
-					'fw_ext_update_github_fetch_releases_failed',
-					sprintf(
-						__( 'Failed to access Github repository "%s" releases.', 'fw' ),
-						$user_slash_repo
-					)
+					'fw_ext_update_github_no_version',
+					sprintf(__('Could not read the version from "%s" manifest.', 'fw'), $user_slash_repo)
 				);
 			}
-		}
 
-		$release = json_decode($response['body'], true);
-
-		unset($response);
-
-		if (empty($release)) {
-			return new WP_Error(
-				'fw_ext_update_github_fetch_no_releases',
-				sprintf(__('No releases found in repository "%s".', 'fw'), $user_slash_repo)
+			// Not on this branch (e.g. 404) -> try the next candidate branch
+			$last_error = new WP_Error(
+				'fw_ext_update_github_fetch_manifest_failed',
+				sprintf(
+					__('Failed to read manifest from Github repository "%s". (Response code: %d)', 'fw'),
+					$user_slash_repo, $response_code
+				)
 			);
 		}
 
-		return $release['tag_name'];
+		unset($http);
+
+		return $last_error
+			? $last_error
+			: new WP_Error(
+				'fw_ext_update_github_fetch_manifest_failed',
+				sprintf(__('Failed to read manifest from Github repository "%s".', 'fw'), $user_slash_repo)
+			);
 	}
 
 	/**
-	 * Get repository latest release version
+	 * Get repository latest version (read from branch manifest.php)
 	 *
 	 * @param string $user_slash_repo Github 'user/repo'
 	 * @param bool $force_check Bypass cache
@@ -203,8 +210,10 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 	}
 
 	/**
+	 * Download the repository default-branch archive.
+	 *
 	 * @param string $user_slash_repo Github 'user/repo'
-	 * @param string $version Requested version to download
+	 * @param string $version Requested version (informational in branch mode)
 	 * @param string $wp_filesystem_download_directory Allocated temporary empty directory
 	 * @param string $title Used in messages
 	 *
@@ -212,73 +221,26 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 	 */
 	private function download($user_slash_repo, $version, $wp_filesystem_download_directory, $title)
 	{
-		$http = new WP_Http();
+		$http     = new WP_Http();
+		$response = null;
 
-		$response = $http->get(
-			$this->get_github_api_url('/repos/'. $user_slash_repo .'/releases/tags/'. $version)
-		);
-
-		unset($http);
-
-		$response_code = intval(wp_remote_retrieve_response_code($response));
-
-		if ($response_code !== 200) {
-			if ($response_code === 403) {
-				$json_response = json_decode($response['body'], true);
-
-				if ($json_response) {
-					return new WP_Error(
-						'fw_ext_update_github_download_releases_failed',
-						__('Github error:', 'fw') .' '. $json_response['message']
-					);
-				}
-			}
-
-			if ($response_code) {
-				return new WP_Error(
-					'fw_ext_update_github_download_releases_failed',
-					sprintf(
-						__( 'Failed to access Github repository "%s" releases. (Response code: %d)', 'fw' ),
-						$user_slash_repo, $response_code
-					)
-				);
-			} else {
-				return new WP_Error(
-					'fw_ext_update_github_download_releases_failed',
-					sprintf(
-						__( 'Failed to access Github repository "%s" releases.', 'fw' ),
-						$user_slash_repo
-					)
-				);
-			}
-		}
-
-		$release = json_decode($response['body'], true);
-
-		unset($response);
-
-		if (empty($release)) {
-			return new WP_Error(
-				'fw_ext_update_github_download_no_release',
-				sprintf(
-					__('%s github repository "%s" does not have the "%s" release.', 'fw'),
-					$title, $user_slash_repo, $version
+		foreach ($this->get_branches($user_slash_repo) as $branch) {
+			$candidate = $http->request(
+				'https://github.com/'. $user_slash_repo .'/archive/refs/heads/'. $branch .'.zip',
+				array(
+					'timeout' => $this->download_timeout,
 				)
 			);
+
+			if (!is_wp_error($candidate) && intval(wp_remote_retrieve_response_code($candidate)) === 200) {
+				$response = $candidate;
+				break;
+			}
 		}
-
-		$http = new WP_Http();
-
-		$response = $http->request(
-			'https://github.com/'. $user_slash_repo .'/archive/'. $release['tag_name'] .'.zip',
-			array(
-				'timeout' => $this->download_timeout,
-			)
-		);
 
 		unset($http);
 
-		if (intval(wp_remote_retrieve_response_code($response)) !== 200) {
+		if (empty($response)) {
 			return new WP_Error(
 				'fw_ext_update_github_download_failed',
 				sprintf(__('Cannot download %s zip.', 'fw'), $title)
