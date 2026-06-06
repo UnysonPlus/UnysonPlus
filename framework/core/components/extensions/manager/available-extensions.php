@@ -42,7 +42,7 @@ $extensions = [
     ],
 
     'backups' => [
-        'display'     => false,
+        'display'     => true,
         'parent'      => null,
         'name'        => __('Backup & Demo Content', 'fw'),
         'description' => __('This extension lets you create an automated backup schedule, import demo content or even create a demo content archive for migration purposes.', 'fw'),
@@ -274,20 +274,6 @@ $extensions = [
             'source' => 'github',
             'opts'   => [
                 'user_repo' => $github_account . '/UnysonPlus-Social-Extension',
-            ],
-        ],
-    ],
-
-    'backup' => [
-        'display'     => false,
-        'parent'      => null,
-        'name'        => __('Backup', 'fw'),
-        'description' => __('This extension lets you set up daily, weekly or monthly backup schedule. You can choose between a full backup or a data base only backup.', 'fw'),
-        'thumbnail'   => $thumbnails_uri . '/backup.jpg',
-        'download'    => [
-            'source' => 'github',
-            'opts'   => [
-                'user_repo' => $github_account . '/UnysonPlus-Backup-Extension',
             ],
         ],
     ],
