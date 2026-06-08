@@ -2,10 +2,16 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.9.74';
+$manifest['version'] = '2.9.75';
 
 /**
  * Changelog
+ * 2.9.75 - Plugin version sync for the Breadcrumbs extension upgrade (1.0.18):
+ *          schema.org BreadcrumbList structured data (Microdata / JSON-LD),
+ *          new presentation + behavior options, a [breadcrumbs] shortcode, and
+ *          an arguments array for fw_ext_breadcrumbs(). See the breadcrumbs
+ *          extension manifest for details.
+ *
  * 2.9.53 - Custom Fields: group-level Description (rendered as a note atop the
  *          meta box) and Display title (overrides the meta box heading); a
  *          per-group "Show in REST API" toggle that exposes the group's field
