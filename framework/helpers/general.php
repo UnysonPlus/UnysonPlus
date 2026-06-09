@@ -172,6 +172,31 @@ function fw_get_framework_customizations_dir_rel_path( $append = '' ) {
 
 		return $uri . $rel_path;
 	}
+
+	/**
+	 * URI to a framework asset, preferring its minified (.min) build when present.
+	 *
+	 * Returns the `.min.css` / `.min.js` sibling produced by the build pipeline
+	 * (see `build/build.mjs`) when that file exists and SCRIPT_DEBUG is off;
+	 * otherwise falls back to the unminified source. This means a missing or
+	 * skipped build never 404s — it just serves the readable original — so the
+	 * plugin works whether or not `npm run build` has been run.
+	 *
+	 * @param string $rel_path e.g. '/static/css/fw.css'
+	 *
+	 * @return string
+	 */
+	function fw_get_framework_asset_uri( $rel_path = '' ) {
+		if ( $rel_path !== '' && ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
+			$min_rel = preg_replace( '/\.(css|js)$/', '.min.$1', $rel_path );
+
+			if ( $min_rel !== $rel_path && file_exists( fw_get_framework_directory( $min_rel ) ) ) {
+				return fw_get_framework_directory_uri( $min_rel );
+			}
+		}
+
+		return fw_get_framework_directory_uri( $rel_path );
+	}
 }
 
 /**

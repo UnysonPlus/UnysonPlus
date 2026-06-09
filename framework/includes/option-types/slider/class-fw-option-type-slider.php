@@ -29,13 +29,13 @@ class FW_Option_Type_Slider extends FW_Option_Type {
 		{
 			wp_enqueue_style(
 				'fw-option-' . $this->_get_type() . 'ion-range-slider',
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.css' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.css' ),
 				fw()->manifest->get_version()
 			);
 
 			wp_enqueue_script(
 				'fw-option-' . $this->_get_type() . 'ion-range-slider',
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.min.js' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.min.js' ),
 				array( 'jquery', 'fw-moment' ),
 				fw()->manifest->get_version()
 			);
@@ -43,13 +43,13 @@ class FW_Option_Type_Slider extends FW_Option_Type {
 
 		wp_enqueue_style(
 			'fw-option-' . $this->_get_type(),
-			fw_get_framework_directory_uri( '/includes/option-types/' . $this->_get_type() . '/static/css/styles.css' ),
+			fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/css/styles.css' ),
 			fw()->manifest->get_version()
 		);
 
 		wp_enqueue_script(
 			'fw-option-' . $this->_get_type(),
-			fw_get_framework_directory_uri( '/includes/option-types/' . $this->_get_type() . '/static/js/scripts.js' ),
+			fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/js/scripts.js' ),
 			array( 'jquery',  'fw-events', 'underscore', 'fw-option-' . $this->_get_type() . 'ion-range-slider' ),
 			fw()->manifest->get_version()
 		);

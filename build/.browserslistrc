@@ -1,0 +1,9 @@
+# Target browsers for autoprefixer. Modern evergreen + Firefox ESR, no dead
+# browsers. WordPress 6.x itself dropped IE11 support, so autoprefixer will
+# strip obsolete -ms-/-o- prefixes from the build output and keep only what
+# current browsers still need.
+last 2 versions
+> 0.5%
+Firefox ESR
+not dead
+not ie 11

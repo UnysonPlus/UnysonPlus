@@ -75,13 +75,13 @@ if ( ! function_exists( '_fw_dc_enqueue_picker_assets' ) ) :
 		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style(
 			'fw-dynamic-content',
-			fw_get_framework_directory_uri( '/includes/dynamic-content/static/css/dynamic-content.css' ),
+			fw_get_framework_asset_uri( '/includes/dynamic-content/static/css/dynamic-content.css' ),
 			array( 'fw' ),
 			$ver
 		);
 		wp_enqueue_script(
 			'fw-dynamic-content',
-			fw_get_framework_directory_uri( '/includes/dynamic-content/static/js/dynamic-content.js' ),
+			fw_get_framework_asset_uri( '/includes/dynamic-content/static/js/dynamic-content.js' ),
 			array( 'jquery', 'fw-events', 'fw', 'fw-reactive-options' ),
 			$ver,
 			true

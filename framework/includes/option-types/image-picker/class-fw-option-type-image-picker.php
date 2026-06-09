@@ -53,7 +53,7 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 	{
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type() . '-image-picker',
-			fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static/js/image-picker/image-picker.js'),
+			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/image-picker/image-picker.js'),
 			array(),
 			fw()->manifest->get_version(),
 			true
@@ -61,14 +61,14 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
-			fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static/css/styles.css'),
+			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/css/styles.css'),
 			array('qtip'),
 			fw()->manifest->get_version()
 		);
 
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
-			fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
+			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
 			array('fw-events', 'qtip'),
 			fw()->manifest->get_version(),
 			true

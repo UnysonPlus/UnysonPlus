@@ -29,13 +29,13 @@ class FW_Option_Type_Icon extends FW_Option_Type
 	{
 		wp_enqueue_style(
 			'fw-option-type-'. $this->get_type() .'-backend',
-			fw_get_framework_directory_uri('/includes/option-types/'. $this->get_type() .'/static/css/backend.css'),
+			fw_get_framework_asset_uri('/includes/option-types/'. $this->get_type() .'/static/css/backend.css'),
 			fw()->manifest->get_version()
 		);
 
 		wp_enqueue_script(
 			'fw-option-type-'. $this->get_type() .'-backend',
-			fw_get_framework_directory_uri('/includes/option-types/'. $this->get_type() .'/static/js/backend.js'),
+			fw_get_framework_asset_uri('/includes/option-types/'. $this->get_type() .'/static/js/backend.js'),
 			array('jquery', 'fw-events'),
 			fw()->manifest->get_version()
 		);
@@ -180,7 +180,7 @@ class FW_Option_Type_Icon extends FW_Option_Type
 
 		return array(
 			'font-awesome' => array( // http://fortawesome.github.io/Font-Awesome/icons
-				'font-style-src' => fw_get_framework_directory_uri('/static/libs/font-awesome/css/font-awesome.min.css'),
+				'font-style-src' => fw_get_framework_asset_uri('/static/libs/font-awesome/css/font-awesome.min.css'),
 				'container-class' => 'fa-lg', // some fonts need special wrapper class to display properly
 				'groups' => array (
 					'web-application' => __('Web Application Icons', 'fw'),

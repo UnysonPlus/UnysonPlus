@@ -78,14 +78,14 @@ class FW_Option_Type_Datetime_Picker extends FW_Option_Type {
 	protected function _enqueue_static($id, $option, $data) {
 		//plugin styles & js
 		{
-			$css_lib_uri        = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/css/jquery.datetimepicker.css');
-			$js_lib_uri         = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/js/jquery.datetimepicker.js');
+			$css_lib_uri        = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/css/jquery.datetimepicker.css');
+			$js_lib_uri         = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/js/jquery.datetimepicker.js');
 		}
 
 		//framework styles & js
 		{
-			$css_main_uri    = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/css/style.css');
-			$js_main_uri     = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/js/script.js');
+			$css_main_uri    = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/css/style.css');
+			$js_main_uri     = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/js/script.js');
 		}
 
 		wp_enqueue_style( 'fw-option-datetime-picker-lib-css', $css_lib_uri );

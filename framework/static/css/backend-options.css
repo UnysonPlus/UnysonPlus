@@ -3,6 +3,39 @@ Included on pages where backend options are rendered
 */
 
 
+/* ------------------------------------------------------------------ *
+ * Design tokens (modernization layer)
+ *
+ * Replaces the Bootstrap-3-era palette (#428bca / #0074a2 and a scatter
+ * of hardcoded grays) with the current WordPress admin "Fresh" scheme.
+ * Every value falls back to a modern WP default, and the accent adopts
+ * the user's chosen admin color scheme via --wp-admin-theme-color when
+ * WordPress exposes it. Class names / markup are unchanged — this is a
+ * paint-only layer, so saved option data and the PHP/JS API are intact.
+ * ------------------------------------------------------------------ */
+
+:root {
+	--fw-accent:          var(--wp-admin-theme-color, #2271b1);
+	--fw-accent-hover:    var(--wp-admin-theme-color-darker-10, #135e96);
+	--fw-accent-contrast: #fff;
+
+	--fw-text:        #1d2327;
+	--fw-text-muted:  #50575e;
+
+	--fw-border:        #dcdcde;
+	--fw-border-strong: #c3c4c7;
+
+	--fw-surface:     #fff;
+	--fw-surface-alt: #f6f7f7;
+
+	--fw-radius:    4px;
+	--fw-radius-sm: 3px;
+
+	--fw-focus-ring: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
+	--fw-transition: 0.15s ease;
+}
+
+
 /* General */
 
 .postbox-with-fw-options>.inside,
@@ -15,9 +48,7 @@ Included on pages where backend options are rendered
 .fw-backend-option {
 	opacity: 0;
 
-	transition: opacity ease 0.3s;
-	-webkit-transition: opacity ease 0.3s;
-}
+	transition: opacity ease 0.3s;}
 
 .fw-backend-option.initialized {
 	opacity: 1;
@@ -30,7 +61,19 @@ Included on pages where backend options are rendered
 	width: 100%;
 	max-width: 100%;
 	line-height: 25px;
-    min-height: auto;
+	min-height: auto;
+	border-radius: var(--fw-radius-sm);
+	transition: border-color var(--fw-transition), box-shadow var(--fw-transition);
+}
+
+.fw-backend-option .fw-backend-option-input input[type="text"]:focus,
+.fw-backend-option .fw-backend-option-input input[type="password"]:focus,
+.fw-backend-option .fw-backend-option-input select:focus,
+.fw-backend-option .fw-backend-option-input textarea:focus {
+	border-color: var(--fw-accent);
+	box-shadow: var(--fw-focus-ring);
+	outline: 2px solid transparent; /* keep a focus outline for forced-colors / high-contrast modes */
+	outline-offset: 0;
 }
 
 .fw-backend-postboxes.metabox-holder,
@@ -50,16 +93,14 @@ Included on pages where backend options are rendered
 .fw-options-tabs-wrapper {
 	opacity: 0;
 
-	transition: opacity ease 0.3s;
-	-webkit-transition: opacity ease 0.3s;
-}
+	transition: opacity ease 0.3s;}
 
 .fw-options-tabs-wrapper.ui-tabs {
 	opacity: 1;
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-list {
-	border-bottom: 1px solid #CCC;
+	border-bottom: 1px solid var(--fw-border-strong);
 	/*padding: 0 10px;*/
 }
 
@@ -98,15 +139,15 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 	font-size: 15px;
 	line-height: 24px;
 	text-decoration: none;
-	color: #000;
-	border-bottom: 1px solid #ccc;
+	color: var(--fw-text);
+	border-bottom: 1px solid var(--fw-border-strong);
 	margin-top: 0;
 	margin-bottom: -1px;
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-list ul li a.nav-tab:hover {
-	color: #000;
-	background-color: #f1f1f1;
+	color: var(--fw-text);
+	background-color: var(--fw-surface-alt);
 }
 
 .postbox .fw-options-tabs-wrapper>.fw-options-tabs-list {
@@ -114,11 +155,11 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 }
 
 .postbox .fw-options-tabs-wrapper>.fw-options-tabs-list ul li a.nav-tab {
-	background-color: #f1f1f1;
+	background-color: var(--fw-surface-alt);
 }
 
 .postbox .fw-options-tabs-wrapper>.fw-options-tabs-list ul li a.nav-tab:hover {
-	background-color: #f8f8f8;
+	background-color: var(--fw-surface-alt);
 }
 
 .postbox .fw-options-tabs-wrapper>.fw-options-tabs-list ul li.ui-state-active a.nav-tab {
@@ -126,9 +167,9 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-list ul li.ui-state-active a.nav-tab {
-	color: #222;
+	color: var(--fw-text);
 	background: 0 0;
-	border-bottom-color: #f1f1f1;
+	border-bottom-color: var(--fw-surface-alt);
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-list ul li.ui-state-active a.nav-tab:hover {
@@ -137,7 +178,6 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 
 .fw-options-tabs-list ul li a.nav-tab:focus {
 	outline: none;
-	-webkit-box-shadow: none;
 	box-shadow: none;
 }
 
@@ -192,7 +232,7 @@ body.rtl .postbox .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul>li {
 	float: left;
-	color: #666;
+	color: var(--fw-text-muted);
 	margin-right: 0;
 }
 
@@ -212,7 +252,7 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-option
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li a.nav-tab.fw-wp-link {
-	color: #0074a2;
+	color: var(--fw-accent);
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li:first-child a.nav-tab {
@@ -228,7 +268,7 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-option
 	background: none;
 	padding: 0;
 	border: none;
-	color: #000;
+	color: var(--fw-text);
 }
 
 .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-options-tab {
@@ -256,9 +296,7 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-option
 .fw-postbox {
 	opacity: 0;
 
-	transition: opacity ease 0.3s;
-	-webkit-transition: opacity ease 0.3s;
-}
+	transition: opacity ease 0.3s;}
 
 .fw-postbox.initialized {
 	opacity: 1;
@@ -271,17 +309,20 @@ body.rtl .fw-options-tabs-wrapper>.fw-options-tabs-contents>.fw-inner>.fw-option
 
 form.fw-settings-form.fw-backend-side-tabs {
 	background-color: #fff;
-	-webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level {
-	background:
-		#fff url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAABCAYAAAAo/lyUAAAAIklEQVQ4T2N8/Pjxf4ZRMBoCoyEwGgKjITAaAqMhMKRDAACcIAOqH7nZlwAAAABJRU5ErkJgggAA')
-		/* #e3e3e3 500x1 */
-		-302px
-		/* 198-500 */
-		0 repeat-y;
+	/* The sidebar column divider — formerly a base64-encoded 1px PNG tiled
+	   with repeat-y at x=198px. Replaced with a CSS gradient that paints the
+	   same 1px line; pure paint, no layout impact (the PNG approach was too). */
+	background: var(--fw-surface) linear-gradient(
+		to right,
+		var(--fw-surface) 197px,
+		var(--fw-border) 197px,
+		var(--fw-border) 198px,
+		var(--fw-surface) 198px
+	) no-repeat;
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list {
@@ -304,7 +345,7 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-lis
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner {
 	width: 100%;
 	min-height: 100%;
-	border-right: 1px solid #e5e5e5;
+	border-right: 1px solid var(--fw-border);
 	display: table;
 	padding-bottom: 70px;
 }
@@ -312,7 +353,7 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-lis
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li {
 	float: none;
 	margin-right: 0;
-	border: 1px solid #d3d3d3;
+	border: 1px solid var(--fw-border-strong);
 	border-width: 0 0 1px;
 	overflow: hidden;
 }
@@ -326,7 +367,7 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-wrapper>.fw-options-tabs-content
 }
 
 body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
-	border-left: 1px solid #e5e5e5;
+	border-left: 1px solid var(--fw-border);
 	border-right: none;
 }
 
@@ -347,10 +388,10 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-wrapper>.fw-options-tabs-list ul
 	height: 43px;
 	line-height: 43px;
 	border: none;
+	border-radius: 0; /* main side-tabs are full-width bars — override a.fw-wp-link's .25rem top rounding (fw.css) */
 	font-size: 14px;
 	font-weight: 400;
-	color: #333;
-	-webkit-box-shadow: none;
+	color: var(--fw-text);
 	box-shadow: none;
 }
 
@@ -363,11 +404,11 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list .ui-tabs-nav a:hover {
-	background: #dadada;
+	background: var(--fw-surface-alt);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li.ui-state-active {
-	border-color: #b1b1b1;
+	border-color: var(--fw-border-strong);
 	margin-top: -1px;
 	border-width: 1px 0;
 	position: relative;
@@ -385,8 +426,8 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li.ui-state-active a.nav-tab,
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li.ui-state-active a.nav-tab:hover {
-	background: #bdbdbd;
-	color: #fff;
+	background: var(--fw-accent);
+	color: var(--fw-accent-contrast);
 }
 
 body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents {
@@ -412,7 +453,7 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-con
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul {
 	padding: 0;
-	background: #f7f7f7;
+	background: var(--fw-surface-alt);
 	border-width: 1px 0;
 	clear: both;
 }
@@ -429,19 +470,19 @@ body.rtl .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-con
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul {
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid var(--fw-border);
 }
 
 body.branch-4-0 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li,
 body.branch-4-1 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li,
 body.branch-4-2 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li,
 body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid var(--fw-border);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li {
 	position: relative;
-	border-right: 1px solid #e5e5e5;
+	border-right: 1px solid var(--fw-border);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li.ui-state-active:after {
@@ -461,14 +502,13 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 	height: 44px;
 	line-height: 44px;
 	font-size: 14px;
-	-webkit-box-shadow: none;
 	box-shadow: none;
 	outline: none;
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li a.nav-tab {
 	background: transparent;
-	color: #000;
+	color: var(--fw-text);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul li.ui-state-active a.nav-tab {
@@ -476,7 +516,7 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents>.fw-inner>.fw-options-tab>.fw-options-tabs-wrapper>.fw-options-tabs-list ul>li a.nav-tab:hover {
-	color: #0074a2;
+	color: var(--fw-accent);
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-contents,
@@ -497,7 +537,6 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 
 .fw-backend-side-tabs .fw-backend-postboxes>.fw-postbox {
 	border: none;
-	-webkit-box-shadow: none;
 	box-shadow: none;
 }
 
@@ -512,7 +551,7 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 	line-height: 45px;
 	border-bottom: none !important;
 	font-size: 17px;
-	color: #0074a2;
+	color: var(--fw-accent);
 }
 
 body.branch-4-0 .fw-backend-side-tabs .fw-backend-postboxes>.fw-postbox>.hndle,
@@ -530,8 +569,8 @@ body.branch-4-3 .fw-backend-side-tabs .fw-backend-postboxes>.fw-postbox>.hndle {
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	border-top: 1px solid #eee;
-	border-bottom: 1px solid #eee;
+	border-top: 1px solid var(--fw-border);
+	border-bottom: 1px solid var(--fw-border);
 	z-index: 1;
 }
 
@@ -621,12 +660,10 @@ body.branch-4-3 .fw-backend-side-tabs .fw-backend-postboxes>.fw-postbox>.hndle {
 /* form header */
 
 .fw-backend-side-tabs .fw-settings-form-header {
-	background-color: #0074a2;
+	background-color: var(--fw-accent);
 	margin-top: 20px;
 	opacity: 0;
-	transition: opacity ease 0.3s;
-	-webkit-transition: opacity ease 0.3s;
-}
+	transition: opacity ease 0.3s;}
 
 /* make it match with admin color themes */
 body.admin-color-light .fw-backend-side-tabs .fw-settings-form-header {
@@ -667,7 +704,6 @@ body.admin-color-sunrise .fw-backend-side-tabs .fw-settings-form-header {
 
 .fw-backend-side-tabs .fw-settings-form-header a:focus {
 	outline: none;
-	-webkit-box-shadow: none;
 	box-shadow: none;
 }
 
@@ -712,7 +748,6 @@ body.rtl .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons {
 }
 
 .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons input {
-	-webkit-box-shadow: none;
 	box-shadow: none;
 	text-shadow: none;
 	vertical-align: middle;
@@ -756,13 +791,12 @@ body.rtl .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons {
 	line-height: 24px;
 	background: #fff;
 	border-color: transparent;
-	color: #0074a2;
-	-webkit-border-radius: 2px;
-	border-radius: 2px;
+	color: var(--fw-accent);
+	border-radius: var(--fw-radius-sm);
 }
 
 .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons .submit-button-save:hover {
-	background: #f5f5f5;
+	background: var(--fw-surface-alt);
 }
 
 @media (max-width: 782px) {
@@ -787,13 +821,9 @@ body.rtl .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons {
 .fw-backend-side-tabs .form-footer-buttons {
 	position: relative;
 	min-height: 70px;
-	border-top: 1px solid #e5e5e5;
-	background: #f7f7f7;
+	border-top: 1px solid var(--fw-border);
+	background: var(--fw-surface-alt);
 
-	-webkit-animation: fwFadeIn 3s ease-in;
-	-moz-animation: fwFadeIn 3s ease-in;
-	-ms-animation: fwFadeIn 3s ease-in;
-	-o-animation: fwFadeIn 3s ease-in;
 	animation: fwFadeIn 3s ease-in;
 }
 
@@ -810,10 +840,8 @@ body.rtl .fw-backend-side-tabs .fw-settings-form-header .form-header-buttons {
 .fw-backend-side-tabs .form-footer-buttons input[type="submit"] {
 	margin: 20px 0 0;
 	float: left;
-	-webkit-box-shadow: none;
 	box-shadow: none;
-	-webkit-border-radius: 0;
-	border-radius: 2px;
+	border-radius: var(--fw-radius-sm);
 }
 
 body.rtl .fw-backend-side-tabs .form-footer-buttons input[type="submit"] {
@@ -890,13 +918,13 @@ form#post .fw-options-tabs-wrapper>.fw-options-tabs-contents .fw-backend-postbox
 .fw-postbox .hndle .fw-html-after-title .dashicons {
 	width: auto;
 	height: auto;
-	color: #AAA;
+	color: var(--fw-text-muted);
 	/* copied from .handlediv */
 }
 
 .fw-postbox .hndle .fw-html-before-title .dashicons:hover,
 .fw-postbox .hndle .fw-html-after-title .dashicons:hover {
-	color: #777;
+	color: var(--fw-text-muted);
 	/* copied from .handlediv */
 }
 
@@ -924,7 +952,7 @@ body.rtl .fw-postbox .handlediv:before {
 
 .fw-postbox .handlediv:before {
 	content: '\f142';
-	color: #ccc;
+	color: var(--fw-border-strong);
 }
 
 .fw-postbox .handle-order-higher,
@@ -961,8 +989,8 @@ body.rtl .fw-postbox .handlediv:before {
 .fw-backend-option-design-default {
 	position: relative;
 	padding: 24px 27px 21px;
-	border: 0px solid #eeeeee;
-	border-bottom: 1px solid #eeeeee;
+	border: 0px solid var(--fw-border);
+	border-bottom: 1px solid var(--fw-border);
 }
 
 .fw-backend-option-design-default.fw-bottom-border-hidden {
@@ -994,8 +1022,6 @@ body.rtl .fw-postbox>.inside>.fw-backend-options-last-border-hider {
 	position: relative;
 	max-width: 100%;
 
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -1024,7 +1050,7 @@ body.rtl .fw-backend-option-design-default>.fw-backend-option-label label {
 
 .fw-backend-option-design-default>.fw-backend-option-desc {
 	font-style: italic;
-	color: #666;
+	color: var(--fw-text-muted);
 }
 
 .fw-backend-option-design-default>.fw-backend-option-desc>.fw-inner {
@@ -1068,7 +1094,7 @@ body.rtl .fw-backend-option-design-default>.fw-backend-option-desc>.fw-inner {
 /* Options Groups */
 
 .fw-backend-options-group:not(.show-borders) {
-	border-bottom: 1px solid #eeeeee;
+	border-bottom: 1px solid var(--fw-border);
 }
 
 .fw-backend-options-group:not(.show-borders)>.fw-backend-option {
@@ -1164,13 +1190,13 @@ body.rtl .fw-force-xs .fw-backend-option-design-default.with-help>.fw-backend-op
 
 .fw-backend-option .fw-option-help {
 	cursor: pointer;
-	color: #AAAAAA;
+	color: var(--fw-text-muted);
 	/* copied from .handlediv */
 }
 
 .fw-backend-option .fw-option-help:hover,
 .fw-backend-option .fw-option-help.active {
-	color: #333333;
+	color: var(--fw-text);
 }
 
 .fw-backend-option-design-default.with-help>.fw-backend-option-input>.fw-inner>.fw-option-help {
@@ -1319,7 +1345,7 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 	right: 8px;
 	margin-top: -2px;
 	border-width: 6px 3px 0 3px;
-	border-color: #000000 transparent transparent transparent;
+	border-color: var(--fw-text) transparent transparent transparent;
 }
 
 .fw-selectize.selectize-control>.selectize-input,
@@ -1329,10 +1355,9 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 	padding: 0;
 	margin: 1px;
 	border-radius: 0;
-	border: 1px solid #ddd;
-	color: #333333;
+	border: 1px solid var(--fw-border);
+	color: var(--fw-text);
 
-	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
 	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
 }
 
@@ -1376,7 +1401,7 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 }
 
 .fw-selectize.selectize-control .selectize-dropdown .selectize-dropdown-content {
-	border: 1px solid #ddd;
+	border: 1px solid var(--fw-border);
 	max-height: 204px;
 }
 
@@ -1384,12 +1409,12 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 	height: 30px;
 	background-color: #fff;
 	cursor: pointer;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid var(--fw-border);
 	line-height: 30px;
 }
 
 .fw-selectize.selectize-control .selectize-dropdown .selectize-dropdown-content div:hover {
-	background-color: #f0f0f0;
+	background-color: var(--fw-surface-alt);
 }
 
 /* end: Selectize */

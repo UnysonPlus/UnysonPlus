@@ -286,13 +286,13 @@ abstract class FW_Option_Type
                         if (!$option_types_static_enqueued) {
                                 wp_enqueue_style(
                                         'fw-option-types',
-                                        fw_get_framework_directory_uri('/static/css/option-types.css'),
+                                        fw_get_framework_asset_uri('/static/css/option-types.css'),
                                         array('fw', 'qtip'),
                                         fw()->manifest->get_version()
                                 );
                                 wp_enqueue_script(
                                         'fw-option-types',
-                                        fw_get_framework_directory_uri('/static/js/option-types.js'),
+                                        fw_get_framework_asset_uri('/static/js/option-types.js'),
                                         array('fw-events', 'qtip', 'fw-reactive-options'),
                                         fw()->manifest->get_version(),
                                         true
@@ -307,13 +307,13 @@ abstract class FW_Option_Type
                                         wp_enqueue_style('dashicons');
                                         wp_enqueue_style(
                                                 'fw-dynamic-content',
-                                                fw_get_framework_directory_uri('/includes/dynamic-content/static/css/dynamic-content.css'),
+                                                fw_get_framework_asset_uri('/includes/dynamic-content/static/css/dynamic-content.css'),
                                                 array('fw'),
                                                 fw()->manifest->get_version()
                                         );
                                         wp_enqueue_script(
                                                 'fw-dynamic-content',
-                                                fw_get_framework_directory_uri('/includes/dynamic-content/static/js/dynamic-content.js'),
+                                                fw_get_framework_asset_uri('/includes/dynamic-content/static/js/dynamic-content.js'),
                                                 array('jquery', 'fw-events', 'fw', 'fw-reactive-options'),
                                                 fw()->manifest->get_version(),
                                                 true

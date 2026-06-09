@@ -297,15 +297,7 @@ final class _FW_Component_Backend {
 
 		wp_register_script(
 			'fw-events',
-			fw_get_framework_directory_uri('/static/js/fw-events.js'),
-			[],
-			fw()->manifest->get_version(),
-			true
-		);
-
-		wp_register_script(
-			'fw-ie-fixes',
-			fw_get_framework_directory_uri('/static/js/ie-fixes.js'),
+			fw_get_framework_asset_uri('/static/js/fw-events.js'),
 			[],
 			fw()->manifest->get_version(),
 			true
@@ -334,35 +326,35 @@ final class _FW_Component_Backend {
 		{
 			wp_register_style(
 				'fw',
-				fw_get_framework_directory_uri('/static/css/fw.css'),
+				fw_get_framework_asset_uri('/static/css/fw.css'),
 				['qtip'],
 				fw()->manifest->get_version()
 			);
 
 			wp_register_script(
 				'fw-reactive-options-registry',
-				fw_get_framework_directory_uri('/static/js/fw-reactive-options-registry.js'),
+				fw_get_framework_asset_uri('/static/js/fw-reactive-options-registry.js'),
 				['fw', 'fw-events'],
 				false
 			);
 
 			wp_register_script(
 				'fw-reactive-options-simple-options',
-				fw_get_framework_directory_uri('/static/js/fw-reactive-options-simple-options.js'),
+				fw_get_framework_asset_uri('/static/js/fw-reactive-options-simple-options.js'),
 				['fw', 'fw-events', 'fw-reactive-options-undefined-option'],
 				false
 			);
 
 			wp_register_script(
 				'fw-reactive-options-undefined-option',
-				fw_get_framework_directory_uri('/static/js/fw-reactive-options-undefined-option.js'),
+				fw_get_framework_asset_uri('/static/js/fw-reactive-options-undefined-option.js'),
 				['fw', 'fw-events', 'fw-reactive-options-registry'],
 				false
 			);
 
 			wp_register_script(
 				'fw-reactive-options',
-				fw_get_framework_directory_uri('/static/js/fw-reactive-options.js'),
+				fw_get_framework_asset_uri('/static/js/fw-reactive-options.js'),
 				[
 					'fw', 'fw-events', 'fw-reactive-options-undefined-option',
 					'fw-reactive-options-simple-options'
@@ -372,7 +364,7 @@ final class _FW_Component_Backend {
 
 			wp_register_script(
 				'fw',
-				fw_get_framework_directory_uri('/static/js/fw.js'),
+				fw_get_framework_asset_uri('/static/js/fw.js'),
 				['jquery', 'fw-events', 'backbone', 'qtip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
@@ -408,14 +400,14 @@ final class _FW_Component_Backend {
 		{
 			wp_register_style(
 				'fw-backend-options',
-				fw_get_framework_directory_uri('/static/css/backend-options.css'),
+				fw_get_framework_asset_uri('/static/css/backend-options.css'),
 				['fw'],
 				fw()->manifest->get_version()
 			);
 
 			wp_register_script(
 				'fw-backend-options',
-				fw_get_framework_directory_uri('/static/js/backend-options.js'),
+				fw_get_framework_asset_uri('/static/js/backend-options.js'),
 				['fw', 'fw-events', 'fw-reactive-options', 'postbox', 'jquery-ui-tabs'],
 				fw()->manifest->get_version(),
 				true
@@ -437,7 +429,7 @@ final class _FW_Component_Backend {
 			wp_register_script(
 				'fw-selectize',
 				fw_get_framework_directory_uri('/static/libs/selectize/selectize.min.js'),
-				['jquery', 'fw-ie-fixes'],
+				['jquery'],
 				fw()->manifest->get_version(),
 				true
 			);
@@ -514,7 +506,7 @@ final class _FW_Component_Backend {
 
 		wp_register_script(
 			'fw-form-helpers',
-			fw_get_framework_directory_uri('/static/js/fw-form-helpers.js'),
+			fw_get_framework_asset_uri('/static/js/fw-form-helpers.js'),
 			['jquery'],
 			fw()->manifest->get_version(),
 			true
@@ -1831,7 +1823,7 @@ final class _FW_Component_Backend {
 
 		wp_enqueue_script(
 			'fw-backend-customizer',
-			fw_get_framework_directory_uri('/static/js/backend-customizer.js'),
+			fw_get_framework_asset_uri('/static/js/backend-customizer.js'),
 			['jquery', 'fw-events', 'backbone', 'fw-backend-options'],
 			fw()->manifest->get_version(),
 			true

@@ -1,3 +1,29 @@
+/* ------------------------------------------------------------------ *
+ * Contextual color tokens (modernization layer)
+ *
+ * Extracts the Bootstrap-3-era contextual palette used by the `.fw-text-*`
+ * utility classes into CSS custom properties. Values are preserved (pure
+ * refactor — no visual change), so existing `.fw-text-primary` etc. render
+ * identically. Token names are namespaced distinctly from the semantic
+ * tokens in backend-options.css (--fw-accent, --fw-text, …) so the two
+ * :root blocks never clobber each other when both load on an admin page.
+ * ------------------------------------------------------------------ */
+
+:root {
+	--fw-muted:          #777;
+	--fw-primary:        #428bca;
+	--fw-primary-hover:  #3071a9;
+	--fw-success:        #3c763d;
+	--fw-success-hover:  #2b542c;
+	--fw-info:           #31708f;
+	--fw-info-hover:     #245269;
+	--fw-warning:        #8a6d3b;
+	--fw-warning-hover:  #66512c;
+	--fw-danger:         #dd3d36;
+	--fw-danger-hover:   #843534;
+}
+
+
 /* General */
 
 .fw-text-left {
@@ -33,47 +59,47 @@
 }
 
 .fw-text-muted {
-	color: #777;
+	color: var(--fw-muted);
 }
 
 .fw-text-primary {
-	color: #428bca;
+	color: var(--fw-primary);
 }
 
 a.fw-text-primary:hover {
-	color: #3071a9;
+	color: var(--fw-primary-hover);
 }
 
 .fw-text-success {
-	color: #3c763d;
+	color: var(--fw-success);
 }
 
 a.fw-text-success:hover {
-	color: #2b542c;
+	color: var(--fw-success-hover);
 }
 
 .fw-text-info {
-	color: #31708f;
+	color: var(--fw-info);
 }
 
 a.fw-text-info:hover {
-	color: #245269;
+	color: var(--fw-info-hover);
 }
 
 .fw-text-warning {
-	color: #8a6d3b;
+	color: var(--fw-warning);
 }
 
 a.fw-text-warning:hover {
-	color: #66512c;
+	color: var(--fw-warning-hover);
 }
 
 .fw-text-danger {
-	color: #dd3d36;
+	color: var(--fw-danger);
 }
 
 a.fw-text-danger:hover {
-	color: #843534;
+	color: var(--fw-danger-hover);
 }
 
 .fw-img-responsive {
@@ -134,8 +160,6 @@ a.fw-text-danger:hover {
 	background-color: #fff;
 	border: 1px solid #ddd;
 	border-radius: 4px;
-	-webkit-transition: all .2s ease-in-out;
-	-o-transition: all .2s ease-in-out;
 	transition: all .2s ease-in-out;
 }
 
@@ -160,8 +184,6 @@ a.fw-text-danger:hover {
 }
 
 .fw-border-box-sizing {
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -396,8 +418,6 @@ min-width: 1200px
 	position: relative;
 	min-height: 1px;
 
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -2635,11 +2655,8 @@ body.rtl .fw-force-xs .fw-col-xs-offset-0 {
 a.fw-wp-link,
 .fw-wp-link-color {
 	color: #0074a2;
-	-webkit-transition-property: border,background,color;
 	transition-property: border,background,color;
-	-webkit-transition-duration: .05s;
 	transition-duration: .05s;
-	-webkit-transition-timing-function: ease-in-out;
 	transition-timing-function: ease-in-out;
 	border-radius: .25rem .25rem 0 0;
 }
@@ -2690,10 +2707,6 @@ a.fw-wp-link:hover {
 }
 
 .fw-animation-grow-in {
-	-webkit-animation: fwGrowIn .3s ease-in-out;
-	-moz-animation: fwGrowIn .3s ease-in-out;
-	-ms-animation: fwGrowIn .3s ease-in-out;
-	-o-animation: fwGrowIn .3s ease-in-out;
 	animation: fwGrowIn .3s ease-in-out;
 }
 
@@ -2766,10 +2779,6 @@ a.fw-wp-link:hover {
 }
 
 .fw-animation-grow-out {
-	-webkit-animation: fwGrowOut .3s ease-in-out;
-	-moz-animation: fwGrowOut .3s ease-in-out;
-	-ms-animation: fwGrowOut .3s ease-in-out;
-	-o-animation: fwGrowOut .3s ease-in-out;
 	animation: fwGrowOut .3s ease-in-out;
 
 	-webkit-animation-fill-mode: forwards; /* Chrome, Safari, Opera */
@@ -2879,10 +2888,6 @@ a.fw-wp-link:hover {
 }
 
 .fw-animation-rotate-reverse-180 {
-	-webkit-animation: fwRotateReverse180 2s ease infinite;
-	-moz-animation: fwRotateReverse180 2s ease infinite;
-	-ms-animation: fwRotateReverse180 2s ease infinite;
-	-o-animation: fwRotateReverse180 2s ease infinite;
 	animation: fwRotateReverse180 2s ease infinite;
 }
 
@@ -2918,7 +2923,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
 }
 
 .fw-modal .media-modal-close:focus {
-	-webkit-box-shadow: none;
 	box-shadow: none;
 }
 
@@ -2927,7 +2931,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
 .fw-modal > .media-modal-backdrop {
 	opacity: 0;
 
-	-webkit-transition: opacity .3s ease-in-out; /* For Safari 3.1 to 6.0 */
 	transition: opacity .3s ease-in-out;
 }
 
@@ -2942,7 +2945,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
 .fw-modal.fw-modal-open > .media-modal-backdrop {
 	opacity: .7; /* must be the same as in .media-modal-backdrop {} wp style */
 
-	-webkit-transition: opacity .3s ease-in-out; /* For Safari 3.1 to 6.0 */
 	transition: opacity .3s ease-in-out;
 }
 
@@ -2950,10 +2952,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
  * Specificity score: 5
  */
 .fw-modal.fw-sole-modal.fw-modal-opening > .media-modal > .media-modal-content {
-	-webkit-animation: fwGrowIn .3s ease-in-out;
-	-moz-animation: fwGrowIn .3s ease-in-out;
-	-ms-animation: fwGrowIn .3s ease-in-out;
-	-o-animation: fwGrowIn .3s ease-in-out;
 	animation: fwGrowIn .3s ease-in-out;
 }
 
@@ -2961,10 +2959,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
  * Specificity score: 5
  */
 .fw-modal:not(.fw-sole-modal).fw-modal-open > .media-modal > .media-modal-content {
-	-webkit-animation: fwGrowIn .3s ease-in-out;
-	-moz-animation: fwGrowIn .3s ease-in-out;
-	-ms-animation: fwGrowIn .3s ease-in-out;
-	-o-animation: fwGrowIn .3s ease-in-out;
 	animation: fwGrowIn .3s ease-in-out;
 }
 
@@ -2973,10 +2967,6 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
  * Specificity score: 5.1
  */
 body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content {
-	-webkit-animation: fwGrowOut .3s ease-in-out;
-	-moz-animation: fwGrowOut .3s ease-in-out;
-	-ms-animation: fwGrowOut .3s ease-in-out;
-	-o-animation: fwGrowOut .3s ease-in-out;
 	animation: fwGrowOut .3s ease-in-out;
 
 	-webkit-animation-fill-mode: forwards; /* Chrome, Safari, Opera */
@@ -2986,14 +2976,12 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 .fw-modal > .media-modal > .media-modal-close {
 	opacity: 0;
 
-	-webkit-transition: opacity .3s ease-in; /* For Safari 3.1 to 6.0 */
 	transition: opacity .3s ease-in;
 }
 
 .fw-modal.fw-modal-open > .media-modal > .media-modal-close {
 	opacity: 1;
 
-	-webkit-transition-duration: .6s;
 	transition-duration: .6s;
 }
 
@@ -3012,7 +3000,6 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 .fw-modal.fw-modal-closing > .media-modal > .media-modal-close {
 	opacity: 0;
 
-	-webkit-transition-duration: .1s;
 	transition-duration: .1s;
 }
 
@@ -3030,8 +3017,6 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 .fw-modal.fw-modal-large > .media-modal {
 	margin: auto;
 
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -3214,7 +3199,6 @@ body > .fw-sole-modal > .media-modal-backdrop {
 }
 
 body > .fw-sole-modal > .media-modal > .media-modal-content {
-	-webkit-box-shadow: 0 1px 10px rgba(0,0,0,.25);
 	box-shadow: 0 0px 10px rgba(0,0,0,.25);
 }
 
@@ -3242,10 +3226,6 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 
 /* Fixed: https://github.com/ThemeFuse/Unyson/issues/2888 */
 .appearance_page_fw-settings .fw-sole-modal-content .wp-spinner{
-	-webkit-animation: fw-spin 1.2s linear infinite;
-	-moz-animation: fw-spin 1.2s linear infinite;
-	-ms-animation: fw-spin 1.2s linear infinite;
-	-o-animation: fw-spin 1.2s linear infinite;
 	animation: fw-spin 1.2s linear infinite;
 }
 @-ms-keyframes fw-spin {
@@ -3352,18 +3332,10 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 }
 
 #fw-loading.opening {
-	-webkit-animation: fwGrowIn .3s ease-in-out;
-	-moz-animation: fwGrowIn .3s ease-in-out;
-	-ms-animation: fwGrowIn .3s ease-in-out;
-	-o-animation: fwGrowIn .3s ease-in-out;
 	animation: fwGrowIn .3s ease-in-out;
 }
 
 #fw-loading.closing {
-	-webkit-animation: fwGrowOut .3s ease-in-out;
-	-moz-animation: fwGrowOut .3s ease-in-out;
-	-ms-animation: fwGrowOut .3s ease-in-out;
-	-o-animation: fwGrowOut .3s ease-in-out;
 	animation: fwGrowOut .3s ease-in-out;
 
 	-webkit-animation-fill-mode: forwards; /* Chrome, Safari, Opera */

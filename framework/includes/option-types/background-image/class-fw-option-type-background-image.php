@@ -33,13 +33,13 @@ class FW_Option_Type_Background_Image extends FW_Option_Type {
 	{
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
-			fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static/css/styles.css'),
+			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/css/styles.css'),
 			array(),
 			fw()->manifest->get_version()
 		);
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
-			fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
+			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
 			array( 'jquery', 'fw-events' ),
 			fw()->manifest->get_version(),
 			true

@@ -2,10 +2,35 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.9.82';
+$manifest['version'] = '2.9.96';
 
 /**
  * Changelog
+ * 2.9.92 - New asset build pipeline (build/). A small Node toolchain (esbuild +
+ *          PostCSS/autoprefixer/cssnano, run via `npm run build`) autoprefixes
+ *          and minifies the core backend stylesheets, writing *.min.css siblings
+ *          next to the readable source. New public helper
+ *          fw_get_framework_asset_uri( $rel_path ) serves the .min build when it
+ *          exists and SCRIPT_DEBUG is off, else falls back to the unminified
+ *          source — so the plugin works with or without a build, and a missing
+ *          .min never 404s. Wired for fw.css / backend-options.css /
+ *          option-types.css (~20% smaller, and autoprefixer finishes the vendor-
+ *          prefix normalization in the output). build/node_modules is dev-only
+ *          and must be excluded from the uploaded zip (see build/README.md).
+ *
+ * 2.9.84 - New "Header & Footer Builder" extension. Adds two private, page-builder-
+ *          authored post types (Header Preset / Footer Preset) modeled on the
+ *          Snippets extension: each preset is built with the visual builder and
+ *          rendered (auto-section-stripped) via fw_ext_hfbuilder_render() into the
+ *          theme's <header>/<footer>. A header preset also carries a Type
+ *          (standard-top / sidebar / off-canvas / fullscreen-overlay / mega) and a
+ *          scroll Behavior, emitted as wrapper classes + data-attrs for the theme's
+ *          CSS/JS. The builder palette on the preset edit screens is trimmed (via
+ *          the fw_ext_shortcodes_disable_shortcodes filter, scoped to those CPTs)
+ *          so header/footer-irrelevant elements (accordion, tabs, posts grid, …)
+ *          are hidden; the list is filterable (fw_ext_hfbuilder_disabled_elements).
+ *          Pairs with the new Header/Footer Elements shortcodes (2.9.83).
+ *
  * 2.9.75 - Plugin version sync for the Breadcrumbs extension upgrade (1.0.18):
  *          schema.org BreadcrumbList structured data (Microdata / JSON-LD),
  *          new presentation + behavior options, a [breadcrumbs] shortcode, and

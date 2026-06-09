@@ -5,44 +5,11 @@ Styles for options type from option-types.php file, that has no own style.css
 
 /* placeholder */
 
-.fw-option ::-webkit-input-placeholder {
+.fw-option ::placeholder,
+.fw-option::placeholder {
 	font-style: italic;
 	line-height: 1.4em;
-}
-
-.fw-option ::-moz-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option :-ms-input-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option :-moz-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option::-webkit-input-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option::-moz-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option:-ms-input-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
-}
-
-.fw-option:-moz-placeholder {
-	font-style: italic;
-	line-height: 1.4em;
+	opacity: 1; /* Firefox dims placeholders by default; keep parity with other browsers */
 }
 
 /* end: placeholder */
@@ -88,22 +55,19 @@ textarea.fw-option-type-textarea {
 
 /* Radio and Checkboxes inline */
 
+/* Modernized: float layout -> flexbox. flex-wrap keeps long lists wrapping,
+   `gap` replaces the per-item margins + :last-child reset, and RTL is handled
+   natively by the flex direction (no separate body.rtl float override needed). */
+.fw-option-type-checkboxes.fw-option-type-checkboxes-inline,
+.fw-option-type-radio.fw-option-type-radio-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 10px;
+}
+
 .fw-option-type-checkboxes.fw-option-type-checkboxes-inline > div,
 .fw-option-type-radio.fw-option-type-radio-inline > div {
-	float: left;
-	margin-right: 10px;
-}
-
-.fw-option-type-checkboxes.fw-option-type-checkboxes-inline > div:last-child,
-.fw-option-type-radio.fw-option-type-radio-inline > div:last-child {
-	margin-right: 0;
-}
-
-/* RTL Radio and Checkboxes inline */
-body.rtl .fw-option-type-checkboxes.fw-option-type-checkboxes-inline > div:not(:last-child),
-body.rtl .fw-option-type-radio.fw-option-type-radio-inline > div:not(:last-child) {
-	float: right;
-	margin: 0 0 0 10px;
+	margin: 0;
 }
 
 /* end: Radio amd Checkboxes inline */

@@ -48,13 +48,13 @@ class FW_Option_Type_Predefined_Colors_Color_Picker extends FW_Option_Type {
 		// Predefined Colors dependency (sibling option type in this plugin)
 		wp_enqueue_style(
 			'fw-option-predefined-colors',
-			fw_get_framework_directory_uri() . '/includes/option-types/predefined-colors/static/css/styles.css',
+			fw_get_framework_asset_uri() . '/includes/option-types/predefined-colors/static/css/styles.css',
 			array(),
 			fw()->manifest->get_version()
 		);
 		wp_enqueue_script(
 			'fw-option-predefined-colors',
-			fw_get_framework_directory_uri() . '/includes/option-types/predefined-colors/static/js/scripts.js',
+			fw_get_framework_asset_uri() . '/includes/option-types/predefined-colors/static/js/scripts.js',
 			array( 'fw-events', 'jquery' ),
 			fw()->manifest->get_version(),
 			true
@@ -63,13 +63,13 @@ class FW_Option_Type_Predefined_Colors_Color_Picker extends FW_Option_Type {
 		// Standard color picker
 		wp_enqueue_style(
 			'fw-option-color-picker',
-			fw_get_framework_directory_uri() . '/includes/option-types/color-picker/static/css/styles.css',
+			fw_get_framework_asset_uri() . '/includes/option-types/color-picker/static/css/styles.css',
 			array(),
 			fw()->manifest->get_version()
 		);
 		wp_enqueue_script(
 			'fw-option-color-picker',
-			fw_get_framework_directory_uri() . '/includes/option-types/color-picker/static/js/scripts.js',
+			fw_get_framework_asset_uri() . '/includes/option-types/color-picker/static/js/scripts.js',
 			array( 'jquery', 'fw-events', 'wp-color-picker' ),
 			fw()->manifest->get_version(),
 			true
@@ -88,13 +88,13 @@ class FW_Option_Type_Predefined_Colors_Color_Picker extends FW_Option_Type {
 		// RGBA color picker
 		wp_enqueue_style(
 			'fw-option-rgba-color-picker',
-			fw_get_framework_directory_uri() . '/includes/option-types/rgba-color-picker/static/css/styles.css',
+			fw_get_framework_asset_uri() . '/includes/option-types/rgba-color-picker/static/css/styles.css',
 			array(),
 			fw()->manifest->get_version()
 		);
 		wp_enqueue_script(
 			'fw-option-rgba-color-picker',
-			fw_get_framework_directory_uri() . '/includes/option-types/rgba-color-picker/static/js/scripts.js',
+			fw_get_framework_asset_uri() . '/includes/option-types/rgba-color-picker/static/js/scripts.js',
 			array( 'jquery', 'fw-events', 'iris' ),
 			fw()->manifest->get_version(),
 			true

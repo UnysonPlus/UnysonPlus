@@ -17,7 +17,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 	protected function _enqueue_static( $id, $option, $data ) {
 		wp_enqueue_style(
 			$this->get_type() . '-styles',
-			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/css/style.css' )
+			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/css/style.css' )
 		);
 
 		// When no Google Maps API key is configured, fall back to a free
@@ -30,7 +30,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 
 		wp_enqueue_script(
 			$this->get_type() . '-scripts',
-			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
+			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
 			array( 'jquery', 'jquery-ui-widget', 'fw-events', 'underscore', 'jquery-ui-autocomplete' ),
 			'1.0',
 			true
@@ -85,7 +85,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 
 		wp_enqueue_script(
 			$this->get_type() . '-scripts-osm',
-			fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts-osm.js' ),
+			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts-osm.js' ),
 			array( 'jquery', 'fw-events', 'underscore', 'leaflet' ),
 			'1.0',
 			true

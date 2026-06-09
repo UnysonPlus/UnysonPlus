@@ -469,13 +469,13 @@ if ( ! class_exists( 'FW_Option_Type_Multi_Select' ) ):
 		protected function _enqueue_static( $id, $option, $data ) {
 			wp_enqueue_style(
 				$this->get_type() . '-styles',
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/css/style.css' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/css/style.css' ),
 				array( 'fw-selectize' ),
 				fw()->manifest->get_version()
 			);
 			wp_enqueue_script(
 				$this->get_type() . '-styles',
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
 				array( 'jquery', 'fw-events', 'fw-selectize' ),
 				fw()->manifest->get_version(),
 				true

@@ -33,14 +33,14 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 		if ($enqueue) {
 			wp_enqueue_style(
 				'fw-option-' . $option_type,
-				fw_get_framework_directory_uri('/includes/option-types/' . $option_type . '/static/css/styles.css'),
+				fw_get_framework_asset_uri('/includes/option-types/' . $option_type . '/static/css/styles.css'),
 				array('fw'),
 				fw()->manifest->get_version()
 			);
 
 			wp_enqueue_script(
 				'fw-option-' . $option_type,
-				fw_get_framework_directory_uri('/includes/option-types/' . $option_type . '/static/js/scripts.js'),
+				fw_get_framework_asset_uri('/includes/option-types/' . $option_type . '/static/js/scripts.js'),
 				array('underscore', 'fw-events', 'jquery-ui-sortable', 'fw'),
 				fw()->manifest->get_version(),
 				true

@@ -26,13 +26,13 @@ class FW_Option_Type_Popup extends FW_Option_Type {
 		if ($enqueue) {
 			wp_enqueue_style(
 				'fw-option-' . $this->get_type(),
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/css/styles.css' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/css/styles.css' ),
 				array( 'fw' )
 			);
 
 			wp_enqueue_script(
 				'fw-option-' . $this->get_type(),
-				fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static/js/' . $this->get_type() . '.js' ),
+				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/' . $this->get_type() . '.js' ),
 				array( 'underscore', 'fw-events', 'jquery-ui-sortable', 'fw' ),
 				false,
 				true
