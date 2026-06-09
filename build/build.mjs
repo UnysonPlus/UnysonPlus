@@ -127,11 +127,11 @@ async function buildJs(rel) {
 	const src = await readFile(from, 'utf8');
 	const out = await esbuild.transform(src, {
 		minify: true,
-		// Conservative first JS pass: strip whitespace/comments + safe syntax
-		// compression, but DON'T rename identifiers — avoids any reliance on
-		// function .name or eval-scoped locals in this jQuery/Backbone-era code.
-		// Can be enabled later for more compression once verified in the browser.
-		minifyIdentifiers: false,
+		// Full minification, incl. local-identifier renaming. In transform mode
+		// esbuild renames ONLY provably-local identifiers — never top-level /
+		// globals — so the framework's global-based architecture is preserved.
+		// (keepNames was tried and rejected: its __name() wrappers added more
+		// bytes than identifier-renaming saved in this function-heavy code.)
 		loader: 'js',
 		legalComments: 'none',
 	});
