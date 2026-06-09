@@ -80,9 +80,9 @@ const CSS_FILES = [
 	'framework/static/css/option-types.css',
 	...(await collectAssets('framework/includes/option-types', '.css')),
 	...(await collectAssets('framework/includes/dynamic-content', '.css')),
-	// Shortcodes extension frontend/admin CSS (own repo). Skip its sub-extensions
-	// (page-builder / wp-shortcodes live in separate repos) and vendored libs.
-	...(await collectAssets('framework/extensions/shortcodes', '.css', ['libs', 'extensions'])),
+	// All extensions' own CSS (each ships in its own repo). Vendored libs (libs/)
+	// are skipped; the build manifest keeps the helpers from serving stale .min.
+	...(await collectAssets('framework/extensions', '.css', ['libs'])),
 ];
 
 /**
@@ -104,8 +104,8 @@ const JS_FILES = [
 	'framework/static/js/option-types.js',
 	...(await collectAssets('framework/includes/option-types', '.js', ['libs'])),
 	...(await collectAssets('framework/includes/dynamic-content', '.js')),
-	// Shortcodes extension frontend/admin JS (own repo); skip sub-extensions + libs.
-	...(await collectAssets('framework/extensions/shortcodes', '.js', ['libs', 'extensions'])),
+	// All extensions' own JS (each ships in its own repo); vendored libs skipped.
+	...(await collectAssets('framework/extensions', '.js', ['libs'])),
 ];
 
 const cssProcessor = postcss([autoprefixer(), cssnano({ preset: 'default' })]);
