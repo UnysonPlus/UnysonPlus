@@ -2,10 +2,56 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.25';
+$manifest['version'] = '2.10.31';
 
 /**
  * Changelog
+ * 2.10.31 - New `column-split` option type: a draggable two-pane split bar — drag the
+ *           divider to set how a row is shared between a LEFT and RIGHT pane, each
+ *           labelled with a dashicon/image + text (e.g. "Image | Content"). It stores a
+ *           single integer (the left pane's column span out of `denominator`, default
+ *           12), so it drop-in replaces a column-count slider with NO value migration.
+ *           Config: value / denominator / min / max / show_fraction / panes
+ *           ([left,right] each {label,icon}). Reusable for any two-up split; first used
+ *           by Image Content's "Image / Content Split". Assets ship un-minified (kept
+ *           out of build-manifest), so there is no `.min` sibling to maintain.
+ * 2.10.29 - Build fix: rebuilt the minified `.min.js` siblings for the slider and
+ *           dynamic-content option types. Production serves the `.min` (via
+ *           build-manifest.php + fw_get_framework_asset_uri() when SCRIPT_DEBUG is
+ *           off), so JS changes are inert on live sites until the `.min` is rebuilt —
+ *           the slider fraction labels (2.10.28) and the dynamic-content select-type
+ *           params for the permalink picker (2.10.27) only edited the un-minified
+ *           source, so they did not actually run until now.
+ * 2.10.28 - Slider option type gains an optional `fw_fraction_of` property: when set,
+ *           the slider DISPLAYS its value as the lowest-form fraction of value/N (e.g.
+ *           6 -> "1/2", 4 -> "1/3") while the stored value stays the integer — labels
+ *           only, no value-shape change. Used by Image Content's "Image / Content
+ *           Split" so the split reads as familiar fractions (1/2, 1/3, 1/4 …) instead
+ *           of "6 / 12".
+ * 2.10.27 - Dynamic Content: live link permalinks, a "Last Updated" tag, and
+ *           select-type picker params. A new "Links" group registers a Permalink tag
+ *           per public post type ({type}_permalink) — e.g. "Page Permalink" — each with
+ *           a gear dropdown of that type's published items that resolves to a live
+ *           get_permalink(). Because link fields are plain text (Dynamic Content already
+ *           applies to them), dropping {{page_permalink|id=42}} into any link field keeps
+ *           the URL correct when the target's slug later changes — no bespoke "link"
+ *           option type needed. The dropdown is built only in admin (the frontend resolver
+ *           runs no extra queries) and capped at 200 items by title (filter
+ *           fw:dynamic-content:permalink_choices_limit). Added a "Last Updated" tag (WP
+ *           post_modified — the latest time the post's Update button was pressed) with a
+ *           date-format param. To power the dropdowns, the picker's gear form now renders
+ *           select params (a param may be type=select with an ordered choices array of
+ *           {value,label}); see framework/includes/dynamic-content/tags/links.php.
+ * 2.10.26 - New "Site Converter" extension (Unyson+ -> Convert) — the admin home for the
+ *           AI-generated-site -> WordPress importer (roadmap #2 of the conversion
+ *           initiative). This first release ships the Media tool: fetch a source site's
+ *           images into the Media Library, either by scanning a page URL (collects every
+ *           img/srcset/CSS-url reference) or from a pasted URL list. Imports are de-duped by
+ *           source URL (recorded as the `_unysonplus_source_url` postmeta), so re-running is
+ *           safe and images referenced on several pages reuse one attachment. The reusable
+ *           engine (FW_Site_Converter_Media: sideload / import_urls / scan_html / absolutize
+ *           / rewrite) is static so a future "Convert bundle" importer and WP-CLI can share
+ *           it. Presets import, menu import, and the one-shot bundle are the next slices.
  * 2.10.13 - Section family overhaul. (1) The Bleed Layout was extracted from the
  *           standard Section into its own "Bleed Section" element (a section-like
  *           shortcode that holds rows/columns; its content-side background is a

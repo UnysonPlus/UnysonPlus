@@ -103,6 +103,26 @@ if ( ! function_exists( '_fw_dynamic_content_register_core_tags' ) ) :
 			},
 		);
 
+		$tags['post_modified'] = array(
+			'label'   => __( 'Last Updated', 'fw' ),
+			'group'   => $g_post,
+			'params'  => array(
+				array( 'id' => 'format', 'label' => __( 'Format', 'fw' ), 'type' => 'text', 'default' => 'F j, Y', 'help' => $date_help ),
+			),
+			'resolve' => function ( $params, $context ) use ( $pid ) {
+				$id = $pid( $context );
+				if ( ! $id ) {
+					return '';
+				}
+				$format = ( isset( $params['format'] ) && '' !== $params['format'] )
+					? $params['format']
+					: get_option( 'date_format' );
+
+				// The last time the post was saved (Update pressed) — WP's post_modified.
+				return get_the_modified_date( $format, $id );
+			},
+		);
+
 		// --- Site -----------------------------------------------------------
 		$tags['site_name'] = array(
 			'label'   => __( 'Site Title', 'fw' ),

@@ -379,6 +379,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Slider_Short':
 				require_once __DIR__ . '/includes/option-types/slider/class-fw-option-type-short-slider.php';
 				break;
+			case 'FW_Option_Type_Column_Split':
+				require_once __DIR__ . '/includes/option-types/column-split/class-fw-option-type-column-split.php';
+				break;
 			case 'FW_Option_Type_Switch':
 				require_once __DIR__ . '/includes/option-types/switch/class-fw-option-type-switch.php';
 				break;

@@ -75,6 +75,7 @@ final class FW_Dynamic_Content {
 		$dir = dirname( __FILE__ ) . '/tags';
 
 		require_once $dir . '/core.php';
+		require_once $dir . '/links.php';
 		require_once $dir . '/unysonplus.php';
 		require_once $dir . '/woocommerce.php';
 	}

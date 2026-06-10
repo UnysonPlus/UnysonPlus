@@ -79,13 +79,25 @@ Tag array shape: `label`, `group`, optional `params` (each
 `function( array $params, array $context ): scalar`. `$context['post_id']` is the current
 post when available; fall back to `get_the_ID()`.
 
+**Param types.** A param's `type` is `'text'` (default — renders a text input) or `'select'`
+(renders a dropdown). A `select` param adds `'choices'` = an **ordered array** of
+`array('value'=>…, 'label'=>…)` (an ordered array, not a `value=>label` map — the picker JS
+would reorder numeric-string keys, breaking intended ordering). The full param array
+(incl. `type`/`choices`) flows to the picker via `get_tags_for_js()`. See `tags/links.php`
+for a `select`-param example.
+
 Always guard provider availability **inside** the callback/filter (it runs after `init`),
 not at file load — that keeps the group invisible when the integration is inactive (see
 `tags/woocommerce.php` for the canonical example).
 
 ## Bundled tag files
 
-- `tags/core.php` — Post, Site, Author, Date & Time.
+- `tags/core.php` — Post (incl. **`post_modified` = "Last Updated"**, WP's post_modified), Site, Author, Date & Time.
+- `tags/links.php` — **a Permalink tag per public post type** (`{type}_permalink`, group "Links"), each with a
+  gear **dropdown of that type's published items** → live `get_permalink()`. Drop e.g. `{{page_permalink|id=42}}`
+  into any **link field** (link fields are `text`, so dynamic content already works there) and the URL follows the
+  target's slug. Choices are built **only in `is_admin()`** (the frontend resolver needs only the resolve callback
+  + the token's `id`), capped at 200 by title (filter `fw:dynamic-content:permalink_choices_limit`).
 - `tags/unysonplus.php` — `post_meta` (Unyson+ post option, falls back to native meta).
 - `tags/woocommerce.php` — product fields, only when WooCommerce is active.
 

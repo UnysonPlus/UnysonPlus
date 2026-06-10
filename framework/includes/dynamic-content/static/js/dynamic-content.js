@@ -161,8 +161,21 @@
 		(tag.params || []).forEach(function (p) {
 			var $row = $('<label class="fw-dc-param-row"></label>');
 			$row.append('<span>' + escapeHtml(p.label || p.id) + '</span>');
-			var $inp = $('<input type="text" class="fw-dc-param-input" />')
-				.val(p.default || '');
+			var $inp;
+			if (p.type === 'select' && p.choices && p.choices.length) {
+				// Dropdown param (e.g. a Page permalink picker). Choices arrive as an
+				// ordered array of { value, label } so server-side ordering survives.
+				$inp = $('<select class="fw-dc-param-input fw-dc-param-select"></select>');
+				$inp.append($('<option></option>').attr('value', '').text(L10N.select || '— Select —'));
+				p.choices.forEach(function (c) {
+					$('<option></option>').attr('value', c.value).text(c.label).appendTo($inp);
+				});
+				if (p.default) {
+					$inp.val(p.default);
+				}
+			} else {
+				$inp = $('<input type="text" class="fw-dc-param-input" />').val(p.default || '');
+			}
 			$row.append($inp);
 			if (p.help) {
 				$row.append('<span class="fw-dc-param-help">' + escapeHtml(p.help) + '</span>');
