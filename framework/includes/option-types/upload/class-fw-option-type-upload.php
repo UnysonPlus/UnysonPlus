@@ -21,7 +21,10 @@ class FW_Option_Type_Upload extends FW_Option_Type
 			'texts'            => array(),
 			'value'            => '',
 			'files_ext'        => array(),
-			'extra_mime_types' => array()
+			'extra_mime_types' => array(),
+			// Cap the image-preview thumbnail width (any CSS length, e.g. '240px'
+			// or '60%'). Empty = fill the option-input container.
+			'thumb_max_width'  => '',
 		);
 	}
 
@@ -121,6 +124,13 @@ class FW_Option_Type_Upload extends FW_Option_Type
 
 		unset($option['attr']['name'], $option['attr']['value']);
 		$wrapper_attr = $option['attr'];
+
+		// Optional per-field thumbnail max-width → CSS var the images-only stylesheet reads.
+		if ( ! empty( $option['thumb_max_width'] ) ) {
+			$mw             = preg_replace( '/[^0-9a-zA-Z%.\s-]/', '', (string) $option['thumb_max_width'] );
+			$existing_style = isset( $wrapper_attr['style'] ) ? rtrim( $wrapper_attr['style'], '; ' ) . ';' : '';
+			$wrapper_attr['style'] = $existing_style . '--fw-upload-thumb-max-width:' . $mw . ';';
+		}
 
 		$l10n = $option['texts'];
 

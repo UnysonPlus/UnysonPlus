@@ -613,50 +613,84 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		// first, single-side last) so that, with equal specificity, source
 		// order makes `.mt-N` reliably override `.m-M`. Matches Bootstrap's
 		// own utility ordering so users get the same mental model.
+		// Per-breakpoint spacing utilities (mobile-first). The base layer (no
+		// infix) is emitted flat into $utility_rules and applies at all widths;
+		// the responsive layers (md ≥768px, lg ≥992px) are stashed in
+		// $responsive_spacing keyed by min-width and emitted inside @media blocks
+		// further down. The spacing option type's per-device tabs save
+		// breakpoint-infixed class names (`m-md-3`, `pt-lg-2`) that these rules
+		// back. Only md/lg are emitted (the tiers the control exposes); sm/xl/xxl
+		// can be added here if the UI ever grows them.
+		$responsive_spacing = array();
 		$spacing_scale = function_exists( 'unysonplus_get_spacing_scale' ) ? unysonplus_get_spacing_scale() : array();
 		if ( is_array( $spacing_scale ) ) {
 			$prop_order = array( 'm', 'mx', 'my', 'mt', 'mb', 'ms', 'me',
 			                     'p', 'px', 'py', 'pt', 'pb', 'ps', 'pe' );
-			$buckets    = array_fill_keys( $prop_order, array() );
 
-			foreach ( $spacing_scale as $entry ) {
-				if ( ! is_array( $entry ) ) { continue; }
-				if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
-				if ( ! isset( $entry['size'] ) || $entry['size'] === '' ) { continue; }
+			// Build the ordered selector→body map for one breakpoint infix
+			// ('' = base, 'md', 'lg'). Body is identical across breakpoints;
+			// only the selector carries the Bootstrap infix.
+			$build_spacing = function ( $infix ) use ( $spacing_scale, $prop_order, &$tokens ) {
+				$buckets = array_fill_keys( $prop_order, array() );
+				$seg     = ( $infix === '' ) ? '' : '-' . $infix;
 
-				$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $entry['name'] );
-				if ( $slug === '' ) { continue; }
-				$slug = strtolower( $slug );
+				foreach ( $spacing_scale as $entry ) {
+					if ( ! is_array( $entry ) ) { continue; }
+					if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
+					if ( ! isset( $entry['size'] ) || $entry['size'] === '' ) { continue; }
 
-				$value = $entry['size'];
-				$var   = "var(--spacer-{$slug})";
+					$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $entry['name'] );
+					if ( $slug === '' ) { continue; }
+					$slug = strtolower( $slug );
 
-				$tokens[ "--spacer-{$slug}" ] = $value;
+					$value = $entry['size'];
+					$var   = "var(--spacer-{$slug})";
 
-				// Margin
-				$buckets['m'][  ".m-{$slug}"  ] = "margin:{$var} !important;";
-				$buckets['mx'][ ".mx-{$slug}" ] = "margin-right:{$var} !important;margin-left:{$var} !important;";
-				$buckets['my'][ ".my-{$slug}" ] = "margin-top:{$var} !important;margin-bottom:{$var} !important;";
-				$buckets['mt'][ ".mt-{$slug}" ] = "margin-top:{$var} !important;";
-				$buckets['mb'][ ".mb-{$slug}" ] = "margin-bottom:{$var} !important;";
-				$buckets['ms'][ ".ms-{$slug}" ] = "margin-inline-start:{$var} !important;";
-				$buckets['me'][ ".me-{$slug}" ] = "margin-inline-end:{$var} !important;";
+					// The --spacer-{slug} token is breakpoint-independent; emit it
+					// once (on the base pass) into the shared $tokens map.
+					if ( $infix === '' ) {
+						$tokens[ "--spacer-{$slug}" ] = $value;
+					}
 
-				// Padding
-				$buckets['p'][  ".p-{$slug}"  ] = "padding:{$var} !important;";
-				$buckets['px'][ ".px-{$slug}" ] = "padding-right:{$var} !important;padding-left:{$var} !important;";
-				$buckets['py'][ ".py-{$slug}" ] = "padding-top:{$var} !important;padding-bottom:{$var} !important;";
-				$buckets['pt'][ ".pt-{$slug}" ] = "padding-top:{$var} !important;";
-				$buckets['pb'][ ".pb-{$slug}" ] = "padding-bottom:{$var} !important;";
-				$buckets['ps'][ ".ps-{$slug}" ] = "padding-inline-start:{$var} !important;";
-				$buckets['pe'][ ".pe-{$slug}" ] = "padding-inline-end:{$var} !important;";
-			}
+					// Margin
+					$buckets['m'][  ".m{$seg}-{$slug}"  ] = "margin:{$var} !important;";
+					$buckets['mx'][ ".mx{$seg}-{$slug}" ] = "margin-right:{$var} !important;margin-left:{$var} !important;";
+					$buckets['my'][ ".my{$seg}-{$slug}" ] = "margin-top:{$var} !important;margin-bottom:{$var} !important;";
+					$buckets['mt'][ ".mt{$seg}-{$slug}" ] = "margin-top:{$var} !important;";
+					$buckets['mb'][ ".mb{$seg}-{$slug}" ] = "margin-bottom:{$var} !important;";
+					$buckets['ms'][ ".ms{$seg}-{$slug}" ] = "margin-inline-start:{$var} !important;";
+					$buckets['me'][ ".me{$seg}-{$slug}" ] = "margin-inline-end:{$var} !important;";
 
-			foreach ( $prop_order as $prop ) {
-				foreach ( $buckets[ $prop ] as $sel => $body ) {
-					$utility_rules[ $sel ] = $body;
+					// Padding
+					$buckets['p'][  ".p{$seg}-{$slug}"  ] = "padding:{$var} !important;";
+					$buckets['px'][ ".px{$seg}-{$slug}" ] = "padding-right:{$var} !important;padding-left:{$var} !important;";
+					$buckets['py'][ ".py{$seg}-{$slug}" ] = "padding-top:{$var} !important;padding-bottom:{$var} !important;";
+					$buckets['pt'][ ".pt{$seg}-{$slug}" ] = "padding-top:{$var} !important;";
+					$buckets['pb'][ ".pb{$seg}-{$slug}" ] = "padding-bottom:{$var} !important;";
+					$buckets['ps'][ ".ps{$seg}-{$slug}" ] = "padding-inline-start:{$var} !important;";
+					$buckets['pe'][ ".pe{$seg}-{$slug}" ] = "padding-inline-end:{$var} !important;";
 				}
+
+				$rules = array();
+				foreach ( $prop_order as $prop ) {
+					foreach ( $buckets[ $prop ] as $sel => $body ) {
+						$rules[ $sel ] = $body;
+					}
+				}
+				return $rules;
+			};
+
+			// Base layer → flat utility rules (all widths).
+			foreach ( $build_spacing( '' ) as $sel => $body ) {
+				$utility_rules[ $sel ] = $body;
 			}
+
+			// Responsive layers → @media (min-width) blocks. Keyed by min-width
+			// so the emitter can sort ascending (md before lg) — at equal
+			// specificity + !important, the later (larger) breakpoint wins where
+			// both queries match, giving the correct mobile-first cascade.
+			$responsive_spacing[768] = $build_spacing( 'md' );
+			$responsive_spacing[992] = $build_spacing( 'lg' );
 		}
 
 		// --- Gap scale -> CSS variables + row gutter override machinery ---
@@ -777,6 +811,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$css .= "}\n";
 			}
 			foreach ( $utility_rules as $sel => $body ) { $css .= "{$sel} { {$body} }\n"; }
+			if ( ! empty( $responsive_spacing ) ) {
+				ksort( $responsive_spacing, SORT_NUMERIC );
+				foreach ( $responsive_spacing as $minw => $rules ) {
+					if ( empty( $rules ) ) { continue; }
+					$css .= "@media (min-width: {$minw}px) {\n";
+					foreach ( $rules as $sel => $body ) { $css .= "\t{$sel} { {$body} }\n"; }
+					$css .= "}\n";
+				}
+			}
 			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ) . "\n"; }
 			if ( ! empty( $mobile_overrides ) ) {
 				$css .= "@media (max-width: 767.98px) {\n\t:root {\n";
@@ -791,6 +834,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$css .= '}';
 			}
 			foreach ( $utility_rules as $sel => $body ) { $css .= $sel . '{' . $body . '}'; }
+			if ( ! empty( $responsive_spacing ) ) {
+				ksort( $responsive_spacing, SORT_NUMERIC );
+				foreach ( $responsive_spacing as $minw => $rules ) {
+					if ( empty( $rules ) ) { continue; }
+					$css .= '@media (min-width:' . $minw . 'px){';
+					foreach ( $rules as $sel => $body ) { $css .= $sel . '{' . $body . '}'; }
+					$css .= '}';
+				}
+			}
 			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ); }
 			if ( ! empty( $mobile_overrides ) ) {
 				$css .= '@media (max-width:767.98px){:root{';
@@ -816,7 +868,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 10, // bumped: table presets (.tbl-{slug}) folded in
+			'schema'    => 11, // bumped: responsive spacing utilities (.m-md-N / .p-lg-N …)
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),

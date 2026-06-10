@@ -58,6 +58,7 @@ if (defined('FW')) {
             require $dir . '/includes/hooks.php';
             require $dir . '/includes/presets.php';
             require $dir . '/includes/css-tokens.php';
+            require $dir . '/includes/device-tabs.php';
             require $dir . '/includes/dynamic-css.php';
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';

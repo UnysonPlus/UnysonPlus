@@ -2,10 +2,62 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.0';
+$manifest['version'] = '2.10.25';
 
 /**
  * Changelog
+ * 2.10.13 - Section family overhaul. (1) The Bleed Layout was extracted from the
+ *           standard Section into its own "Bleed Section" element (a section-like
+ *           shortcode that holds rows/columns; its content-side background is a
+ *           full background-pro control, the image side bleeds to the viewport
+ *           edge). The standard Section no longer carries the Bleed tab/markup.
+ *           (2) The standard Section gains Min Height (Auto / 40 / 60 / 80 / 100vh)
+ *           + Content Vertical Align, so it can do full-screen "hero" sections.
+ *           (3) The "Hero Section" element was removed — the upgraded Section
+ *           (background-pro image with Fixed = parallax, color/gradient/video,
+ *           min-height + vertical-align) fully supersedes it. (4) Masonry Section's
+ *           Background Color was upgraded to the full background-pro control.
+ *           A shared emitter (sc_bg_pro_style / sc_bg_pro_video_attr in
+ *           shortcode-styling-helper.php) backs the background-pro CSS across
+ *           Section / Masonry / Bleed. (5) The image upload control now previews
+ *           the FULL image (aspect-preserved 'large' size) filling the option
+ *           container instead of a cropped 50x50 square, with a new
+ *           `thumb_max_width` option attribute to cap it.
+ *
+ * 2.10.12 - Section background is now a single "Background" control (the
+ *           background-pro option type) on the Layout tab: color, gradient,
+ *           image (with position / size / repeat / attachment — Fixed gives a
+ *           parallax effect) and looping video layers that stack as CSS (image
+ *           over gradient over color) alongside the existing Formstone video
+ *           player. It replaces the old separate Background Color / Image /
+ *           Video fields and the Styling-tab preset Background Color. Existing
+ *           sections are migrated automatically and losslessly: a shared mapper
+ *           (section/includes/migration.php) synthesizes a background-pro value
+ *           from the legacy atts, so old sections show their background
+ *           pre-filled in the editor and render identically until re-saved (the
+ *           stored legacy atts are left untouched). background-pro's
+ *           _enqueue_static now also loads its gradient / upload / oembed /
+ *           multi-inline child assets (plus wp_enqueue_media) and force-enqueues
+ *           on post-edit screens, so the control is fully functional inside
+ *           shortcode modals. Note: a migrated palette-preset colour becomes a
+ *           static hex (it no longer tracks live palette changes). Hero and
+ *           Masonry sections and the Section bleed layout are unchanged.
+ *
+ * 2.10.1 - Per-device spacing overrides + compact Margin/Padding control. The
+ *          spacing option type gains a Phone / Tablet / Desktop switcher (synced
+ *          to the page builder's global device toggle) so margin and padding can
+ *          differ per breakpoint. The cascade is mobile-first and Bootstrap-
+ *          native: the existing base value applies at all widths (values saved
+ *          before this release are unchanged), while the Tablet (>= 768px) and
+ *          Desktop (>= 992px) layers store breakpoint-infixed utility classes
+ *          (m-md-3, pt-lg-2) now emitted by css-tokens.php inside min-width
+ *          @media blocks. The control's tall plus-cross layout is replaced by a
+ *          compact inline row per section with a link toggle (one "All" value vs
+ *          four per-side values). A reusable fw-device-tabs component
+ *          (framework/includes/device-tabs.php + framework/static/js/fw-device-
+ *          tabs.js) backs the switcher so typography / background controls can
+ *          adopt per-device editing later.
+ *
  * 2.9.92 - New asset build pipeline (build/). A small Node toolchain (esbuild +
  *          PostCSS/autoprefixer/cssnano, run via `npm run build`) autoprefixes
  *          and minifies the core backend stylesheets, writing *.min.css siblings

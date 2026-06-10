@@ -15,7 +15,8 @@
 	<?php else: ?>
 		<?php
 		$id                     = $input_attr['value'];
-		$attachment_thumb_url   = wp_get_attachment_thumb_url($id);
+		$attachment_thumb_url   = wp_get_attachment_image_url($id, 'large');
+		if ( ! $attachment_thumb_url ) { $attachment_thumb_url = wp_get_attachment_url($id); }
 		$attachment_filename    = basename(get_attached_file($id, true));
 		$attachment_url         = wp_get_attachment_url($id);
 		?>

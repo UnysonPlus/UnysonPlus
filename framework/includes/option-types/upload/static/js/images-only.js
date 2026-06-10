@@ -156,10 +156,15 @@
 		function performSelection (attachment) {
 			var url, filename, compiled;
 
-			if (attachment.get('sizes')) {
-				url = _.min(_.values(attachment.get('sizes')), function (size) {
-					return size.width;
-				}).url;
+			// Prefer an aspect-preserved size (large → medium_large → medium) so the
+			// preview shows the full image, not the cropped square thumbnail.
+			var _sizes = attachment.get('sizes');
+			if (_sizes && _sizes.large) {
+				url = _sizes.large.url;
+			} else if (_sizes && _sizes.medium_large) {
+				url = _sizes.medium_large.url;
+			} else if (_sizes && _sizes.medium) {
+				url = _sizes.medium.url;
 			} else {
 				url = attachment.get('url');
 			}

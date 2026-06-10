@@ -1,16 +1,29 @@
 # Option Type: `spacing`
 
-Composite spacing widget (Margin + Padding) with a plus-cross layout. Each
-section has an "All Sides" select on top, and a Top / Right / Bottom / Left
-quadrant arranged like a `+` so the position of each input matches the CSS
-axis it controls.
+Composite spacing widget (Margin + Padding) with a compact, Elementor-style
+layout: a Phone / Tablet / Desktop switcher in the header, then one inline row
+per section. Each row has a link toggle — linked shows a single "All" select,
+unlinked shows four Top / Right / Bottom / Left selects.
 
-Saved value is a nested array of Bootstrap utility class names
-(e.g. `m-3`, `pt-2`). Choices are generated from the type's own spacing
-scale, which defaults to Bootstrap 5's `$spacers`. Themes / plugins can swap
-in a different scale via the `fw_option_type_spacing_scale` filter — the
-type itself has no compile-time dependency on any code outside this folder
-(no shortcodes-extension helpers, no theme preset getters).
+Saved value is a nested array of Bootstrap utility class names. The **base
+(phone)** layer lives under `margin` / `padding` (e.g. `m-3`, `pt-2`) and, being
+min-width:0 utilities, applies at every width. **Tablet** (≥768px) and
+**Desktop** (≥992px) overrides live under `advanced.md` / `advanced.lg` and carry
+Bootstrap's responsive infix (e.g. `m-md-3`, `pt-lg-2`). The cascade is
+mobile-first and Bootstrap-native — larger screens inherit the smaller layer
+unless explicitly overridden.
+
+The device switcher reuses the shared component in
+[framework/includes/device-tabs.php](../../device-tabs.php) +
+[framework/static/js/fw-device-tabs.js](../../../static/js/fw-device-tabs.js),
+which keeps the tabs in sync with the page builder's global device toggle
+(`window.fwPbDevice` / the `fw:builder:device-preview` event).
+
+Choices are generated from the type's own spacing scale, which defaults to
+Bootstrap 5's `$spacers`. Themes / plugins can swap in a different scale via the
+`fw_option_type_spacing_scale` filter — the type itself has no compile-time
+dependency on any code outside this folder (no shortcodes-extension helpers, no
+theme preset getters).
 
 ## Usage
 
@@ -61,21 +74,31 @@ In any `options.php`:
 
 ## Output / rendering
 
-The saved value is a nested array of Bootstrap-utility class names. To apply
-on the frontend, collect the non-empty leaves and append them to your wrapper
-element's `class` attribute.
+The saved value is a nested array of Bootstrap-utility class names. To apply on
+the frontend, collect the non-empty leaves from the base layer **and** the
+per-device overrides, then append them to your wrapper element's `class`
+attribute. In the shortcodes extension, `sc_flatten_spacing_value()` does exactly
+this — prefer it over hand-rolling the walk.
 
 ```php
 $spacing = fw_get_db_settings_option( 'wrapper_spacing' ); // your saved option
 $classes = array();
 
-foreach ( array( 'margin', 'padding' ) as $section ) {
-    if ( empty( $spacing[ $section ] ) || ! is_array( $spacing[ $section ] ) ) {
-        continue;
+// Walk the base layer plus the md / lg override layers.
+$layers = array( $spacing );
+if ( ! empty( $spacing['advanced'] ) && is_array( $spacing['advanced'] ) ) {
+    foreach ( array( 'md', 'lg' ) as $dev ) {
+        if ( isset( $spacing['advanced'][ $dev ] ) ) { $layers[] = $spacing['advanced'][ $dev ]; }
     }
-    foreach ( $spacing[ $section ] as $val ) {
-        $val = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $val );
-        if ( $val !== '' ) { $classes[] = $val; }
+}
+
+foreach ( $layers as $layer ) {
+    foreach ( array( 'margin', 'padding' ) as $section ) {
+        if ( empty( $layer[ $section ] ) || ! is_array( $layer[ $section ] ) ) { continue; }
+        foreach ( $layer[ $section ] as $val ) {
+            $val = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $val );
+            if ( $val !== '' ) { $classes[] = $val; }
+        }
     }
 }
 
@@ -129,22 +152,19 @@ makes them visible.
 ## Layout sketch
 
 ```
-┌──────────── Margin ───────────┬──────────── Padding ──────────┐
-│        [ All sides ▼ ]        │        [ All sides ▼ ]        │
-│   Applies to all sides…       │   Applies to all sides…       │
-│                               │                               │
-│           [ Top ▼ ]           │           [ Top ▼ ]           │
-│ [ Left ▼ ]      [ Right ▼ ]   │ [ Left ▼ ]      [ Right ▼ ]   │
-│          [ Bottom ▼ ]         │          [ Bottom ▼ ]         │
-└───────────────────────────────┴───────────────────────────────┘
+                                        ┌ 🖥 📱 📲 ┐  ← device switcher
+Margin   🔗 [ All ▼ ]          (linked, the single value applies to all sides)
+Padding  ⛓ [T▼][R▼][B▼][L▼]   (unlinked, per-side)
 ```
 
-Below ~600px the two columns stack vertically (single-column widget).
+Only the active device's panel is shown; the link toggle flips each row between
+the single "All" select and the four side selects.
 
 ## Value shape
 
 ```php
 array(
+    // Base / phone layer — Bootstrap min-width:0 utilities (apply at all widths).
     'margin'   => array(
         'all'    => 'm-3',   // e.g. 'm-0', 'm-1', '' for default
         'top'    => '',
@@ -159,9 +179,21 @@ array(
         'bottom' => '',
         'left'   => '',
     ),
-    'advanced' => array(), // reserved for v2 (e.g. per-breakpoint values)
+    // Per-device overrides (mobile-first): md ≥768px, lg ≥992px. Values carry
+    // Bootstrap's responsive infix (m-md-3, pt-lg-2), emitted as @media
+    // (min-width) utilities by css-tokens.php.
+    'advanced' => array(
+        'md' => array(
+            'margin'  => array( 'all' => 'm-md-4', 'top' => '', 'right' => '', 'bottom' => '', 'left' => '' ),
+            'padding' => array( 'all' => '', 'top' => '', 'right' => '', 'bottom' => '', 'left' => '' ),
+        ),
+        'lg' => array(
+            'margin'  => array( 'all' => 'm-lg-5', 'top' => '', 'right' => '', 'bottom' => '', 'left' => '' ),
+            'padding' => array( 'all' => '', 'top' => '', 'right' => '', 'bottom' => '', 'left' => '' ),
+        ),
+    ),
 )
 ```
 
 When `mode` is `'margin'` or `'padding'`, the inactive subtree stays at the
-empty defaults regardless of what was submitted.
+empty defaults regardless of what was submitted (across every device layer).

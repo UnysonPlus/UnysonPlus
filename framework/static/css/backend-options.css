@@ -1418,3 +1418,39 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 }
 
 /* end: Selectize */
+
+/* -----------------------------------------------------------------------------
+ * Help icon — progressive disclosure.
+ *
+ * Hide each option's (i) help icon until its row is hovered or keyboard-focused,
+ * to declutter every options screen. Targets only the desktop (-in-input)
+ * variant; the mobile (-in-label, .fw-visible-xs-block) one stays visible since
+ * touch has no hover. opacity / pointer-events (never display:none) so the qtip
+ * tooltip still binds on fw:options:init.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-option-help-in-input {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity .15s ease;
+}
+
+.fw-backend-option:hover .fw-option-help-in-input,
+.fw-backend-option:focus-within .fw-option-help-in-input {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* -----------------------------------------------------------------------------
+ * Auto-width options: sit the help icon next to the control.
+ *
+ * For width-type-auto options the control is content-sized but its .fw-inner is
+ * full-width, so the absolutely-positioned (i) (right:0) drifts to the far right
+ * of the cell. Shrink the inner to its content; the help then keeps its default
+ * right:0 position — which lands in the framework's reserved 26px right gutter,
+ * i.e. right after the control — and stays inside the inner (never clipped).
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default>.fw-backend-option-input.width-type-auto>.fw-inner {
+	display: inline-block;
+	max-width: 100%;
+	vertical-align: top;
+}

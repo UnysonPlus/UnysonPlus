@@ -144,6 +144,18 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			array(), $ver
 		);
 
+		// The Gradient / Image / Video panels compose further child option types
+		// (gradient-v2, upload, oembed, fw-multi-inline). Delegate to each one's
+		// own enqueue so their CSS/JS load in every context — including shortcode
+		// edit modals, where the page-load options-walk can miss nested custom
+		// types (the same gap that left the spacing control unstyled in modals).
+		foreach ( array( 'gradient-v2', 'oembed', 'upload', 'fw-multi-inline' ) as $child ) {
+			fw()->backend->option_type( $child )->enqueue_static();
+		}
+		if ( function_exists( 'wp_enqueue_media' ) ) {
+			wp_enqueue_media(); // the image / video / poster upload sub-controls
+		}
+
 		// our own tab UI
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
@@ -592,5 +604,30 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 }
 
 FW_Option_Type::register( 'Fw_Option_Type_Background_Pro' );
+
+/**
+ * Force-load the background-pro assets on post-edit screens.
+ *
+ * background-pro ships its own stylesheet/script plus a stack of child controls
+ * (predefined-colors, color-picker, gradient-v2, upload, oembed, fw-multi-inline).
+ * When it's used in a shortcode (e.g. the Section's Background control), the
+ * page-builder modal loads options via an AJAX walk that does not reliably reach
+ * nested custom option types — so the control could render unstyled / inert.
+ * Enqueuing here on every post-edit screen (where the builder + shortcode modals
+ * live) guarantees the assets are present before any modal opens. enqueue_static
+ * dedupes by handle, so this is a safe no-op when something already loaded them.
+ */
+if ( ! function_exists( 'fw_option_type_background_pro_force_admin_enqueue' ) ) {
+	function fw_option_type_background_pro_force_admin_enqueue() {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( $screen && $screen->base === 'post' ) {
+			fw()->backend->option_type( 'background-pro' )->enqueue_static();
+		}
+	}
+	add_action( 'admin_enqueue_scripts', 'fw_option_type_background_pro_force_admin_enqueue', 20 );
+}
 
 endif; // class_exists guard

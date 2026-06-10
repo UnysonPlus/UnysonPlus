@@ -53,7 +53,13 @@
 					hasValue =
 						presetVal !== '' ||
 						(customVal !== '' && customVal !== 'transparent' && customVal !== 'rgba(0,0,0,0)');
-				} else if (key === 'gradient' || key === 'video') {
+				} else if (key === 'gradient') {
+					// The gradient layer has NO enable switch — it's "on" iff the
+					// gradient-v2 control compiled a real gradient. Its read-only
+					// output input (.gv2-output) holds that CSS string (empty = none).
+					var gradCss = ($panel.find('.gv2-output').val() || '').toString().trim();
+					hasValue = gradCss !== '';
+				} else if (key === 'video') {
 					// Unyson switch is a checkbox with name = the option's name.
 					// Checked state alone is the signal — value comparison is
 					// unreliable because it's JSON-encoded ('"yes"' with quotes).

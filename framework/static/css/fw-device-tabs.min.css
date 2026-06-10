@@ -1,0 +1,58 @@
+/* -----------------------------------------------------------------------------
+ * fw-device-tabs — shared device switcher chrome for responsive option controls.
+ *
+ * Renders three small icon buttons (Phone / Tablet / Desktop). The host control
+ * supplies `[data-fw-device-panel="base|md|lg"]` panels; only the active one is
+ * shown. See framework/includes/device-tabs.php + framework/static/js/fw-device-tabs.js.
+ * -------------------------------------------------------------------------- */
+
+.fw-device-tabs {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	background: #f6f7f7;
+}
+
+.fw-device-tabs .fw-device-tab {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 26px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: #646970;
+	cursor: pointer;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+.fw-device-tabs .fw-device-tab:hover {
+	color: #1d2327;
+	background: #ececed;
+}
+
+.fw-device-tabs .fw-device-tab.is-active {
+	color: #fff;
+	background: #2271b1;
+}
+
+.fw-device-tabs .fw-device-tab .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	line-height: 18px;
+}
+
+/* Per-device panels: only the active one is visible. */
+.fw-device-host [data-fw-device-panel] {
+	display: none;
+}
+
+.fw-device-host [data-fw-device-panel].is-active {
+	display: block;
+}

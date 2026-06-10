@@ -3,8 +3,12 @@
 .fw-option-type-gradient-v2 {
 	box-sizing: border-box;
 	position: relative;          /* anchor for the absolutely-positioned panel */
-	display: inline-block;
-	min-width: 480px; /* 1.5x — long enough to show the full gradient CSS output */
+	display: block;
+	/* Fill the available width but never exceed it — a previous `min-width:480px`
+	   forced the read-only output input past the modal's edge (horizontal scroll)
+	   when the option container was narrower than 480px. */
+	width: 100%;
+	min-width: 0;
 	max-width: 100%;
 }
 
@@ -70,9 +74,12 @@
 	position: absolute;
 	top: calc(100% + 4px);
 	left: 0;
-	z-index: 1000;
+	/* Sit above the option modal's chrome (sticky footer, sibling fields, the
+	   background-pro tab bar). The FW modal overlay stacks high, so use a large
+	   value here too. */
+	z-index: 100000;
 	width: 360px;
-	max-width: 90vw;
+	max-width: 100%;
 	padding: 12px;
 	background: #fff;
 	border: 1px solid #c3c4c7;
