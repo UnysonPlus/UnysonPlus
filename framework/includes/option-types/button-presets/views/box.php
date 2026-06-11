@@ -39,11 +39,12 @@ $render = function ( $opts, $vals, $name_prefix, $id_prefix ) {
 	);
 };
 ?>
-<div class="fw-option-type-button-presets-item is-collapsed">
+<div class="fw-option-type-button-presets-item is-collapsed" data-bp-index="<?php echo esc_attr( $id ); ?>">
 	<div class="fw-option-type-button-presets-item-header">
 		<span class="fw-option-type-button-presets-item-handle" title="<?php echo esc_attr__( 'Drag to reorder', 'fw' ); ?>"></span>
 		<span class="fw-option-type-button-presets-item-title btn"><?php echo esc_html( $preview_label ); ?></span>
 		<a href="#" class="fw-option-type-button-presets-item-toggle dashicons-before dashicons-arrow-up-alt2" title="<?php echo esc_attr__( 'Collapse / expand', 'fw' ); ?>"></a>
+		<a href="#" class="fw-option-type-button-presets-item-duplicate dashicons-before dashicons-admin-page" title="<?php echo esc_attr__( 'Duplicate', 'fw' ); ?>"></a>
 		<a href="#" class="fw-option-type-button-presets-item-remove dashicons-before dashicons-no-alt" title="<?php echo esc_attr__( 'Remove', 'fw' ); ?>"></a>
 	</div>
 

@@ -80,6 +80,39 @@
 			var $trigger = $option.find( '.tsp__trigger' );
 			$panel.prop( 'hidden', ! open );
 			$trigger.attr( 'aria-expanded', open ? 'true' : 'false' );
+			if ( open ) {
+				positionPanel( $option );
+				var reposition = function () { positionPanel( $option ); };
+				$option.data( 'fwPickerReposition', reposition );
+				window.addEventListener( 'scroll', reposition, true );
+				window.addEventListener( 'resize', reposition );
+			} else {
+				var rep = $option.data( 'fwPickerReposition' );
+				if ( rep ) {
+					window.removeEventListener( 'scroll', rep, true );
+					window.removeEventListener( 'resize', rep );
+					$option.removeData( 'fwPickerReposition' );
+				}
+				$panel.css( { position: '', top: '', left: '' } );
+			}
+		}
+
+		// Anchor the panel to its trigger as position:fixed so an ancestor with
+		// overflow:hidden (a settings box / scroll container) can't clip it. Flips
+		// above when there's no room below; clamps to the viewport.
+		function positionPanel( $option ) {
+			var trg    = $option.find( '.tsp__trigger' ).get( 0 );
+			var $panel = $option.find( '.tsp__panel' );
+			var pnl    = $panel.get( 0 );
+			if ( ! trg || ! pnl ) { return; }
+			$panel.css( { position: 'fixed', top: '0px', left: '0px' } );
+			var rect = trg.getBoundingClientRect();
+			var pw = pnl.offsetWidth, ph = pnl.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+			var left = rect.left;
+			if ( left + pw > vw - 8 ) { left = Math.max( 8, vw - pw - 8 ); }
+			var top = rect.bottom + 4;
+			if ( top + ph > vh - 8 && rect.top - ph - 4 > 8 ) { top = rect.top - ph - 4; }
+			$panel.css( { left: Math.round( left ) + 'px', top: Math.round( top ) + 'px' } );
 		}
 
 		function selectOption( $option, $opt ) {

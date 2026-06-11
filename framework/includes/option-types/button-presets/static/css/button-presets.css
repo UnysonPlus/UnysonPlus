@@ -57,13 +57,16 @@
 	cursor: pointer;
 }
 .fw-option-type-button-presets-item-toggle,
+.fw-option-type-button-presets-item-duplicate,
 .fw-option-type-button-presets-item-remove {
 	text-decoration: none;
 	line-height: 1;
 	color: #787c82;
 	flex: 0 0 auto;
 }
-.fw-option-type-button-presets-item-toggle:hover { color: #2271b1; }
+.fw-option-type-button-presets-item-header .fw-option-type-button-presets-item-duplicate { cursor: pointer; }
+.fw-option-type-button-presets-item-toggle:hover,
+.fw-option-type-button-presets-item-duplicate:hover { color: #2271b1; }
 .fw-option-type-button-presets-item-remove { color: #b32d2e; }
 .fw-option-type-button-presets-item-remove:hover { color: #d63638; }
 /* caret flips when collapsed */

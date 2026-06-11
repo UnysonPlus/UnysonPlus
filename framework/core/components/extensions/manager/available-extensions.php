@@ -69,6 +69,19 @@ $extensions = [
         ],
     ],
 
+    'site-converter' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Site Converter', 'fw'),
+        'description' => __('Bring an AI-generated website into WordPress (Unyson+ → Convert): import the source site\'s images and Styling Presets from the artifacts an agent emits per the conversion contract.', 'fw'),
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Site-Converter-Extension',
+            ],
+        ],
+    ],
+
     'custom-fields' => [
         'display'     => true,
         'parent'      => null,

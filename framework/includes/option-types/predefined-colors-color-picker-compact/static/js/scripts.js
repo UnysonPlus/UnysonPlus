@@ -86,10 +86,54 @@
 			if ( open ) {
 				$panel.prop( 'hidden', false );
 				$trigger.attr( 'aria-expanded', 'true' );
+				positionPanel( $option );
+				// Keep the panel glued to its trigger as the modal / page scrolls or
+				// resizes (capture phase catches scrolling inside the modal body).
+				var reposition = function () { positionPanel( $option ); };
+				$option.data( 'pccpcReposition', reposition );
+				window.addEventListener( 'scroll', reposition, true );
+				window.addEventListener( 'resize', reposition );
 			} else {
 				$panel.prop( 'hidden', true );
 				$trigger.attr( 'aria-expanded', 'false' );
+				var rep = $option.data( 'pccpcReposition' );
+				if ( rep ) {
+					window.removeEventListener( 'scroll', rep, true );
+					window.removeEventListener( 'resize', rep );
+					$option.removeData( 'pccpcReposition' );
+				}
+				// Reset inline positioning so the CSS default governs while hidden.
+				$panel.css( { position: '', top: '', left: '' } );
 			}
+		}
+
+		// Anchor the panel to its trigger as position:fixed so it escapes any
+		// ancestor with overflow:hidden (a settings box / scroll container) that
+		// would otherwise clip it. Flips above the trigger when there is no room
+		// below, and clamps to the viewport.
+		function positionPanel( $option ) {
+			var trg    = $option.find( '.pccpc__trigger' ).get( 0 );
+			var $panel = $option.find( '.pccpc__panel' );
+			var pnl    = $panel.get( 0 );
+			if ( ! trg || ! pnl ) { return; }
+
+			$panel.css( { position: 'fixed', top: '0px', left: '0px' } ); // fix + reset before measuring
+
+			var rect = trg.getBoundingClientRect();
+			var pw   = pnl.offsetWidth;
+			var ph   = pnl.offsetHeight;
+			var vw   = window.innerWidth;
+			var vh   = window.innerHeight;
+
+			var left = rect.left;
+			if ( left + pw > vw - 8 ) { left = Math.max( 8, vw - pw - 8 ); }
+
+			var top = rect.bottom + 4;
+			if ( top + ph > vh - 8 && rect.top - ph - 4 > 8 ) {
+				top = rect.top - ph - 4; // flip above
+			}
+
+			$panel.css( { left: Math.round( left ) + 'px', top: Math.round( top ) + 'px' } );
 		}
 
 		function selectPreset( $option, $opt ) {

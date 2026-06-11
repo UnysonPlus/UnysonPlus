@@ -2,10 +2,22 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.31';
+$manifest['version'] = '2.10.34';
 
 /**
  * Changelog
+ * 2.10.34 - Button presets gain a Duplicate action: a duplicate icon in each preset's
+ *           header clones it as a NEW preset (a fresh unique index, so it saves
+ *           separately) carrying all its current values — name, per-state colors, font,
+ *           transition and custom CSS. Implemented by syncing live form values into the
+ *           DOM before cloning, then re-pointing the box index in every name / id / for.
+ *           This is the reusable pattern the other preset managers (color / border /
+ *           table / font-size / spacing) will follow.
+ * 2.10.32 - Registered the Site Converter extension in the extension manager's
+ *           available-extensions registry (with its GitHub download source). It now
+ *           shows the Remove (trash) action when deactivated and updates through the
+ *           GitHub auto-updater — matching Asset Optimizer — instead of needing a
+ *           manual plugin re-upload.
  * 2.10.31 - New `column-split` option type: a draggable two-pane split bar — drag the
  *           divider to set how a row is shared between a LEFT and RIGHT pane, each
  *           labelled with a dashicon/image + text (e.g. "Image | Content"). It stores a
