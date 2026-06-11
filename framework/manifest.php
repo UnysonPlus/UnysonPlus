@@ -2,10 +2,17 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.34';
+$manifest['version'] = '2.10.35';
 
 /**
  * Changelog
+ * 2.10.35 - Extended the preset Duplicate action (2.10.34) to border presets and table
+ *           presets, and added an opt-in Duplicate control to the generic addable-box
+ *           option type (set `box-duplicate => true`): it clones a box as a new entry
+ *           (fresh increment index) carrying its live values, re-pointing input names
+ *           by prefix and ids by the per-box index. Shortcode Settings enable it on the
+ *           Color, Font Size, Spacing and Gap preset lists, so every preset manager now
+ *           has a one-click duplicate.
  * 2.10.34 - Button presets gain a Duplicate action: a duplicate icon in each preset's
  *           header clones it as a NEW preset (a fresh unique index, so it saves
  *           separately) carrying all its current values — name, per-state colors, font,

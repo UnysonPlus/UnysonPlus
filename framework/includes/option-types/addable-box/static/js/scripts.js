@@ -82,6 +82,9 @@ jQuery(document).ready(function ($) {
 					var controlId = $control.attr('data-control-id');
 
 					switch (controlId) {
+						case 'duplicate':
+							methods.duplicateBox($control.closest('.fw-option-box'));
+							break;
 						case 'delete':
 							var $option = $control.closest(optionTypeClass);
 
@@ -122,6 +125,70 @@ jQuery(document).ready(function ($) {
 				$option.find('> .fw-option-boxes > .fw-option-box:first').length
 				? 'addClass' : 'removeClass'
 			]('has-boxes');
+		},
+
+		/**
+		 * Duplicate a box: clone it as a NEW entry (fresh increment index) carrying
+		 * its current values. A plain clone doesn't copy live form values, so we sync
+		 * each input's value into its attribute first; names are then re-pointed by
+		 * prefix (clean) and ids/for by the per-box index.
+		 */
+		duplicateBox: function ($box) {
+			var $option   = $box.closest(optionTypeClass);
+			var $boxes    = $option.find('.fw-option-boxes:first');
+			var $button   = $option.find('> .fw-option-boxes-controls .fw-option-boxes-add-button');
+			var increment = parseInt($button.attr('data-increment'));
+			$button.attr('data-increment', increment + 1);
+
+			var oldPrefix = $box.attr('data-name-prefix') || '';
+			var lastIdx   = oldPrefix.match(/\[([^\[\]]+)\]\s*$/);
+			var oldIdx    = lastIdx ? lastIdx[1] : '';
+			var newIdx    = String(increment);
+			var newPrefix = oldPrefix.replace(/\[[^\[\]]+\]\s*$/, '[' + newIdx + ']');
+
+			methods.syncValues($box);
+
+			var $clone = $box.clone();
+			$clone.find('.CodeMirror').remove();
+			$clone.removeClass('fw-option-initialized initialized').removeAttr('data-values');
+			$clone.find('.initialized').removeClass('initialized');
+
+			if (oldPrefix) {
+				$clone.attr('data-name-prefix', newPrefix);
+				$clone.find('[name]').each(function () {
+					var n = this.getAttribute('name');
+					if (n && n.indexOf(oldPrefix) === 0) { this.setAttribute('name', newPrefix + n.slice(oldPrefix.length)); }
+				});
+			}
+			if (oldIdx) {
+				var esc = oldIdx.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				var re  = new RegExp('([\\[\\-])' + esc + '([\\]\\-])');
+				$clone.find('[id], [for]').each(function () {
+					var el = this;
+					['id', 'for'].forEach(function (a) {
+						var v = el.getAttribute(a);
+						if (v && re.test(v)) { el.setAttribute(a, v.replace(re, '$1' + newIdx + '$2')); }
+					});
+				});
+			}
+
+			$box.after($clone);
+			methods.initControls($clone);
+			if ($option.hasClass('is-sortable')) { methods.reInitSortable($boxes); }
+			fwEvents.trigger('fw:options:init', { $elements: $clone });
+			methods.checkLimit($option);
+			methods.updateHasBoxesClass($option);
+			fw.options.trigger.changeForEl($boxes);
+		},
+
+		/** Push live form values into DOM attributes so .clone() carries them. */
+		syncValues: function ($scope) {
+			$scope.find('input, textarea, select').each(function () {
+				if (this.tagName === 'TEXTAREA') { this.textContent = this.value; }
+				else if (this.tagName === 'SELECT') { $(this).find('option').each(function () { if (this.selected) { this.setAttribute('selected', 'selected'); } else { this.removeAttribute('selected'); } }); }
+				else if (this.type === 'checkbox' || this.type === 'radio') { if (this.checked) { this.setAttribute('checked', 'checked'); } else { this.removeAttribute('checked'); } }
+				else { this.setAttribute('value', this.value); }
+			});
 		}
 	};
 

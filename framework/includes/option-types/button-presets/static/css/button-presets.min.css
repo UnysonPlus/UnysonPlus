@@ -69,6 +69,18 @@
 .fw-option-type-button-presets-item-duplicate:hover { color: #2271b1; }
 .fw-option-type-button-presets-item-remove { color: #b32d2e; }
 .fw-option-type-button-presets-item-remove:hover { color: #d63638; }
+/* Reveal Duplicate / Remove only while hovering the item (fade for ease). */
+.fw-option-type-button-presets-item-duplicate,
+.fw-option-type-button-presets-item-remove {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+.fw-option-type-button-presets-item:hover .fw-option-type-button-presets-item-duplicate,
+.fw-option-type-button-presets-item:focus-within .fw-option-type-button-presets-item-duplicate,
+.fw-option-type-button-presets-item:hover .fw-option-type-button-presets-item-remove,
+.fw-option-type-button-presets-item:focus-within .fw-option-type-button-presets-item-remove {
+	opacity: 1;
+}
 /* caret flips when collapsed */
 .fw-option-type-button-presets-item.is-collapsed .fw-option-type-button-presets-item-toggle.dashicons-arrow-up-alt2:before {
 	content: "\f347"; /* dashicons-arrow-down-alt2 */

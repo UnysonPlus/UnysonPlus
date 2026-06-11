@@ -1,1 +1,96 @@
-.fw-option-type-addable-box{max-width:100%}.fw-option-type-addable-box.has-boxes.width-type-full{width:9999px}.fw-option-type-addable-box.has-boxes.width-type-fixed{width:428px}.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox{min-width:100%}.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle{cursor:move!important;position:relative;word-break:break-all}.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle>span{display:block;max-width:100%;overflow:hidden;white-space:nowrap}#wpbody-content .fw-option-type-addable-box .metabox-holder{margin:0;padding:0}.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box{margin-bottom:20px}.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle span:after{content:"\00a0"}.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle img{vertical-align:middle}.fw-option-type-addable-box .fw-backend-option-design-customizer{padding:15px}.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-before-title:empty{display:none}.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .postbox-header h2.hndle{border-bottom:none!important}.rtl .fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title{height:auto;left:27px;right:auto}.rtl .fw-option-type-addable-box .postbox .handlediv{padding:0 12px}.rtl .fw-option-type-addable-box .postbox-header .hndle{justify-content:right}.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls .fw-option-box-control{text-decoration:none}.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls .fw-option-box-control-wrapper{color:#ccc}
+.fw-option-type-addable-box {
+	max-width: 100%;
+}
+
+.fw-option-type-addable-box.has-boxes.width-type-full {
+	width: 9999px;
+}
+
+.fw-option-type-addable-box.has-boxes.width-type-fixed {
+	width: 428px;
+	/* same as .fw-backend-option-fixed-width */
+}
+
+.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox {
+	min-width: 100%;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle {
+	cursor: move !important;
+	/* to rewrite .fw-postbox h3.hndle */
+	word-break: break-all;
+	/* if box text is too long, do not move controls outside box */
+	position: relative;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle>span {
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 100%;
+	display: block;
+}
+
+#wpbody-content .fw-option-type-addable-box .metabox-holder {
+	padding: 0;
+	margin: 0;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box {
+	margin-bottom: 20px;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle span:after {
+	content: '\00a0';
+	/* &nbsp; - when title is empty, box has too small (broken) height */
+}
+
+.fw-option-type-addable-box>.fw-option-boxes.ui-sortable>.fw-option-box>.fw-postbox>.hndle img {
+	vertical-align: middle;
+}
+
+.fw-option-type-addable-box .fw-backend-option-design-customizer {
+	padding: 15px;
+}
+
+
+/* Controls */
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-before-title:empty {
+	display: none;
+}
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .postbox-header h2.hndle {
+	border-bottom: none !important;
+}
+.rtl .fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title {
+	height: auto;
+	left: 27px;
+	right: auto;
+}
+
+.rtl .fw-option-type-addable-box .postbox .handlediv {
+	padding: 0 12px;
+}
+
+.rtl .fw-option-type-addable-box .postbox-header .hndle {
+	justify-content: right;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls .fw-option-box-control {
+	text-decoration: none;
+}
+
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls .fw-option-box-control-wrapper {
+	color: #cccccc;
+}
+
+/* Reveal the box controls (Duplicate / Remove) only while hovering the box —
+   fade in/out for ease. Kept visible on keyboard focus for accessibility. */
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box:hover .hndle .fw-html-after-title .fw-option-box-controls,
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box:focus-within .hndle .fw-html-after-title .fw-option-box-controls {
+	opacity: 1;
+}
+
+/* end: Controls */

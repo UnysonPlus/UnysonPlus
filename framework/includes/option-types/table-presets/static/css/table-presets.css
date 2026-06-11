@@ -46,15 +46,30 @@
 	cursor: pointer;
 }
 .fw-option-type-table-presets-item-toggle,
+.fw-option-type-table-presets-item-duplicate,
 .fw-option-type-table-presets-item-remove {
 	text-decoration: none;
 	line-height: 1;
 	color: #787c82;
 	flex: 0 0 auto;
 }
-.fw-option-type-table-presets-item-toggle:hover { color: #2271b1; }
+.fw-option-type-table-presets-item-header .fw-option-type-table-presets-item-duplicate { cursor: pointer; }
+.fw-option-type-table-presets-item-toggle:hover,
+.fw-option-type-table-presets-item-duplicate:hover { color: #2271b1; }
 .fw-option-type-table-presets-item-remove { color: #b32d2e; }
 .fw-option-type-table-presets-item-remove:hover { color: #d63638; }
+/* Reveal Duplicate / Remove only while hovering the item (fade for ease). */
+.fw-option-type-table-presets-item-duplicate,
+.fw-option-type-table-presets-item-remove {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+.fw-option-type-table-presets-item:hover .fw-option-type-table-presets-item-duplicate,
+.fw-option-type-table-presets-item:focus-within .fw-option-type-table-presets-item-duplicate,
+.fw-option-type-table-presets-item:hover .fw-option-type-table-presets-item-remove,
+.fw-option-type-table-presets-item:focus-within .fw-option-type-table-presets-item-remove {
+	opacity: 1;
+}
 .fw-option-type-table-presets-item.is-collapsed .fw-option-type-table-presets-item-toggle.dashicons-arrow-up-alt2:before {
 	content: "\f347";
 }

@@ -224,7 +224,7 @@
 			refresh();
 		}
 		$item.on('click', '.fw-option-type-border-presets-item-header', function (e) {
-			if ($(e.target).closest('.fw-option-type-border-presets-item-handle, .fw-option-type-border-presets-item-remove').length) {
+			if ($(e.target).closest('.fw-option-type-border-presets-item-handle, .fw-option-type-border-presets-item-duplicate, .fw-option-type-border-presets-item-remove').length) {
 				return;
 			}
 			e.preventDefault();
@@ -277,5 +277,55 @@
 			: 'Remove this border preset? This cannot be undone.';
 		if (window.confirm(msg)) { $item.remove(); }
 	});
+
+	// --- Duplicate a preset (clone as a NEW preset, fresh index, live values) ---
+	$(document).on('click', '.fw-option-type-border-presets-item-duplicate', function (e) {
+		e.preventDefault();
+		duplicateItem($(this).closest('.fw-option-type-border-presets-item'));
+	});
+
+	function duplicateItem($item) {
+		var oldIdx = String($item.attr('data-bp-index') || '');
+		var newIdx = (typeof fwUniqueIncrement === 'function') ? fwUniqueIncrement() : ('' + (+new Date()) + uidCounter);
+		$item.find('.CodeMirror').each(function () { if (this.CodeMirror) { this.CodeMirror.save(); } });
+		syncValuesToAttrs($item);
+		var $clone = $item.clone();
+		$clone.find('.CodeMirror').remove();
+		$clone.removeData('bdp-init').removeAttr('data-bdp-init');
+		$clone.find('.initialized').removeClass('initialized');
+		reindex($clone, oldIdx, newIdx);
+		$clone.attr('data-bp-index', newIdx).addClass('is-collapsed');
+		$item.after($clone);
+		fwEvents.trigger('fw:options:init', { $elements: $clone });
+	}
+
+	function syncValuesToAttrs($scope) {
+		$scope.find('input, textarea, select').each(function () {
+			if (this.tagName === 'TEXTAREA') {
+				this.textContent = this.value;
+			} else if (this.tagName === 'SELECT') {
+				$(this).find('option').each(function () {
+					if (this.selected) { this.setAttribute('selected', 'selected'); } else { this.removeAttribute('selected'); }
+				});
+			} else if (this.type === 'checkbox' || this.type === 'radio') {
+				if (this.checked) { this.setAttribute('checked', 'checked'); } else { this.removeAttribute('checked'); }
+			} else {
+				this.setAttribute('value', this.value);
+			}
+		});
+	}
+
+	function reindex($scope, oldIdx, newIdx) {
+		if (oldIdx === '') { return; }
+		var esc = oldIdx.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		var re  = new RegExp('([\\[\\-])' + esc + '([\\]\\-])');
+		$scope.find('[name], [id], [for]').each(function () {
+			var el = this;
+			['name', 'id', 'for'].forEach(function (a) {
+				var v = el.getAttribute(a);
+				if (v && re.test(v)) { el.setAttribute(a, v.replace(re, '$1' + newIdx + '$2')); }
+			});
+		});
+	}
 
 })(jQuery);

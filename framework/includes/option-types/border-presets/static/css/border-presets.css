@@ -46,15 +46,30 @@
 	cursor: pointer;
 }
 .fw-option-type-border-presets-item-toggle,
+.fw-option-type-border-presets-item-duplicate,
 .fw-option-type-border-presets-item-remove {
 	text-decoration: none;
 	line-height: 1;
 	color: #787c82;
 	flex: 0 0 auto;
 }
-.fw-option-type-border-presets-item-toggle:hover { color: #2271b1; }
+.fw-option-type-border-presets-item-header .fw-option-type-border-presets-item-duplicate { cursor: pointer; }
+.fw-option-type-border-presets-item-toggle:hover,
+.fw-option-type-border-presets-item-duplicate:hover { color: #2271b1; }
 .fw-option-type-border-presets-item-remove { color: #b32d2e; }
 .fw-option-type-border-presets-item-remove:hover { color: #d63638; }
+/* Reveal Duplicate / Remove only while hovering the item (fade for ease). */
+.fw-option-type-border-presets-item-duplicate,
+.fw-option-type-border-presets-item-remove {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+.fw-option-type-border-presets-item:hover .fw-option-type-border-presets-item-duplicate,
+.fw-option-type-border-presets-item:focus-within .fw-option-type-border-presets-item-duplicate,
+.fw-option-type-border-presets-item:hover .fw-option-type-border-presets-item-remove,
+.fw-option-type-border-presets-item:focus-within .fw-option-type-border-presets-item-remove {
+	opacity: 1;
+}
 .fw-option-type-border-presets-item.is-collapsed .fw-option-type-border-presets-item-toggle.dashicons-arrow-up-alt2:before {
 	content: "\f347";
 }

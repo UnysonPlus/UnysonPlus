@@ -90,6 +90,14 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 				$option['box-controls']
 			);
 
+			// Optional duplicate control (opt-in via the 'box-duplicate' option flag).
+			if ( ! empty( $option['box-duplicate'] ) ) {
+				$controls = array_merge(
+					array( 'duplicate' => '<small class="dashicons dashicons-admin-page fw-option-box-control-duplicate" title="'. esc_attr__('Duplicate', 'fw') .'"></small>' ),
+					$controls
+				);
+			}
+
 			// move 'delete' control to end
 			{
 				if (isset($controls['delete'])) {
@@ -185,6 +193,8 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 			'box-controls' => array(
 				// 'control_id' => '<small class="dashicons dashicons-..." title="Some action"></small>'
 			),
+			// Show a Duplicate control on each box (clones it as a new entry). Opt-in.
+			'box-duplicate' => false,
 			'box-options' => array(),
 			/**
 			 * Limit boxes that can be added

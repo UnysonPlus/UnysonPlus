@@ -82,4 +82,15 @@
 	color: #cccccc;
 }
 
+/* Reveal the box controls (Duplicate / Remove) only while hovering the box —
+   fade in/out for ease. Kept visible on keyboard focus for accessibility. */
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box .hndle .fw-html-after-title .fw-option-box-controls {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box:hover .hndle .fw-html-after-title .fw-option-box-controls,
+.fw-option-type-addable-box>.fw-option-boxes>.fw-option-box:focus-within .hndle .fw-html-after-title .fw-option-box-controls {
+	opacity: 1;
+}
+
 /* end: Controls */
