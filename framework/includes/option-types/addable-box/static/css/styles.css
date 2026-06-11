@@ -93,4 +93,76 @@
 	opacity: 1;
 }
 
+/* Delete control in red (destructive action), matching the custom preset managers. */
+.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"] { color: #b32d2e; }
+.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"]:hover { color: #d63638; }
+
+/* Multi-column preset list from tablet up (opt-in via .fw-preset-2col).
+   Uses CSS Grid, NOT CSS multi-column: the expanded box body is an absolutely
+   positioned floating panel, and a CSS multi-column container fragments/clips
+   absolute descendants at the column break (the panel leaks/cuts off). Grid
+   doesn't fragment, so the panel renders fully. Default flow is row-major
+   (pure-CSS fallback that always works); the addable-box JS upgrades it to
+   column-major (TOP-TO-BOTTOM) by setting an explicit column + row count and
+   grid-auto-flow: column. Boxes are capped at the original 428px width. */
+@media (min-width: 768px) {
+	.fw-preset-2col .fw-option-boxes {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 428px));
+		justify-content: start;
+		align-items: start;
+		gap: 10px;
+	}
+	.fw-preset-2col .fw-option-boxes > .fw-option-box,
+	.fw-preset-2col .fw-option-boxes > .sortable-placeholder {
+		max-width: 428px;
+		margin: 0;
+		box-sizing: border-box;
+	}
+	/* Breathing room above the "Add another preset" button. */
+	.fw-preset-2col .fw-option-boxes-controls {
+		margin-top: 15px;
+	}
+}
+
+/* Keep the multi-column grid perfectly still when a box is expanded. CSS
+   multi-column re-balances whenever a box's height changes, which is what
+   shuffles boxes between columns on expand. So instead of expanding inline, we
+   render the box body (.inside) as a floating panel anchored under the box
+   header: absolutely positioned => out of flow => the box's footprint stays
+   header-height, so expanding/collapsing never reflows or re-columns the others.
+   The fade + slide doubles as the smooth open/close easing. Scoped to
+   .fw-preset-2col so other addable-boxes keep their default inline behavior. */
+.fw-preset-2col .fw-postbox {
+	position: relative;
+}
+.fw-preset-2col .fw-postbox:not(.closed) {
+	z-index: 5; /* lift an open box so its panel sits above the boxes beneath it */
+}
+.fw-preset-2col .fw-postbox .inside {
+	display: block !important; /* beat .postbox.closed .inside { display:none } so it can animate */
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin: 0 !important; /* beat .fw-postbox>.inside { margin:10px 0 0 !important } — it pushes the panel down, leaving a gap under the header */
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-top: none;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+	transform-origin: top center;
+	transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+.fw-preset-2col .fw-postbox.closed .inside {
+	opacity: 0;
+	transform: translateY(-6px);
+	visibility: hidden;
+	pointer-events: none;
+}
+.fw-preset-2col .fw-postbox:not(.closed) .inside {
+	opacity: 1;
+	transform: translateY(0);
+	visibility: visible;
+}
+
 /* end: Controls */

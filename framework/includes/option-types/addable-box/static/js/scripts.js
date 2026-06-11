@@ -33,6 +33,7 @@ jQuery(document).ready(function ($) {
 			}
 
 			var isMobile = $(document.body).hasClass('mobile');
+			var twoCol   = $boxes.closest('.fw-preset-2col').length > 0;
 
 			$boxes.sortable({
 				items: '> .fw-option-box',
@@ -43,7 +44,7 @@ jQuery(document).ready(function ($) {
 				distance: 2,
 				tolerance: 'pointer',
 				forcePlaceholderSize: true,
-				axis: 'y',
+				axis: twoCol ? false : 'y',
 				start: function(e, ui){
 					// Update the height of the placeholder to match the moving item.
 					{
@@ -92,6 +93,7 @@ jQuery(document).ready(function ($) {
 
 							methods.checkLimit($option);
 							methods.updateHasBoxesClass($option);
+							methods.relayoutPresetGrid($option.find('.fw-option-boxes').get(0));
 
 							fw.options.trigger.changeForEl($option);
 
@@ -178,6 +180,7 @@ jQuery(document).ready(function ($) {
 			fwEvents.trigger('fw:options:init', { $elements: $clone });
 			methods.checkLimit($option);
 			methods.updateHasBoxesClass($option);
+			methods.relayoutPresetGrid($boxes.get(0));
 			fw.options.trigger.changeForEl($boxes);
 		},
 
@@ -189,6 +192,52 @@ jQuery(document).ready(function ($) {
 				else if (this.type === 'checkbox' || this.type === 'radio') { if (this.checked) { this.setAttribute('checked', 'checked'); } else { this.removeAttribute('checked'); } }
 				else { this.setAttribute('value', this.value); }
 			});
+		},
+
+		/**
+		 * Column-major (top-to-bottom) layout for the .fw-preset-2col preset lists.
+		 * The CSS base is a row-major grid fallback; here we upgrade it to fill each
+		 * column top-to-bottom by giving the grid an explicit column + row count and
+		 * grid-auto-flow: column. (We can't do this in pure CSS because the column
+		 * count is responsive and the row count depends on the box count.) Grid is
+		 * used instead of CSS multi-column so the absolutely-positioned expanded
+		 * panel isn't fragmented/clipped at a column break.
+		 */
+		relayoutPresetGrid: function (el) {
+			if (!el) { return; }
+			var $g = $(el);
+			if (!$g.closest('.fw-preset-2col').length) { return; }
+
+			var n    = $g.children('.fw-option-box').length;
+			var w    = el.clientWidth;
+			var cols = (w > 0 && n > 1) ? Math.min(n, Math.max(1, Math.floor(w / 360))) : 1;
+
+			// No-op guard (also stops the ResizeObserver from looping on the
+			// height change our own relayout causes): re-run only when the
+			// effective layout (columns x box-count) actually changes.
+			var key = cols + 'x' + n;
+			if ($g.attr('data-fw-grid') === key) { return; }
+			$g.attr('data-fw-grid', key);
+
+			if (cols < 2) {
+				$g.css({ gridAutoFlow: '', gridTemplateColumns: '', gridTemplateRows: '' });
+			} else {
+				$g.css({
+					gridAutoFlow: 'column',
+					gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 428px))',
+					gridTemplateRows: 'repeat(' + Math.ceil(n / cols) + ', auto)'
+				});
+			}
+		},
+
+		/** Watch a preset grid so it re-lays out on resize / tab-show. */
+		observePresetGrid: function (el) {
+			if (!el || !$(el).closest('.fw-preset-2col').length) { return; }
+			if (typeof ResizeObserver !== 'undefined' && !el.fwPresetRO) {
+				el.fwPresetRO = new ResizeObserver(function () { methods.relayoutPresetGrid(el); });
+				el.fwPresetRO.observe(el);
+			}
+			methods.relayoutPresetGrid(el);
 		}
 	};
 
@@ -384,6 +433,7 @@ jQuery(document).ready(function ($) {
 
 			methods.checkLimit($option);
 			methods.updateHasBoxesClass($option);
+			methods.relayoutPresetGrid($boxes.get(0));
 
 			fw.options.trigger.changeForEl($boxes);
 		});
@@ -404,10 +454,33 @@ jQuery(document).ready(function ($) {
 			titleUpdater.update($(this));
 		});
 
+		// Accordion for preset lists (.fw-preset-2col): an expanded box shows a
+		// floating panel that overlaps the boxes beneath it, so opening one box
+		// closes any other open box in the SAME list — panels never stack.
+		$elements.on('fw:box:open', '> .fw-option-boxes > .fw-option-box > .fw-postbox', function(){
+			var $postbox = $(this);
+
+			if (!$postbox.closest('.fw-preset-2col').length) {
+				return;
+			}
+
+			$postbox.closest('.fw-option-boxes')
+				.find('> .fw-option-box > .fw-postbox')
+				.not(this)
+				.filter(':not(.closed)')
+				.addClass('closed')
+				.trigger('fw:box:close');
+		});
+
 		methods.initControls($elements);
 
 		$elements.each(function(){
 			methods.checkLimit($(this));
+		});
+
+		// Column-major (top-to-bottom) grid layout for .fw-preset-2col lists.
+		$elements.find('> .fw-option-boxes').each(function () {
+			methods.observePresetGrid(this);
 		});
 
 		$elements.addClass('fw-option-initialized');
