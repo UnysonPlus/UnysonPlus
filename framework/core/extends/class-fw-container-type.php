@@ -182,6 +182,15 @@ abstract class FW_Container_Type
 			!doing_action('admin_enqueue_scripts')
 			&&
 			!did_action('admin_enqueue_scripts')
+			&&
+			// A front-end editor can opt in via this filter (same one the backend
+			// component honors) so per-container statics load on the site itself;
+			// only during wp_enqueue_scripts.
+			!(
+				apply_filters('fw:backend:enqueue-options-on-frontend', false)
+				&&
+				(doing_action('wp_enqueue_scripts') || did_action('wp_enqueue_scripts'))
+			)
 		) {
 			/**
 			 * Do not wp_enqueue/register_...() because at this point not all handles has been registered

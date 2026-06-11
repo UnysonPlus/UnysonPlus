@@ -2,10 +2,20 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.42';
+$manifest['version'] = '2.10.43';
 
 /**
  * Changelog
+ * 2.10.43 - Extended the `fw:backend:enqueue-options-on-frontend` opt-in (2.10.42)
+ *           to the per-option-type and per-container static enqueues. Both
+ *           FW_Option_Type::enqueue_static() and FW_Container_Type::enqueue_static()
+ *           had their own admin_enqueue_scripts guard that the 2.10.42 change (which
+ *           only touched the backend component) didn't cover, so on a front-end
+ *           editor the base options runtime loaded but every option type's own JS/CSS
+ *           (e.g. the wp-editor TinyMCE init, color pickers) silently did not — their
+ *           `fw:options:init` handlers were never registered. Both guards now also
+ *           pass when the filter returns true during wp_enqueue_scripts. Default
+ *           false; wp-admin unchanged.
  * 2.10.42 - New `fw:backend:enqueue-options-on-frontend` filter lets a single
  *           front-end request opt into loading the backend options-editing runtime
  *           (fw.OptionsModal + every option-type's JS/CSS) on the site itself,
