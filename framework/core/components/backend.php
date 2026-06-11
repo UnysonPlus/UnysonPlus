@@ -263,6 +263,25 @@ final class _FW_Component_Backend {
 	}
 
 	/**
+	 * Whether the backend options-editing runtime is allowed to register /
+	 * enqueue on the FRONT END for the current request.
+	 *
+	 * The runtime (fw / fw.OptionsModal / fw-backend-options / reactive options +
+	 * every option-type's statics) is normally admin-only. A front-end editor —
+	 * e.g. the Live Page Editor extension, which renders the options UI on the
+	 * site itself — can opt a specific request in via this filter instead of
+	 * re-registering every handle by hand. Only honored during wp_enqueue_scripts
+	 * so the registration timing matches the admin (admin_enqueue_scripts) flow.
+	 *
+	 * @return bool
+	 */
+	private function allow_frontend_options_runtime(): bool
+	{
+		return (bool) apply_filters('fw:backend:enqueue-options-on-frontend', false)
+			&& (doing_action('wp_enqueue_scripts') || did_action('wp_enqueue_scripts'));
+	}
+
+	/**
 	 * Register framework backend static assets (scripts/styles).
 	 *
 	 * @internal
@@ -272,6 +291,7 @@ final class _FW_Component_Backend {
 		if (
 			! doing_action('admin_enqueue_scripts')
 			&& ! did_action('admin_enqueue_scripts')
+			&& ! $this->allow_frontend_options_runtime()
 		) {
 			/**
 			 * Do not wp_enqueue/register_...() because at this point not all handles have been registered
@@ -286,11 +306,14 @@ final class _FW_Component_Backend {
 		}
 
 		/**
-		 * Register styles/scripts only in admin area, on frontend it's not allowed to use styles/scripts from framework backend core
-		 * because they are meant to be used only in backend and can be changed in the future.
-		 * If you want to use a style/script from framework backend core, copy it to your theme and enqueue as a theme style/script.
+		 * Register styles/scripts only in admin area. On the front end this is
+		 * normally disallowed (these assets are backend-only and may change), but
+		 * a request can explicitly opt in via the
+		 * `fw:backend:enqueue-options-on-frontend` filter — see
+		 * allow_frontend_options_runtime() — so a front-end options editor can
+		 * reuse the framework's own registration instead of duplicating it.
 		 */
-		if (! is_admin()) {
+		if (! is_admin() && ! $this->allow_frontend_options_runtime()) {
 			$this->static_registered = true;
 			return;
 		}
@@ -1311,7 +1334,7 @@ final class _FW_Component_Backend {
 			$design = $this->default_render_design;
 		}
 
-		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts')) {
+		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts') && !$this->allow_frontend_options_runtime()) {
 			/**
 			 * Do not wp_enqueue/register_...() because at this point not all handles has been registered
 			 * and maybe they are used in dependencies in handles that are going to be enqueued.
@@ -1447,7 +1470,7 @@ final class _FW_Component_Backend {
 
 		static $static_enqueue = true;
 
-		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts')) {
+		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts') && !$this->allow_frontend_options_runtime()) {
 			/**
 			 * Do not wp_enqueue/register_...() because at this point not all handles has been registered
 			 * and maybe they are used in dependencies in handles that are going to be enqueued.
@@ -1515,7 +1538,7 @@ final class _FW_Component_Backend {
 			$design = $maybe_forced_design;
 		}
 
-		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts')) {
+		if (!doing_action('admin_enqueue_scripts') && !did_action('admin_enqueue_scripts') && !$this->allow_frontend_options_runtime()) {
 			/**
 			 * Do not wp_enqueue/register_...() because at this point not all handles has been registered
 			 * and maybe they are used in dependencies in handles that are going to be enqueued.

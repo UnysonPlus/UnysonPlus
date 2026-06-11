@@ -2,10 +2,20 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.41';
+$manifest['version'] = '2.10.42';
 
 /**
  * Changelog
+ * 2.10.42 - New `fw:backend:enqueue-options-on-frontend` filter lets a single
+ *           front-end request opt into loading the backend options-editing runtime
+ *           (fw.OptionsModal + every option-type's JS/CSS) on the site itself,
+ *           instead of wp-admin only. The backend component's register_static(),
+ *           enqueue_options_static(), render_options() and render_option() guards
+ *           now also pass when this filter returns true during wp_enqueue_scripts,
+ *           so consumers reuse the framework's own registration (always matching the
+ *           installed version) rather than hand-duplicating every handle. Added for
+ *           the Live Page Editor extension, which renders option modals on the live
+ *           page; default false, so wp-admin behaviour is unchanged.
  * 2.10.35 - Extended the preset Duplicate action (2.10.34) to border presets and table
  *           presets, and added an opt-in Duplicate control to the generic addable-box
  *           option type (set `box-duplicate => true`): it clones a box as a new entry
