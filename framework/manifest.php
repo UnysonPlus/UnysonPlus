@@ -2,10 +2,175 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.10.43';
+$manifest['version'] = '2.11.45';
 
 /**
  * Changelog
+ * 2.11.40 - Nested columns. A page-builder column can now host other columns
+ *           (one level deep), not just leaf elements — drag a column onto the
+ *           interior of another column in the classic builder, or onto a
+ *           column's body in the live editor. The items-corrector recurses into
+ *           a column's children and synthesizes an inner .fw-row around nested
+ *           columns at save/render time (Bootstrap-style nested grids reset to
+ *           12 units, so existing width fractions just work); a column with only
+ *           leaf items is untouched, so this is fully backward-compatible. The
+ *           one-level cap is enforced editor-side: a column already inside a
+ *           column won't accept further columns. Section-like items are still
+ *           kept out of columns. Drop/move/validation paths in both editors now
+ *           emit `[nested-col]` console.debug traces (toggle with
+ *           window.fwNestedColDebug = false) to make a refused drop diagnosable.
+ *
+ * 2.11.8 - Plugin is now fully self-sufficient from Bootstrap — the bundled
+ *          Bootstrap 5 stylesheet (framework/static/css/bootstrap.min.css) and
+ *          its enqueue (framework/includes/bootstrap.php) are removed, along
+ *          with the Page Builder "Dequeue Bootstrap 5 CSS" setting. The handful
+ *          of Bootstrap classes shortcodes actually used are now provided by the
+ *          plugin itself: the `.btn` base + variants live in the Button
+ *          shortcode CSS (CTA / Carousel depend on it); Tabs ship their own CSS
+ *          + vanilla-JS switching (data-fw-toggle, no Bootstrap JS); Testimonials
+ *          render the carousel via the already-bundled Splide instead of the
+ *          Bootstrap-JS carousel; and the cross-cutting flex/display/alignment/
+ *          sizing/ratio/image/radius/shadow utilities plus `row-cols-*` and
+ *          numeric `g-*` gutters are ported into the always-loaded
+ *          builder/static/css/frontend-grid.css (the .fw- grid sheet), which the
+ *          consuming shortcodes enqueue as a dependency. Notification, Table and
+ *          Calendar were already self-contained. Themes that shipped their own
+ *          Bootstrap are unaffected; themes that leaned on the plugin's copy
+ *          should provide their own.
+ *
+ * 2.10.79 - Border Presets are now Box Presets. The reusable card-style preset (border,
+ *           corner radius, padding, box-shadow, hover) gains an optional Background Fill —
+ *           a Background Pro field (color / gradient / image; video is disabled since a
+ *           preset is applied as a CSS class and can't host a <video>). The generated class
+ *           was renamed `.colb-{name}` -> `.boxp-{name}`, and the settings section + every
+ *           picker (Column "Box Preset", Table "Frame", and now the Countdown timer) are
+ *           relabeled accordingly. The fill is emitted WITHOUT !important (like padding) so
+ *           a consuming element can still override it. Internal identifiers (the
+ *           border-presets option type, store key, getters, the `border_preset` option key)
+ *           are unchanged. Also adds a reusable `disable` attribute to the Background Pro
+ *           option type (`'disable' => 'video'` or an array) that hides layers.
+ *
+ * 2.10.64 - New shortcode: Animated Counter — a number that counts from a start value to
+ *           a target when scrolled into view (IntersectionObserver), with an optional
+ *           icon, prefix/suffix and caption label (e.g. "45,280 Total Raised", "96% SLA",
+ *           "4.2h Avg"). Highly customizable: start value, easing (ease-out / linear /
+ *           ease-in-out), decimals, thousands separator, duration; full number + label
+ *           typography (color / size / weight / font-family / letter-spacing), icon &
+ *           label position, and alignment. A simple content shortcode under Content
+ *           Elements; honors prefers-reduced-motion and degrades to a static number with
+ *           no JS. The Site Converter maps captured stat tiles (4.2h / 96% / 500+) onto
+ *           it, so converted stat bands animate in the source's accent color.
+ * 2.10.61 - Site Converter: the feature-grid / bento archetype. The capture now records
+ *           EVERY grid of tiles in a section (a bento is several stacked grids — a
+ *           showcase + feature row, a stat band, a feature row), each tile typed
+ *           (feature / stat / showcase). The mapper reproduces each grid as its own row:
+ *           features → icon_box, stats (4.2h / 96% / 500+) → a big accent number with its
+ *           label (.sc-stat), showcase → image + heading/text. This fixes the asymmetric
+ *           bento the old single-grid card scan turned into a jumble.
+ * 2.10.60 - Site Converter: a second body archetype — process / steps. The mapper now
+ *           recognizes a "steps / how it works" section (≥2 cards carrying step numbers,
+ *           or a matching heading) and renders each step's NUMBER (01/02/03 — captured
+ *           from the source) as the icon_box "icon". Plain-text numbers are esc_html-safe
+ *           in custom_icon (unlike the ligature spans that broke earlier), and the
+ *           generated theme styles .sc-steps as a big faint accent step marker.
+ * 2.10.58 - Site Converter: a Site Analyzer — convert a site by URL from the admin. The
+ *           Convert page now has a URL input + "Analyze & convert" button. Because JS
+ *           apps need a real browser to render (which WordPress can't), it calls a small
+ *           local capture service (the design-capture tool's new serve.mjs) — the admin
+ *           page runs in the user's own browser, so it reaches http://localhost directly
+ *           even though the remote WP server can't. The service renders + builds the
+ *           bundle; the new fw_sc_analyze_apply AJAX endpoint applies it through the
+ *           bundle importer and shows the usual per-phase summary. Manual zip upload
+ *           stays as the no-service fallback.
+ * 2.10.57 - Site Converter: decorative-background capture. The scan now finds a
+ *           section's pattern overlay — a self-contained SVG data-URI or repeating
+ *           gradient (e.g. the hero's faint "+" grid) with its repeat + opacity — and
+ *           the generated theme reproduces it verbatim as a `.sc-hero::before` layer.
+ *           The pattern value is validated (data-URI SVG / gradient only, length-capped,
+ *           injection tokens rejected) before it's embedded in the theme CSS.
+ * 2.10.56 - Site Converter: deeper, automatic style capture so the hero reproduces the
+ *           source without hand-tuning. The capture now records a heading's INLINE
+ *           FORMATTING as safe semantic HTML (e.g. "<strong>Routing with a</strong>
+ *           <br><em>Pulse.</em>") instead of flattening it to plain text, and reads the
+ *           overline's computed style (filled / uppercase). The generated theme renders
+ *           the hero overline as the captured filled pill kicker, applies the source's
+ *           body background color (not white), and rounds the hero image — all from the
+ *           capture, no per-section input. (special_heading's title is wp_kses_post'd, so
+ *           the strong / em / br survive — unlike icon_box's esc_html'd custom_icon.)
+ * 2.10.53 - Site Converter, body conversion polish + the section-archetype approach.
+ *           The generated theme now loads the source's icon webfont (Material Symbols)
+ *           and styles the converted icon_box card glyphs, and it styles a recognized
+ *           HERO section (.sc-hero) — bigger display-size headline, accent overline
+ *           pill, full-width media below. The body mapper (design-capture tool) gained
+ *           a section classifier: it identifies the hero section by its anatomy
+ *           (leading section, prominent heading, overline/CTAs) and maps each element
+ *           precisely, instead of one generic algorithm for every section — the first
+ *           of a set of reusable section recognizers. Generic sections also stopped
+ *           inheriting the source export's leftover CSS classes.
+ * 2.10.50 - Site Converter: converted pages now carry the source's IMAGERY. The Pages
+ *           importer re-points any source image URL in a builder tree at the imported
+ *           Media Library attachment (matched by the source-URL postmeta the media
+ *           phase records), so a page's <img> tags resolve to local attachments rather
+ *           than hot-linking the source. The design-capture tool emits a media.json and
+ *           places each section's image into the Home page; the one-shot bundle imports
+ *           media first, then the page, so the images are already in the library when
+ *           the page is built.
+ * 2.10.48 - Site Converter: the converted theme is now fully self-sufficient, and the
+ *           Convert bundle can build it. (1) The generated theme bootstraps its HEADER
+ *           menu too (not just the footer) — the captured top nav becomes an editable
+ *           "Header" menu assigned to the header location on activation — so activating
+ *           the theme brings up the whole chrome (header nav + footer columns) with
+ *           nothing to re-import. Both menu bootstraps share one code generator. (2) The
+ *           Bundle importer gained a theme phase: a bundle carrying theme-design.json
+ *           (or design-config.json) is run through the Theme generator, so one .zip
+ *           builds the child/standalone theme AND the Home page (pages.json) in a single
+ *           upload. The design-capture tool emits a ready convert-bundle.zip.
+ * 2.10.47 - Site Converter Theme generator: the footer is now reproduced as an
+ *           EDITABLE replica. The captured footer's link columns become a real
+ *           WordPress "Footer" menu, its social links and the copyright tagline are
+ *           carried as a starting point, and the brand + "© {year}" line render
+ *           dynamically from the Site Title. The generated theme registers an
+ *           sc_footer menu location and bakes an after_switch_theme bootstrap that
+ *           builds + assigns the Footer menu on activation (idempotent) — sidestepping
+ *           WordPress's nav_menu_locations reset on theme switch, so the user edits it
+ *           under Appearance → Menus instead of re-importing. Footer column / social
+ *           styling added to the generated chrome CSS.
+ * 2.10.46 - Site Converter Theme generator: the header now faithfully reproduces the
+ *           source's logo and button STYLING (still the site's own logo/brand at
+ *           render). The captured logo's font / size / weight / color / letter-spacing
+ *           are applied to the site's text logo (header.logo), and the source CTA
+ *           button's background / text color / radius / padding / weight are copied to
+ *           the header button (header.cta.style) — a pill button's absurd reported
+ *           radius (e.g. 3.35e7px) is clamped to 9999px. The nav keeps rendering the
+ *           live WordPress menu assigned to the header location. Captured from
+ *           computed styles; both the PHP from_capture mapper and the design-capture
+ *           tool emit the new header.logo / header.cta.style.
+ * 2.10.45 - Site Converter: the Theme generator now accepts a raw design-capture
+ *           directly (the "capture → generate" path). The capture tool
+ *           (tools/design-capture) renders a source site and writes a
+ *           design-capture.json; the generator auto-detects that payload and maps it
+ *           to a design-config (FW_Site_Converter_Theme_Generator::from_capture) —
+ *           pulling the heading/body fonts (incl. the source's own Google Fonts URL,
+ *           skipping icon fonts), the palette (foreground/--primary accent/background
+ *           and footer colors), header position (sticky) and the CTA (label + a
+ *           de-branded, origin-stripped href). Stylings only: the logo/brand stay the
+ *           site's own. The capture tool also emits a ready design-config.json so the
+ *           pipeline is one pass; both files feed the "Generate theme" tool.
+ * 2.10.44 - Site Converter: new header/footer Theme generator. The Convert page
+ *           (Unyson+ → Convert) can now turn a "design config" (the chrome half of
+ *           a site capture — header layout/style, CTA, fonts, colors, footer,
+ *           carried CSS) into a real WordPress theme that reproduces the source
+ *           site's header and footer DESIGN — never its content (the logo stays the
+ *           site's own custom_logo / Site Title; the footer brand is the Site Title).
+ *           The user picks the conversion target up front: "Unyson+ Theme & a Child
+ *           Theme" (a lightweight child of unysonplus-theme — four overridden files)
+ *           or a "Standalone WordPress theme" (a self-contained copy of the theme
+ *           tree, de-parented, with the chrome overlaid). Both still run on the
+ *           Unyson+ plugin + page builder. Output installs straight into
+ *           wp-content/themes or downloads as a .zip. Implemented in the
+ *           site-converter extension (FW_Site_Converter_Theme_Generator); the
+ *           generated chrome CSS is scoped body:not(.wp-admin) so the asset
+ *           optimizer can't bleed it into wp-admin.
  * 2.10.43 - Extended the `fw:backend:enqueue-options-on-frontend` opt-in (2.10.42)
  *           to the per-option-type and per-container static enqueues. Both
  *           FW_Option_Type::enqueue_static() and FW_Container_Type::enqueue_static()
