@@ -2,10 +2,71 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.11.48';
+$manifest['version'] = '2.12.15';
 
 /**
  * Changelog
+ * 2.12.14 - Server-side options validation (Phase 3b) — an opt-in, authoritative
+ *           layer on top of the client-side inline validation. New public API:
+ *           option types gain `get_value_error()` / overridable
+ *           `_get_value_error()` (default: no error), a new helper
+ *           `fw_get_options_errors_from_input( $options, $input )` returns a
+ *           { option_id => message } map, and a `fw_option_value_error` filter
+ *           (`apply_filters( 'fw_option_value_error', $error, $id, $input_value,
+ *           $option )`) is the place to add custom checks that the browser can't
+ *           do (uniqueness, existence, external-API, cross-field). The options
+ *           AJAX save (`fw_backend_options_get_values`) now runs this gate ONLY
+ *           when the caller sends `_fw_validate` (the options-modal save sets it),
+ *           returning `wp_send_json_error( array( 'errors' => ... ) )`; reset and
+ *           other getValuesFromServer callers are unaffected. The modal renders
+ *           those per-field errors inline via the new `fw.showOptionsErrors()`,
+ *           reusing the Phase 3 error UI. Declarative JSON-safe rules
+ *           (`'validation' => array( 'required'|'email'|'url'|'pattern'|'message' )`)
+ *           are supported for defense-in-depth; authoritative checks belong in the
+ *           filter, never in the option array (which is client-tamperable on the
+ *           modal save path). Fully backward compatible: with no rules/filters the
+ *           error map is empty and saves behave exactly as before.
+ * 2.12.12 - Inline field validation in the options modal. The backend options
+ *           <form> now renders with `novalidate` and a new client-side
+ *           validator (`fw.validateOptionsForm`, in framework/static/js/fw.js)
+ *           runs on save: any option input carrying standard HTML5 constraints
+ *           is checked via the Constraint Validation API, and invalid fields get
+ *           a styled inline error next to the field (instead of the browser's
+ *           native bubble), the first error's tab is revealed + scrolled into
+ *           view (`fw.revealOptionField`), a summary toast is shown, and the
+ *           save is aborted before hitting the server. Errors auto-clear as each
+ *           field becomes valid again. Authors opt a field in via its `attr`,
+ *           e.g. `'attr' => array( 'required' => 'required' )`,
+ *           `'attr' => array( 'type' => 'email' )`, or a `pattern` plus an
+ *           optional `data-fw-error-message` for a custom message. Purely
+ *           client-side — the PHP save path is unchanged.
+ * 2.12.7 - New `fw.notify()` toast helper (framework/static/js/fw.js) — a
+ *          non-blocking, top-center notification primitive modeled on
+ *          `fw.loading`. Call `fw.notify(message, type, opts)` where type is
+ *          'info' | 'success' | 'warning' | 'error'; errors are sticky by
+ *          default, others auto-hide after 6s, and reusing an `id` replaces the
+ *          previous toast so retry loops don't stack duplicates. Messages are
+ *          HTML-escaped, the toast carries role="alert"/"status" for screen
+ *          readers, and it sits above the wp.media modal stack. First consumer:
+ *          the option-modal save/reset error paths in `fw.OptionsModal`, which
+ *          previously used blocking `alert()` dialogs. Styles live in
+ *          framework/static/css/fw.css (.fw-notify*). This is the first step of
+ *          an incremental modal-UX modernization; the underlying architecture
+ *          (wp.media frame + PHP-rendered option types) is unchanged.
+ * 2.11.81 - Converter admin page (Unyson+ → Convert) reorganized into three
+ *           tabs — Convert / Manual tools / Diagnostics. The Convert tab now
+ *           leads with the "Capture service — set up once" box (moved above the
+ *           Site Analyzer, where setup naturally happens first) and a plain-
+ *           language "why does this need a local Node service?" explainer. The
+ *           piecemeal importers (bundle .zip, header/footer theme, images,
+ *           styling presets, theme settings, pages, menus) are tucked into the
+ *           Manual tools tab as collapsible cards; the Theme Settings doctor and
+ *           a capture-service health check live under Diagnostics. Every JSON
+ *           paste box is now a syntax-highlighted editor (WordPress core's
+ *           bundled CodeMirror, no new dependency) with an "Import from file…"
+ *           button that reads a .json straight into the editor — copy-paste is
+ *           now optional. Tab state persists in the URL hash.
+ *
  * 2.11.40 - Nested columns. A page-builder column can now host other columns
  *           (one level deep), not just leaf elements — drag a column onto the
  *           interior of another column in the classic builder, or onto a

@@ -21,3 +21,79 @@
 	margin-left: -27px;
 	margin-right: -27px;
 }
+
+
+/* ---------------------------------------------------------------------------
+   Settings-page tab standard (shared — applies to EVERY extension settings page).
+
+   The `tab` container option type renders its tab strip with the `.fw-wp-link`
+   helper class, which rounds the tab corners (border-radius .25rem .25rem 0 0)
+   and recolors them as links. On a standalone settings page that makes the strip
+   look unlike WordPress's native nav-tabs — and unlike our other settings pages
+   (Convert, Component Presets) that use core `.nav-tab` strips — so the corners
+   read as "rounded here, sharp there". Normalize the option-type tab strip to the
+   native WordPress nav-tab look so every UnysonPlus settings page shares ONE tab
+   style.
+
+   Scoped to #fw-extension-page so the page-builder / option *modals* — which
+   intentionally keep their own tab chrome (styled under `.fw-modal` in fw.css) —
+   are never affected. Selectors carry an id, so they outrank `.fw-wp-link`
+   without !important.
+   ------------------------------------------------------------------------- */
+
+/* The strip container reads as core's .nav-tab-wrapper: a single bottom rule the
+   tabs sit on, with the active tab overlapping it by 1px. */
+#fw-extension-page .fw-options-tabs-wrapper > .fw-options-tabs-list {
+	margin: 0;
+	padding: 9px 0 0;
+	border-bottom: 1px solid #c3c4c7;
+	line-height: inherit;
+}
+#fw-extension-page .fw-options-tabs-list ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background: none;
+	border: 0;
+	border-radius: 0;
+}
+#fw-extension-page .fw-options-tabs-list li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	float: left;
+	background: none;
+	border: 0;
+	border-radius: 0;
+}
+
+/* Drop the `.fw-wp-link` rounding + link recolor: plain core nav-tab chips
+   (square top, grey, dark label) — identical to the Convert page. */
+#fw-extension-page .fw-options-tabs-list li a.nav-tab,
+#fw-extension-page .fw-options-tabs-list li a.nav-tab.fw-wp-link {
+	margin: 0 0 0 .5em;
+	border-radius: 0;
+	background: #dcdcde;
+	color: #50575e;
+	box-shadow: none;
+}
+#fw-extension-page .fw-options-tabs-list li a.nav-tab:hover,
+#fw-extension-page .fw-options-tabs-list li a.nav-tab:focus {
+	background: #fff;
+	color: #1d2327;
+	box-shadow: none;
+}
+
+/* jQuery-UI tabs mark the active <li> with .ui-state-active / .ui-tabs-active
+   (it does NOT add core's .nav-tab-active to the <a>), so map that to the native
+   active tab: white-grey, dark label, bottom border painted over the strip rule
+   so the tab "lifts" into the panel below. */
+#fw-extension-page .fw-options-tabs-list li.ui-state-active a.nav-tab,
+#fw-extension-page .fw-options-tabs-list li.ui-tabs-active a.nav-tab {
+	margin-bottom: -1px;
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	border-bottom: 1px solid #f0f0f1;
+	color: #000;
+	box-shadow: none;
+}
