@@ -90,6 +90,7 @@ $components = (isset($option['components']) && is_array($option['components']))
 		</div>
 		<?php endif; ?>
 
+		<?php if ( ! isset( $components['subset'] ) || $components['subset'] ) : ?>
 		<div class="fw-option-typography-v2-option fw-option-typography-v2-option-subset fw-border-box-sizing fw-col-sm-2"
 		     style="display: <?php echo ( $google_font ) ? 'inline-block' : 'none'; ?>;">
 			<select data-type="subset" name="<?php echo esc_attr( $option['attr']['name'] ) ?>[subset]"
@@ -105,6 +106,7 @@ $components = (isset($option['components']) && is_array($option['components']))
 
 			<div class="fw-inner"><?php _e( 'Script', 'fw' ); ?></div>
 		</div>
+		<?php endif; ?>
 
 
 		<?php if ( $components['variation'] ) : ?>

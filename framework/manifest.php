@@ -2,10 +2,34 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.12.30';
+$manifest['version'] = '2.12.75';
 
 /**
  * Changelog
+ * 2.12.72 - New `fw_image_tag()` helper (framework/helpers/general.php) — a
+ *           shared, modern <img> builder used by shortcodes (media-image,
+ *           reviews-table …). Adds responsive `srcset`/`sizes` via
+ *           wp_get_attachment_image (with a 1x/2x density srcset for exact px
+ *           crops when the source is large enough), `width`/`height` attributes
+ *           for CLS, `fetchpriority="high"` + eager loading for above-the-fold
+ *           images (lazy + async otherwise), inline CSS for non-px units, and a
+ *           graceful fallback when GD/Imagick (fw_resize) is unavailable. The
+ *           media-image shortcode renders through it and gains a "Loading
+ *           Priority" option; the casino reviews-table logos/screenshots use it
+ *           too (first-row logo auto-flagged as the LCP image).
+ * 2.12.68 - New `split-slider` option type — a visual, draggable N-pane width
+ *           control on the 100%-rule (not the 12-column grid). Generalises the
+ *           two-pane `column-split` into an arbitrary number of named columns:
+ *           N panes with (N-1) drag handles, +/- buttons to add/remove a column
+ *           (within `min`/`max`, default 1–5), per-segment editable names, and
+ *           keyboard nudging. Stored value is an array of segments
+ *           ([{w,name},…]) whose integer widths always sum to 100 (normalised in
+ *           PHP `_get_value_from_input` and mirrored in the JS so a drag, an
+ *           add/remove, or a hand-saved value all stay consistent). Config:
+ *           `value`, `min`, `max`, `step`, `min_width`, `allow_names`. Built for
+ *           the casino reviews-table row builder (size columns visually, then drop
+ *           elements into them) but reusable anywhere a free-ratio column split is
+ *           wanted.
  * 2.12.14 - Server-side options validation (Phase 3b) — an opt-in, authoritative
  *           layer on top of the client-side inline validation. New public API:
  *           option types gain `get_value_error()` / overridable

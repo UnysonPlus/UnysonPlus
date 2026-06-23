@@ -20,6 +20,20 @@ video**. One field replaces separate color + image + gradient controls. Class:
 	'type'  => 'background-pro',
 ),
 ```
+
+### `disable` — hide layers for a given usage
+
+Pass `'disable'` to drop one or more layers from the control (a string or an array). The
+remaining layers stay and the first becomes the initially-active tab/panel:
+
+```php
+'my_bg' => array( 'type' => 'background-pro', 'disable' => 'video' ),            // hide Video
+'my_bg' => array( 'type' => 'background-pro', 'disable' => array( 'video', 'image' ) ),
+```
+Why it exists: a **box-preset fill** renders as **CSS** (color/gradient/image), and a CSS
+class can't host a `<video>` element — so box presets declare `'disable' => 'video'`. (Full
+video backgrounds remain the job of section/column, which render the video markup.)
+
 Worked example: `unysonplus-theme/framework-customizations/theme/options/demo.php` (`demo_background_pro`).
 Live usage: General Layout `site_background` (theme `general-layout.php`).
 

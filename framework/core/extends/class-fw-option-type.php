@@ -375,6 +375,105 @@ abstract class FW_Option_Type
         }
 
         /**
+         * Server-side validation entry point (opt-in, Phase 3b).
+         *
+         * Returns an error message string when $input_value is invalid for this
+         * option, or null when it's valid (the default for every option type).
+         *
+         * Two safe layers run here:
+         *  1. Declarative, JSON-safe rules in $option['validation'] (data only —
+         *     safe even when the option definition arrives from the client on the
+         *     modal save path), evaluated by _validate_value().
+         *  2. Type-specific checks via _get_value_error(), which an option type
+         *     may override.
+         *
+         * Authoritative custom checks (uniqueness, existence, external APIs) must
+         * be added with the `fw_option_value_error` filter — NOT in the option
+         * array — because the option array can be tampered with on modal save.
+         *
+         * @param  array      $option
+         * @param  mixed|null $input_value
+         * @return string|null  error message, or null when valid
+         */
+        final public function get_value_error($option, $input_value)
+        {
+                $option = $this->load_callbacks( array_merge(
+                        $this->get_defaults(),
+                        $option,
+                        array( 'type' => $this->get_type() )
+                ) );
+
+                $error = null;
+
+                if ( ! empty( $option['validation'] ) && is_array( $option['validation'] ) ) {
+                        $error = $this->_validate_value( $option['validation'], $input_value );
+                }
+
+                if ( $error === null ) {
+                        $error = $this->_get_value_error( $option, $input_value );
+                }
+
+                return ( is_string( $error ) && $error !== '' ) ? $error : null;
+        }
+
+        /**
+         * Override in an option type to add server-side validation.
+         * Return an error message string when invalid, or null when valid.
+         *
+         * @param  array      $option
+         * @param  mixed|null $input_value
+         * @return string|null
+         */
+        protected function _get_value_error($option, $input_value)
+        {
+                return null;
+        }
+
+        /**
+         * Evaluate the declarative `validation` rules of an option against a
+         * scalar input value. Mirrors the common HTML5 constraints so the same
+         * `validation` array can drive both client and server checks.
+         *
+         * Supported keys: required (bool), email (bool), url (bool),
+         * pattern (string regex, anchored full-match like HTML5),
+         * message (string, custom message used for whichever rule fails).
+         *
+         * @param  array      $rules
+         * @param  mixed|null $input_value
+         * @return string|null
+         */
+        protected function _validate_value($rules, $input_value)
+        {
+                $message = ( isset( $rules['message'] ) && is_string( $rules['message'] ) )
+                        ? $rules['message'] : '';
+
+                $value = is_scalar( $input_value ) ? (string) $input_value : '';
+
+                if ( $value === '' ) {
+                        return ! empty( $rules['required'] )
+                                ? ( $message ?: __( 'This field is required.', 'fw' ) )
+                                : null;
+                }
+
+                if ( ! empty( $rules['email'] ) && ! is_email( $value ) ) {
+                        return $message ?: __( 'Please enter a valid email address.', 'fw' );
+                }
+
+                if ( ! empty( $rules['url'] ) && ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
+                        return $message ?: __( 'Please enter a valid URL.', 'fw' );
+                }
+
+                if ( ! empty( $rules['pattern'] ) && is_string( $rules['pattern'] ) ) {
+                        $regex = "\x01^(?:" . str_replace( "\x01", '', $rules['pattern'] ) . ")$\x01u";
+                        if ( @preg_match( $regex, $value ) !== 1 ) {
+                                return $message ?: __( 'This value is not in the expected format.', 'fw' );
+                        }
+                }
+
+                return null;
+        }
+
+        /**
          * Default option array
          *
          * This makes possible an option array to have required only one parameter: array('type' => '...')

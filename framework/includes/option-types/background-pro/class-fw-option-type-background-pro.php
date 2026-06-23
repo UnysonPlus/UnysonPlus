@@ -69,6 +69,9 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				),
 				'advanced' => array(), // reserved for v2
 			),
+			// Layers to hide for a given usage. String ('video') or array ('video','gradient').
+			// e.g. a box-preset fill renders as CSS so it disables 'video' (no DOM hook).
+			'disable' => array(),
 		);
 	}
 
@@ -197,6 +200,14 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			'video'    => __( 'Video',    'unysonplus' ),
 		);
 
+		// Hide any layers named in the option's `disable` ('video', or array('video','image')).
+		// Used e.g. by box-preset fills, which render as CSS and so can't host a video layer.
+		// The remaining layers stay; the first becomes the initially-active tab/panel.
+		$disable = isset( $option['disable'] ) ? $option['disable'] : array();
+		$disable = is_array( $disable ) ? $disable : array_filter( array_map( 'trim', explode( ',', (string) $disable ) ) );
+		foreach ( $disable as $d ) { unset( $tabs[ $d ] ); }
+		$active_tab = (string) key( $tabs );
+
 		ob_start();
 		?>
 		<div <?php echo fw_attr_to_html( $wrapper_attr ); ?>>
@@ -204,7 +215,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				<?php foreach ( $tabs as $key => $label ) :
 					$has_value = $this->_layer_has_value( $key, fw_akg( $key, $value, array() ) );
 					?>
-					<li class="bg-pro__tab<?php echo $key === 'color' ? ' is-active' : ''; ?><?php echo $has_value ? ' has-value' : ''; ?>"
+					<li class="bg-pro__tab<?php echo $key === $active_tab ? ' is-active' : ''; ?><?php echo $has_value ? ' has-value' : ''; ?>"
 					    data-bg-pro-tab="<?php echo esc_attr( $key ); ?>"
 					    role="tab">
 						<span class="bg-pro__tab-dot" aria-hidden="true"></span>
@@ -216,7 +227,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			<div class="bg-pro__panels">
 
 				<?php /* ---- COLOR TAB ---- */ ?>
-				<div class="bg-pro__panel is-active" data-bg-pro-panel="color">
+				<div class="bg-pro__panel<?php echo $active_tab === 'color' ? ' is-active' : ''; ?>" data-bg-pro-panel="color">
 					<?php
 					/**
 					 * Color palette source. unysonplus-theme exposes one via
@@ -262,7 +273,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				</div>
 
 				<?php /* ---- GRADIENT TAB ---- */ ?>
-				<div class="bg-pro__panel" data-bg-pro-panel="gradient">
+				<div class="bg-pro__panel<?php echo $active_tab === 'gradient' ? ' is-active' : ''; ?>" data-bg-pro-panel="gradient">
 					<?php
 					$this->_render_sub( 'gradient/data', array(
 						'type'  => 'gradient-v2',
@@ -274,7 +285,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				</div>
 
 				<?php /* ---- IMAGE TAB ---- */ ?>
-				<div class="bg-pro__panel" data-bg-pro-panel="image">
+				<div class="bg-pro__panel<?php echo $active_tab === 'image' ? ' is-active' : ''; ?>" data-bg-pro-panel="image">
 					<?php
 					$this->_render_sub( 'image/src', array(
 						'type'        => 'upload',
@@ -355,7 +366,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				</div>
 
 				<?php /* ---- VIDEO TAB ---- */ ?>
-				<div class="bg-pro__panel" data-bg-pro-panel="video">
+				<div class="bg-pro__panel<?php echo $active_tab === 'video' ? ' is-active' : ''; ?>" data-bg-pro-panel="video">
 					<?php
 					$this->_render_sub( 'video/enabled', array(
 						'type'         => 'switch',

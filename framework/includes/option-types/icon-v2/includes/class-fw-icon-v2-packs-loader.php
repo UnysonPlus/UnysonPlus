@@ -163,6 +163,52 @@ class FW_Icon_V2_Packs_Loader
 	}
 
 	/**
+	 * Enqueue ONLY the icon pack a single picked icon needs, instead of loading
+	 * every pack via enqueue_frontend_css(). Call this from a shortcode's view
+	 * with the icon-v2 value it is about to render, so a page that uses one Font
+	 * Awesome glyph doesn't also pull Entypo / Linearicons / Typicons / Unycon.
+	 *
+	 * Accepts either the icon-v2 value array (['type' => 'icon-font',
+	 * 'icon-class' => 'fa fa-gear', ...]) or a raw class string ('fa fa-gear').
+	 * Custom-upload / none values need no pack CSS and are ignored.
+	 */
+	public function enqueue_pack_for_icon($icon)
+	{
+		$icon_class = '';
+
+		if (is_array($icon)) {
+			// Only font icons need a pack stylesheet; uploads/none don't.
+			if (($icon['type'] ?? '') !== 'icon-font') { return; }
+			$icon_class = (string) ($icon['icon-class'] ?? '');
+		} else {
+			$icon_class = (string) $icon;
+		}
+
+		if ($icon_class === '') { return; }
+
+		$pack = $this->pack_name_for($icon_class);
+
+		// Unknown pack, or a pack that opted out of auto-loading its CSS.
+		if (! $pack || empty($pack['require_css_file'])) { return; }
+
+		if (! empty($pack['frontend_wp_enqueue_handle'])) {
+			wp_enqueue_style($pack['frontend_wp_enqueue_handle']);
+			return;
+		}
+
+		if (empty($pack['css_file_uri'])) { return; }
+
+		// Same handle shape as enqueue_frontend_css(), so the two paths
+		// de-duplicate if both ever run on one request.
+		wp_enqueue_style(
+			'fw-option-type-icon-v2-pack-' . (isset($pack['name']) ? $pack['name'] : $pack['css_class_prefix']),
+			$pack['css_file_uri'],
+			array(),
+			fw()->manifest->get_version()
+		);
+	}
+
+	/**
 	 * This method will enqueue css for each pack for the admin side
 	 *
 	 * It won't check `require_css_file` option. This option is only

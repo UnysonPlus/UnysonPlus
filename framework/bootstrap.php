@@ -62,7 +62,6 @@ if (defined('FW')) {
             require $dir . '/includes/dynamic-css.php';
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';
-            require $dir . '/includes/bootstrap.php';
             require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
             // unysonplus-theme ships its own (un-guarded) copy of the
             // fw-multi-inline option type. Loading the plugin's copy first

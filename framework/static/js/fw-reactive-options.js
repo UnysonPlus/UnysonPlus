@@ -189,7 +189,9 @@ fw.options = (function($, currentFwOptions) {
 		var cacheId = fetchHtmlGetCacheId(options, values);
 
 		if (typeof htmlCache[cacheId] !== 'undefined') {
-			promise.resolve(htmlCache[cacheId]);
+			// Resolve with the full response too, so a cache hit behaves exactly
+			// like a fresh fetch (callers rely on response.data.default_values).
+			promise.resolve(htmlCache[cacheId].html, htmlCache[cacheId].response);
 			return promise;
 		}
 
@@ -215,7 +217,7 @@ fw.options = (function($, currentFwOptions) {
 					return;
 				}
 
-				htmlCache[cacheId] = response.data.html;
+				htmlCache[cacheId] = { html: response.data.html, response: response };
 
 				promise.resolve(response.data.html, response, status, xhr);
 			},
@@ -228,7 +230,9 @@ fw.options = (function($, currentFwOptions) {
 	}
 
 	function fetchHtmlGetCacheEntryFor(options, values) {
-		return htmlCache[fetchHtmlGetCacheId(options, values)];
+		var entry = htmlCache[fetchHtmlGetCacheId(options, values)];
+		// keep the documented return shape (the HTML string)
+		return entry ? entry.html : undefined;
 	}
 
 	function fetchHtmlEmptyCache() {

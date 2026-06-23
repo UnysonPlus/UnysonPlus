@@ -1292,6 +1292,60 @@ function fw_get_options_values_from_input( array $options, $input_array = null )
 }
 
 /**
+ * Collect server-side validation errors for option input (Phase 3b).
+ *
+ * Returns a map of { option_id => error_message } for every leaf option that
+ * fails validation. An empty array means "all valid".
+ *
+ * Validation is fully opt-in and backward compatible: an option with no
+ * `validation` rules, whose type doesn't override _get_value_error(), and which
+ * nothing hooks via `fw_option_value_error`, never produces an error — so this
+ * returns [] and the normal save proceeds unchanged.
+ *
+ * @param array      $options
+ * @param array|null $input_array
+ *
+ * @return array { option_id => message }
+ */
+function fw_get_options_errors_from_input( array $options, $input_array = null ) {
+	if ( ! is_array( $input_array ) ) {
+		$input_array = FW_Request::POST( fw()->backend->get_options_name_attr_prefix() );
+	}
+
+	$errors = array();
+
+	foreach ( fw_extract_only_options( $options ) as $id => $option ) {
+		$input_value = isset( $input_array[ $id ] ) ? $input_array[ $id ] : null;
+
+		$error = fw()->backend->option_type( $option['type'] )->get_value_error(
+			$option,
+			$input_value
+		);
+
+		/**
+		 * Authoritative server-side custom validation: uniqueness, existence,
+		 * external API checks, cross-field rules, … Registered in PHP (NOT in the
+		 * option array) so it can't be tampered with via the modal save payload.
+		 *
+		 * Return a non-empty string to mark the field invalid, or the unchanged
+		 * $error (which may be null) to leave the current verdict.
+		 *
+		 * @param string|null $error       current error (null = valid so far)
+		 * @param string      $id          option id
+		 * @param mixed|null  $input_value raw input value
+		 * @param array       $option      option definition
+		 */
+		$error = apply_filters( 'fw_option_value_error', $error, $id, $input_value, $option );
+
+		if ( is_string( $error ) && $error !== '' ) {
+			$errors[ $id ] = $error;
+		}
+	}
+
+	return $errors;
+}
+
+/**
  * @param $attr_name
  * @param bool $set_mode
  *
@@ -2028,6 +2082,113 @@ if ( ! function_exists( 'fw_resize' ) ) {
 		$response  = $fw_resize->process( $url, $width, $height, $crop );
 
 		return ( ! is_wp_error( $response ) && ! empty( $response['src'] ) ) ? $response['src'] : $url;
+	}
+}
+
+if ( ! function_exists( 'fw_image_tag' ) ) {
+	/**
+	 * Modern <img> builder shared across shortcodes (media-image, reviews-table …).
+	 *
+	 * Improvements over hand-built <img> tags from the Unyson era:
+	 *  - Responsive `srcset`/`sizes` (via wp_get_attachment_image) when the
+	 *    display size isn't an exact px crop; a 1x/2x density srcset for exact
+	 *    px crops when the source is large enough.
+	 *  - `width`/`height` attributes (px) to reduce CLS.
+	 *  - `fetchpriority="high"` + eager loading for above-the-fold (LCP) images;
+	 *    lazy + async decoding otherwise.
+	 *  - Inline CSS for non-px units (%, vw, rem…); alt resolved from the media
+	 *    library; graceful fallback when GD/Imagick (fw_resize) is unavailable.
+	 *
+	 * @param int|string $source Attachment ID (enables srcset/crop) OR an image URL.
+	 * @param array       $args   width, height (unit-input value | px | ''), class,
+	 *                            alt, fetchpriority ('high'|''), sizes, fallback_size,
+	 *                            extra_attr (assoc array merged onto the tag).
+	 * @return string
+	 */
+	function fw_image_tag( $source, $args = array() ) {
+		$args = array_merge( array(
+			'width'         => '',
+			'height'        => '',
+			'class'         => 'img-fluid',
+			'alt'           => '',
+			'fetchpriority' => '',
+			'sizes'         => '',
+			'fallback_size' => 'large',
+			'extra_attr'    => array(),
+		), $args );
+
+		$dim = function ( $raw ) {
+			$css = '';
+			$px  = 0;
+			if ( is_array( $raw ) ) {
+				$val  = isset( $raw['value'] ) ? $raw['value'] : '';
+				$unit = isset( $raw['unit'] ) ? $raw['unit'] : 'px';
+				if ( '' !== $val && null !== $val ) {
+					$css = $val . $unit;
+					if ( 'px' === $unit ) { $px = (int) $val; }
+				}
+			} elseif ( '' !== $raw && null !== $raw ) {
+				$css = (int) $raw . 'px';
+				$px  = (int) $raw;
+			}
+			return array( $css, max( 0, $px ) );
+		};
+		list( $w_css, $w_px ) = $dim( $args['width'] );
+		list( $h_css, $h_px ) = $dim( $args['height'] );
+
+		$style = '';
+		if ( '' !== $w_css ) { $style .= 'width:' . $w_css . ';'; }
+		if ( '' !== $h_css ) { $style .= 'height:' . $h_css . ';'; }
+		if ( '' !== $w_css && '' !== $h_css ) { $style .= 'object-fit:contain;'; }
+
+		$attr = is_array( $args['extra_attr'] ) ? $args['extra_attr'] : array();
+		$attr['class']    = $args['class'];
+		$attr['decoding'] = 'async';
+		if ( 'high' === $args['fetchpriority'] ) {
+			$attr['fetchpriority'] = 'high';
+			$attr['loading']       = 'eager';
+		} else {
+			$attr['loading'] = 'lazy';
+		}
+		if ( $w_px ) { $attr['width'] = $w_px; }
+		if ( $h_px ) { $attr['height'] = $h_px; }
+		if ( '' !== $style ) { $attr['style'] = $style; }
+
+		$is_id = is_numeric( $source ) && (int) $source > 0;
+		$alt   = (string) $args['alt'];
+
+		if ( $is_id ) {
+			$id = (int) $source;
+			if ( '' === $alt ) {
+				$alt = (string) get_post_meta( $id, '_wp_attachment_image_alt', true );
+			}
+			$attr['alt'] = $alt;
+
+			// Exact px crop -> fw_resize 1x, plus a 2x density srcset when the
+			// source is big enough (retina) without upscaling.
+			if ( $w_px && $h_px ) {
+				$src1 = fw_resize( $id, $w_px, $h_px, true );
+				$meta = wp_get_attachment_metadata( $id );
+				if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] )
+					&& $meta['width'] >= $w_px * 2 && $meta['height'] >= $h_px * 2 ) {
+					$src2 = fw_resize( $id, $w_px * 2, $h_px * 2, true );
+					if ( $src2 && $src2 !== $src1 ) {
+						$attr['srcset'] = esc_url( $src1 ) . ' 1x, ' . esc_url( $src2 ) . ' 2x';
+					}
+				}
+				$attr['src'] = esc_url( $src1 );
+				return fw_html_tag( 'img', $attr );
+			}
+
+			// Otherwise let WordPress emit a responsive srcset/sizes set.
+			if ( '' !== $args['sizes'] ) { $attr['sizes'] = $args['sizes']; }
+			return wp_get_attachment_image( $id, $args['fallback_size'], false, $attr );
+		}
+
+		// Plain URL (no attachment) — display sizing only, no srcset possible.
+		$attr['alt'] = $alt;
+		$attr['src'] = esc_url( (string) $source );
+		return fw_html_tag( 'img', $attr );
 	}
 }
 

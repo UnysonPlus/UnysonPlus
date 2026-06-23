@@ -200,6 +200,17 @@
 }
 .fw-bp-row-1 > .fw-backend-option { flex-basis: 100%; }
 
+/* A two-option row (e.g. Border Style + Border Width): two columns on DESKTOP only,
+   aligned so the labels line up with the single-column rows. Stacks to one full-width
+   column on tablet / mobile. */
+@media (max-width: 767.98px) {
+	.fw-bp-row-2 > .fw-backend-option { flex-basis: 100%; }
+}
+@media (min-width: 768px) {
+	.fw-bp-row-2 .fw-backend-option-label { width: calc((50% - 16.66666667%) + 10px); }
+	.fw-bp-row-2 .fw-backend-option-input { width: auto; }
+}
+
 .fw-bp-panel .fw-backend-option-design-default {
 	border-bottom: 0 !important;
 	padding-top: 10px;

@@ -5,7 +5,7 @@
 if ( ! function_exists( 'unysonplus_border_preset_slug_map' ) ) :
 	/**
 	 * Returns [ preset-id => css-slug ] for the current column Border Presets, so
-	 * the generated class is readable: a preset named "Card" → `.colb-card`.
+	 * the generated class is readable: a preset named "Card" → `.boxp-card`.
 	 * Mirrors unysonplus_button_preset_slug_map() (collisions get -2/-3, empty
 	 * names fall back to the id). Shared by css-tokens.php (rule generation) and
 	 * the column's Border Preset dropdown so class + value + render agree.

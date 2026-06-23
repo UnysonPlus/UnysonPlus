@@ -7,7 +7,7 @@ if (fw_current_screen_match(array('only' => array(array('id' => 'update-core')))
 
 	wp_enqueue_style(
 		'fw-ext-'. $extension->get_name() .'-update-page',
-		$extension->get_declared_URI('/static/css/admin-update-page.css'),
+		fw_min_uri($extension->get_declared_URI('/static/css/admin-update-page.css')),
 		array(),
 		$extension->manifest->get_version()
 	);

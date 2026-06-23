@@ -4,7 +4,7 @@
 
 /**
  * Border Presets option type — a slimmed Button-Presets clone for reusable
- * column "card" border styles. Each box is a named preset (-> .colb-<slug>) with
+ * column "card" border styles. Each box is a named preset (-> .boxp-<slug>) with
  * a live preview and Default / Hover state TABS holding the border skin (style,
  * width, color, box-shadow). Shared fields (sides, corner radius, transition,
  * custom CSS) sit outside the tabs.
@@ -12,7 +12,7 @@
  * Saved value (one entry per preset):
  *   array(
  *     'id'            => string,   // unique
- *     'preset_name'   => string,   // label -> .colb-<slug>
+ *     'preset_name'   => string,   // label -> .boxp-<slug>
  *     'border_sides'  => string,   // all|top|end|bottom|start
  *     'border_radius' => array,    // unit-input { value, unit }
  *     'padding'       => array,    // spacing value (mode 'padding'): per-side
@@ -79,8 +79,8 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 			),
 			'preset_name' => array(
 				'type'            => 'text',
-				'label'           => __( 'Border Name', 'fw' ),
-				'desc'            => __( 'e.g. Card, Outline, Soft Shadow. Produces the class .colb-<name>.', 'fw' ),
+				'label'           => __( 'Box Name', 'fw' ),
+				'desc'            => __( 'e.g. Card, Outline, Soft Shadow. Produces the class .boxp-<name>.', 'fw' ),
 				'dynamic_content' => false,
 			),
 		);
@@ -126,16 +126,22 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 				'mode'        => 'css',
 				'height'      => 140,
 				'placeholder' => "{{SELECTOR}} {\n    /* your rules */\n}\n{{SELECTOR}}:hover {\n    /* hover rules */\n}",
-				'desc'        => __( 'Use {{SELECTOR}} for this preset (becomes .colb-<name>).', 'fw' ),
+				'desc'        => __( 'Use {{SELECTOR}} for this preset (becomes .boxp-<name>).', 'fw' ),
 			),
 		);
 	}
 
-	/** Per-state fields (rendered once per state tab) — the border skin. */
+	/** Per-state fields (rendered once per state tab) — the box skin (fill + border). */
 	public static function state_options( $choices ) {
 		return array(
+			'background' => array(
+				'type'    => 'background-pro',
+				'label'   => __( 'Background Fill', 'fw' ),
+				'desc'    => __( 'Optional fill behind the content — color, gradient or image. Leave empty for a transparent box. Set per Default / Hover state.', 'fw' ),
+				'disable' => 'video', // box presets render as a CSS class, which can't host a <video>
+			),
 			'border_style' => array(
-				'type'    => 'select',
+				'type'    => 'short-select',
 				'label'   => __( 'Border Style', 'fw' ),
 				'choices' => array(
 					''       => __( 'None', 'fw' ),
@@ -163,6 +169,7 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 	public static function state_option_rows( $choices ) {
 		$o = self::state_options( $choices );
 		return array(
+			array( 'background'   => $o['background'] ),
 			array( 'border_style' => $o['border_style'], 'border_width' => $o['border_width'] ),
 			array( 'border_color' => $o['border_color'] ),
 			array( 'box_shadow'   => $o['box_shadow'] ),

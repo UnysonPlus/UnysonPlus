@@ -1,5 +1,5 @@
 /* Border Style Picker option type — a popover-style dropdown whose trigger + rows
-   are real bordered-box previews. The .colb-{slug} border-preset CSS (already
+   are real bordered-box previews. The .boxp-{slug} border-preset CSS (already
    loaded in admin) paints the border / corners / shadow; here we only lay out the
    dropdown and give every preview a uniform swatch size so borders compare cleanly. */
 
@@ -55,6 +55,7 @@
 	width: 320px;
 	max-width: 90vw;
 	max-height: 360px;
+	overflow-x: hidden;
 	overflow-y: auto;
 	padding: 6px;
 	background: #f6f7f7;   /* light backdrop so white swatches + soft shadows pop */
@@ -70,6 +71,7 @@
 	align-items: center;
 	gap: 10px;
 	width: 100%;
+	box-sizing: border-box;
 	padding: 6px;
 	background: transparent;
 	border: none;
@@ -103,9 +105,9 @@
 }
 
 /* ----- The real border preview (trigger + rows) -----
-   A uniform white swatch; the .colb-{slug} class supplies border / radius / shadow.
+   A uniform white swatch; the .boxp-{slug} class supplies border / radius / shadow.
    Its own (per-preset) padding is overridden here so every swatch is the same size
-   and you compare borders, not box sizes. Higher specificity than .colb-{slug}, so
+   and you compare borders, not box sizes. Higher specificity than .boxp-{slug}, so
    no !important needed. Pointer-inert so the row handles the click. */
 .fw-option-type-border-style-picker .bsp__preview {
 	display: inline-flex;

@@ -3352,6 +3352,123 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 
 /* end: fw.loading */
 
+
+/* fw.notify */
+
+#fw-notify {
+	position: fixed;
+	/* 1rem gap below the admin bar (var keeps it correct on mobile, where the
+	   bar is 46px; falls back to 32px when the var isn't defined) */
+	top: calc(var(--wp-admin--admin-bar--height, 32px) + 1rem);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 100000000; /* above fw-loading (9999999) and the wp.media modal stack */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	max-width: 90vw;
+	pointer-events: none; /* let clicks through the gaps; items re-enable it */
+}
+
+.fw-notify-item {
+	pointer-events: auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-sizing: border-box;
+	min-width: 300px;
+	max-width: 560px;
+	padding: 12px 16px;
+	border-radius: 6px;
+	background: #1d2327; /* default (and fallback for unknown types) */
+	color: #fff;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.5;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+	opacity: 0;
+	transform: translateY(-12px);
+	transition: opacity .3s ease, transform .3s ease;
+}
+
+.fw-notify-item.fw-notify-in {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.fw-notify-item.fw-notify-out {
+	opacity: 0;
+	transform: translateY(-12px);
+}
+
+/* Solid full-colour backgrounds. White text on red/green/blue; dark text on the
+   amber warning (white-on-amber is unreadable). Values chosen to keep the 13px
+   text legible against the fill. */
+.fw-notify-error   { background: #c62828; color: #fff; }
+.fw-notify-success { background: #2e7d32; color: #fff; }
+.fw-notify-info    { background: #1565c0; color: #fff; }
+.fw-notify-warning { background: #f0b429; color: #1d2327; }
+
+.fw-notify-icon {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	line-height: 20px;
+	color: inherit; /* matches the item text colour, incl. dark on warning */
+}
+
+.fw-notify-msg {
+	flex: 1 1 auto;
+	word-break: break-word;
+}
+
+.fw-notify-close {
+	flex: 0 0 auto;
+	margin-left: 4px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	opacity: .8;
+}
+
+.fw-notify-close:hover {
+	opacity: 1;
+}
+
+/* end: fw.notify */
+
+
+/* fw options inline validation (Phase 3) */
+
+.fw-backend-option-error {
+	margin: 8px 0 0;
+	padding: 6px 10px;
+	border-radius: 4px;
+	background: #fcf0f0;
+	color: #8a1f24;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.fw-backend-option.fw-backend-option-has-error {
+	box-shadow: inset 3px 0 0 #c62828;
+}
+
+.fw-backend-option.fw-backend-option-has-error .fw-backend-option-input input,
+.fw-backend-option.fw-backend-option-has-error .fw-backend-option-input textarea,
+.fw-backend-option.fw-backend-option-has-error .fw-backend-option-input select {
+	border-color: #c62828;
+	box-shadow: 0 0 0 1px #c62828;
+}
+
+/* end: fw options inline validation */
+
 /* load-styles.php overrides */
 
 .postbox {

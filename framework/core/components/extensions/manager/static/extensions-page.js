@@ -20,7 +20,7 @@ jQuery(function($){
 			e.preventDefault();
 
 			if (inst.isBusy) {
-				alert('Working... Please try again later');
+				fw.notify('Working... Please try again later', 'warning');
 				return;
 			}
 

@@ -1244,11 +1244,30 @@ final class _FW_Component_Backend {
 			$name_prefix = $_POST['name_prefix'] ?? $this->get_options_name_attr_prefix();
 		}
 
+		$input = FW_Request::POST(fw_html_attr_name_to_array_multi_key($name_prefix), []);
+
+		/**
+		 * Phase 3b: server-side validation gate.
+		 *
+		 * Only runs when the caller opts in with `_fw_validate` (the options-modal
+		 * save path sets it). Reset and other getValuesFromServer callers omit it,
+		 * so their behaviour is unchanged. Backward compatible: when no option
+		 * declares validation and nothing hooks `fw_option_value_error`, the error
+		 * map is empty and the normal save proceeds.
+		 */
+		if ( ! empty( $_POST['_fw_validate'] ) ) {
+			$errors = fw_get_options_errors_from_input( $options, $input );
+
+			if ( ! empty( $errors ) ) {
+				wp_send_json_error([
+					'errors'  => $errors,
+					'message' => __( 'Please fix the highlighted fields.', 'fw' ),
+				]);
+			}
+		}
+
 		wp_send_json_success([
-			'values' => fw_get_options_values_from_input(
-				$options,
-				FW_Request::POST(fw_html_attr_name_to_array_multi_key($name_prefix), [])
-			)
+			'values' => fw_get_options_values_from_input( $options, $input )
 		]);
 	}
 

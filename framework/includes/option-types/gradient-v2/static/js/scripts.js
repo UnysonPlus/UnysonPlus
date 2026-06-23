@@ -376,7 +376,7 @@
 		this.$root.on('click', '.gv2-stop-remove', function (e) {
 			e.preventDefault();
 			if (self.state.stops.length <= 2) {
-				window.alert(L10n.min_stops);
+				fw.notify(L10n.min_stops, 'warning');
 				return;
 			}
 			var index = parseInt($(this).closest('.gv2-stop').attr('data-index'), 10);

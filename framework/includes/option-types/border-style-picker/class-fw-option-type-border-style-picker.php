@@ -7,10 +7,10 @@
  *
  * A popover-style dropdown that previews each choice as a REAL bordered box — the
  * trigger and every panel row render `<span class="{value}">` so the generated
- * Border-Preset CSS (`.colb-{slug}`, already enqueued in wp-admin by
+ * Border-Preset CSS (`.boxp-{slug}`, already enqueued in wp-admin by
  * css-tokens.php) paints the actual border / corners / shadow next to its name.
  * Drop-in replacement for a plain <select>: the saved value is the class string
- * (e.g. 'colb-card'), identical to what the select stored, so consuming views
+ * (e.g. 'boxp-card'), identical to what the select stored, so consuming views
  * (the column's view.php) need no change.
  *
  * Mirrors `button-style-picker`; the only difference is that the value IS the full
@@ -21,7 +21,7 @@
  *   'preview_text' => string // fallback text inside the preview (default 'Border')
  *   'placeholder'  => string // label shown when nothing is selected
  *   'allow_none'   => bool   // show the empty "— None —" row (default true)
- *   'value'        => string // saved class, e.g. 'colb-card'
+ *   'value'        => string // saved class, e.g. 'boxp-card'
  */
 class FW_Option_Type_Border_Style_Picker extends FW_Option_Type {
 
@@ -60,7 +60,7 @@ class FW_Option_Type_Border_Style_Picker extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _enqueue_static( $id, $option, $data ) {
-		// Only this widget's own chrome. The border preview rules (.colb-card, …)
+		// Only this widget's own chrome. The border preview rules (.boxp-card, …)
 		// are already loaded in admin by css-tokens.php, so previews style themselves.
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),

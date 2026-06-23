@@ -46,6 +46,39 @@
 		return (s.inset ? 'inset ' : '') + x + 'px ' + y + 'px ' + blur + 'px ' + spread + 'px ' + color;
 	}
 
+	/* read a background-pro control -> {color, gradient, image} (video isn't previewable) */
+	function bgProValue($bg) {
+		if (!$bg || !$bg.length) { return null; }
+		var custom = ($bg.find('[name$="[color][value][custom]"]').val() || '').toString().trim();
+		var pre    = ($bg.find('[name$="[color][value][predefined]"]').val() || '').toString().trim();
+		var imgRaw = ($bg.find('[name$="[image][src]"]').val() || '').toString().trim();
+		var img = '';
+		if (imgRaw) {
+			try { var pj = JSON.parse(imgRaw); img = (pj && (pj.url || (pj[0] && pj[0].url))) || ''; }
+			catch (e) { img = /^(https?:|\/)/.test(imgRaw) ? imgRaw : ''; }
+		}
+		return {
+			color:    (custom && custom !== 'transparent' && custom !== 'rgba(0,0,0,0)') ? custom : pre,
+			gradient: ($bg.find('.gv2-output').val() || '').toString().trim(),
+			image:    img
+		};
+	}
+
+	/* background-pro value -> css declarations array (color, then image over gradient) */
+	function bgDecls(bg) {
+		var p = [];
+		if (!bg) { return p; }
+		if (bg.color) { p.push('background-color:' + bg.color); }
+		var imgs = [];
+		if (bg.image)    { imgs.push('url(' + bg.image + ')'); }
+		if (bg.gradient) { imgs.push(bg.gradient); }
+		if (imgs.length) {
+			p.push('background-image:' + imgs.join(', '));
+			if (bg.image) { p.push('background-size:cover'); p.push('background-position:center'); }
+		}
+		return p;
+	}
+
 	/* read one box's full nested value from the DOM */
 	function readBox($item) {
 		var d = { preset_name: '', border_sides: 'all', border_radius: {}, padding: {}, transition: '', custom_css: '', states: {} };
@@ -116,6 +149,15 @@
 			}
 		});
 
+		// Background fill (background-pro) PER STATE — read each state panel's bg-pro into
+		// d.states[state].background; mirrors css-tokens (default -> base, hover -> :hover).
+		$item.find('.fw-bp-panel[data-bp-panel]').each(function () {
+			var state = $(this).attr('data-bp-panel');
+			if (!d.states[state]) { return; }
+			var $bg = $(this).find('.fw-option-type-background-pro').first();
+			if ($bg.length) { d.states[state].background = bgProValue($bg); }
+		});
+
 		return d;
 	}
 
@@ -163,11 +205,16 @@
 			if (d.padding && d.padding[slot]) { base.push(padProp[slot] + ':' + d.padding[slot]); }
 		});
 		if (d.transition) { base.push('transition:all ' + (parseInt(d.transition, 10) || 0) + 'ms ease'); }
+
+		// Default state: border skin + background fill (fill sits under the border/shadow).
 		base = base.concat(stateDecls(d.states.default, d.border_sides));
+		base = base.concat(bgDecls(d.states.default && d.states.default.background));
 
 		var css = sel + '{' + rule(base) + '}';
 
-		var hov = stateDecls(d.states.hover, d.border_sides);
+		// Hover state: border + background diffs.
+		var hov = stateDecls(d.states.hover, d.border_sides)
+			.concat(bgDecls(d.states.hover && d.states.hover.background));
 		if (hov.length) { css += sel + ':hover,' + sel + '.is-hover{' + rule(hov) + '}'; }
 
 		if (d.custom_css) { css += ('' + d.custom_css).split('{{SELECTOR}}').join(sel); }

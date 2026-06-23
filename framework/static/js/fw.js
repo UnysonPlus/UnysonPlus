@@ -454,6 +454,293 @@ fw.md5 = (function(){
 })(jQuery);
 
 /**
+ * fw.notify
+ * Non-blocking top-center toast notifications (a modern replacement for alert()).
+ *
+ * Usage:
+ * - fw.notify('Saved.', 'success');
+ * - fw.notify('Something went wrong', 'error', { id: 'my-error' });
+ * - var t = fw.notify('Working…', 'info', { duration: 0 }); t.dismiss();
+ *
+ * @param {String} message  Message text (plain text; HTML is escaped)
+ * @param {String} [type]   'info' (default) | 'success' | 'warning' | 'error'
+ * @param {Object} [opts]   { duration:Number (ms, 0 = sticky), dismissible:Boolean, id:String }
+ *                          - errors are sticky (duration 0) by default; others auto-hide after 6s
+ *                          - reusing an `id` replaces the previous toast with that id
+ *                            (so a retry loop won't stack identical messages)
+ * @returns {Object} handle with a .dismiss() method and the toast jQuery element ($el)
+ */
+(function ($) {
+	var $container = null;
+
+	// Leading dashicon per type (dashicons are always loaded in wp-admin)
+	var ICONS = {
+		error:   'dismiss',
+		success: 'yes-alt',
+		warning: 'warning',
+		info:    'info'
+	};
+
+	function getContainer() {
+		// lazy init (and re-create if it was removed from the DOM)
+		if ($container === null || !$container.parent().length) {
+			$container = $(
+				'<div id="fw-notify" class="fw-notify" aria-live="polite" aria-atomic="false"></div>'
+			);
+			$(document.body).append($container);
+		}
+
+		return $container;
+	}
+
+	function escapeHtml(str) {
+		return $('<div></div>').text(str == null ? '' : String(str)).html();
+	}
+
+	function dismiss($toast) {
+		if (!$toast || !$toast.length || $toast.data('fw-closing')) {
+			return;
+		}
+
+		$toast
+			.data('fw-closing', true)
+			.removeClass('fw-notify-in')
+			.addClass('fw-notify-out');
+
+		setTimeout(function () {
+			$toast.remove();
+		}, 300); // must match the CSS transition duration
+	}
+
+	fw.notify = function (message, type, opts) {
+		type = type || 'info';
+
+		opts = $.extend({
+			duration: type === 'error' ? 0 : 6000, // errors are sticky by default
+			dismissible: true,
+			id: null
+		}, opts || {});
+
+		var $wrap = getContainer();
+
+		// De-dupe by id: replace any existing toast carrying the same id
+		if (opts.id) {
+			$wrap.children('[data-fw-notify-id="'+ String(opts.id).replace(/"/g, '') +'"]')
+				.each(function () { dismiss($(this)); });
+		}
+
+		var $toast = $(
+			'<div class="fw-notify-item fw-notify-'+ type +'"'+
+				(type === 'error' ? ' role="alert"' : ' role="status"') +'>'+
+				'<span class="fw-notify-icon dashicons dashicons-'+ (ICONS[type] || 'info') +'" aria-hidden="true"></span>'+
+				'<span class="fw-notify-msg">'+ escapeHtml(message) +'</span>'+
+				(opts.dismissible
+					? '<button type="button" class="fw-notify-close" aria-label="Dismiss">&times;</button>'
+					: '') +
+			'</div>'
+		);
+
+		if (opts.id) {
+			$toast.attr('data-fw-notify-id', opts.id);
+		}
+
+		$wrap.append($toast);
+
+		// force reflow so the enter transition runs
+		$toast[0].offsetHeight;
+		$toast.addClass('fw-notify-in');
+
+		var timer = 0;
+		if (opts.duration > 0) {
+			timer = setTimeout(function () { dismiss($toast); }, opts.duration);
+		}
+
+		$toast.on('click', '.fw-notify-close', function () {
+			clearTimeout(timer);
+			dismiss($toast);
+		});
+
+		return {
+			dismiss: function () { clearTimeout(timer); dismiss($toast); },
+			$el: $toast
+		};
+	};
+})(jQuery);
+
+/**
+ * fw.validateOptionsForm — client-side inline validation for a backend options
+ * <form> (Phase 3).
+ *
+ * Uses the browser Constraint Validation API, so any option whose input carries
+ * standard HTML5 constraints validates automatically. Authors opt a field in via
+ * the option's `attr`, e.g.:
+ *
+ *   'attr' => array( 'required' => 'required' )
+ *   'attr' => array( 'type' => 'email' )
+ *   'attr' => array( 'pattern' => '[A-Za-z]+', 'data-fw-error-message' => 'Letters only' )
+ *
+ * Invalid fields get a styled inline message next to the field (instead of the
+ * browser's native bubble — the form is rendered with `novalidate`), the first
+ * error's tab is revealed + scrolled into view, and a summary toast is shown.
+ * Errors clear automatically as each field becomes valid again.
+ *
+ * @param {jQuery} $form
+ * @returns {Boolean} true when the form is valid (safe to submit)
+ */
+(function ($) {
+	function clearErrors($form) {
+		$form.find('.fw-backend-option-error').remove();
+		$form.find('.fw-backend-option.fw-backend-option-has-error')
+			.removeClass('fw-backend-option-has-error');
+	}
+
+	// Inject a styled inline error next to a field (its closest .fw-backend-option)
+	function showFieldError($field, message) {
+		var $option = $field.closest('.fw-backend-option');
+		if (!$option.length) { $option = $field.parent(); }
+
+		var $target = $option.find('.fw-backend-option-input').first();
+		if (!$target.length) { $target = $option; }
+
+		$option.addClass('fw-backend-option-has-error');
+		$target.append(
+			$('<div class="fw-backend-option-error" role="alert"></div>').text(message)
+		);
+	}
+
+	// Auto-clear a field's error once it's edited (and passes native validation,
+	// if it has any). Shared by the client + server error paths.
+	function ensureAutoClear($form) {
+		$form
+			.off('input.fwOptValidate change.fwOptValidate')
+			.on('input.fwOptValidate change.fwOptValidate', function (e) {
+				var el = e.target;
+				if (!el) { return; }
+
+				var $option = $(el).closest('.fw-backend-option.fw-backend-option-has-error');
+				if (!$option.length) { return; }
+
+				// Clear when the field passes native validation again, or when it
+				// has no native constraints at all (server-only error → on edit).
+				if (!el.willValidate || el.checkValidity()) {
+					$option.removeClass('fw-backend-option-has-error')
+						.find('.fw-backend-option-error').remove();
+				}
+			});
+	}
+
+	function notifyCount(n) {
+		fw.notify(
+			n === 1
+				? 'Please fix the highlighted field.'
+				: 'Please fix the ' + n + ' highlighted fields.',
+			'warning',
+			{ id: 'fw-options-modal:validation' }
+		);
+	}
+
+	fw.validateOptionsForm = function ($form) {
+		if (!$form || !$form.length) { return true; }
+
+		clearErrors($form);
+
+		var invalid = [];
+
+		$.each($form[0].elements, function () {
+			var el = this;
+
+			// willValidate is false for hidden/disabled/buttons — skip those
+			if (!el.willValidate) { return; }
+			if ($(el).hasClass('hidden-submit')) { return; }
+			if (el.checkValidity()) { return; }
+
+			invalid.push(el);
+		});
+
+		if (!invalid.length) { return true; }
+
+		$.each(invalid, function (i, el) {
+			showFieldError(
+				$(el),
+				el.getAttribute('data-fw-error-message')
+					|| el.validationMessage
+					|| 'This field is invalid.'
+			);
+		});
+
+		ensureAutoClear($form);
+		fw.revealOptionField($(invalid[0]));
+		notifyCount(invalid.length);
+
+		return false;
+	};
+
+	/**
+	 * Render server-side validation errors (Phase 3b) inline, reusing the exact
+	 * same UI as the client-side validator. `errors` is the map returned by the
+	 * save endpoint as response.data.errors: { option_id: 'message', ... }.
+	 *
+	 * @param {jQuery} $form
+	 * @param {Object} errors  { option_id: 'message', ... }
+	 * @returns {Number} how many errors were rendered
+	 */
+	fw.showOptionsErrors = function ($form, errors) {
+		if (!$form || !$form.length || !errors) { return 0; }
+
+		clearErrors($form);
+
+		var $first = null, count = 0;
+
+		$.each(errors, function (id, message) {
+			var safeId = String(id).replace(/"/g, ''),
+				$field = $form.find('[data-fw-option-id="'+ safeId +'"]').first();
+
+			if (!$field.length) {
+				// fall back to the input name used inside the options modal
+				$field = $form.find('[name="fw_edit_options_modal['+ safeId +']"]').first();
+			}
+			if (!$field.length) { return; }
+
+			showFieldError($field, message);
+			if (!$first) { $first = $field; }
+			count++;
+		});
+
+		ensureAutoClear($form);
+
+		if ($first) { fw.revealOptionField($first); }
+		if (count)  { notifyCount(count); }
+
+		return count;
+	};
+
+	/**
+	 * Reveal an option field that may be on an inactive tab: activate each
+	 * ancestor option tab (outermost first), then scroll it into view + focus.
+	 *
+	 * @param {jQuery} $el a field input/element inside a backend options form
+	 */
+	fw.revealOptionField = function ($el) {
+		if (!$el || !$el.length) { return; }
+
+		var $form = $el.closest('form');
+
+		// jQuery-UI option tabs: clicking the matching nav anchor switches tab
+		$.each($el.parents('.fw-options-tab').get().reverse(), function (i, panel) {
+			if (!panel.id) { return; }
+			var $link = ($form.length ? $form : $(document))
+				.find('.fw-options-tabs-list a[href="#'+ panel.id +'"]').first();
+			if ($link.length) { $link.trigger('click'); }
+		});
+
+		try { $el[0].scrollIntoView({ block: 'center' }); }
+		catch (e) { $el[0].scrollIntoView(); }
+
+		try { $el.trigger('focus'); } catch (e) {}
+	};
+})(jQuery);
+
+/**
  * Capitalizes the first letter of a string.
  */
 fw.capitalizeFirstLetter = function(str) {
@@ -598,6 +885,13 @@ fw.getQueryString = function(name) {
 };
 
 (function(){
+	/**
+	 * Modal open/close animation duration. Single source of truth — keep in sync
+	 * with the `.3s` fwGrowIn / fwGrowOut animations in fw.css. Used as the fallback
+	 * timeout for the animationend-driven close (see below).
+	 */
+	var MODAL_ANIM_MS = 300;
+
 	/**
 	 * A stack-like structure to manage chains of modals
 	 * (modals that are opened one from another)
@@ -777,41 +1071,62 @@ fw.getQueryString = function(name) {
 				 */
 				(function(){
 					var eventsNamespace = '.fwModalCloseEffect';
-					var closingTimeout  = 0;
+					var closing       = false;
+					var fallbackTimer = 0;
+
+					var finishClose = function(){
+						if (!closing) { return; }
+						closing = false;
+
+						clearTimeout(fallbackTimer);
+						$modalWrapper.off('animationend'+ eventsNamespace);
+
+						// remove events that prevent original close
+						$close.off(eventsNamespace);
+						$backdrop.off(eventsNamespace);
+
+						// fire original close process after animation effect finished
+						$close.trigger('click');
+						$backdrop.trigger('click');
+
+						// remove animation class
+						$modalWrapper.removeClass('fw-modal-closing');
+
+						preventOriginalClose();
+					};
 
 					var closeEffect = function(){
-						clearTimeout(closingTimeout);
+						if (closing) { return; }
+						closing = true;
 
 						// begin css animation
 						$modalWrapper.addClass('fw-modal-closing');
 
-						closingTimeout = setTimeout(
-							function(){
-								closingTimeout = 0;
+						/**
+						 * Close once the fwGrowOut animation on .media-modal-content
+						 * actually ends — instead of a hardcoded timer that had to be
+						 * kept in sync with the CSS duration. A timed fallback still
+						 * fires in case animationend never does (prefers-reduced-motion,
+						 * the element being display:none, etc.) so the modal can never
+						 * get stuck open. The animationName guard ignores animationend
+						 * events bubbling up from descendant elements.
+						 */
+						$modalWrapper.on('animationend'+ eventsNamespace, function (e) {
+							var ev = e.originalEvent || e;
+							if (ev.animationName === 'fwGrowOut') {
+								finishClose();
+							}
+						});
 
-								// remove events that prevent original close
-								$close.off(eventsNamespace);
-								$backdrop.off(eventsNamespace);
-
-								// fire original close process after animation effect finished
-								$close.trigger('click');
-								$backdrop.trigger('click');
-
-								// remove animation class
-								$modalWrapper.removeClass('fw-modal-closing');
-
-								preventOriginalClose();
-							},
-							300 // css animation duration
-						);
+						fallbackTimer = setTimeout(finishClose, MODAL_ANIM_MS + 50);
 					};
 
 					function handleCloseClick(e) {
 						e.stopPropagation();
 						e.preventDefault();
 
-						if (closingTimeout) {
-							// do nothing if currently there is a closing delay/animation in progress
+						if (closing) {
+							// do nothing while a close animation is already in progress
 							return;
 						}
 
@@ -896,7 +1211,7 @@ fw.getQueryString = function(name) {
 
 				setTimeout(function () {
 					$modalWrapper.removeClass('fw-modal-opening');
-				}, 300);
+				}, MODAL_ANIM_MS);
 
 				modalsStack.push($modalWrapper.find('.media-modal'));
 
@@ -1090,6 +1405,16 @@ fw.getValuesFromServer = function (data) {
 	 */
 	fw.OptionsModal = fw.Modal.extend({
 		ContentView: fw.Modal.prototype.ContentView.extend({
+			/**
+			 * novalidate: take over the browser's native constraint validation so
+			 * we can render styled inline errors next to each field instead of the
+			 * native popup bubble (see fw.validateOptionsForm).
+			 */
+			attributes: _.extend(
+				{},
+				fw.Modal.prototype.ContentView.prototype.attributes,
+				{ novalidate: 'novalidate' }
+			),
 			events: {
 				'submit': 'onSubmit'
 			},
@@ -1099,16 +1424,29 @@ fw.getValuesFromServer = function (data) {
 				var loadingId = fwLoadingId +':submit',
 					view = this;
 
-				fw.loading.show(loadingId);
-
 				/**
-				 * Init all Lazy Tabs to render all form inputs.
+				 * Init all Lazy Tabs to render all form inputs FIRST, so every
+				 * input exists both for validation and for the serialize() below.
 				 * Lazy Tabs script is listening the form 'submit' event
 				 * but it's executed after this event.
 				 */
 				fwEvents.trigger('fw:options:init:tabs', {$elements: view.$el});
 
-				view.model.getValuesFromServer(view.$el.serialize())
+				/**
+				 * Phase 3: client-side inline validation gate. If any field with
+				 * HTML5 constraints is invalid, render inline errors and abort the
+				 * save (don't send known-bad input to the server).
+				 */
+				if (!fw.validateOptionsForm(view.$el)) {
+					return;
+				}
+
+				fw.loading.show(loadingId);
+
+				// `_fw_validate=1` opts this save into the server-side validation
+				// gate (Phase 3b). Other getValuesFromServer/reset callers omit it,
+				// so their behaviour is unchanged.
+				view.model.getValuesFromServer(view.$el.serialize() + '&_fw_validate=1')
 					.done(function (response, status, xhr) {
 						fw.loading.hide(loadingId);
 
@@ -1118,7 +1456,17 @@ fw.getValuesFromServer = function (data) {
 							 * user completed the form with data and wants to submit data
 							 * do not delete all his work
 							 */
-							alert('Error: '+ response.data.message);
+
+							// Phase 3b: server-side per-field validation errors —
+							// render them inline next to each field (same UI as the
+							// client-side validator) instead of a global toast.
+							if (response.data && response.data.errors
+								&& fw.showOptionsErrors(view.$el, response.data.errors)
+							) {
+								return;
+							}
+
+							fw.notify(response.data.message, 'error', {id: 'fw-options-modal:error'});
 							return;
 						}
 
@@ -1128,6 +1476,17 @@ fw.getValuesFromServer = function (data) {
 						 */
 						view.model.set('values', {}, {silent: true});
 						view.model.set('values', response.data.values);
+
+						/**
+						 * Phase 4: pre-warm the render cache for the just-saved
+						 * values so the next time this element is opened it's an
+						 * instant cache hit (no AJAX spinner). Fire-and-forget; uses
+						 * the canonical server render (NOT DOM reuse), so it can't
+						 * introduce duplicate ids or half-initialized widgets.
+						 */
+						try {
+							fw.options.fetchHtml(view.model.get('options'), response.data.values);
+						} catch (e) {}
 
 						if (! view.model.frame.$el.hasClass('fw-options-modal-no-close')) {
 							// simulate click on close button to fire animations
@@ -1144,7 +1503,7 @@ fw.getValuesFromServer = function (data) {
 						 * user completed the form with data and wants to submit data
 						 * do not delete all his work
 						 */
-						alert(status +': '+ error.message);
+						fw.notify(status +': '+ error.message, 'error', {id: 'fw-options-modal:error'});
 					});
 			},
 			resetForm: function() {
@@ -1171,7 +1530,7 @@ fw.getValuesFromServer = function (data) {
 							 * user completed the form with data and wants to submit data
 							 * do not delete all his work
 							 */
-							alert('Error: '+ response.data.message);
+							fw.notify(response.data.message, 'error', {id: 'fw-options-modal:error'});
 							return;
 						}
 
@@ -1190,7 +1549,7 @@ fw.getValuesFromServer = function (data) {
 						 * user completed the form with data and wants to submit data
 						 * do not delete all his work
 						 */
-						alert(status +': '+ String(error));
+						fw.notify(status +': '+ String(error), 'error', {id: 'fw-options-modal:error'});
 					}
 				});
 			}
@@ -2423,4 +2782,50 @@ fw.soleConfirm = (function ($) {
 		create: create
 	};
 })(jQuery);
+
+/**
+ * fw.confirm — styled yes/no confirmation, a drop-in modern replacement for the
+ * native blocking confirm(). Because the styled dialog is asynchronous, the
+ * confirmed action runs in the onConfirm callback (not inline after the call).
+ *
+ * Usage:
+ *   fw.confirm('Delete this item?', function () { … do it … });
+ *   fw.confirm(msg, onYes, { severity: 'warning', onCancel: fn, okHTML: '…' });
+ *
+ * Built on fw.soleConfirm; falls back to native confirm() only if the styled
+ * modal isn't available, so a destructive-action guard can never silently no-op.
+ *
+ * @param {String}   message
+ * @param {Function} onConfirm  runs when the user accepts
+ * @param {Object}   [opts]     { severity, okHTML, cancelHTML, customClass, onCancel }
+ */
+fw.confirm = function (message, onConfirm, opts) {
+	opts = opts || {};
+
+	if (fw.soleConfirm) {
+		var createOpts = {
+			severity: opts.severity || 'warning',
+			message:  message
+		};
+
+		// only copy keys that are set (passing undefined would clobber defaults)
+		if (opts.okHTML)      { createOpts.okHTML      = opts.okHTML; }
+		if (opts.cancelHTML)  { createOpts.cancelHTML  = opts.cancelHTML; }
+		if (opts.customClass) { createOpts.customClass = opts.customClass; }
+
+		var confirm = fw.soleConfirm.create(createOpts);
+
+		confirm.result.done(function () {
+			if (typeof onConfirm === 'function') { onConfirm(); }
+		});
+
+		if (typeof opts.onCancel === 'function') {
+			confirm.result.fail(opts.onCancel);
+		}
+
+		confirm.show();
+	} else if (window.confirm(message)) {
+		if (typeof onConfirm === 'function') { onConfirm(); }
+	}
+};
 

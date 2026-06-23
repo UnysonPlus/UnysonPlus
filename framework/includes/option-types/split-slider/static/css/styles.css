@@ -1,0 +1,129 @@
+/* Split Slider option type — an N-pane, draggable, 100%-rule width bar. */
+.fw-option-type-split-slider .fw-ss-track {
+	display: flex;
+	align-items: stretch;
+	width: 100%;
+	height: 64px;
+	border: 1px solid #d5d9dd;
+	border-radius: .25rem;
+	background: #f6f7f8;
+	overflow: hidden;
+	user-select: none;
+	box-sizing: border-box;
+}
+
+.fw-option-type-split-slider .fw-ss-pane {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	/* flex-basis:0 so flex-grow gives a TRUE proportional width (otherwise the
+	   panes size to their content and only the % label appears to change). */
+	flex-grow: 1;
+	flex-shrink: 1;
+	flex-basis: 0;
+	min-width: 0;
+	padding: 6px 4px;
+	text-align: center;
+	overflow: hidden;
+	background: #eef2f7;
+}
+
+.fw-option-type-split-slider .fw-ss-name { min-width: 0; }
+
+.fw-option-type-split-slider .fw-ss-pane:nth-of-type(even) { background: #f3eef7; }
+
+.fw-option-type-split-slider .fw-ss-name {
+	width: 100%;
+	max-width: 96px;
+	border: 1px solid #cbd5e1;
+	border-radius: 3px;
+	font-size: 11px;
+	padding: 2px 4px;
+	text-align: center;
+	background: #fff;
+	color: #1d2327;
+}
+
+.fw-option-type-split-slider .fw-ss-pane-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #44515c;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+.fw-option-type-split-slider .fw-ss-pane-pct {
+	font-size: 11px;
+	color: #7a8893;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Divider / drag handle */
+.fw-option-type-split-slider .fw-ss-divider {
+	position: relative;
+	flex: 0 0 14px;
+	width: 14px;
+	cursor: ew-resize;
+	background: #cfd6dd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	outline: none;
+}
+
+.fw-option-type-split-slider .fw-ss-divider:hover,
+.fw-option-type-split-slider .fw-ss-divider:focus { background: #2271b1; }
+
+.fw-option-type-split-slider .fw-ss-grip {
+	display: block;
+	width: 2px;
+	height: 24px;
+	border-radius: 2px;
+	background: #fff;
+	box-shadow: 3px 0 0 #fff, -3px 0 0 #fff;
+}
+
+.fw-option-type-split-slider.fw-ss-dragging,
+.fw-option-type-split-slider.fw-ss-dragging .fw-ss-track { cursor: ew-resize; }
+
+.fw-option-type-split-slider.fw-ss-dragging .fw-ss-divider { background: #135e96; }
+
+/* Toolbar (add / remove columns) */
+.fw-option-type-split-slider .fw-ss-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.fw-option-type-split-slider .fw-ss-add,
+.fw-option-type-split-slider .fw-ss-remove {
+	min-width: 30px;
+	padding: 0 8px;
+	text-align: center;
+	font-weight: 700;
+	line-height: 26px;
+}
+
+.fw-option-type-split-slider .fw-ss-count {
+	font-size: 12px;
+	color: #50575e;
+	min-width: 18px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.fw-option-type-split-slider .fw-ss-hint { font-size: 12px; color: #7a8893; }
+
+/* AUTO (equal columns) state — dim the track until widths are set. */
+.fw-option-type-split-slider.fw-ss-is-auto .fw-ss-track { opacity: .55; }
+.fw-option-type-split-slider .fw-ss-reset { margin-left: 4px; }
+
+/* Locked (fixed column count) — hide add/remove/count, keep drag + reset. */
+.fw-option-type-split-slider.fw-ss-locked .fw-ss-add,
+.fw-option-type-split-slider.fw-ss-locked .fw-ss-remove,
+.fw-option-type-split-slider.fw-ss-locked .fw-ss-count { display: none; }

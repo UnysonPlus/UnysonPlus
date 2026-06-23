@@ -39,7 +39,9 @@ if ( ! function_exists( 'unysonplus_scrub_element_css' ) ) :
 		$css = (string) $css;
 		if ( trim( $css ) === '' ) { return ''; }
 		$css = preg_replace( '#</?(style|script)[^>]*>#i', '', $css );
-		$css = str_replace( array( '<', '>' ), '', $css );
+		// Strip only `<` (prevents forming any HTML tag / breaking out of <style>); KEEP `>`
+		// so CSS child combinators (`.row > .col`) survive — needed for faithful imported CSS.
+		$css = str_replace( '<', '', $css );
 		$css = preg_replace( '/@import\b/i', '', $css );
 		$css = preg_replace( '/javascript\s*:/i', '', $css );
 		$css = preg_replace( '/expression\s*\(/i', '', $css );

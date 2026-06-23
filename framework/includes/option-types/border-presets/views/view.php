@@ -48,7 +48,7 @@ $box_view = fw_get_framework_directory( '/includes/option-types/border-presets/v
 
 	<div class="fw-option-type-border-presets-controls">
 		<a href="#" class="fw-option-type-border-presets-add button button-primary dashicons-before dashicons-plus">
-			<?php esc_html_e( 'Add Border Preset', 'fw' ); ?>
+			<?php esc_html_e( 'Add Box Preset', 'fw' ); ?>
 		</a>
 	</div>
 </div>

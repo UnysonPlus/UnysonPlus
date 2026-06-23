@@ -130,6 +130,7 @@ return array(
 	'/extensions/shortcodes/shortcodes/tabs/static/js/scripts.js',
 	'/extensions/shortcodes/shortcodes/team-member/static/css/styles.css',
 	'/extensions/shortcodes/shortcodes/testimonials/static/css/styles.css',
+	'/extensions/shortcodes/shortcodes/testimonials/static/js/scripts.js',
 	'/extensions/shortcodes/shortcodes/text-expander/static/css/styles.css',
 	'/extensions/shortcodes/shortcodes/text-expander/static/js/scripts.js',
 	'/extensions/shortcodes/static/css/admin-settings.css',

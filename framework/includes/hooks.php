@@ -68,6 +68,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Slider' );
 		FW_Option_Type::register( 'FW_Option_Type_Slider_Short' );
 		FW_Option_Type::register( 'FW_Option_Type_Column_Split' );
+		FW_Option_Type::register( 'FW_Option_Type_Split_Slider' );
 		FW_Option_Type::register( 'FW_Option_Type_Switch' );
 		FW_Option_Type::register( 'FW_Option_Type_Code_Editor' );
 		FW_Option_Type::register( 'FW_Option_Type_Typography' );

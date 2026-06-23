@@ -180,6 +180,7 @@ class FW_Option_Type_Typography_v2 extends FW_Option_Type {
 				'weight'         => true,
 				'style'          => true,
 				'variation'      => true,
+				'subset'         => true, // the "Script" (Google-font charset) selector; gateable like the rest
 			)
 		);
 	}

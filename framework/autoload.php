@@ -382,6 +382,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Column_Split':
 				require_once __DIR__ . '/includes/option-types/column-split/class-fw-option-type-column-split.php';
 				break;
+			case 'FW_Option_Type_Split_Slider':
+				require_once __DIR__ . '/includes/option-types/split-slider/class-fw-option-type-split-slider.php';
+				break;
 			case 'FW_Option_Type_Switch':
 				require_once __DIR__ . '/includes/option-types/switch/class-fw-option-type-switch.php';
 				break;
