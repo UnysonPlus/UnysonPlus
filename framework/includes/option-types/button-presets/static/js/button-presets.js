@@ -308,9 +308,9 @@
 		var msg = label
 			? 'Remove the "' + label + '" button preset? This cannot be undone.'
 			: 'Remove this button preset? This cannot be undone.';
-		if (window.confirm(msg)) {
+		fw.confirm(msg, function () {
 			$item.remove();
-		}
+		});
 	});
 
 	// --- Duplicate a preset ------------------------------------------------

@@ -2,10 +2,42 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.12.75';
+$manifest['version'] = '2.12.81';
 
 /**
  * Changelog
+ * 2.12.78 - New "Theme Builder" extension (foundation) — the UnysonPlus take on
+ *           Divi's Theme Builder, and a replacement for the former "Header &
+ *           Footer Builder" extension (which is removed; it was never used in
+ *           production, so there is no migration). Theme Builder OWNS the
+ *           header/footer pieces now: it re-registers the up_header / up_footer
+ *           CPTs and the fw_ext_hfbuilder_render() render path under the SAME
+ *           names, so the theme's existing header/footer integration keeps working
+ *           with no edits, plus the UP_HFBUILDER_OWNS_CPTS sentinel. It adds two
+ *           new CPTs — up_body (a full-page Body Template, page-builder authored)
+ *           and up_template (a "Template": references a header/body/footer part +
+ *           a block of conditional assignment rules, stored as data only). A new
+ *           conditional resolver (FW_Theme_Builder_Resolver) matches each
+ *           published Template's Use On / Exclude From rules against the request
+ *           using native WordPress conditionals, ranks by specificity and returns
+ *           the winning part ids. This release is the backend foundation: the
+ *           Theme Builder admin grid, the conditions UI, and the front-end render
+ *           wiring (header/footer consult + body template_include) land next, so
+ *           the resolver is built but not yet consulted on the front end.
+ * 2.12.76 - New `fw.confirm()` helper (framework/static/js/fw.js) — a styled,
+ *           promise-based replacement for the native blocking confirm(), built on
+ *           fw.soleConfirm with a native confirm() fallback. Call
+ *           `fw.confirm( message, onConfirm, opts )`; because the dialog is async
+ *           the action runs in the onConfirm callback, and opts supports
+ *           severity / okHTML / cancelHTML / customClass / onCancel. Every native
+ *           confirm() across the framework was converted to it for a consistent
+ *           on-brand look: the Extensions manager "remove extension" prompt (this
+ *           also fixes a latent bug where clicking Cancel still ran the uninstall),
+ *           the button / table / border preset "remove preset" prompts, and (in
+ *           the Shortcodes and Sidebars extensions) the delete / reset prompts. The
+ *           live editor already used its own styled confirm and is unchanged; the
+ *           single native prompt() (Live Editor "template name") is left for a
+ *           later pass since it needs a text-input dialog, not a yes/no confirm.
  * 2.12.72 - New `fw_image_tag()` helper (framework/helpers/general.php) — a
  *           shared, modern <img> builder used by shortcodes (media-image,
  *           reviews-table …). Adds responsive `srcset`/`sizes` via

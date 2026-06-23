@@ -83,6 +83,20 @@ $extensions = [
         ],
     ],
 
+    'theme-builder' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Theme Builder', 'fw'),
+        'description' => __('Build global Headers, Bodies and Footers with the page builder, bundle them into a Template, and assign each Template to parts of the site with conditional rules (Use On / Exclude From) — the UnysonPlus take on Divi\'s Theme Builder. The Theme Settings header/footer remains the fallback when no Template applies. Absorbs and replaces the former Header & Footer Builder extension.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/theme-builder.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Theme-Builder-Extension',
+            ],
+        ],
+    ],
+
     'custom-fields' => [
         'display'     => true,
         'parent'      => null,

@@ -45,13 +45,7 @@ jQuery(function($){
 				dataType: 'json'
 			}).done(function(data){
 				if (data.success) {
-					if (confirmMessage) {
-						if (!confirm(confirmMessage)) {
-							inst.isBusy = false;
-							inst.loading($form, false);
-						}
-					}
-
+					var proceed = function () {
 					$.ajax({
 						url: ajaxurl,
 						type: 'POST',
@@ -80,6 +74,21 @@ jQuery(function($){
 						inst.isBusy = false;
 						inst.loading($form, false);
 					});
+					};
+
+					if (confirmMessage) {
+						// Styled confirm. Only proceed on accept — on Cancel we reset
+						// the busy/loading state and stop. (The old native confirm()
+						// fell through and ran the uninstall even on Cancel.)
+						fw.confirm(confirmMessage, proceed, {
+							onCancel: function () {
+								inst.isBusy = false;
+								inst.loading($form, false);
+							}
+						});
+					} else {
+						proceed();
+					}
 				} else {
 					inst.stopListeningSubmit();
 					$form.submit();
@@ -90,7 +99,8 @@ jQuery(function($){
 			});
 		},
 		loading: function($form, show) {
-			var $loadingContainer = $form.closest('.fw-extensions-list-item').find('.fw-extensions-list-item-title').first();
+			var $item = $form.closest('.fw-extensions-list-item');
+			var $loadingContainer = $item.find('.fw-extensions-list-item-title').first();
 			var $loading = $loadingContainer.find('.ajax-form-loading');
 
 			if (!$loading.length) {
@@ -102,10 +112,26 @@ jQuery(function($){
 				$loading = $loadingContainer.find('.ajax-form-loading');
 			}
 
+			// Indeterminate line progress bar pinned to the bottom of the card,
+			// shown alongside the spinner. The install/uninstall is a single
+			// black-box AJAX request (no per-task callbacks), so a true done/total
+			// bar isn't available — this honestly signals "working" until it
+			// returns. Visibility is driven by the .fw-ext-installing class.
+			var $inner = $item.find('.inner').first();
+			if ($inner.length && !$inner.children('.fw-ext-install-bar').length) {
+				$inner.append(
+					'<span class="fw-ext-install-bar" aria-hidden="true">'+
+						'<span class="fw-ext-install-bar__inner"></span>'+
+					'</span>'
+				);
+			}
+
 			if (show) {
 				$loading.removeClass('fw-hidden');
+				$item.addClass('fw-ext-installing');
 			} else {
 				$loading.addClass('fw-hidden');
+				$item.removeClass('fw-ext-installing');
 			}
 		}
 	};

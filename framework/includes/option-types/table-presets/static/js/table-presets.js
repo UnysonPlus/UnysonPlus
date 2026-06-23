@@ -288,7 +288,7 @@
 		var msg = label
 			? 'Remove the "' + label + '" table preset? This cannot be undone.'
 			: 'Remove this table preset? This cannot be undone.';
-		if (window.confirm(msg)) { $item.remove(); }
+		fw.confirm(msg, function () { $item.remove(); });
 	});
 
 	// --- Duplicate a preset (clone as a NEW preset, fresh index, live values) ---

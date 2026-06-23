@@ -2773,7 +2773,9 @@ fw.soleConfirm = (function ($) {
 			type: 'button',
 		}).addClass('fw-sole-confirm-button button button-primary');
 
-		return topHtml + selfHtml(cancelButton) + selfHtml(okButton);
+		// OK (primary) on the left, Cancel on the right — matches the Windows /
+		// native-confirm() convention most users here expect.
+		return topHtml + selfHtml(okButton) + selfHtml(cancelButton);
 
 		function selfHtml (el) { return $('<div>').append(el).html(); }
 	};
