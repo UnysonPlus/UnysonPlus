@@ -80,6 +80,7 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 
 		$http       = new WP_Http();
 		$last_error = null;
+		$not_found  = false; // every candidate branch returned 404 (repo/manifest absent)
 
 		foreach ($this->get_branches($user_slash_repo) as $branch) {
 			$response = $http->get(
@@ -114,6 +115,7 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 			}
 
 			// Not on this branch (e.g. 404) -> try the next candidate branch
+			$not_found  = ($response_code === 404);
 			$last_error = new WP_Error(
 				'fw_ext_update_github_fetch_manifest_failed',
 				sprintf(
@@ -124,6 +126,19 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 		}
 
 		unset($http);
+
+		/**
+		 * A 404 on every candidate branch means the extension simply isn't
+		 * published as its own GitHub repository — which is normal for bundled
+		 * sub-extensions that ship inside the plugin and have no standalone repo.
+		 * Treat that as "no update available" (return the fake version) and stay
+		 * silent, instead of nagging the user with a scary "Failed to read
+		 * manifest" error notice. Genuine connection problems are already handled
+		 * above ($no_internet_connection) and also return the fake version.
+		 */
+		if ($not_found) {
+			return $this->fake_latest_version;
+		}
 
 		return $last_error
 			? $last_error

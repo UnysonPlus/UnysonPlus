@@ -2,10 +2,27 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.12.81';
+$manifest['version'] = '2.12.83';
 
 /**
  * Changelog
+ * 2.12.82 - Site Converter: import a Google Stitch design straight into WordPress
+ *           (new "Convert a Google Stitch screen" tool + the FW_Site_Converter_Stitch
+ *           engine). Stitch is a first-class, deterministic input: the design tokens
+ *           come from the export's inline tailwind.config JSON (and/or a sibling
+ *           DESIGN.md), sections are comment-labelled, and the markup is clean
+ *           semantic HTML — so the converter maps it to a child theme + page-builder
+ *           Full Page with NO AI. It reads both Stitch export layouts (a flat
+ *           single-frame folder and a multi-screen project), turns the palette/fonts/
+ *           spacing into the child theme's misc_custom_css :root variables, scans the
+ *           images, walks each band into the Mapper's role tree (pill -> overline,
+ *           h1/h2 -> Special Heading, p -> Text Block, CTA -> Button, a grid of cards
+ *           -> Icon Box columns, img -> media), and builds the header/footer nav into
+ *           menus — then either imports it in one shot or downloads a draft bundle to
+ *           refine pages.json with Claude and re-import. A LOCAL, privacy-safe
+ *           self-learning loop (fw_site_converter_stitch_rules) lets corrections and
+ *           Claude-assisted runs improve the no-AI mapping on this install, with NO
+ *           telemetry — global gains ship only via curated maintainer releases.
  * 2.12.78 - New "Theme Builder" extension (foundation) — the UnysonPlus take on
  *           Divi's Theme Builder, and a replacement for the former "Header &
  *           Footer Builder" extension (which is removed; it was never used in
