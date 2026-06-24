@@ -2,7 +2,7 @@
 
 Unyson+ is a **community-maintained fork** of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](http://wordpress.org/).
 
-This project continues where the original Unyson (by [ThemeFuse](http://themefuse.com/)) left off after development was discontinued, with the goal of keeping the framework alive, stable, and more developer-friendly.
+This project continues where the original Unyson (by [ThemeFuse](http://themefuse.com/)) left off after development was discontinued, with the goal of keeping the framework alive, stable, and more developer-friendly — and of growing it into a modern, page-builder-first website toolkit.
 
 ---
 
@@ -10,10 +10,14 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 | Component | Version |
 | --- | --- |
-| Framework | **2.7.70** |
-| Shortcodes extension | **1.4.6** |
+| Framework | **2.12.83** |
+| Shortcodes extension | **1.8.22** |
+| Page Builder extension | **1.6.55** |
+| Unyson+ Theme | **2.2.32** |
 | Requires WordPress | **5.8+** (tested up to 6.7) |
 | Requires PHP | **7.4+** |
+
+> Versions follow an independent per-component sequence. Site owners receive automatic updates from GitHub releases via **Plugin Update Checker v5** — no WP.org required.
 
 ---
 
@@ -21,71 +25,91 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 * **Brizy removed** along with all references to it.
 * **PHP 7.4+ / 8.x baseline.** Dropped support for PHP 5.6 / 7.0 / 7.1 / 7.2 / 7.3.
+* **No Bootstrap dependency.** The plugin is fully self-sufficient — the bundled Bootstrap stylesheet was removed and the handful of utilities shortcodes need are now shipped by the plugin itself.
+* **Modern page-builder-first toolkit** — a large library of new shortcodes/elements, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
 * **Active security & modernization track** — see *Updates Done* below.
-* **Community maintained** under the [UnysonPlus](https://github.com/UnysonPlus) GitHub org.
+* **Community maintained** under the [UnysonPlus](https://github.com/UnysonPlus) GitHub org, with each extension split into its own repository.
 
 ---
 
 ## 🔹 Updates Done
 
+### Page builder & layout
+
+* **Section family overhaul** — the Section gains Min Height (40/60/80/100vh) + content vertical-align for full-screen heroes; the bleed layout was extracted into a dedicated **Bleed Section**; a new **Masonry Section** packs columns left-to-right with no gaps. The standalone Hero Section was retired (the upgraded Section supersedes it).
+* **Nested columns** — a column can host other columns one level deep, with Bootstrap-style nested grids synthesized at render time (fully backward-compatible).
+* **Background Pro** — a single Background control on Sections (and reusable everywhere): stacked color / gradient / image (with position / size / repeat / Fixed-parallax) / looping-video layers, with lossless migration of legacy background fields.
+* **Per-device responsive editing** — Phone / Tablet / Desktop switcher for spacing (mobile-first Bootstrap breakpoints), plus a **Device Preview toggle** (Desktop / Tablet / Phone) that re-previews the canvas at each breakpoint.
+* **Per-element Custom CSS + per-page dynamic-CSS pipeline** — each element gets a scoped Custom CSS field (Advanced tab) that rides template export/import; the framework collapses inline `<style>` blocks into one global + one per-page hashed stylesheet for a clean view-source.
+* **Page Builder Templates: Import / Export** — export any saved Full / Sections / Columns template to a portable `.json` and import it on another install.
+* **Bootstrap fully removed** — the bundled Bootstrap 5 stylesheet and its setting are gone; `.btn`, tabs, the testimonials carousel (Splide), and the flex/grid utilities are now provided by the plugin's own CSS.
+
+### Component Presets system (theme-independent)
+
+Reusable, plugin-owned preset libraries — **Colors, Typography / Font Sizes, Spacing, Gaps, Buttons, Borders / Boxes, and Tables** — each producing a named CSS class and editable from a dedicated **Component Presets** page under the Unyson+ menu. Presets are stored theme-independently so they work under any active theme. A **Styling Presets** master switch can turn the entire styling layer off for a bare, structure-only builder (for developers bringing their own CSS).
+
+### New shortcodes / elements (40+)
+
+A large library of new elements was added, including:
+
+* **Content** — Animated Counter, Countdown, Animated Heading, Highlight Text, Blockquote, Tag List, Steps, Timeline, Table of Contents, Tooltip, Feature List.
+* **Media** — Gallery, Lottie, Audio Player, Video Popup, Before/After, Image Box, Image Hotspots, Flip Box, Carousel.
+* **Marketing** — Pricing Table, Comparison Table, Logo Grid, Business Info, Newsletter, Modal Popup, Social Share, Star Rating, Call to Action.
+* **Dynamic post elements** — Post Title / Excerpt / Content / Meta / Date / Author / Terms, Post Carousel, Author Box, Avatar, Featured Image.
+* **Layout & utility** — Container, Flexbox, Progress, Scroll-to-Top.
+
+The Table shortcode was rebuilt around a real **spreadsheet editor** (inline-editable cells, drag-reorder, merge/unmerge, HTML/Word/CSV import, Excel paste, CSV/TSV export) with a dependency-free front-end enhancer for **sorting / search / pagination**.
+
+### Dynamic Content
+
+Elementor-Pro-style **dynamic tags**: Text / Textarea / Rich-Editor option fields (and the classic post editor) show a searchable picker that inserts tokens like `{{site_name}}`, `{{current_year}}`, `{{post_meta|key=subtitle}}`, live permalinks, "Last Updated", and WooCommerce product fields — resolved at render time through one registry, extensible via the `fw:dynamic-content:tags` filter.
+
+### New option types
+
+`background-pro`, `gradient-v2`, `spacing` (composite, per-device), `popover` (with tabs), `column-split`, `split-slider`, `unit-input`, `medium-text`, `button-style-picker`, `border-style-picker`, `button-hover-animation`, `table` (spreadsheet), and a free **Leaflet / OpenStreetMap** fallback for the `map` picker when no Google Maps key is set.
+
+### New bundled extensions
+
+* **Site Converter** *(Unyson+ → Convert)* — an AI-generated-site → WordPress importer. Imports a **Google Stitch** design deterministically (no AI), captures a source site by URL via a local capture service (the **Site Analyzer**), generates a self-sufficient child/standalone theme reproducing the source's header/footer/fonts/colors, and brings over media, menus, and page content.
+* **Theme Builder** *(foundation)* — the Unyson+ take on Divi's Theme Builder; introduces Body Templates and conditional Templates (Use On / Exclude From rules) and owns the header/footer parts. Replaces the former Header & Footer Builder.
+* **Post Types** — a no-code custom-post-type creator.
+* **Custom Fields** — an ACF-style field-group builder (text, media, WYSIWYG, repeater, …) with location refinements, hide-on-screen, REST exposure, and JSON import/export; read with `fw_get_field()`.
+
+### Options modal & DX modernization
+
+* **Inline + server-side validation** for option modals (`fw.validateOptionsForm`, `get_value_error()`, the `fw_option_value_error` filter).
+* **Non-blocking UI primitives** — `fw.notify()` toasts and the promise-based `fw.confirm()` dialog replaced blocking `alert()` / `confirm()` across the framework.
+* **`fw_image_tag()`** — a shared, modern responsive-image builder (`srcset`/`sizes`, width/height for CLS, `fetchpriority` for LCP).
+* **Asset build pipeline** (`build/`) — esbuild + PostCSS minifies the core backend CSS/JS, served via `fw_get_framework_asset_uri()` with a safe unminified fallback.
+
 ### Security hardening (multi-phase)
 
-* **Pre-fork CVE backlog addressed** (with AI-assisted code review):
-  - Missing Authorization & Access Violation — **CVE-2023-44472**
-  - Cross-Site Request Forgery — **CVE-2024-34814**
-  - Reflected Cross-Site Scripting — **CVE-2022-2219**
-* **Phase A + B** *(v2.7.64)* — SQL identifiers wrapped in `esc_sql()`; `SHOW TABLES LIKE` converted to `$wpdb->prepare()`; legacy `fw_termmeta` unserialize hardened with `allowed_classes = false`; `$atts` escaped in *team-member*, *call-to-action*, *notification*, and *breadcrumbs* views; `FW_Request` escaping responsibilities documented.
-* **Phase C** *(v2.7.65 / shortcodes 1.4.3)* — public Calendar AJAX endpoint locked down: provider-slug whitelist via `sanitize_key`, `is_callable()` guard before `call_user_func()`, and a new `fw_shortcode_calendar_provider_is_allowed` filter for per-site opt-out.
-* **Phase D — Mailer** *(v2.7.66)* — CSRF nonce protection on `fw_ext_mailer_test_connection` (handler + JS caller paired in the same release).
-* **Phase D — Builder / Sidebars / Backend options** *(v2.7.67)* — `wp_create_nonce` + `check_ajax_referer` added to ~14 mutating AJAX handlers, including:
-  - Builder fullscreen storage (`set`/`unset`)
-  - Multi-select autocomplete
-  - Builder templates (render / full-load / save / delete)
-  - 6 Sidebar handlers (add-new, autocomplete, save-preset, remove-preset, delete, load-preset)
-  - 3 Backend-options handlers powering **Theme Settings** save, addable-box re-render, and reactive-options pipelines
-* **Phase E.1 — WP.org submission readiness** *(v2.7.68)*:
-  - `fw_rand_md5()` weak randomness (`rand` / `mt_rand` / `uniqid`) replaced with **CSPRNG-backed `random_bytes()`** in `framework/helpers/general.php`.
-  - 6+ unescaped echoes in portfolio/table shortcode views fixed with `wp_kses_post` / `esc_html` / `esc_textarea` per context.
-  - Buggy `echo esc_html_e()` pattern in `about.php` corrected; 11 missing `'fw'` text-domain calls added; plugin-install URL routed through `esc_url()`.
-* **Shortcodes 1.4.2 / 1.4.4** — stored-XSS prevention via escaped `$atts` and `wp_kses_post` / `esc_textarea` in *team-member*, *call-to-action*, *notification* views and the table textarea-cell option-type.
+* **Pre-fork CVE backlog addressed** (AI-assisted review): **CVE-2023-44472** (Missing Authorization), **CVE-2024-34814** (CSRF), **CVE-2022-2219** (Reflected XSS).
+* SQL identifiers wrapped in `esc_sql()`, `SHOW TABLES LIKE` converted to `$wpdb->prepare()`, legacy unserialize hardened (`allowed_classes = false`), and `$atts` escaped across shortcode views.
+* Public Calendar AJAX locked down (provider whitelist + `is_callable()` guard); CSRF nonces added to the Mailer test and ~14 mutating Builder / Sidebars / Backend-options AJAX handlers.
+* `fw_rand_md5()` weak randomness replaced with CSPRNG-backed `random_bytes()`; unescaped echoes fixed with `wp_kses_post` / `esc_html` per context; text-domain and `esc_url()` cleanups for WP.org readiness.
 
-### Modernization
+### Modernization & carry-over
 
-* `uniqid()`-based DOM IDs replaced with `wp_unique_id()` in accordion, tabs, and testimonials views (v2.7.68 / shortcodes 1.4.4).
-* Strict return types added on plugin activation hooks (`_action_fw_plugin_activate(): void`, typed `int $blog_id`, `bool $drop`).
-* **Plugin Update Checker v5** wired to GitHub releases on the `master` branch — site owners get automatic updates without WP.org.
-
-### Shortcodes — Styling tab UX polish *(v2.7.69 → 2.7.70 / shortcodes 1.4.5 → 1.4.6)*
-
-* Every preset-picker field (*Text Color*, *Background Color*, *Font Size*, *Margin/Padding*, *Button Style / Outline / Size*) now exposes a contextual `help` link that opens the relevant **Theme Settings** tab in a new browser tab — implemented via a new `sc_theme_settings_url( $context )` helper with an `sc_theme_settings_url` filter for non-Unyson+ themes.
-* White / near-white preset options no longer render as blank rows: new `sc_color_is_light()` uses **BT.601 luminance** to apply a dark contrast backdrop only on light swatches.
-* Luminance threshold tightened **0.85 → 0.95** so only true whites (`#fff`, Bootstrap Light `#f8f9fa`) get the backdrop trick — Yellow / Lime / Light Gray now render in their actual hue.
-* Backdrop softened **#222 → #444** across all three emitters (color-select, color-preset-select, button-style-select).
-* "Add more in Theme Settings → Spacing" help removed from the 8 per-side spacing dropdowns; kept on the two All-Sides fields where one help affordance is enough.
-
-### Pre-fork carry-over
-
-* **Full PHP 8.x compatibility** sweeps in core paths: `create_function`, `each()`, curly-brace array access `$arr{0}`, `implode()` argument order, etc.
-* **Bootstrap 3 → Bootstrap 5** migration of admin / option UIs (calendar shortcode still ships its own bundled Bootstrap 3.4.1 — tracked in *Plans*).
-* Deprecated PHP patterns removed; jQuery usage cleanup begun.
+* `uniqid()` DOM IDs replaced with `wp_unique_id()`; strict return types on activation hooks.
+* **Plugin Update Checker v5** wired to GitHub releases (automatic updates without WP.org).
+* Full **PHP 8.x** compatibility sweeps (`create_function`, `each()`, `$arr{0}`, `implode()` arg order); Bootstrap 3 → 5 migration of admin/option UIs; deprecated patterns and heavy jQuery dependencies retired incrementally.
 
 ---
 
 ## 🔹 Plans for This Project
 
-* **Bootstrap 5 in the calendar shortcode** — replace the bundled Bootstrap 3.4.1 in `framework/extensions/shortcodes/shortcodes/calendar/` (the last BS3 holdout).
 * **jQuery cleanup** — incrementally retire `jquery.fs.wallpaper.js` and other heavy jQuery dependencies in shortcode JS.
-* **Continued PHP 8.x sweep** — systematic pass for any remaining `create_function` / `each()` / curly-brace `$arr{0}` patterns outside core.
-* **Ongoing shortcode improvements** — more features, flexibility, and developer-friendly APIs.
-* **Gutenberg integration** — improve compatibility with the Block Editor while keeping Classic Editor support.
-* **Options Framework DX** — make the admin options system more developer-friendly (inspired by ACF / Carbon Fields).
-* **Migration tools** — help existing Unyson users transition smoothly to Unyson+ without breaking sites.
+* **Theme Builder front-end wiring** — land the admin grid, conditions UI, and `template_include` body rendering on top of the resolver foundation.
+* **Continued PHP 8.x sweep** — systematic pass for any remaining legacy patterns outside core.
+* **Ongoing shortcode improvements** — more elements, flexibility, and developer-friendly APIs.
+* **Gutenberg integration** — improve Block Editor compatibility while keeping Classic Editor support.
+* **Options Framework DX** — make the admin options system even more developer-friendly (inspired by ACF / Carbon Fields).
+* **Migration tools** — help existing Unyson users transition smoothly without breaking sites.
 * **Automated testing** — PHPUnit + WordPress test suite for long-term stability.
-* **Semantic versioning + tagged releases** — already in motion via Plugin Update Checker v5; formalize the release cadence.
-* **Extension registry** — open system for community-driven add-ons and modules.
-* **Per-extension repos** — Shortcodes already split into [`UnysonPlus/UnysonPlus-Shortcodes-Extension`](https://github.com/UnysonPlus/UnysonPlus-Shortcodes-Extension); continue for the rest.
+* **Semantic versioning + tagged releases** — formalize the release cadence (already in motion via Plugin Update Checker v5).
+* **Extension registry** — an open system for community-driven add-ons and modules.
 * **Multisite compatibility audit** — ensure full compatibility in multisite environments.
-* **Backward compatibility** — preserved for legacy themes and shortcodes as modernization continues.
 
 ---
 
@@ -111,34 +135,35 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 The original Unyson manual at `manual.unyson.io` has been taken down. Historical Unyson documentation can still be accessed via the Internet Archive:
 👉 [Archived Unyson Documentation Manual](https://web.archive.org/web/20221130053349/http://manual.unyson.io/)
 
-Future Unyson+-specific documentation will be published here in the repository's **/docs** folder. Contributions are welcome.
+Unyson+-specific documentation is published at 👉 [unysonplus.github.io](https://unysonplus.github.io/) (source: [`UnysonPlus/UnysonPlus.github.io`](https://github.com/UnysonPlus/UnysonPlus.github.io)). Contributions are welcome.
 
 ## Extensions
 
-Unyson+ supports the same modular extension system as the original Unyson. Extensions can be enabled/disabled as needed.
-We aim to gradually improve, fix, and modernize these extensions.
+Unyson+ supports the same modular extension system as the original Unyson — extensions can be enabled/disabled as needed — and ships a growing set of modernized, independently-versioned extensions, each in its own repository:
 
-Examples include:
+| Extension | Repository |
+| --- | --- |
+| Page Builder | [`UnysonPlus-PageBuilder-Extension`](https://github.com/UnysonPlus/UnysonPlus-PageBuilder-Extension) |
+| Shortcodes | [`UnysonPlus-Shortcodes-Extension`](https://github.com/UnysonPlus/UnysonPlus-Shortcodes-Extension) |
+| Builder (base option type) | [`UnysonPlus-Builder-Extension`](https://github.com/UnysonPlus/UnysonPlus-Builder-Extension) |
+| Site Converter | [`UnysonPlus-Site-Converter-Extension`](https://github.com/UnysonPlus/UnysonPlus-Site-Converter-Extension) |
+| Theme Builder | [`UnysonPlus-Theme-Builder-Extension`](https://github.com/UnysonPlus/UnysonPlus-Theme-Builder-Extension) |
+| Post Types | [`UnysonPlus-Post-Types-Extension`](https://github.com/UnysonPlus/UnysonPlus-Post-Types-Extension) |
+| Custom Fields | [`UnysonPlus-Custom-Fields-Extension`](https://github.com/UnysonPlus/UnysonPlus-Custom-Fields-Extension) |
+| Mega Menu | [`UnysonPlus-MegaMenu-Extension`](https://github.com/UnysonPlus/UnysonPlus-MegaMenu-Extension) |
+| Sidebars | [`UnysonPlus-Sidebars-Extension`](https://github.com/UnysonPlus/UnysonPlus-Sidebars-Extension) |
+| Portfolio | [`UnysonPlus-Portfolio-Extension`](https://github.com/UnysonPlus/UnysonPlus-Portfolio-Extension) |
+| Forms | [`UnysonPlus-Forms-Extension`](https://github.com/UnysonPlus/UnysonPlus-Forms-Extension) |
+| Breadcrumbs | [`UnysonPlus-Breadcrumbs-Extension`](https://github.com/UnysonPlus/UnysonPlus-Breadcrumbs-Extension) |
+| Mailer | [`UnysonPlus-Mailer-Extension`](https://github.com/UnysonPlus/UnysonPlus-Mailer-Extension) |
+| Blog Posts | [`UnysonPlus-Blog-Extension`](https://github.com/UnysonPlus/UnysonPlus-Blog-Extension) |
+| Snippets | [`UnysonPlus-Snippets-Extension`](https://github.com/UnysonPlus/UnysonPlus-Snippets-Extension) |
+| Asset Optimizer | [`UnysonPlus-Asset-Optimizer-Extension`](https://github.com/UnysonPlus/UnysonPlus-Asset-Optimizer-Extension) |
+| WooCommerce | [`UnysonPlus-WooCommerce-Extension`](https://github.com/UnysonPlus/UnysonPlus-WooCommerce-Extension) |
+| Live Editor | [`UnysonPlus-Live-Editor-Extension`](https://github.com/UnysonPlus/UnysonPlus-Live-Editor-Extension) |
+| Update | [`UnysonPlus-Update-Extension`](https://github.com/UnysonPlus/UnysonPlus-Update-Extension) |
 
-- Page Builder
-- Shortcodes
-- Mega Menu
-- Sidebars
-- Sliders
-- Portfolio
-- Backup & Demo Content
-- SEO
-- Forms
-- Feedback
-- Breadcrumbs
-- Events
-- Analytics
-- Mailer
-- Social
-- Blog Posts
-- Translation
-
-👉 Over time, Unyson+ will host updated and modernized versions of these extensions under separate repositories for easier maintenance — see [`UnysonPlus/UnysonPlus-Shortcodes-Extension`](https://github.com/UnysonPlus/UnysonPlus-Shortcodes-Extension) as the first split-out example.
+Additional extensions (Sliders, Social, SEO, Analytics, Translation, Events, Feedback, Backups, Learning, …) are also tracked under the [UnysonPlus](https://github.com/UnysonPlus) org.
 
 ## Contributing
 
