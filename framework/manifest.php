@@ -2,10 +2,19 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.13.55';
+$manifest['version'] = '2.13.56';
 
 /**
  * Changelog
+ * 2.13.56 - Site Converter: section CSS-class mapper. A decomposed section now reproduces its source
+ *           section's FULL container styling — max-width, horizontal + vertical padding, border, border
+ *           color, radius, background — onto the builder's centered .fw-container, not just vertical
+ *           rhythm. A border-width is given an explicit border-style:solid (+ box-sizing:border-box) so a
+ *           `border-y` / `border` actually renders (Tailwind's preflight is scoped to .sc-tw and isn't
+ *           carried into the scoped #id rules). Fixes e.g. the Stitch "trusted by" strip losing its
+ *           border + max-w-[1280px]. Layout utilities (flex/grid/gap/text-align) are deliberately NOT
+ *           carried (the builder's row/column owns layout); vertical margin stays on the section element.
+ *
  * 2.13.55 - Site Converter: editable DECOMPOSE mapping restored as the default. A raw Stitch/HTML
  *           upload again decomposes into editable page-builder elements (icon_box / special_heading /
  *           button / columns) instead of verbatim code-blocks, so the builder stays clean + editable.
