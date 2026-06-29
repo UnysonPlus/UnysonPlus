@@ -82,9 +82,10 @@ if (defined('FW')) {
             // fires before any options.php tries to use type 'spacing'.
             require $dir . '/includes/option-types/spacing/class-fw-option-type-spacing.php';
             // Canonical, plugin-owned schema for the shortcode preset libraries
-            // (Color/Typography/Spacing/Buttons/Borders/Tables). Rendered by the
-            // Shortcodes extension's settings form (settings-options.php) and
-            // stored theme-independently in fw_ext_settings_options:shortcodes.
+            // (Color/Typography/Spacing/Buttons/Box/Table). Injected into Appearance
+            // -> Theme Settings -> Components by the Shortcodes extension
+            // (includes/theme-settings-presets.php) and stored THEME-SCOPED in
+            // fw_theme_settings_options:{theme-id}.
             require $dir . '/extensions/shortcodes/includes/components-options.php';
 
             /**

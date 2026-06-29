@@ -2,10 +2,25 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.13.56';
+$manifest['version'] = '2.13.66';
 
 /**
  * Changelog
+ * 2.13.58 - Component Presets now live in Theme Settings (theme-scoped). The Color, Typography,
+ *           Spacing, Button, Box and Table presets moved out of the dedicated "Component Presets"
+ *           admin page into Appearance -> Theme Settings -> Components, and are now stored per-theme
+ *           (fw_theme_settings_options:{theme-id}) instead of the theme-independent extension store —
+ *           so each theme keeps its own presets and a theme switch resets/restores them. The plugin
+ *           force-enables the Theme Settings page under ANY active theme (fw_theme_settings_menu_register
+ *           filter), so the presets (and the page) are available even on non-Unyson themes. A one-time
+ *           migration seeds the active theme from the legacy store, which is left intact as a backup;
+ *           the old ?page=fw-component-presets URL redirects to Theme Settings.
+ * 2.13.57 - Site Converter: icon_box icon color from the source. A decomposed card's icon now takes the
+ *           source icon's REST color — resolved from its Tailwind token class (e.g. `text-outline` → gray)
+ *           via the parsed config — instead of the shortcode's default (green) preset. Hover variants
+ *           (`group-hover:text-primary`) are correctly ignored (the compiled BASE state is used). Fixes
+ *           Material-Symbols feature-card icons converting as green.
+ *
  * 2.13.56 - Site Converter: section CSS-class mapper. A decomposed section now reproduces its source
  *           section's FULL container styling — max-width, horizontal + vertical padding, border, border
  *           color, radius, background — onto the builder's centered .fw-container, not just vertical
