@@ -2,10 +2,24 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.13.66';
+$manifest['version'] = '2.13.74';
 
 /**
  * Changelog
+ * 2.13.70 - Built-in Theme Settings, and Miscellaneous features that work on any theme. Custom CSS,
+ *           Custom Scripts, Analytics & Tracking, Performance, 404 Page (page-selector), Maintenance
+ *           Mode, Export/Import and Reset are now provided by the plugin and injected into Appearance
+ *           -> Theme Settings -> Miscellaneous (merged into the theme's own Misc tab when present, so
+ *           it mixes plugin- and theme-provided sub-tabs; created outright on a non-Unyson theme).
+ *           They reuse the same theme-scoped misc_* storage keys, so existing saved values carry over
+ *           with no migration. The built-in Theme Settings code is split into per-feature files under
+ *           shortcodes/includes/theme-settings/ (named like the theme's own option files) and loaded
+ *           via upw_ts_get_options(). Custom CSS folds into the combined presets stylesheet;
+ *           Scripts/Analytics emit on wp_head / wp_body_open / wp_footer; Performance applies wp-core
+ *           tweaks; Maintenance serves a 503 splash via template_redirect; the 404 page-selector
+ *           renders the chosen page on any theme via a template_include override; Export/Import and
+ *           Reset operate on the theme-settings store. (Dark Mode, the 404 default-template switches,
+ *           Developer Tools and Scroll-to-top remain theme-side by design.)
  * 2.13.58 - Component Presets now live in Theme Settings (theme-scoped). The Color, Typography,
  *           Spacing, Button, Box and Table presets moved out of the dedicated "Component Presets"
  *           admin page into Appearance -> Theme Settings -> Components, and are now stored per-theme
