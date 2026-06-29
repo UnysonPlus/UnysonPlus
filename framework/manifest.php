@@ -2,10 +2,91 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.12.83';
+$manifest['version'] = '2.13.55';
 
 /**
  * Changelog
+ * 2.13.55 - Site Converter: editable DECOMPOSE mapping restored as the default. A raw Stitch/HTML
+ *           upload again decomposes into editable page-builder elements (icon_box / special_heading /
+ *           button / columns) instead of verbatim code-blocks, so the builder stays clean + editable.
+ *           The local auto-capture path (2.13.52) is kept but OFF by default — the pixel-faithful render
+ *           is now opt-in: run capture.mjs and upload the resulting convert-bundle.zip (still detected
+ *           and imported directly). Also kept from the capture work: the mirrored source footer keeps
+ *           its own link colors (sc-raw-footer), and the post-convert result summary shows again (the
+ *           redirect carries fw-sc-done).
+ *
+ * 2.13.52 - "Auto-run capture on upload" (local — no running service needed). When you upload a raw
+ *           Stitch/HTML export (a .zip containing code.html) AND a local capture engine is configured
+ *           (Site Converter options: Node binary path + capture-script folder) with PHP exec() usable,
+ *           the Convert handler now shells out to `node capture.mjs` on the uploaded file itself,
+ *           rendering it in headless Chrome to capture the REAL runtime CSS (Tailwind CDN etc., which
+ *           is NOT in the file), and imports the faithful bundle directly — no manual capture.mjs, no
+ *           serve.mjs. It falls back to the capture-service URL, or the offline PHP parse, where
+ *           Node/exec aren't available (e.g. shared cPanel). Also: a pre-built convert-bundle.zip is
+ *           now detected on upload (FW_Site_Converter_Bundle::looks_like_bundle) and imported directly
+ *           instead of being mis-routed to the Stitch parser (the "No Stitch code.html found to
+ *           convert" error when uploading a finished bundle).
+ *
+ * 2.13.11 - File uploads now use the URL-path engine. When the capture service is running, a
+ *           "Convert from a file" upload (a Google Stitch .zip, or pasted code.html) is sent to the
+ *           service's new POST /capture-file endpoint, which unzips it, opens the HTML in headless
+ *           Chrome, and runs the SAME deterministic extractor the URL path uses — so a file gets the
+ *           full-fidelity result (live computed CSS, dynamic header/footer with a real WP nav menu +
+ *           footer widget areas, real colors/fonts) instead of the weaker static Tailwind parse. The
+ *           returned bundle is applied through the URL-path actions (analyze_apply design → review →
+ *           build_mapping). The offline PHP parser remains the fallback when the service is down, so
+ *           "works offline" still holds. Engine fixes that made this possible (capture.mjs): retry a
+ *           page.evaluate when a late CDN runtime (Tailwind Play) destroys the context, and wait until
+ *           styling is actually APPLIED (not just network-idle) before extracting.
+ *
+ * 2.13.4 - AI Assist for "Convert from a URL". The URL flow now has the same optional AI
+ *          refinement the file-upload flow already offered: tick "AI assist" and, after the
+ *          capture, the converter hands the draft mapping (each section carries its rawHtml)
+ *          to the capture service's /ai-convert endpoint, where Claude refines the
+ *          section→element mapping and authors a high-fidelity stylesheet. The refined
+ *          mapping drives the review editor (an "AI-refined" badge marks it) and the
+ *          AI-authored CSS is merged into the child theme's SECTIONS block at build time —
+ *          after the deterministic per-section CSS, so it wins the cascade. The header/footer
+ *          keep the dynamic WordPress mirror (real menu + widgets). AI is best-effort: any
+ *          failure (no backend, network) falls back to the deterministic mapping with no AI
+ *          CSS. The backend (Claude Code subscription or Anthropic API key) stays in the
+ *          local capture service on the user's machine, never in WordPress; the AI status
+ *          shows next to the checkbox from /health (aiReady / aiBackend).
+ *
+ * 2.12.94 - Extension Manager: install third-party extensions. A new "Install Extension"
+ *           button on the Extensions screen opens an installer that accepts a .zip upload
+ *           or a public GitHub repo URL (latest release, else default-branch archive),
+ *           validates the archive's manifest.php (parsed safely, never executed), guards
+ *           against shadowing a bundled/available extension, and copies it into
+ *           framework/extensions/ — where discovery, the plugin-update backup/restore, and
+ *           the standard per-card Delete already apply. The installed extension lands
+ *           inactive; activating it enforces its manifest requirements as usual. This lets
+ *           "wants" ship as separate, activatable extensions instead of bloating the core
+ *           plugin (the WebGL element is the first such extension). Mirrors the proven
+ *           shortcodes zip/GitHub installer; gated on install_plugins + nonce + direct
+ *           filesystem access.
+ * 2.12.87 - Site Converter: the Convert tool is now unified + extensible + AI-assisted. (1) ONE
+ *           "Site Converter" tab converts two ways — upload an export file or point at a live URL —
+ *           and the file path AUTO-DETECTS the builder (FW_Site_Converter_Sources adapter registry,
+ *           filterable via fw_site_converter_sources; Google Stitch today, generic-HTML fallback, more
+ *           later). (2) The file flow gains a "Review mapping first" editor (correct each section's
+ *           element before building) sharing the same child-theme generation. (3) An optional "Use AI"
+ *           checkbox: the local capture service (unysonplus-site-capture) now exposes POST /ai-convert
+ *           (to-ai.mjs) that, with the user's ANTHROPIC_API_KEY held LOCALLY (never in WordPress),
+ *           asks Claude to refine the section mapping and write CSS matching the original design; the
+ *           plugin folds that CSS into the generated child theme. The model works at the mapping + CSS
+ *           level, so the deterministic engine still emits the page-builder nodes. AI off → unchanged.
+ * 2.12.84 - Site Converter / Stitch: the Google Stitch import now generates AND activates a
+ *           CHILD THEME (the Stitch palette, fonts, and header/footer chrome), instead of only
+ *           writing custom CSS to the active theme — so "upload the .zip → Convert" produces a
+ *           complete, ready-to-use site in one step. The tokens are mapped to the theme
+ *           generator's design-config (accent detected from the markup's most-saturated inline
+ *           color when the palette is neutral; fonts fall back to the Google-Fonts URL; the theme
+ *           name is the brand from the page <title>; the header is detected as pill vs bar with
+ *           its CTA). The converter's header/footer menus are built by the generated theme on
+ *           activation (no duplicate menus). The admin card is simplified to a single "Convert to
+ *           WordPress" button, with the paste-HTML field and the Claude-refinement bundle download
+ *           moved under "Advanced options".
  * 2.12.82 - Site Converter: import a Google Stitch design straight into WordPress
  *           (new "Convert a Google Stitch screen" tool + the FW_Site_Converter_Stitch
  *           engine). Stitch is a first-class, deterministic input: the design tokens
