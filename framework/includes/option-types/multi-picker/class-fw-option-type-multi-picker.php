@@ -28,6 +28,14 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 			 * Display separators between options
 			 */
 			'show_borders' => false,
+			/**
+			 * Popover display mode: render the picker + its revealed sub-options inside
+			 * a collapsible panel behind a compact trigger (which shows the current
+			 * pick). Keeps a tab/section compact when the picker has many image tiles.
+			 * The value model, inputs and getValue are UNCHANGED — only presentation —
+			 * so it round-trips identically to the normal multi-picker.
+			 */
+			'popover' => false,
 			'value' => array()
 		);
 	}
@@ -164,12 +172,43 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 			}
 		}
 
-		return '<div ' . fw_attr_to_html($option['attr']) . '>' .
+		$html = '<div ' . fw_attr_to_html($option['attr']) . '>' .
 			fw()->backend->render_options($options_array, $data['value'], array(
 				'id_prefix' => $data['id_prefix'] . $id . '-',
 				'name_prefix' => $data['name_prefix'] . '[' . $id . ']',
 			)) .
 		'</div>';
+
+		// Popover display mode — wrap the (always-in-DOM) multi-picker in a collapsible
+		// panel behind a compact trigger. Inputs are unchanged, so the value collection
+		// / save round-trip is identical to the normal multi-picker.
+		if ( ! empty($option['popover']) && is_array($option['picker']) ) {
+			reset($option['picker']);
+			$picker_key = key($option['picker']);
+			$selected   = isset($data['value'][$picker_key]) ? $data['value'][$picker_key] : '';
+			$pchoices   = isset($option['picker'][$picker_key]['choices']) ? $option['picker'][$picker_key]['choices'] : array();
+
+			$summary = '';
+			if ( is_string($selected) && isset($pchoices[$selected]) ) {
+				$c = $pchoices[$selected];
+				if ( is_array($c) ) {
+					$summary = isset($c['label']) ? $c['label'] : $selected;
+				} else {
+					$summary = (string) $c;
+				}
+			}
+
+			$html =
+				'<div class="fw-mp-pop">'
+				. '<div class="fw-mp-pop-trigger" tabindex="0" role="button">'
+					. '<span class="fw-mp-pop-summary">' . fw_htmlspecialchars($summary) . '</span>'
+					. '<span class="fw-mp-pop-caret dashicons dashicons-arrow-down-alt2"></span>'
+				. '</div>'
+				. '<div class="fw-mp-pop-panel">' . $html . '</div>'
+				. '</div>';
+		}
+
+		return $html;
 	}
 
 	public function get_type()

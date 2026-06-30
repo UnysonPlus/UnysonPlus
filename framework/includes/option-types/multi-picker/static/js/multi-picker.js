@@ -1,5 +1,22 @@
 (function($, fwe) {
 
+	// Popover display mode — toggle the collapsible panel (bound once at load).
+	$(document)
+		.on('click.fwMpPop', '.fw-mp-pop > .fw-mp-pop-trigger', function () {
+			$(this).closest('.fw-mp-pop').toggleClass('is-open');
+		})
+		.on('keydown.fwMpPop', '.fw-mp-pop > .fw-mp-pop-trigger', function (e) {
+			if (e.which === 13 || e.which === 32) {
+				e.preventDefault();
+				$(this).closest('.fw-mp-pop').toggleClass('is-open');
+			}
+		})
+		.on('mousedown.fwMpPopOut', function (e) {
+			$('.fw-mp-pop.is-open').each(function () {
+				if (!$.contains(this, e.target)) { $(this).removeClass('is-open'); }
+			});
+		});
+
 	fwe.on('fw:options:init', function(data) {
 
 		data.$elements
@@ -208,6 +225,21 @@
 					console.error('uninitialized multi-picker type:', pickerType);
 				}
 			}
+		}
+
+		// Popover display mode: reflect the picked label into the compact trigger.
+		var $pop = $this.closest('.fw-mp-pop');
+		if ($pop.length) {
+			// Restore the option row's side padding (the grid layout zeroes it).
+			$this.closest('.fw-backend-option').addClass('fw-mp-pop-option');
+
+			var $pickerSelect = elements.$pickerGroup.find('select').first();
+			var updateSummary = function () {
+				var label = $pickerSelect.find('option:selected').text() || '';
+				$pop.children('.fw-mp-pop-trigger').find('.fw-mp-pop-summary').text(label);
+			};
+			$pickerSelect.on('change', updateSummary);
+			updateSummary();
 		}
 	};
 

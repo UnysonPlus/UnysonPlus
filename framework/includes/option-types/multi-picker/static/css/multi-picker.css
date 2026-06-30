@@ -85,3 +85,30 @@
 
 /* end: tabs fixes */
 
+
+/* ----- Popover display mode (compact collapsible picker) ----- */
+.fw-mp-pop { position: relative; }
+.fw-mp-pop-trigger {
+	display: flex; align-items: center; justify-content: space-between; gap: 8px;
+	min-height: 34px; padding: 6px 10px; box-sizing: border-box;
+	border: 1px solid #dfdfdf; border-radius: 3px; background: #fff;
+	cursor: pointer; -webkit-user-select: none; user-select: none;
+}
+.fw-mp-pop-trigger:hover { border-color: #b4b9be; }
+.fw-mp-pop.is-open .fw-mp-pop-trigger { border-color: #007cba; box-shadow: 0 0 0 1px #007cba; }
+.fw-mp-pop-summary { font-weight: 600; color: #23282d; }
+.fw-mp-pop-caret { color: #7e8993; line-height: 1; transition: transform .15s ease; }
+.fw-mp-pop.is-open .fw-mp-pop-caret { transform: rotate(180deg); }
+.fw-mp-pop-panel { display: none; margin-top: 8px; padding: 12px;
+	border: 1px solid #e5e5e5; border-radius: 3px; background: #fbfbfc; }
+.fw-mp-pop.is-open .fw-mp-pop-panel { display: block; }
+/* the wrapped multi-picker fills the panel cleanly */
+.fw-mp-pop-panel > .fw-option-type-multi-picker { margin: 0; }
+
+/* Popover mode: restore the option row's 27px side padding that the grid layout
+   zeroes out (.fw-backend-option-type-multi-picker padding-left/right:0), so the
+   compact trigger aligns with the other options in the section. */
+.fw-backend-option-type-multi-picker.fw-mp-pop-option {
+	padding-left: 27px;
+	padding-right: 27px;
+}

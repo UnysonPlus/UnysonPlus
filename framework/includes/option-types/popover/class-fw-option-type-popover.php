@@ -15,6 +15,14 @@
  *  - 'tabs'           array  Optional. Group options into tabs (Background-Pro
  *                            style): array( tab_key => array('label'=>…, 'options'=>[…]) ).
  *  - 'summary'        array  Optional value => label map for the trigger text.
+ *  - 'summary_key'    string Optional. For an array value (e.g. a wrapped
+ *                            multi-picker), the nested key whose value drives the
+ *                            trigger label (then mapped through 'summary').
+ *  - 'reflect'        bool   Optional. Mirror the inner control's value into the
+ *                            trigger. Default: true for passthrough, else false.
+ *  - 'autoclose'      bool   Optional. Close the panel on change. Default: true for
+ *                            passthrough, else false. Set false to wrap a multi-picker
+ *                            so the panel stays open while editing its sub-options.
  *  - 'trigger_label'  string Fallback trigger text when nothing is selected.
  *
  * Value:
@@ -86,6 +94,14 @@ class FW_Option_Type_Popover extends FW_Option_Type {
 		// Passthrough only when there's a single flat option and no tabs.
 		$passthrough = ( ! $has_tabs && count( $inner ) === 1 );
 
+		// Behaviour flags (default to the passthrough behaviour, but each can be
+		// overridden — e.g. wrap a multi-picker and keep the panel OPEN while editing
+		// its sub-options yet still reflect the picker choice into the trigger):
+		//   'reflect'   — mirror the inner control's value into the trigger label.
+		//   'autoclose' — close the panel on change (a normal single-picker feel).
+		$reflect   = isset( $option['reflect'] )   ? (bool) $option['reflect']   : $passthrough;
+		$autoclose = isset( $option['autoclose'] ) ? (bool) $option['autoclose'] : $passthrough;
+
 		// Feed the current value into the inner option(s).
 		if ( $passthrough ) {
 			$inner_id     = key( $inner );
@@ -94,6 +110,14 @@ class FW_Option_Type_Popover extends FW_Option_Type {
 		} else {
 			$inner_values = is_array( $data['value'] ) ? $data['value'] : array();
 			$current      = '';
+		}
+
+		// 'summary_key' — when the value is an array (e.g. a wrapped multi-picker),
+		// read this nested key as the scalar that drives the trigger label.
+		if ( '' === $current && ! empty( $option['summary_key'] ) && is_array( $data['value'] )
+			&& isset( $data['value'][ $option['summary_key'] ] )
+			&& is_scalar( $data['value'][ $option['summary_key'] ] ) ) {
+			$current = (string) $data['value'][ $option['summary_key'] ];
 		}
 
 		$render_args = array(
@@ -137,7 +161,8 @@ class FW_Option_Type_Popover extends FW_Option_Type {
 		$div_attr = $option['attr'];
 		unset( $div_attr['name'], $div_attr['value'] );
 		$div_attr['data-summary']   = json_encode( $summary );
-		$div_attr['data-autoclose'] = $passthrough ? '1' : '0';
+		$div_attr['data-autoclose'] = $autoclose ? '1' : '0';
+		$div_attr['data-reflect']   = $reflect ? '1' : '0';
 
 		$panel_attr = array(
 			'class'                 => 'fw-popover-panel',
@@ -170,9 +195,22 @@ class FW_Option_Type_Popover extends FW_Option_Type {
 			$inner_id     = key( $inner );
 			$inner_option = $inner[ $inner_id ];
 
+			// IDEMPOTENCY: on first save the input is wrapped under the inner id
+			// (input[$inner_id]); but re-deriving an ALREADY-saved value (page-builder
+			// Update re-runs get_value_from_input on the stored, already-unwrapped
+			// value) arrives without that key — in which case the input IS the inner
+			// option's value, so pass it through directly. Falling back to null here
+			// (the old behaviour) reset complex inner values to their default on
+			// re-save. A null/non-array input still yields the inner default.
+			if ( is_array( $input_value ) && array_key_exists( $inner_id, $input_value ) ) {
+				$inner_input = $input_value[ $inner_id ];
+			} else {
+				$inner_input = $input_value;
+			}
+
 			return fw()->backend->option_type( $inner_option['type'] )->get_value_from_input(
 				array_merge( $inner_option, array( 'value' => $option['value'] ) ),
-				( is_array( $input_value ) && isset( $input_value[ $inner_id ] ) ) ? $input_value[ $inner_id ] : null
+				$inner_input
 			);
 		}
 
@@ -210,6 +248,9 @@ class FW_Option_Type_Popover extends FW_Option_Type {
 			'inner-options' => array(),
 			'tabs'          => array(),
 			'summary'       => array(),
+			'summary_key'   => '',
+			'reflect'       => null,
+			'autoclose'     => null,
 			'trigger_label' => __( 'Select', 'fw' ),
 			'value'         => null,
 		);

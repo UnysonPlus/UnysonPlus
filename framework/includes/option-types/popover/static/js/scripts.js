@@ -27,9 +27,9 @@
 		if (tpl != null) {
 			$panel.html(tpl).removeAttr('data-options-template');
 			fwe.trigger('fw:options:init', { $elements: $panel });
-			// Only single-option (passthrough) popovers reflect a value into the
-			// trigger; multi/tabbed ones keep their static trigger label.
-			if ($po.attr('data-autoclose') === '1') {
+			// Reflect the inner control's value into the trigger when enabled
+			// (passthrough by default; a wrapped multi-picker opts in via data-reflect).
+			if ($po.attr('data-reflect') === '1') {
 				reflect($po);
 			}
 		}
@@ -57,13 +57,15 @@
 			}
 		});
 
-		// Single-option (passthrough) popover: reflect the value into the trigger
-		// and auto-close so it behaves like a normal picker. Multi/tabbed popovers
-		// keep their static label and stay open while editing.
-		if ($po.attr('data-autoclose') === '1') {
+		// On inner change: reflect the value into the trigger (when enabled) and/or
+		// auto-close (single-picker feel). A wrapped multi-picker reflects but stays
+		// open so its sub-options can be adjusted without the panel closing.
+		var reflectOn = $po.attr('data-reflect') === '1';
+		var autoclose = $po.attr('data-autoclose') === '1';
+		if (reflectOn || autoclose) {
 			$po.on('change', '.fw-popover-panel select, .fw-popover-panel input, .fw-popover-panel textarea', function () {
-				reflect($po);
-				$po.removeClass('is-open');
+				if (reflectOn) { reflect($po); }
+				if (autoclose) { $po.removeClass('is-open'); }
 			});
 		}
 
