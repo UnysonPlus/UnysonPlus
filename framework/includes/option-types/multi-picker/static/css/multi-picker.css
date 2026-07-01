@@ -131,25 +131,3 @@
 }
 .fw-modal-medium .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(5, 1fr); }
 .fw-modal-large .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(7, 1fr); }
-
-/* On the Theme Settings page (not a modal) options reserve a label column, squeezing the
-   popover — and its tile grid — into the right ~65% (only ~3 columns fit). Stack the
-   popover picker full-width instead so the grid gets the whole option row. The visible
-   field label is kept (moved above). Scoped to .fw-mp-pop-option so nothing else shifts. */
-.fw-mp-pop-option { display: block !important; }
-.fw-mp-pop-option > .fw-backend-option-label {
-	display: block !important; width: 100% !important; float: none !important; padding: 0 0 8px !important;
-}
-.fw-mp-pop-option > .fw-backend-option-input {
-	display: block !important; width: 100% !important; float: none !important;
-}
-.fw-mp-pop-option > .fw-backend-option-input > .fw-inner { width: 100% !important; max-width: 100% !important; }
-/* the picker + its revealed sub-options inside the panel also go full-width */
-.fw-mp-pop-panel .fw-backend-option { display: block !important; }
-.fw-mp-pop-panel .fw-backend-option > .fw-backend-option-label {
-	display: block !important; width: 100% !important; float: none !important; padding: 0 0 6px !important;
-}
-.fw-mp-pop-panel .fw-backend-option > .fw-backend-option-input {
-	display: block !important; width: 100% !important; float: none !important;
-}
-.fw-mp-pop-panel .fw-backend-option-input > .fw-inner { width: 100% !important; max-width: 100% !important; }
