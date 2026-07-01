@@ -99,11 +99,23 @@
 .fw-mp-pop-summary { font-weight: 600; color: #23282d; }
 .fw-mp-pop-caret { color: #7e8993; line-height: 1; transition: transform .15s ease; }
 .fw-mp-pop.is-open .fw-mp-pop-caret { transform: rotate(180deg); }
-.fw-mp-pop-panel { display: none; margin-top: 8px; padding: 8px;
+.fw-mp-pop-panel { display: none; margin-top: 8px; padding: 10px;
 	border: 1px solid #e5e5e5; border-radius: 3px; background: #fbfbfc; }
 .fw-mp-pop.is-open .fw-mp-pop-panel { display: block; }
 /* the wrapped multi-picker fills the panel cleanly */
 .fw-mp-pop-panel > .fw-option-type-multi-picker { margin: 0; }
+
+/* Inside the panel the wrapped options otherwise keep their standard row padding
+   (.fw-backend-option-design-default = 24px 27px 21px), so the tiles hug the TOP
+   (picker-group zeroes padding-top) but sit far from the left/right/bottom — a
+   lopsided panel. Zero the horizontal padding, and the last option's bottom, so all
+   four edges hug evenly (only the panel's own 8px shows). Scoped to .fw-mp-pop-panel. */
+.fw-mp-pop-panel .fw-backend-option-design-default {
+	padding-left: 0 !important; padding-right: 0 !important;
+}
+.fw-mp-pop-panel .fw-option-type-multi-picker > .choice-group > .fw-backend-option:last-child {
+	padding-bottom: 0 !important;
+}
 
 /* Popover mode: restore the option row's 27px side padding that the grid layout
    zeroes out (.fw-backend-option-type-multi-picker padding-left/right:0), so the
@@ -113,30 +125,14 @@
 	padding-right: 27px;
 }
 
-/* Popover image-picker tiles → a responsive grid instead of the default float layout,
-   so tiles pack tighter and larger. A medium modal (840px) fits 5 per row, a large
-   modal (1200px) fits 7; elsewhere it auto-fills. Scoped to .fw-mp-pop so ordinary
-   image-pickers (section alignment, etc.) keep their native layout. */
-/* The image-picker is width-type "auto" (its inner is inline-block / shrink-to-fit). A CSS
-   grid can't expand a shrink-to-fit parent — so it collapsed to ~3 columns with big empty
-   space to the right. Force the tile container full-width so the grid fills the panel (as
-   the old float layout did). Scoped to .fw-mp-pop; does NOT touch any label. */
-.fw-mp-pop .fw-inner-option,
-.fw-mp-pop .fw-backend-option-input.width-type-auto > .fw-inner,
-.fw-mp-pop .fw-backend-option-type-image-picker > .fw-backend-option-input {
-	display: block !important; width: 100% !important; max-width: 100% !important;
+/* Popover tile size by context. Each tile SVG bakes its label into the image, so scaling
+   the tile scales its label text too. The tile img carries height="66" (from the picker's
+   'small' height, applied by image-picker.js as an attribute), which reads well in the
+   MEDIUM shortcode modal. In the wider LARGE modal and the Theme Settings page the same
+   tiles look a touch small, so bump them to 72px there. CSS height overrides the HTML
+   height attr; scoped to .fw-mp-pop so only the engine popovers are affected. */
+.fw-modal-large .fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img,
+.appearance_page_fw-settings .fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img {
+	height: 72px !important;
+	width: auto !important;
 }
-.fw-mp-pop ul.thumbnails.image_picker_selector {
-	display: grid !important;
-	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-	gap: 4px; margin: 0 !important; overflow: visible !important; width: 100% !important;
-}
-.fw-mp-pop ul.thumbnails.image_picker_selector li {
-	float: none !important; width: auto !important; margin: 0 !important;
-}
-.fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail { display: block; }
-.fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img {
-	width: 100% !important; height: auto !important; display: block;
-}
-.fw-modal-medium .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(5, 1fr); }
-.fw-modal-large .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(7, 1fr); }
