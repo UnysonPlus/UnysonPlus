@@ -99,7 +99,7 @@
 .fw-mp-pop-summary { font-weight: 600; color: #23282d; }
 .fw-mp-pop-caret { color: #7e8993; line-height: 1; transition: transform .15s ease; }
 .fw-mp-pop.is-open .fw-mp-pop-caret { transform: rotate(180deg); }
-.fw-mp-pop-panel { display: none; margin-top: 8px; padding: 12px;
+.fw-mp-pop-panel { display: none; margin-top: 8px; padding: 8px;
 	border: 1px solid #e5e5e5; border-radius: 3px; background: #fbfbfc; }
 .fw-mp-pop.is-open .fw-mp-pop-panel { display: block; }
 /* the wrapped multi-picker fills the panel cleanly */
@@ -112,3 +112,22 @@
 	padding-left: 27px;
 	padding-right: 27px;
 }
+
+/* Popover image-picker tiles → a responsive grid instead of the default float layout,
+   so tiles pack tighter and larger. A medium modal (840px) fits 5 per row, a large
+   modal (1200px) fits 7; elsewhere it auto-fills. Scoped to .fw-mp-pop so ordinary
+   image-pickers (section alignment, etc.) keep their native layout. */
+.fw-mp-pop ul.thumbnails.image_picker_selector {
+	display: grid !important;
+	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+	gap: 4px; margin: 0 !important; overflow: visible !important;
+}
+.fw-mp-pop ul.thumbnails.image_picker_selector li {
+	float: none !important; width: auto !important; margin: 0 !important;
+}
+.fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail { display: block; }
+.fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img {
+	width: 100% !important; height: auto !important; display: block;
+}
+.fw-modal-medium .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(5, 1fr); }
+.fw-modal-large .fw-mp-pop ul.thumbnails.image_picker_selector { grid-template-columns: repeat(7, 1fr); }
