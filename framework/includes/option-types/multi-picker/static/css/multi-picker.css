@@ -117,10 +117,19 @@
    so tiles pack tighter and larger. A medium modal (840px) fits 5 per row, a large
    modal (1200px) fits 7; elsewhere it auto-fills. Scoped to .fw-mp-pop so ordinary
    image-pickers (section alignment, etc.) keep their native layout. */
+/* The image-picker is width-type "auto" (its inner is inline-block / shrink-to-fit). A CSS
+   grid can't expand a shrink-to-fit parent — so it collapsed to ~3 columns with big empty
+   space to the right. Force the tile container full-width so the grid fills the panel (as
+   the old float layout did). Scoped to .fw-mp-pop; does NOT touch any label. */
+.fw-mp-pop .fw-inner-option,
+.fw-mp-pop .fw-backend-option-input.width-type-auto > .fw-inner,
+.fw-mp-pop .fw-backend-option-type-image-picker > .fw-backend-option-input {
+	display: block !important; width: 100% !important; max-width: 100% !important;
+}
 .fw-mp-pop ul.thumbnails.image_picker_selector {
 	display: grid !important;
 	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-	gap: 4px; margin: 0 !important; overflow: visible !important;
+	gap: 4px; margin: 0 !important; overflow: visible !important; width: 100% !important;
 }
 .fw-mp-pop ul.thumbnails.image_picker_selector li {
 	float: none !important; width: auto !important; margin: 0 !important;
