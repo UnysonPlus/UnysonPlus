@@ -2,10 +2,20 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.13.77';
+$manifest['version'] = '2.13.79';
 
 /**
  * Changelog
+ * 2.13.78 - Site Converter hero-fidelity fixes (decompose path): (1) the announcement pill now
+ *           reproduces its source colors (fill/border/text + the "New" tag) so it's visible instead of
+ *           a near-invisible empty soft tint, and picks the bordered `outline` style when the source has
+ *           a border; (2) a WIDE media widget (image_overlay player/graphic, source `w-full max-w-[…]`)
+ *           gets its OWN full-width column with the card flex-centered, so it fills + centers instead of
+ *           being squeezed to the centered column's content width; (3) a decomposed paragraph reproduces
+ *           its vertical margin (mb-…) so hero body copy keeps its spacing. Also (shortcodes/button):
+ *           `.btn.has-icon` drops `justify-content:center` so an icon button/CTA follows natural
+ *           alignment instead of always centering its icon+label.
+ *
  * 2.13.70 - Built-in Theme Settings, and Miscellaneous features that work on any theme. Custom CSS,
  *           Custom Scripts, Analytics & Tracking, Performance, 404 Page (page-selector), Maintenance
  *           Mode, Export/Import and Reset are now provided by the plugin and injected into Appearance

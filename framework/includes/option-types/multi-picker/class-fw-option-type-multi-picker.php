@@ -90,6 +90,25 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 	 */
 	protected function _render($id, $option, $data)
 	{
+		/**
+		 * Robustness: an option converted from a scalar type (select / image-picker /
+		 * radio) to a multi-picker can still carry a legacy scalar saved value (e.g.
+		 * "comet"). The render path below treats $data['value'] as an array
+		 * (value[$picker_key] + value[$choice_id]); a raw scalar blows up array access
+		 * on PHP 8 and blanks the whole page. Coerce a non-array value into the expected
+		 * {picker_key: scalar} shape so the legacy pick still resolves and renders.
+		 */
+		if ( ! is_array($data['value']) ) {
+			$picker_key = null;
+			if ( is_array($option['picker']) ) {
+				reset($option['picker']);
+				$picker_key = key($option['picker']);
+			}
+			$data['value'] = ( $picker_key !== null && $data['value'] !== '' && $data['value'] !== null )
+				? array( $picker_key => $data['value'] )
+				: array();
+		}
+
 		$options_array = $this->prepare_option($id, $option);
 
 		unset($option['attr']['name'], $option['attr']['value']);
