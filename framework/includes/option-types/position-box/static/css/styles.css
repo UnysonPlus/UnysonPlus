@@ -1,0 +1,83 @@
+/* -----------------------------------------------------------------------------
+ * fw-option-type-position-box
+ *
+ * Compact, Elementor-style inline row of four unit inputs — Top / Right /
+ * Bottom / Left — mirroring the spacing control's four-side layout. Each side is
+ * a nested unit-input (number + unit dropdown); we shrink its stock min-widths so
+ * all four fit one row inside the page-builder modal.
+ * -------------------------------------------------------------------------- */
+
+.fw-option-type-position-box {
+	box-sizing: border-box;
+	padding: 2px 0 0;
+}
+
+.fw-option-type-position-box *,
+.fw-option-type-position-box *::before,
+.fw-option-type-position-box *::after {
+	box-sizing: border-box;
+}
+
+.fw-pos-box {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+}
+
+.fw-pos-slot {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.fw-pos-slot-label {
+	display: block;
+	margin: 0 0 2px;
+	font-size: 10px;
+	font-weight: 500;
+	line-height: 1.3;
+	color: #646970;
+	text-align: center;
+}
+
+/* The nested unit-input renders inside a light descriptor wrapper — let it fill
+   the slot instead of shrink-to-fit. */
+.fw-pos-box .fw-backend-option-descriptor,
+.fw-pos-box .fw-option-type-unit-input {
+	display: block;
+	width: 100%;
+}
+
+/* Override unit-input's stock 70px/64px min-widths so four fit one row. */
+.fw-pos-box .fw-unit-input-row {
+	gap: 3px;
+}
+
+.fw-pos-box .fw-unit-input-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: none;
+}
+
+/* Pin the unit dropdown to a modest fixed width — wide enough to read
+   "auto" / "rem" without truncating, but no wider so the number field keeps
+   the rest of the slot. */
+.fw-pos-box .fw-unit-input-unit {
+	flex: 0 0 auto;
+	width: 50px;
+	min-width: 50px;
+}
+
+.fw-pos-box select.fw-unit-input-unit {
+	width: 50px;
+	max-width: 50px;
+}
+
+/* Narrow panels — wrap to a 2×2 grid rather than overflow. */
+@media ( max-width: 480px ) {
+	.fw-pos-box {
+		flex-wrap: wrap;
+	}
+	.fw-pos-slot {
+		flex: 1 1 44%;
+	}
+}

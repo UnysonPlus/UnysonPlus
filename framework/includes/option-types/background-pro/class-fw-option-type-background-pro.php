@@ -189,7 +189,11 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 		unset( $wrapper_attr['value'], $wrapper_attr['name'] );
 		$wrapper_attr['class'] = trim( ( isset( $wrapper_attr['class'] ) ? $wrapper_attr['class'] : '' ) . ' fw-option-type-background-pro' );
 
-		$value        = $option['value'];
+		// Use the SAVED value ($data['value']) — NOT $option['value'] (the option-def default).
+		// render_options passes the stored value via $data; reading $option['value'] here made the
+		// modal re-render the defaults every time, so saved color / gradient / image / video layers
+		// looked empty on reopen (the frontend was unaffected — it reads the stored atts directly).
+		$value        = ( isset( $data['value'] ) && is_array( $data['value'] ) ) ? $data['value'] : $option['value'];
 		$id_prefix    = $option['attr']['id'] . '-';
 		$name_prefix  = $option['attr']['name'];
 
@@ -578,9 +582,16 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			);
 		}
 
-		// Image
-		if ( isset( $input_value['image']['src'] ) && is_array( $input_value['image']['src'] ) ) {
-			$out['image']['src'] = $input_value['image']['src'];
+		// Image. The `upload` sub-control's hidden input submits a SCALAR attachment id
+		// (not an array), so delegate to the upload type — it resolves the id to the
+		// { attachment_id, url } array (and passes an already-resolved array through
+		// unchanged on re-save). The old is_array() gate never matched the scalar, so the
+		// background image was silently dropped on every save.
+		if ( isset( $input_value['image']['src'] ) ) {
+			$out['image']['src'] = fw()->backend->option_type( 'upload' )->get_value_from_input(
+				array( 'type' => 'upload', 'value' => array(), 'images_only' => true ),
+				$input_value['image']['src']
+			);
 		}
 		foreach ( array( 'position', 'repeat', 'attachment' ) as $k ) {
 			if ( isset( $input_value['image'][ $k ] ) ) {
@@ -599,9 +610,14 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			// esc_url_raw, not esc_url — we're storing, not rendering.
 			$out['video']['external_url'] = esc_url_raw( (string) $input_value['video']['external_url'] );
 		}
+		// Video sources / poster / fallback are `upload` sub-controls too — same scalar-id
+		// submit as the image above, so delegate to the upload type (was dropped by is_array()).
 		foreach ( array( 'source_mp4', 'source_webm', 'poster', 'fallback' ) as $k ) {
-			if ( isset( $input_value['video'][ $k ] ) && is_array( $input_value['video'][ $k ] ) ) {
-				$out['video'][ $k ] = $input_value['video'][ $k ];
+			if ( isset( $input_value['video'][ $k ] ) ) {
+				$out['video'][ $k ] = fw()->backend->option_type( 'upload' )->get_value_from_input(
+					array( 'type' => 'upload', 'value' => array(), 'images_only' => ( 'poster' === $k || 'fallback' === $k ) ),
+					$input_value['video'][ $k ]
+				);
 			}
 		}
 		foreach ( array( 'loop', 'autoplay', 'mute', 'playsinline' ) as $k ) {

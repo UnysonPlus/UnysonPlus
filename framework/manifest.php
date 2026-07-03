@@ -2,10 +2,17 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.13.88';
+$manifest['version'] = '2.14.0';
 
 /**
  * Changelog
+ * 2.13.95 - New framework option type: position-box. A compact, Elementor-style inline row of four
+ *           unit inputs (Top / Right / Bottom / Left) for CSS position offsets — each side a nested
+ *           unit-input (number + unit dropdown) with an "auto" unit that compiles to the CSS keyword.
+ *           Registered eagerly in bootstrap (alongside spacing/background-pro); compile a saved value
+ *           with FW_Option_Type_Position_Box::css_map(). Consumed by the shortcodes Advanced tab's
+ *           Position control (see the Shortcodes 1.8.70 changelog).
+ *
  * 2.13.78 - Site Converter hero-fidelity fixes (decompose path): (1) the announcement pill now
  *           reproduces its source colors (fill/border/text + the "New" tag) so it's visible instead of
  *           a near-invisible empty soft tint, and picks the bordered `outline` style when the source has

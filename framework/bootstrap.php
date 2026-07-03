@@ -81,6 +81,11 @@ if (defined('FW')) {
             // FW_Option_Type::register() call at the end of the class file
             // fires before any options.php tries to use type 'spacing'.
             require $dir . '/includes/option-types/spacing/class-fw-option-type-spacing.php';
+            // position-box — plugin-only composite (four inline unit-input sides
+            // for CSS position offsets). class_exists guard inside the file;
+            // eager-required so its FW_Option_Type::register() fires before any
+            // options.php uses type 'position-box' (the shared Advanced tab does).
+            require $dir . '/includes/option-types/position-box/class-fw-option-type-position-box.php';
             // Canonical, plugin-owned schema for the shortcode preset libraries
             // (Color/Typography/Spacing/Buttons/Box/Table). Injected into Appearance
             // -> Theme Settings -> Components by the Shortcodes extension
