@@ -125,14 +125,7 @@
 	padding-right: 27px;
 }
 
-/* Popover tile size by context. Each tile SVG bakes its label into the image, so scaling
-   the tile scales its label text too. The tile img carries height="66" (from the picker's
-   'small' height, applied by image-picker.js as an attribute), which reads well in the
-   MEDIUM shortcode modal. In the wider LARGE modal and the Theme Settings page the same
-   tiles look a touch small, so bump them to 72px there. CSS height overrides the HTML
-   height attr; scoped to .fw-mp-pop so only the engine popovers are affected. */
-.fw-modal-large .fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img,
-.appearance_page_fw-settings .fw-mp-pop ul.thumbnails.image_picker_selector li .thumbnail img {
-	height: 72px !important;
-	width: auto !important;
-}
+/* Popover tile size is left to EACH picker — the tile img carries its own height (the picker's
+   'small' height, applied by image-picker.js as an attribute), so every module controls its own
+   swatch size in every context. (There is deliberately NO global height override here: one shared
+   size clobbered modules that need their own — Entrance, Physics, etc.) */

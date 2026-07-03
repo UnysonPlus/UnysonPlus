@@ -852,10 +852,27 @@ if ( ! function_exists( 'fw_render_view' ) ):
 		unset( $view_variables );
 
 		if ( $return ) {
-			ob_start();
-			require $file_path;
+			/**
+			 * PHP makes ob_start() a FATAL error when it is called from inside an
+			 * output-buffering display handler (an ob_start() callback). Such a
+			 * fatal white-screens the request and can trip WordPress's Fatal Error
+			 * Protection — which pauses the active theme, falls back to a default
+			 * theme, and force-logs-out the admin (the "I keep getting logged out /
+			 * theme reverted" loop). The error is an E_ERROR, so it cannot be caught
+			 * with try/catch. When the framework is executing one of its own ob
+			 * handlers it sets $GLOBALS['_fw_ob_handler_running']; in that case render
+			 * WITHOUT a nested buffer (output goes inline) so a view can never fatal
+			 * the page. The normal path is unchanged.
+			 */
+			if ( empty( $GLOBALS['_fw_ob_handler_running'] ) ) {
+				ob_start();
+				require $file_path;
 
-			return ob_get_clean();
+				return ob_get_clean();
+			}
+
+			require $file_path;
+			return '';
 		} else {
 			require $file_path;
 		}
