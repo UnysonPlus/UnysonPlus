@@ -123,18 +123,23 @@
 				var $form = $( this ).closest( 'form' );
 
 				/**
-				 * Build the path of currently open tabs, outermost to innermost,
+				 * Build the path of the currently OPEN tabs, outermost to innermost,
 				 * e.g. ["general_settings_container", "tab_layout"]. jQuery UI marks the
-				 * active nav item of each tab widget with .ui-state-active, and only the
-				 * active chain is rendered (other tabs are lazy/empty), so these anchors -
-				 * in DOM order - are exactly the open chain. We send the full path because
-				 * tab ids are not unique across the form.
+				 * active nav of each tab widget with .ui-state-active, but it LEAVES that
+				 * class on the sub-tabs of a hidden panel (a top tab you visited earlier)
+				 * - so a plain search leaks stale ids (while on Header it also matches
+				 * General's still-active sub-tab, and the server can't resolve
+				 * "header/<general-subtab>" → "tab not found"). Fix: keep only the active
+				 * navs that are actually VISIBLE. A nav inside a hidden (inactive) panel
+				 * is not :visible, so only the open chain survives; in DOM order those are
+				 * outermost→innermost. We send the full path because tab ids aren't unique.
 				 */
 				var ids = [], names = [];
 
 				$form.find( '.fw-options-tabs-list li.ui-state-active > a.nav-tab' ).each( function () {
-					var href = this.getAttribute( 'href' ) || '';
+					if ( ! $( this ).is( ':visible' ) ) { return; } // skip stale navs in hidden panels
 
+					var href = this.getAttribute( 'href' ) || '';
 					if ( href.indexOf( '#fw-options-tab-' ) === 0 ) {
 						ids.push( href.replace( /^#fw-options-tab-/, '' ) );
 						names.push( $.trim( $( this ).text() ) );
@@ -164,12 +169,82 @@
 				if ( ! confirm( resetTabWarning.replace( '%s', tabName ) ) ) {
 					e.preventDefault();
 					$( this ).removeAttr( 'clicked' );
+					return;
 				}
+
+				// Confirmed: remember the open tab chain so we can reopen it after the
+				// reset re-renders the form; then let the native submit proceed.
+				try { window.sessionStorage.setItem( 'fw_settings_restore_tab', JSON.stringify( ids ) ); } catch ( err ) {}
 			}
 		);
 	} );
 </script>
 <!-- end: reset current tab -->
+
+<!-- reopen the reset tab after the form re-renders -->
+<script type="text/javascript">
+	jQuery( function ( $ ) {
+		var STORAGE_KEY  = 'fw_settings_restore_tab',
+			formSelector = '<?php echo $js_form_selector ?>';
+
+		// Re-activate the saved tab chain (outermost → innermost). Tabs are lazy, so
+		// each level's nav only becomes :visible once its parent panel has rendered -
+		// click down the chain, retrying briefly while the next panel appears.
+		function activateChain( ids ) {
+			var $form = $( formSelector + ':first' );
+			if ( ! $form.length || ! ids || ! ids.length ) { return; }
+
+			var i = 0, tries = 0;
+			( function step() {
+				if ( i >= ids.length ) { return; }
+
+				var $nav = $form
+					.find( 'a.nav-tab[href="#fw-options-tab-' + ids[ i ] + '"]' )
+					.filter( ':visible' ).first();
+
+				if ( ! $nav.length ) {
+					if ( tries++ < 60 ) { setTimeout( step, 50 ); } // wait for the lazy panel
+					return;
+				}
+
+				tries = 0;
+				var $li = $nav.closest( 'li' );
+				if ( ! $li.hasClass( 'ui-state-active' ) ) {
+					// Prefer the jQuery UI tabs API (reliable); fall back to a real click.
+					var $w = $nav.closest( '.ui-tabs' ), done = false;
+					if ( $w.length ) {
+						var idx = $li.parent().children( 'li' ).index( $li );
+						if ( idx >= 0 ) { try { $w.tabs( 'option', 'active', idx ); done = true; } catch ( e ) {} }
+					}
+					if ( ! done ) { try { $nav.get( 0 ).click(); } catch ( e ) {} }
+				}
+				i++;
+				setTimeout( step, 60 );
+			} )();
+		}
+
+		function maybeRestore() {
+			var raw;
+			try { raw = window.sessionStorage.getItem( STORAGE_KEY ); } catch ( e ) { return; }
+			if ( ! raw ) { return; }
+			try { window.sessionStorage.removeItem( STORAGE_KEY ); } catch ( e ) {}
+
+			var ids;
+			try { ids = JSON.parse( raw ); } catch ( e ) { return; }
+			setTimeout( function () { activateChain( ids ); }, 80 );
+		}
+
+		// The tab-reset re-renders the form - either in-place (ajax, re-fires
+		// fw:options:init) OR via a full page reload. Cover both: listen for the
+		// re-init event, AND probe once shortly after load in case the event fired
+		// before this handler registered (the reload path).
+		// (Harmless normally: sessionStorage is empty unless a reset just ran.)
+		if ( window.fwEvents && typeof fwEvents.on === 'function' ) {
+			fwEvents.on( 'fw:options:init', maybeRestore );
+		}
+		setTimeout( maybeRestore, 400 );
+	} );
+</script>
 <?php endif; ?>
 
 <!-- reset warning -->

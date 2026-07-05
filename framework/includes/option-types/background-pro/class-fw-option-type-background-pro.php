@@ -66,6 +66,14 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					'autoplay'     => 'yes',
 					'mute'         => 'yes',
 					'playsinline'  => 'yes',
+					'allow_interaction' => 'no',
+				),
+				// A tint layered OVER the image (and gradient/color) — a semi-transparent colour
+				// and/or a gradient, both rendered on top so text stays legible on hero images.
+				// 'color' is an rgba string; 'gradient' is a gradient-v2 data set.
+				'overlay' => array(
+					'color'    => '',
+					'gradient' => array( 'type' => 'linear', 'angle' => 90, 'stops' => array() ),
 				),
 				'advanced' => array(), // reserved for v2
 			),
@@ -152,7 +160,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 		// own enqueue so their CSS/JS load in every context — including shortcode
 		// edit modals, where the page-load options-walk can miss nested custom
 		// types (the same gap that left the spacing control unstyled in modals).
-		foreach ( array( 'gradient-v2', 'oembed', 'upload', 'fw-multi-inline' ) as $child ) {
+		foreach ( array( 'gradient-v2', 'oembed', 'upload', 'fw-multi-inline', 'rgba-color-picker' ) as $child ) {
 			fw()->backend->option_type( $child )->enqueue_static();
 		}
 		if ( function_exists( 'wp_enqueue_media' ) ) {
@@ -201,6 +209,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			'color'    => __( 'Color',    'unysonplus' ),
 			'gradient' => __( 'Gradient', 'unysonplus' ),
 			'image'    => __( 'Image',    'unysonplus' ),
+			'overlay'  => __( 'Overlay',  'unysonplus' ),
 			'video'    => __( 'Video',    'unysonplus' ),
 		);
 
@@ -369,19 +378,32 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					?>
 				</div>
 
+				<?php /* ---- OVERLAY TAB ---- */ ?>
+				<div class="bg-pro__panel<?php echo $active_tab === 'overlay' ? ' is-active' : ''; ?>" data-bg-pro-panel="overlay">
+					<?php
+					$this->_render_sub( 'overlay/color', array(
+						'type'  => 'rgba-color-picker',
+						'label' => __( 'Overlay Color', 'unysonplus' ),
+						'desc'  => __( 'A semi-transparent colour laid OVER the image (and gradient / color). Use the alpha slider for tint strength — e.g. black at ~40% for legible text on a hero image.', 'unysonplus' ),
+						'value' => fw_akg( 'overlay/color', $value, '' ),
+					), $id_prefix, $name_prefix );
+
+					$this->_render_sub( 'overlay/gradient', array(
+						'type'  => 'gradient-v2',
+						'label' => __( 'Overlay Gradient', 'unysonplus' ),
+						'desc'  => __( 'Optional gradient overlay (use RGBA stops for transparency) — e.g. transparent → dark, top to bottom. Stacks above the overlay colour.', 'unysonplus' ),
+						'value' => fw_akg( 'overlay/gradient', $value, array() ),
+					), $id_prefix, $name_prefix );
+					?>
+				</div>
+
 				<?php /* ---- VIDEO TAB ---- */ ?>
 				<div class="bg-pro__panel<?php echo $active_tab === 'video' ? ' is-active' : ''; ?>" data-bg-pro-panel="video">
 					<?php
-					$this->_render_sub( 'video/enabled', array(
-						'type'         => 'switch',
-						'label'        => __( 'Enable Video', 'unysonplus' ),
-						'desc'         => __( 'Renders a muted, looping HTML5 video element as the topmost layer.', 'unysonplus' ),
-						'help'         => __( 'At runtime the theme outputs a video tag covering the section. The poster image shows immediately while the video buffers; the fallback image is what visitors see if their browser cannot play any of the supplied sources. Browsers will only autoplay videos that are muted, so leave Mute on unless you have a strong reason not to.', 'unysonplus' ),
-						'value'        => fw_akg( 'video/enabled', $value, 'no' ),
-						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
-						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
-					), $id_prefix, $name_prefix );
-
+					// No enable toggle — the video background turns on automatically as soon as a
+					// source is set (External URL, or a self-hosted MP4 / WebM). It renders as a
+					// muted, looping layer on top of the image / gradient / color; the poster shows
+					// while it buffers and the fallback covers browsers that can't autoplay.
 					$this->_render_sub( 'video/external_url', array(
 						'type'  => 'oembed',
 						'label' => __( 'External Video URL', 'unysonplus' ),
@@ -430,22 +452,29 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 						'value'       => fw_akg( 'video/fallback', $value, array() ),
 					), $id_prefix, $name_prefix );
 
-					$flag_meta = array(
-						'loop'        => array( 'label' => __( 'Loop',             'unysonplus' ), 'desc' => __( 'Restart the video from the beginning when it ends.', 'unysonplus' ) ),
-						'autoplay'    => array( 'label' => __( 'Autoplay',         'unysonplus' ), 'desc' => __( 'Start playing as soon as the page loads. Requires Mute = Yes in most browsers.', 'unysonplus' ) ),
-						'mute'        => array( 'label' => __( 'Mute',             'unysonplus' ), 'desc' => __( 'Disable audio. Almost always Yes for background video — both for autoplay compatibility and viewer experience.', 'unysonplus' ) ),
-						'playsinline' => array( 'label' => __( 'Play Inline (iOS)', 'unysonplus' ), 'desc' => __( 'On iOS, prevents the video from forcing fullscreen playback. Required for background video to work on iPhones.', 'unysonplus' ) ),
-					);
-					foreach ( $flag_meta as $flag => $meta ) {
-						$this->_render_sub( 'video/' . $flag, array(
-							'type'         => 'switch',
-							'label'        => $meta['label'],
-							'desc'         => $meta['desc'],
-							'value'        => fw_akg( 'video/' . $flag, $value, 'yes' ),
-							'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
-							'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
-						), $id_prefix, $name_prefix );
-					}
+					// Playback behaviour. A background video always AUTOPLAYS MUTED inline — that's
+					// what makes it a background, and browsers only autoplay muted video (un-muted
+					// is blocked for real visitors), so there is intentionally NO Sound/Mute option:
+					// it would silently break autoplay for everyone but the site owner. Looping and
+					// click-to-pause are the real visitor-facing choices. (Autoplay + mute + inline
+					// are forced on at render time in sc_bg_pro_video_attr.)
+					$this->_render_sub( 'video/loop', array(
+						'type'  => 'switch',
+						'label' => __( 'Loop video', 'unysonplus' ),
+						'desc'  => __( 'Restart the video automatically when it reaches the end.', 'unysonplus' ),
+						'value' => fw_akg( 'video/loop', $value, 'yes' ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
+					), $id_prefix, $name_prefix );
+
+					$this->_render_sub( 'video/allow_interaction', array(
+						'type'  => 'switch',
+						'label' => __( 'Allow pause', 'unysonplus' ),
+						'desc'  => __( 'By default the video is decorative — it ignores clicks so no play/pause icon appears. Turn this on to let visitors click the video to pause and resume it.', 'unysonplus' ),
+						'value' => fw_akg( 'video/allow_interaction', $value, 'no' ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
+					), $id_prefix, $name_prefix );
 					?>
 				</div>
 
@@ -545,7 +574,16 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 			case 'image':
 				return ! empty( $layer_value['src'] ) && ! empty( $layer_value['src']['url'] );
 			case 'video':
-				return isset( $layer_value['enabled'] ) && $layer_value['enabled'] === 'yes';
+				// On as soon as a source is set (no enable toggle any more).
+				return ! empty( $layer_value['external_url'] )
+					|| ( ! empty( $layer_value['source_mp4']['url'] ) )
+					|| ( ! empty( $layer_value['source_webm']['url'] ) );
+			case 'overlay':
+				// On iff a non-transparent overlay colour OR a real gradient is set.
+				$c = isset( $layer_value['color'] ) ? trim( (string) $layer_value['color'] ) : '';
+				$g = isset( $layer_value['gradient'] ) ? $layer_value['gradient'] : array();
+				return ( $c !== '' && $c !== 'rgba(0,0,0,0)' && $c !== 'transparent' )
+					|| ( class_exists( 'FW_Option_Type_Gradient_V2' ) && FW_Option_Type_Gradient_V2::to_css( $g ) !== '' );
 		}
 		return false;
 	}
@@ -620,10 +658,24 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				);
 			}
 		}
-		foreach ( array( 'loop', 'autoplay', 'mute', 'playsinline' ) as $k ) {
+		foreach ( array( 'loop', 'autoplay', 'mute', 'playsinline', 'allow_interaction' ) as $k ) {
 			if ( isset( $input_value['video'][ $k ] ) ) {
 				$out['video'][ $k ] = $input_value['video'][ $k ] === 'yes' ? 'yes' : 'no';
 			}
+		}
+
+		// Overlay — an rgba colour + a gradient-v2, both parsed through their child types.
+		if ( isset( $input_value['overlay']['color'] ) ) {
+			$out['overlay']['color'] = fw()->backend->option_type( 'rgba-color-picker' )->get_value_from_input(
+				array( 'type' => 'rgba-color-picker', 'value' => '' ),
+				$input_value['overlay']['color']
+			);
+		}
+		if ( isset( $input_value['overlay']['gradient'] ) ) {
+			$out['overlay']['gradient'] = fw()->backend->option_type( 'gradient-v2' )->get_value_from_input(
+				array( 'type' => 'gradient-v2', 'value' => $defaults['value']['overlay']['gradient'] ),
+				$input_value['overlay']['gradient']
+			);
 		}
 
 		return $out;

@@ -3062,6 +3062,28 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 	color: #5dab20;
 }
 
+/* Size the confirm modal to its content (e.g. multi-line messages) instead of
+   clipping at the fixed height the sole-modal animates the box to. WP's
+   .media-modal is position:fixed with BOTH top and bottom set (30px), so a plain
+   height:auto would stretch it full-height — we drop the bottom anchor and
+   re-center with a transform, capping very tall content with max-height+scroll. */
+.fw-sole-modal.fw-sole-confirm-modal > .media-modal {
+	top: 50% !important;
+	bottom: auto !important;
+	height: auto !important;
+	max-height: calc(100vh - 60px);
+	transform: translateY(-50%);
+	overflow: hidden; /* keep the rounded corners; content handles its own scroll */
+}
+
+.fw-sole-modal.fw-sole-confirm-modal > .media-modal > .media-modal-content {
+	min-height: 0 !important; /* override the template's inline 200px so the box hugs the content */
+	max-height: calc(100vh - 60px);
+	box-sizing: border-box;
+	padding: 26px 26px 24px;
+	overflow-y: auto; /* scroll only if the message is taller than the viewport */
+}
+
 /* end: sizes */
 
 /* tabs fixes */

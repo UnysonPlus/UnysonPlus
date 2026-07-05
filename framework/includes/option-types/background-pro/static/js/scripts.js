@@ -25,12 +25,13 @@
 				$option.find('.bg-pro__panel[data-bg-pro-panel="' + key + '"]').addClass('is-active');
 			});
 
-			// Re-evaluate dots whenever anything inside a panel changes.
-			// We listen broadly: native change/input plus a few Unyson custom
-			// events that fire for upload + switch updates.
+			// Re-evaluate dots whenever anything inside a panel changes. Listen broadly —
+			// native change/input/click (the click catches predefined-colors swatch picks,
+			// which set a hidden <select> without bubbling a change) plus the Unyson upload
+			// events — on a short timeout so the value is set before we read it.
 			$option.on(
-				'change input fw:option-type:switch:change fw:upload:select fw:upload:remove',
-				function () { updateDots($option); }
+				'change input click fw:option-type:switch:change fw:option-type:upload:change fw:option-type:upload:clear',
+				function () { setTimeout(function () { updateDots($option); }, 30); }
 			);
 
 			updateDots($option);
@@ -60,11 +61,17 @@
 					var gradCss = ($panel.find('.gv2-output').val() || '').toString().trim();
 					hasValue = gradCss !== '';
 				} else if (key === 'video') {
-					// Unyson switch is a checkbox with name = the option's name.
-					// Checked state alone is the signal — value comparison is
-					// unreliable because it's JSON-encoded ('"yes"' with quotes).
-					var $enabled = $panel.find('input[type="checkbox"][name$="[enabled]"]').first();
-					hasValue = $enabled.length > 0 && $enabled.is(':checked');
+					// On as soon as a source is set (no enable toggle any more): an External
+					// URL, or a self-hosted MP4 / WebM (upload hidden input = attachment id).
+					var ext  = ($panel.find('.fw-oembed-input input, input[name$="[external_url]"]').first().val() || '').toString().trim();
+					var mp4  = ($panel.find('input[type="hidden"][name$="[source_mp4]"]').first().val() || '').toString().trim();
+					var webm = ($panel.find('input[type="hidden"][name$="[source_webm]"]').first().val() || '').toString().trim();
+					hasValue = ext !== '' || (mp4 !== '' && mp4 !== '0') || (webm !== '' && webm !== '0');
+				} else if (key === 'overlay') {
+					// A tint colour (rgba text input) and/or a gradient (gradient-v2 output).
+					var ovColor = ($panel.find('input[data-alpha], input[name$="[color]"]').first().val() || '').toString().trim();
+					var ovGrad  = ($panel.find('.gv2-output').val() || '').toString().trim();
+					hasValue = (ovColor !== '' && ovColor !== 'transparent' && ovColor !== 'rgba(0,0,0,0)') || ovGrad !== '';
 				} else if (key === 'image') {
 					// Upload renders a single hidden input whose value is the
 					// attachment_id (or empty). Our sub-key is 'src'.

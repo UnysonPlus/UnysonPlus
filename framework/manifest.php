@@ -2,10 +2,41 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.1';
+$manifest['version'] = '2.14.18';
 
 /**
  * Changelog
+ * 2.14.6 - background-pro video: added back three visitor-facing playback options — Mute (Sound vs
+ *          Muted, default muted), Loop (default on) and Allow pause (default off). Autoplay + play-
+ *          inline stay forced (that's what makes it a background). By default the video is now purely
+ *          decorative: it ignores clicks so an embedded YouTube/Vimeo player never shows a play/pause
+ *          icon or steals a click (pointer-events are swallowed on the media + Formstone's click-shield).
+ *          "Allow pause" tags the wrapper with data-bg-video-interactive, which re-enables pointer
+ *          events so a click toggles play/pause. Sound-on is honoured but warned in the desc — browsers
+ *          only autoplay muted video, so unmuting usually defers playback until the visitor interacts.
+ * 2.14.5 - background-pro video: dropped the Loop / Autoplay / Mute / Play-Inline toggles too — a
+ *          background video is always muted, autoplaying, looping and inline (that's what makes it a
+ *          background, and browsers only autoplay muted video), so those are forced on at render time.
+ *          This also fixes videos that never played because an untoggled switch round-tripped as an
+ *          empty/"no" value. Plus a tab-dot fix: the "has value" dots now update live for the Color
+ *          tab (swatch clicks weren't caught), and the new Overlay and the Video tabs (Video keyed off
+ *          the removed Enable checkbox; Overlay had no case) — the listener is broadened and the
+ *          detectors read the real inputs (rgba tint / gradient output, oembed URL / upload sources).
+ *
+ * 2.14.3 - background-pro video no longer needs an "Enable Video" toggle — it turns on automatically
+ *          as soon as a source is set (External URL, or a self-hosted MP4 / WebM). The switch is
+ *          removed (it was easy to leave off, and its state could round-trip awkwardly); the frontend
+ *          gate (sc_bg_pro_video_attr) and the tab "has value" dot now key off a present source
+ *          instead of the flag. Existing videos with a source keep working.
+ *
+ * 2.14.2 - background-pro gains an Overlay layer (new "Overlay" tab). A semi-transparent colour
+ *          (rgba) and/or a gradient rendered ON TOP of the image — the tint you need for legible
+ *          text over hero images, which the stacking order (image over gradient over colour)
+ *          previously made impossible. Rendered by sc_bg_pro_style(), which prepends the overlay
+ *          (gradient over colour) to the background-image list so it sits topmost; the overlay colour
+ *          is emitted as a flat linear-gradient. Every consumer of the control (Section, Flexbox)
+ *          gets it automatically; existing values are untouched (empty overlay = no change).
+ *
  * 2.13.95 - New framework option type: position-box. A compact, Elementor-style inline row of four
  *           unit inputs (Top / Right / Bottom / Left) for CSS position offsets — each side a nested
  *           unit-input (number + unit dropdown) with an "auto" unit that compiles to the CSS keyword.

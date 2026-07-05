@@ -81,7 +81,7 @@ abstract class FW_Settings_Form {
 			'reset_warning' => __("Click OK to reset.\nAll settings will be lost and replaced with default settings!", 'fw'),
 			'reset_tab_button' => __('Reset Tab Options', 'fw'),
 			/* %s is replaced in js with the name of the currently open tab */
-			'reset_tab_warning' => __("Reset the \"%s\" tab?\nIts options will be replaced with their default values. Other tabs are not affected.", 'fw'),
+			'reset_tab_warning' => __("Reset the \"%s\" tab to default?", 'fw'),
 		);
 
 		$this->_init();
