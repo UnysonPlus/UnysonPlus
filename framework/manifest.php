@@ -2,10 +2,19 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.18';
+$manifest['version'] = '2.14.34';
 
 /**
  * Changelog
+ * 2.14.21 - New `responsive` option type — a generic per-device wrapper (Phone / Tablet / Desktop)
+ *          around any single inner control (image-picker, select, …). Stores one value per layer,
+ *          array( base, md, lg ), mobile-first: base applies at all widths, md/lg override upward, a
+ *          blank device inherits the smaller one. Built on the shared device-tabs component + the same
+ *          Bootstrap-infix model the `spacing` type uses, and tolerates a legacy scalar so converting
+ *          an existing option to it never errors. First adopter: the Column's Content Alignment, which
+ *          is now settable per device (emitting justify-content-{md,lg}-* / align-items-{md,lg}-*). The
+ *          per-device value is opt-in and additive — a column that only sets the base value renders
+ *          exactly as before, so the clean DOM is preserved.
  * 2.14.6 - background-pro video: added back three visitor-facing playback options — Mute (Sound vs
  *          Muted, default muted), Loop (default on) and Allow pause (default off). Autoplay + play-
  *          inline stay forced (that's what makes it a background). By default the video is now purely

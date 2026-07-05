@@ -81,6 +81,11 @@ if (defined('FW')) {
             // FW_Option_Type::register() call at the end of the class file
             // fires before any options.php tries to use type 'spacing'.
             require $dir . '/includes/option-types/spacing/class-fw-option-type-spacing.php';
+            // responsive — plugin-only generic per-device wrapper around a single
+            // inner control (image-picker / select). class_exists guard inside the
+            // file; eager-required so its FW_Option_Type::register() fires before any
+            // options.php uses type 'responsive' (Column Content Alignment does).
+            require $dir . '/includes/option-types/responsive/class-fw-option-type-responsive.php';
             // position-box — plugin-only composite (four inline unit-input sides
             // for CSS position offsets). class_exists guard inside the file;
             // eager-required so its FW_Option_Type::register() fires before any

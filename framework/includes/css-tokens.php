@@ -814,6 +814,17 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$utility_rules[ ".gx-{$slug}" ] = "--bs-gutter-x:{$var} !important;";
 				$utility_rules[ ".gy-{$slug}" ] = "--bs-gutter-y:{$var} !important;";
 
+				// Flexbox `gap:` utilities for the column / flexbox CONTENT gap (the space
+				// between a column's stacked/inline elements). Distinct from the row-gutter
+				// .g-* above and from Bootstrap's fixed .gap-N — these resolve to the theme
+				// Gap-Scale var. Per-breakpoint, mobile-first: base applies at all widths;
+				// md/lg go into the responsive @media blocks via $responsive_spacing.
+				$utility_rules[ ".sc-cgap-{$slug}" ] = "gap:{$var} !important;";
+				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
+				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
+				$responsive_spacing[768][ ".sc-cgap-md-{$slug}" ] = "gap:{$var} !important;";
+				$responsive_spacing[992][ ".sc-cgap-lg-{$slug}" ] = "gap:{$var} !important;";
+
 				// Per-section modifier classes — scope the gap to every .row
 				// inside a section. No !important: specificity (0,2,0) beats
 				// the site default's (0,1,0), and the per-row utility above
@@ -821,6 +832,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$utility_rules[ ".section--gap-{$slug} .row, .section--gap-{$slug} .fw-row" ]     = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
 				$utility_rules[ ".section--gap-x-{$slug} .row, .section--gap-x-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
 				$utility_rules[ ".section--gap-y-{$slug} .row, .section--gap-y-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
+
+				// Per-device overrides for the Section Gap (mobile-first). Emitted inside the
+				// md / lg @media blocks (via $responsive_spacing) so a section can set a
+				// different gap per breakpoint; they come after the base rule above, so at
+				// their breakpoint they win on source order without needing !important.
+				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
+				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
+				$responsive_spacing[768][ ".section--gap-md-{$slug} .row, .section--gap-md-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
+				$responsive_spacing[992][ ".section--gap-lg-{$slug} .row, .section--gap-lg-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
 			}
 
 			// Site-wide default gutter on every .row. Resolve the three fields
@@ -928,7 +948,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 14, // bumped: button presets no longer emit !important (child-overridable)
+			'schema'    => 16, // bumped: added per-device .section--gap-{md,lg}-{slug} row-gutter overrides
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),

@@ -56,3 +56,117 @@
 .fw-device-host [data-fw-device-panel].is-active {
 	display: block;
 }
+
+/* -----------------------------------------------------------------------------
+ * Relocated switcher — the `.fw-device-head` pattern (shared by the spacing and
+ * responsive option types).
+ *
+ * fw-device-tabs.js MOVES any `.fw-device-head` out of the option's input column
+ * and into its LABEL column, on the SAME LINE as the label text (right-aligned),
+ * tagging it `.fw-device-head-moved`. Sitting on the label's line means it adds NO
+ * vertical height — so it never opens a gap above the description, whether the
+ * control is tall (image-picker) or short (a single select / switch). It renders
+ * as a compact pill:
+ *   Rest      — the whole pill is INVISIBLE (opacity/visibility), so at rest the
+ *               label row looks exactly as it did before.
+ *   Own hover — hovering/focusing THIS option's row fades the pill in, showing only
+ *               the ACTIVE device's icon (highlighted). A sibling option's hover does
+ *               NOT reveal it (the `>` to the option's own label scopes it).
+ *   Pill hover— hovering/focusing the pill expands all three icons to switch device.
+ * -------------------------------------------------------------------------- */
+
+/* Before JS relocates it (or if JS is unavailable): collapse to nothing in the
+   input column so it never shows a band above the control. */
+.fw-device-head:not(.fw-device-head-moved) {
+	height: 0;
+	min-height: 0;
+	margin: 0;
+	overflow: hidden;
+}
+
+/* The label's inner box is the positioning context. Unfloat its <label> (the Unyson
+   theme floats it) so the box has the label's real height — one line or two — which is
+   what `top:100%` below anchors to. */
+.fw-device-head-host {
+	position: relative;
+}
+.fw-device-head-host > label {
+	float: none;
+	display: block;
+}
+
+/* After relocation: the switcher is absolutely anchored just BELOW the label text
+   (top:100% of the label box). Being absolute it adds NO height to the label grid
+   column, so a short input's row is never made taller than the input — no gap opens
+   above the description. On hover the pill drops below the label; for a short control it
+   overflows downward into the empty area under the label column (the description is a
+   grid column offset under the INPUT, i.e. to the right), so nothing is overlapped. */
+.fw-device-head.fw-device-head-moved {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	margin-top: 4px;
+	z-index: 2;
+}
+
+/* The pill: a light bordered chrome that wraps the icon(s). Invisible at rest — and
+   because the head is absolutely positioned it costs no layout, so we can keep it in the
+   DOM (opacity/visibility) and FADE it in rather than snap it with display. */
+.fw-device-head .fw-device-tabs {
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-2px);
+	transition: opacity .15s ease, transform .15s ease, background-color .12s ease, border-color .12s ease;
+	border-color: #dcdcde;
+	background: #f6f7f7;
+}
+
+/* Reveal below the label only on THIS option's own hover/focus (the `>` to its own
+   label keeps a parent/sibling option's hover from triggering it). */
+.fw-backend-option:hover > .fw-backend-option-label .fw-device-head .fw-device-tabs,
+.fw-backend-option:focus-within > .fw-backend-option-label .fw-device-head .fw-device-tabs {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-device-head .fw-device-tabs {
+		transition: none;
+		transform: none;
+	}
+}
+
+/* Rest: only the active-device icon shows, highlighted, inside the pill. */
+.fw-device-head .fw-device-tab {
+	display: none;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+.fw-device-head .fw-device-tab.is-active {
+	display: inline-flex;
+	color: #fff;
+	background: #2271b1;
+}
+
+/* Hover / focus the pill: expand all three icons. */
+.fw-device-head .fw-device-tabs:hover .fw-device-tab,
+.fw-device-head .fw-device-tabs:focus-within .fw-device-tab {
+	display: inline-flex;
+}
+
+.fw-device-head .fw-device-tabs:hover .fw-device-tab:not(.is-active),
+.fw-device-head .fw-device-tabs:focus-within .fw-device-tab:not(.is-active) {
+	animation: fwDeviceTabReveal .18s ease both;
+}
+
+@keyframes fwDeviceTabReveal {
+	from { opacity: 0; transform: translateX(6px); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-device-head .fw-device-tab {
+		animation: none !important;
+	}
+}

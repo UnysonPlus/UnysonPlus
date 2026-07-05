@@ -1,0 +1,12 @@
+/* -----------------------------------------------------------------------------
+ * Option type: responsive — a per-device wrapper around a single inner control.
+ *
+ * The device switcher (its `.fw-device-head`) is relocated into the label column
+ * and styled entirely by the SHARED fw-device-tabs.css `.fw-device-head` rules
+ * (below-label pill, invisible at rest, revealed on the option's own hover). So
+ * this file only needs the inner-control layout.
+ * -------------------------------------------------------------------------- */
+
+.fw-option-type-responsive .fw-option-responsive-panel {
+	width: 100%;
+}
