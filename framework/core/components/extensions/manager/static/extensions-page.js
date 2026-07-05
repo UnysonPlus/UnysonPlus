@@ -31,72 +31,67 @@ jQuery(function($){
 				action         = action === 'uninstall' ? 'delete' : action,
 				nonceName      = '_nonce_fw_extensions_' + action;
 
-			inst.isBusy = true;
-			inst.loading($form, true);
+			// Ask for confirmation FIRST — before any spinner or ajax — so the
+			// dialog always appears (it is not gated behind the FS-access branch,
+			// nor hidden under the loading indicator). The action runs only on OK.
+			var run = function () {
+				inst.isBusy = true;
+				inst.loading($form, true);
 
-			$.ajax({
-				url: ajaxurl,
-				type: 'POST',
-				data: {
-					action: 'fw_extensions_check_direct_fs_access',
-					[nonceName]: $form.find('#' + nonceName).val(),
-					extAction: action
-				},
-				dataType: 'json'
-			}).done(function(data){
-				if (data.success) {
-					var proceed = function () {
-					$.ajax({
-						url: ajaxurl,
-						type: 'POST',
-						data: {
-							action: 'fw_extensions_' + (action === 'delete' ? 'uninstall' : action),
-							extension: $form.attr('data-extension-name'),
-							[nonceName]: $form.find('#' + nonceName).val()
-						},
-						dataType: 'json'
-					}).done(function(r) {
-						if (r.success) {
-							window.location.reload();
-						} else {
-							var error = r.data ? r.data.pop().message : 'Error';
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'fw_extensions_check_direct_fs_access',
+						[nonceName]: $form.find('#' + nonceName).val(),
+						extAction: action
+					},
+					dataType: 'json'
+				}).done(function(data){
+					if (data.success) {
+						$.ajax({
+							url: ajaxurl,
+							type: 'POST',
+							data: {
+								action: 'fw_extensions_' + (action === 'delete' ? 'uninstall' : action),
+								extension: $form.attr('data-extension-name'),
+								[nonceName]: $form.find('#' + nonceName).val()
+							},
+							dataType: 'json'
+						}).done(function(r) {
+							if (r.success) {
+								window.location.reload();
+							} else {
+								var error = r.data ? r.data.pop().message : 'Error';
 
+								fw.soleModal.show(
+									'fw-extension-install-error',
+									'<p class="fw-text-danger">Error: '+ error +'</p>'
+								);
+							}
+						}).fail(function(jqXHR, textStatus, errorThrown){
 							fw.soleModal.show(
 								'fw-extension-install-error',
-								'<p class="fw-text-danger">Error: '+ error +'</p>'
+								'<p class="fw-text-danger">Error: '+ String(errorThrown) +'</p>'
 							);
-						}
-					}).fail(function(jqXHR, textStatus, errorThrown){
-						fw.soleModal.show(
-							'fw-extension-install-error',
-							'<p class="fw-text-danger">Error: '+ String(errorThrown) +'</p>'
-						);
-						inst.isBusy = false;
-						inst.loading($form, false);
-					});
-					};
-
-					if (confirmMessage) {
-						// Styled confirm. Only proceed on accept — on Cancel we reset
-						// the busy/loading state and stop. (The old native confirm()
-						// fell through and ran the uninstall even on Cancel.)
-						fw.confirm(confirmMessage, proceed, {
-							onCancel: function () {
-								inst.isBusy = false;
-								inst.loading($form, false);
-							}
+							inst.isBusy = false;
+							inst.loading($form, false);
 						});
 					} else {
-						proceed();
+						inst.stopListeningSubmit();
+						$form.submit();
 					}
-				} else {
+				}).fail(function(jqXHR, textStatus, errorThrown){
 					inst.stopListeningSubmit();
 					$form.submit();
-				}
-			}).fail(function(jqXHR, textStatus, errorThrown){
-				inst.stopListeningSubmit();
-				$form.submit();
-			});
+				});
+			};
+
+			if (confirmMessage) {
+				fw.confirm(confirmMessage, run);
+			} else {
+				run();
+			}
 		},
 		loading: function($form, show) {
 			var $item = $form.closest('.fw-extensions-list-item');

@@ -166,15 +166,26 @@
 					return;
 				}
 
-				if ( ! confirm( resetTabWarning.replace( '%s', tabName ) ) ) {
-					e.preventDefault();
-					$( this ).removeAttr( 'clicked' );
-					return;
-				}
+				// Second pass (after the user accepts the styled confirm) — the guard
+				// lets the native submit through so fwForm's ajax handler runs.
+				if ( $( this ).data( 'fwConfirmed' ) ) { return; }
 
-				// Confirmed: remember the open tab chain so we can reopen it after the
-				// reset re-renders the form; then let the native submit proceed.
-				try { window.sessionStorage.setItem( 'fw_settings_restore_tab', JSON.stringify( ids ) ); } catch ( err ) {}
+				e.preventDefault();
+				var $btn = $( this );
+
+				fw.confirm( resetTabWarning.replace( '%s', $( '<div>' ).text( tabName ).html() ), function () {
+					// Confirmed: remember the open tab chain so we can reopen it after
+					// the reset re-renders the form.
+					try { window.sessionStorage.setItem( 'fw_settings_restore_tab', JSON.stringify( ids ) ); } catch ( err ) {}
+
+					// Re-fire the click; the guard above now lets the native submit
+					// proceed exactly as the original confirm() flow did.
+					$btn.data( 'fwConfirmed', true );
+					$btn.get( 0 ).click();
+					$btn.removeData( 'fwConfirmed' );
+				}, {
+					onCancel: function () { $btn.removeAttr( 'clicked' ); }
+				} );
 			}
 		);
 	} );
@@ -234,14 +245,14 @@
 			setTimeout( function () { activateChain( ids ); }, 80 );
 		}
 
-		// The tab-reset re-renders the form - either in-place (ajax, re-fires
-		// fw:options:init) OR via a full page reload. Cover both: listen for the
-		// re-init event, AND probe once shortly after load in case the event fired
-		// before this handler registered (the reload path).
+		// The tab-reset re-renders the form - either in-place (ajax) OR via a full
+		// page reload. Cover both:
+		//  - AJAX: the form fires 'fw:settings-form:reset' AFTER 'fw:options:init'
+		//    has already re-initialized (and defaulted to General) the tabs, so we
+		//    restore on THAT event to win over the default. It bubbles to document.
+		//  - Reload: the timed probe below runs shortly after load.
 		// (Harmless normally: sessionStorage is empty unless a reset just ran.)
-		if ( window.fwEvents && typeof fwEvents.on === 'function' ) {
-			fwEvents.on( 'fw:options:init', maybeRestore );
-		}
+		$( document ).on( 'fw:settings-form:reset', maybeRestore );
 		setTimeout( maybeRestore, 400 );
 	} );
 </script>
@@ -265,13 +276,27 @@
 				var resetWarning = '<?php echo esc_js( $form->get_string( 'reset_warning' ) ); ?>',
 					data         = { 'reset_warning': resetWarning };
 
-				if ( ! confirm( resetWarning ) ) {
-					e.preventDefault();
-					$( document.body ).trigger( 'fw:settings-form:cancel-reset', data );
-					$( this ).removeAttr( 'clicked' );
-				} else {
+				// Second pass (after the user accepts the styled confirm).
+				if ( $( this ).data( 'fwConfirmed' ) ) {
 					$( document.body ).trigger( 'fw:settings-form:before-reset', data );
+					return;
 				}
+
+				e.preventDefault();
+				var $btn = $( this );
+
+				fw.confirm( resetWarning.replace( /\n/g, '<br>' ), function () {
+					// Re-fire the click; the guard above now lets the native submit
+					// proceed exactly as the original confirm() flow did.
+					$btn.data( 'fwConfirmed', true );
+					$btn.get( 0 ).click();
+					$btn.removeData( 'fwConfirmed' );
+				}, {
+					onCancel: function () {
+						$( document.body ).trigger( 'fw:settings-form:cancel-reset', data );
+						$btn.removeAttr( 'clicked' );
+					}
+				} );
 			}
 		);
 	} );
