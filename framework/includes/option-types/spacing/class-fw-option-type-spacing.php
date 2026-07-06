@@ -348,7 +348,7 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 		ob_start();
 		?>
 		<div <?php echo fw_attr_to_html( $wrapper_attr ); ?>>
-			<div class="fw-option-spacing-head">
+			<div class="fw-option-spacing-head fw-device-head">
 				<?php echo fw_render_device_tabs( $option['attr']['id'] ); ?>
 			</div>
 			<div class="fw-option-spacing-panels">

@@ -14,15 +14,6 @@
 .fw-option-type-spacing {
 	box-sizing: border-box;
 	padding: 4px 2px 0;
-	/* Two columns: the Margin/Padding rows (1fr) and the device switcher
-	   (a fixed track wide enough for the full 3-icon pill) share the top row,
-	   so the switcher sits top-right *beside* the rows instead of stacking
-	   above them. The track is fixed so collapsing the pill to a single icon
-	   (at rest) and expanding it on hover never reflows the rows. */
-	display: grid;
-	grid-template-columns: 1fr 104px;
-	align-items: start;
-	column-gap: 12px;
 }
 
 .fw-option-type-spacing *,
@@ -31,19 +22,11 @@
 	box-sizing: border-box;
 }
 
-/* Rows column. */
+/* The Margin / Padding rows take the full width. The device switcher
+   (.fw-option-spacing-head / .fw-device-head) is relocated into the label column
+   and styled entirely by the shared fw-device-tabs.css `.fw-device-head` rules. */
 .fw-option-spacing-panels {
-	grid-column: 1;
-	grid-row: 1;
 	min-width: 0;
-}
-
-/* Device switcher — top-right, same row as the panels (no extra height band). */
-.fw-option-spacing-head {
-	grid-column: 2;
-	grid-row: 1;
-	justify-self: end;
-	margin: 0;
 }
 
 /* One section row (Margin or Padding) laid out on a single line:
@@ -214,101 +197,3 @@
 	}
 }
 
-/* -----------------------------------------------------------------------------
- * Device switcher: two-stage progressive disclosure.
- *
- *   Rest                    → fully hidden.
- *   Hover the options group → only the mobile (phone) icon appears, top-right —
- *                             the mobile-first entry point.
- *   Hover that icon         → the tablet + desktop icons reveal beside it, the
- *                             pill chrome fades in, and the active icon lights up.
- *
- * The grid track stays a fixed 104px so icons appearing never reflow the rows.
- * Stage-1 trigger is the options group (or the row, for keyboard focus); stage-2
- * trigger is the switcher itself.
- * -------------------------------------------------------------------------- */
-
-.fw-backend-option-type-spacing .fw-device-tabs {
-	border-color: transparent;
-	background: transparent;
-	transition: background-color .15s ease, border-color .15s ease;
-}
-
-/* Rest: every icon hidden. */
-.fw-backend-option-type-spacing .fw-device-tab {
-	display: none;
-	transition: background-color .12s ease, color .12s ease;
-}
-
-/* The device switcher owns the very top-right corner, so sit the (i) help just
-   BELOW it, right-aligned in the same reserved column, so the two never collide.
-   Higher specificity than the framework's top:0 / right:0 base rule. */
-.fw-backend-option-design-default.with-help.fw-backend-option-type-spacing>.fw-backend-option-input>.fw-inner>.fw-option-help-in-input {
-	top: 42px;
-	right: 10px;
-}
-
-/* Reveal the help alongside the mobile icon on group hover / row focus — it
-   stays hidden at rest via the global help-icon rule (opacity / pointer-events). */
-.fw-backend-options-group:hover .fw-backend-option-type-spacing .fw-option-help-in-input,
-.fw-backend-option-type-spacing:hover .fw-option-help-in-input,
-.fw-backend-option-type-spacing:focus-within .fw-option-help-in-input {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-/* With the help icon gone, reclaim the 26px right gutter the framework reserves
-   for it (backend-options.css, @media min-width:783px) so the switcher reaches
-   the cell's right edge. Higher specificity than the base rule. */
-.fw-backend-option-design-default.with-help.fw-backend-option-type-spacing>.fw-backend-option-input>.fw-inner {
-	padding-right: 0;
-}
-
-/* Stage 1 — hovering the options group (or focusing the row) reveals ONLY the
-   mobile (phone/base) icon. */
-.fw-backend-options-group:hover .fw-backend-option-type-spacing .fw-device-tab[data-fw-device-key="base"],
-.fw-backend-option-type-spacing:hover .fw-device-tab[data-fw-device-key="base"],
-.fw-backend-option-type-spacing:focus-within .fw-device-tab[data-fw-device-key="base"] {
-	display: inline-flex;
-	animation: fwSpTabReveal .18s ease both;
-}
-
-/* Stage 2 — hovering (or focusing into) the switcher reveals all icons + chrome. */
-.fw-backend-option-type-spacing .fw-device-tabs:hover,
-.fw-backend-option-type-spacing .fw-device-tabs:focus-within {
-	border-color: #dcdcde;
-	background: #f6f7f7;
-}
-
-.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab,
-.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab {
-	display: inline-flex;
-}
-
-.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab:not([data-fw-device-key="base"]),
-.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab:not([data-fw-device-key="base"]) {
-	animation: fwSpTabReveal .18s ease both;
-}
-
-/* Active icon: muted until the pill opens (stage 2), then highlighted. */
-.fw-backend-option-type-spacing .fw-device-tab.is-active {
-	color: #646970;
-	background: transparent;
-}
-
-.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab.is-active,
-.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab.is-active {
-	color: #fff;
-	background: #2271b1;
-}
-
-@keyframes fwSpTabReveal {
-	from { opacity: 0; transform: translateX(6px); }
-	to   { opacity: 1; transform: translateX(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.fw-backend-option-type-spacing .fw-device-tab {
-		animation: none !important;
-	}
-}

@@ -1,1 +1,199 @@
-.fw-option-type-spacing{align-items:start;box-sizing:border-box;-moz-column-gap:12px;column-gap:12px;display:grid;grid-template-columns:1fr 104px;padding:4px 2px 0}.fw-option-type-spacing *,.fw-option-type-spacing :after,.fw-option-type-spacing :before{box-sizing:border-box}.fw-option-spacing-panels{grid-column:1;grid-row:1;min-width:0}.fw-option-spacing-head{grid-column:2;grid-row:1;justify-self:end;margin:0}.fw-sp-row{align-items:center;display:flex;gap:6px;margin-bottom:10px}.fw-sp-row:last-child{margin-bottom:0}.fw-sp-row-head{align-items:center;display:flex;gap:6px}.fw-sp-row-title{color:#50575e;font-size:12px;font-weight:600;width:56px}.fw-sp-link{align-items:center;background:#fff;border:1px solid #dcdcde;border-radius:3px;color:#646970;cursor:pointer;display:inline-flex;height:24px;justify-content:center;padding:0;transition:color .12s ease,border-color .12s ease;width:24px}.fw-sp-link:hover{border-color:#8c8f94;color:#1d2327}.fw-sp-row.is-linked .fw-sp-link{border-color:#2271b1;color:#2271b1}.fw-sp-link .dashicons{font-size:16px;height:16px;line-height:16px;width:16px}.fw-sp-link .fw-sp-ico-unlinked,.fw-sp-row:not(.is-linked) .fw-sp-link .fw-sp-ico-linked{display:none}.fw-sp-row:not(.is-linked) .fw-sp-link .fw-sp-ico-unlinked{display:inline-block}.fw-sp-fields{align-items:flex-end;display:flex;flex:1;gap:8px;min-width:0}.fw-sp-all{flex:1;max-width:180px;min-width:0}.fw-sp-all .fw-sp-slot-label{display:none}.fw-sp-sides{display:flex;gap:6px}.fw-sp-sides,.fw-sp-slot{flex:1;min-width:0}.fw-sp-slot-label{color:#646970;display:block;font-size:10px;font-weight:500;line-height:1.3;margin:0 0 2px;text-align:center}.fw-sp-row.is-linked .fw-sp-sides,.fw-sp-row:not(.is-linked) .fw-sp-all{display:none}.fw-option-type-spacing .fw-option-width-short{min-width:0;width:100%!important}.fw-option-type-spacing .fw-option-width-short select{min-width:0;width:100%}@media (max-width:520px){.fw-option-type-spacing{grid-template-columns:1fr}.fw-option-spacing-head,.fw-option-spacing-panels{grid-column:1;grid-row:auto}.fw-option-spacing-head{justify-self:end;margin-bottom:6px}.fw-sp-row{flex-wrap:wrap}.fw-sp-fields{flex-basis:100%}}.fw-backend-option-type-spacing .fw-device-tabs{background:transparent;border-color:transparent;transition:background-color .15s ease,border-color .15s ease}.fw-backend-option-type-spacing .fw-device-tab{display:none;transition:background-color .12s ease,color .12s ease}.fw-backend-option-design-default.with-help.fw-backend-option-type-spacing>.fw-backend-option-input>.fw-inner>.fw-option-help-in-input{right:10px;top:42px}.fw-backend-option-type-spacing:focus-within .fw-option-help-in-input,.fw-backend-option-type-spacing:hover .fw-option-help-in-input,.fw-backend-options-group:hover .fw-backend-option-type-spacing .fw-option-help-in-input{opacity:1;pointer-events:auto}.fw-backend-option-design-default.with-help.fw-backend-option-type-spacing>.fw-backend-option-input>.fw-inner{padding-right:0}.fw-backend-option-type-spacing:focus-within .fw-device-tab[data-fw-device-key=base],.fw-backend-option-type-spacing:hover .fw-device-tab[data-fw-device-key=base],.fw-backend-options-group:hover .fw-backend-option-type-spacing .fw-device-tab[data-fw-device-key=base]{animation:fwSpTabReveal .18s ease both;display:inline-flex}.fw-backend-option-type-spacing .fw-device-tabs:focus-within,.fw-backend-option-type-spacing .fw-device-tabs:hover{background:#f6f7f7;border-color:#dcdcde}.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab,.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab{display:inline-flex}.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab:not([data-fw-device-key=base]),.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab:not([data-fw-device-key=base]){animation:fwSpTabReveal .18s ease both}.fw-backend-option-type-spacing .fw-device-tab.is-active{background:transparent;color:#646970}.fw-backend-option-type-spacing .fw-device-tabs:focus-within .fw-device-tab.is-active,.fw-backend-option-type-spacing .fw-device-tabs:hover .fw-device-tab.is-active{background:#2271b1;color:#fff}@keyframes fwSpTabReveal{0%{opacity:0;transform:translateX(6px)}to{opacity:1;transform:translateX(0)}}@media (prefers-reduced-motion:reduce){.fw-backend-option-type-spacing .fw-device-tab{animation:none!important}}
+/* -----------------------------------------------------------------------------
+ * fw-option-type-spacing
+ *
+ * Compact, Elementor-style layout: a device switcher (Phone / Tablet / Desktop)
+ * in the header, then one inline row per section (Margin / Padding). Each row has
+ * a link toggle — linked shows a single "All" select; unlinked shows the four
+ * Top / Right / Bottom / Left selects. Per-device panels are show/hidden by the
+ * shared device-tabs component (framework/static/css/fw-device-tabs.css).
+ *
+ * We override the stock .fw-option-width-short width (~100px) inside our wrapper
+ * so each slot fills its cell instead of leaving dead space on the right.
+ * -------------------------------------------------------------------------- */
+
+.fw-option-type-spacing {
+	box-sizing: border-box;
+	padding: 4px 2px 0;
+}
+
+.fw-option-type-spacing *,
+.fw-option-type-spacing *::before,
+.fw-option-type-spacing *::after {
+	box-sizing: border-box;
+}
+
+/* The Margin / Padding rows take the full width. The device switcher
+   (.fw-option-spacing-head / .fw-device-head) is relocated into the label column
+   and styled entirely by the shared fw-device-tabs.css `.fw-device-head` rules. */
+.fw-option-spacing-panels {
+	min-width: 0;
+}
+
+/* One section row (Margin or Padding) laid out on a single line:
+   [ title + link ]  [ fields ]. */
+.fw-sp-row {
+	display: flex;
+	/* Centre the head (title + link) against the field block so the link icon
+	   lines up vertically with the select next to it. */
+	align-items: center;
+	/* Half the previous 12px — the link now sits right up against the select. */
+	gap: 6px;
+	margin-bottom: 10px;
+}
+
+.fw-sp-row:last-child {
+	margin-bottom: 0;
+}
+
+.fw-sp-row-head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.fw-sp-row-title {
+	/* Fixed width so "Margin" and "Padding" take the same footprint — the link
+	   icons (and therefore the selects) align in a column across both rows —
+	   without an oversized min-width leaving dead space before the select. */
+	width: 56px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #50575e;
+}
+
+/* Link toggle. */
+.fw-sp-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	background: #fff;
+	color: #646970;
+	cursor: pointer;
+	transition: color .12s ease, border-color .12s ease;
+}
+
+.fw-sp-link:hover {
+	color: #1d2327;
+	border-color: #8c8f94;
+}
+
+.fw-sp-row.is-linked .fw-sp-link {
+	color: #2271b1;
+	border-color: #2271b1;
+}
+
+.fw-sp-link .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	line-height: 16px;
+}
+
+/* Link / unlink icon swap. The two-class selectors (`.fw-sp-link .fw-sp-ico-*`)
+   are deliberate: WordPress's dashicons sheet sets `.dashicons { display:
+   inline-block }` at the same (single-class) specificity, and depending on
+   enqueue order it can load after this file and win — forcing BOTH glyphs to
+   show. Scoping each rule under `.fw-sp-link` (2 classes) beats `.dashicons` (1)
+   regardless of source order. */
+.fw-sp-link .fw-sp-ico-unlinked {
+	display: none;
+}
+
+.fw-sp-row:not(.is-linked) .fw-sp-link .fw-sp-ico-linked {
+	display: none;
+}
+
+.fw-sp-row:not(.is-linked) .fw-sp-link .fw-sp-ico-unlinked {
+	display: inline-block;
+}
+
+/* Field area. */
+.fw-sp-fields {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.fw-sp-all {
+	flex: 1;
+	min-width: 0;
+	max-width: 180px;
+}
+
+/* The single "All" select needs no label — the row title already names it. */
+.fw-sp-all .fw-sp-slot-label {
+	display: none;
+}
+
+.fw-sp-sides {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	gap: 6px;
+}
+
+.fw-sp-slot {
+	flex: 1;
+	min-width: 0;
+}
+
+.fw-sp-slot-label {
+	display: block;
+	margin: 0 0 2px;
+	font-size: 10px;
+	font-weight: 500;
+	line-height: 1.3;
+	color: #646970;
+	text-align: center;
+}
+
+/* Linked → hide the four sides; unlinked → hide the single "All". */
+.fw-sp-row.is-linked .fw-sp-sides {
+	display: none;
+}
+
+.fw-sp-row:not(.is-linked) .fw-sp-all {
+	display: none;
+}
+
+/* Make short-select fill its cell instead of using its fixed ~100px width. */
+.fw-option-type-spacing .fw-option-width-short {
+	width: 100% !important;
+	min-width: 0;
+}
+
+.fw-option-type-spacing .fw-option-width-short select {
+	width: 100%;
+	min-width: 0;
+}
+
+/* Narrow option panels — stack the switcher above the rows, and let each
+   section row wrap its fields under the title. */
+@media (max-width: 520px) {
+	.fw-option-type-spacing {
+		grid-template-columns: 1fr;
+	}
+	.fw-option-spacing-head,
+	.fw-option-spacing-panels {
+		grid-column: 1;
+		grid-row: auto;
+	}
+	.fw-option-spacing-head {
+		justify-self: end;
+		margin-bottom: 6px;
+	}
+	.fw-sp-row {
+		flex-wrap: wrap;
+	}
+	.fw-sp-fields {
+		flex-basis: 100%;
+	}
+}
+
