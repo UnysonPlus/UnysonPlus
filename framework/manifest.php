@@ -2,10 +2,24 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.45';
+$manifest['version'] = '2.14.46';
 
 /**
  * Changelog
+ * 2.14.46 - Icon libraries are now selectable in Theme Settings -> Icons. A new
+ *          top-level "Icons" settings tab (schema in the shortcodes extension) lists
+ *          every icon library — the webfont packs (Dashicons, Font Awesome, Entypo …)
+ *          plus the bundled SVG libraries (Lucide) — as a checklist, defaulting to
+ *          all-on so existing sites are unchanged. includes/option-types/icon-v2/
+ *          includes/pack-settings.php (loaded from bootstrap) reads that checklist and
+ *          (a) feeds the fw:option_type:icon-v2:filter_packs hook so the picker's Icon
+ *          Fonts dropdown only offers enabled font packs, and (b) exposes
+ *          unysonplus_any_font_pack_enabled() / unysonplus_icon_pack_enabled() which
+ *          the picker template uses to show/hide the Icon Fonts and Lucide tabs.
+ *          Disabling a library only hides it when picking NEW icons — icons already
+ *          placed on pages keep rendering (markup/CSS resolve against the full pack
+ *          list). Emoji / Custom SVG / Custom Upload / Favorites always show.
+ *
  * 2.14.44 - Custom SVG tab gains an "Upload .svg file" button. It reads the chosen
  *          file client-side (FileReader) into the paste textarea/value — no media
  *          upload, so it works even on sites that block the SVG mime type — and

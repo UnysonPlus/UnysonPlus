@@ -1,7 +1,6 @@
 <?php
 
-$tabs = fw()->backend->render_options(
-	array(
+$tab_config = array(
 		'icon-fonts' => array(
 			'type' => 'tab',
 			'title' => __('Icon Fonts', 'fw'),
@@ -123,11 +122,22 @@ $tabs = fw()->backend->render_options(
 				)
 			)
 		)
-	),
+	)
+;
 
-	/** $values */
+// Gate the two library tabs by the Theme Settings -> Icons selection. Emoji,
+// Custom SVG, Custom Upload and Favorites always show. Helpers come from the
+// core pack-settings.php (function_exists guards keep this safe if it's absent).
+if ( function_exists( 'unysonplus_any_font_pack_enabled' ) && ! unysonplus_any_font_pack_enabled() ) {
+	unset( $tab_config['icon-fonts'] );
+}
+if ( function_exists( 'unysonplus_icon_pack_enabled' ) && ! unysonplus_icon_pack_enabled( 'lucide' ) ) {
+	unset( $tab_config['lucide'] );
+}
+
+$tabs = fw()->backend->render_options(
+	$tab_config,
 	array(),
-
 	array(
 		'id_prefix' => 'fw-option-type-iconv2-',
 		'name_prefix' => 'fw_option_type_iconv2'

@@ -67,6 +67,10 @@ if (defined('FW')) {
             // _search) for the icon type's SVG kind. Loaded always so the frontend
             // resolver is available even on requests that don't touch the option type.
             require $dir . '/includes/option-types/icon-v2/includes/lucide.php';
+            // Icon-pack enable/disable: reads the Theme Settings -> Icons checklist
+            // and filters which packs the icon picker offers. Loaded always so the
+            // filter_packs hook + gating helpers exist wherever the picker renders.
+            require $dir . '/includes/option-types/icon-v2/includes/pack-settings.php';
             // unysonplus-theme ships its own (un-guarded) copy of the
             // fw-multi-inline option type. Loading the plugin's copy first
             // would cause a fatal "Cannot redeclare class" when the theme
