@@ -14,7 +14,11 @@ fw_print($json);
  */
 
 $wrapper_attr = array(
-	'class' => $option['attr']['class'] . ' fw-icon-v2-preview-' . $option['preview_size'],
+	// `fw-icon-picker` is a STABLE hook class the picker JS binds to, so this
+	// engine works no matter which type id rendered it ('icon-v2' or the
+	// reclaimed 'icon'). The Unyson-added fw-option-type-<type> class differs
+	// per id; this one is constant across both.
+	'class' => $option['attr']['class'] . ' fw-icon-v2-preview-' . $option['preview_size'] . ' fw-icon-picker',
 	'id' => $option['attr']['id'],
 	'data-fw-modal-size' => $option['popup_size']
 );

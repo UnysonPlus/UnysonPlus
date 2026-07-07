@@ -84,19 +84,52 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
             'fw_icon_v2_data',
             [
                 'edit_icon_label' => __('Change Icon', 'fw'),
-                'add_icon_label' => __('Add Icon', 'fw')
+                'add_icon_label' => __('Add Icon', 'fw'),
+                'no_results' => __('No icons found', 'fw')
             ]
         );
     }
 
     public function load_templates(): void
     {
+        // This option type is registered under two ids ('icon-v2' and the
+        // reclaimed 'icon'), which means two instances each hook
+        // admin_print_footer_scripts. The picker templates are keyed by fixed
+        // ids (tmpl-fw-icon-v2-*), so print them only once per request.
+        static $printed = false;
+        if ($printed) { return; }
+        $printed = true;
+
         echo fw_render_view(
             dirname(__FILE__) . '/views/templates.php',
             [
                 'packs_loader' => $this->packs_loader
             ]
         );
+    }
+
+    /**
+     * Normalize a stored value to the canonical array shape.
+     *
+     * Reclaiming the `icon` type means legacy scalar values (the old `icon`
+     * option stored a bare class string like 'fa fa-linux', or 'dashicons
+     * dashicons-book') can now reach this engine. Convert them to the font-icon
+     * array shape so `$value['type']` access never triggers an illegal-string-
+     * offset. Anything already an array is returned untouched.
+     */
+    public function normalize_value($value)
+    {
+        if (is_string($value)) {
+            $value = ($value === '')
+                ? ['type' => 'none']
+                : ['type' => 'icon-font', 'icon-class' => $value];
+        }
+
+        if (!is_array($value) || !isset($value['type'])) {
+            $value = ['type' => 'none'];
+        }
+
+        return $value;
     }
 
     protected function _render($id, $option, $data)
@@ -114,7 +147,9 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
     protected function _get_value_from_input($option, $input_value)
     {
         if (is_null($input_value)) {
-            return $option['value'];
+            // A reclaimed `icon` option may declare a legacy string default
+            // (e.g. 'value' => 'fa fa-linux'); hand back the canonical shape.
+            return $this->normalize_value($option['value']);
         }
 
         return $this->_get_db_value_from_json($input_value);
@@ -129,8 +164,13 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
          * comes straight as array, you should parse it.
          */
         if (!is_array($input_value)) {
-            $input = json_decode($input_value, true);
+            $decoded = json_decode($input_value, true);
+            // A legacy `icon` scalar ('fa fa-star') is not valid JSON — treat
+            // the raw string as a font-icon class instead of a decode failure.
+            $input = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $input_value;
         }
+
+        $input = $this->normalize_value($input);
 
         $result = [];
 
@@ -152,8 +192,36 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
         }
 
         if ($input['type'] === 'custom-upload') {
-            $result['attachment-id'] = $input['attachment-id'];
-            $result['url'] = $input['url'];
+            $result['attachment-id'] = isset($input['attachment-id']) ? $input['attachment-id'] : false;
+            $result['url'] = isset($input['url']) ? $input['url'] : false;
+        }
+
+        if ($input['type'] === 'emoji') {
+            $result['char'] = isset($input['char']) ? (string) $input['char'] : '';
+        }
+
+        if ($input['type'] === 'svg') {
+            // library | upload | inline (paste)
+            $source = isset($input['svg-source']) ? (string) $input['svg-source'] : '';
+            $result['svg-source'] = $source;
+
+            // Keep svg-id ONLY for a library pick — drop a stale one when the
+            // user switched this icon to a pasted/uploaded SVG, so it can't win
+            // over the markup at render time.
+            if ($source !== 'inline' && $source !== 'upload' && !empty($input['svg-id'])) {
+                $result['svg-id'] = (string) $input['svg-id'];
+            }
+            if (!empty($input['attachment-id'])) { $result['attachment-id'] = $input['attachment-id']; }
+            if (!empty($input['url']))          { $result['url']           = (string) $input['url']; }
+
+            // Sanitise inline / pasted markup once, on the way in, so what's
+            // stored is already clean (render also sanitises, defence-in-depth).
+            if (!empty($input['markup'])) {
+                $markup = (string) $input['markup'];
+                $result['markup'] = function_exists('sc_icon_sanitize_svg')
+                    ? sc_icon_sanitize_svg($markup)
+                    : $markup;
+            }
         }
 
         return $result;
@@ -161,6 +229,11 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
 
     protected function _get_json_value_to_insert_in_html($data): string
     {
+        // A reclaimed `icon` option may carry a legacy string value; normalize
+        // before touching $value['type'] so the picker preview never fatals on
+        // a pre-existing item (mirrors the multi-picker editor-load gotcha).
+        $data['value'] = $this->normalize_value($data['value']);
+
         $result = [];
 
         $result['type'] = $data['value']['type'];
@@ -170,8 +243,19 @@ class FW_Option_Type_Icon_v2 extends FW_Option_Type
         }
 
         if ($data['value']['type'] === 'custom-upload') {
-            $result['attachment-id'] = $data['value']['attachment-id'];
-            $result['url'] = $data['value']['url'];
+            $result['attachment-id'] = isset($data['value']['attachment-id']) ? $data['value']['attachment-id'] : false;
+            $result['url'] = isset($data['value']['url']) ? $data['value']['url'] : false;
+        }
+
+        if ($data['value']['type'] === 'emoji') {
+            $result['char'] = isset($data['value']['char']) ? (string) $data['value']['char'] : '';
+        }
+
+        if ($data['value']['type'] === 'svg') {
+            $result['svg-source'] = isset($data['value']['svg-source']) ? (string) $data['value']['svg-source'] : '';
+            foreach (['svg-id', 'attachment-id', 'url', 'markup'] as $k) {
+                if (!empty($data['value'][$k])) { $result[$k] = $data['value'][$k]; }
+            }
         }
 
         return json_encode($result);

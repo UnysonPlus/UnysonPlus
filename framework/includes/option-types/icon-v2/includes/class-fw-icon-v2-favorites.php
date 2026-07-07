@@ -22,12 +22,42 @@ class FW_Icon_V2_Favorites_Manager
 			'wp_ajax_fw_icon_v2_get_icons',
 			array($this, 'get_icon_packs')
 		);
+
+		add_action(
+			'wp_ajax_fw_icon_v2_lucide_search',
+			array($this, 'lucide_search_action')
+		);
 	}
 
 	public function get_icon_packs() {
 		wp_send_json_success(
 			fw()->backend->option_type('icon-v2')->packs_loader->get_packs(true)
 		);
+	}
+
+	/**
+	 * Search the bundled Lucide library for the picker grid. Returns up to a
+	 * capped number of { name, id, markup } entries for the query (empty query
+	 * → the first slice of the full set).
+	 */
+	public function lucide_search_action() {
+		if ( ! function_exists( 'fw_icon_lucide_search' ) ) {
+			wp_send_json_success( array() );
+		}
+
+		$query = FW_Request::POST( 'q', '' );
+		$names = fw_icon_lucide_search( $query, 150 );
+
+		$result = array();
+		foreach ( $names as $name ) {
+			$result[] = array(
+				'name'   => $name,
+				'id'     => 'lucide/' . $name,
+				'markup' => fw_icon_lucide_markup( $name ),
+			);
+		}
+
+		wp_send_json_success( $result );
 	}
 
 	public function set_favorites_action()

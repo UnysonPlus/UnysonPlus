@@ -446,3 +446,102 @@
 .admin-color-sunrise .fw-icon-v2-library-pack > li.selected {
 	box-shadow: inset 0px 0px 0px 3px #dd823b;
 }
+
+/* -----------------------------------------------------------------------------
+ * Emoji + Custom SVG picker tabs (Phase 2B)
+ * -------------------------------------------------------------------------- */
+.fw-icon-v2-emoji-tab,
+.fw-icon-v2-svg-tab {
+	padding: 8px 20px 16px;
+}
+.fw-icon-v2-hint {
+	color: #646970;
+	font-size: 12px;
+	margin: 6px 0 12px;
+}
+.fw-icon-v2-emoji-input {
+	width: 100%;
+	max-width: 320px;
+	font-size: 28px;
+	line-height: 1.4;
+	text-align: center;
+	padding: 8px 10px;
+}
+.fw-icon-v2-svg-input {
+	width: 100%;
+	min-height: 150px;
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre;
+	tab-size: 2;
+}
+.fw-icon-v2-emoji-live,
+.fw-icon-v2-svg-live {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 72px;
+	margin-top: 14px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	background: #f6f7f7;
+	color: #1d2327;
+}
+.fw-icon-v2-emoji-live {
+	font-size: 44px;
+	line-height: 1;
+}
+.fw-icon-v2-svg-live svg {
+	width: 48px;
+	height: 48px;
+	color: #1d2327;
+}
+/* Option-swatch preview for the new kinds. The core CSS only sizes/centers the
+ * <i> for data-icon-type="icon-font"; do the same for emoji + svg so their glyph
+ * fills and centers in the swatch instead of collapsing to the top-left. */
+.fw-icon-v2-preview-wrapper[data-icon-type="emoji"] .fw-icon-v2-preview i,
+.fw-icon-v2-preview-wrapper[data-icon-type="svg"] .fw-icon-v2-preview i {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	line-height: 1;
+	font-style: normal;
+}
+/* Emoji glyph scales with the swatch (small 26 / medium ~34 / large larger). */
+.fw-icon-v2-preview-emoji {
+	font-size: 26px;
+}
+.fw-icon-v2-preview-medium .fw-icon-v2-preview-emoji {
+	font-size: 34px;
+}
+.fw-icon-v2-preview-large .fw-icon-v2-preview-emoji {
+	font-size: 44px;
+}
+/* Inline SVG fills most of the swatch and inherits the preview grey. */
+.fw-icon-v2-preview-svg svg {
+	width: 78%;
+	height: 78%;
+	color: #7a7a7a;
+}
+
+/* -----------------------------------------------------------------------------
+ * Lucide library tab (Phase 2B) — mirrors the Icon Fonts layout.
+ * -------------------------------------------------------------------------- */
+.fw-icon-v2-lucide-library .fw-option-html {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+/* Search fills the toolbar (the shared rule sizes toolbar inputs to 49%). */
+.fw-icon-v2-toolbar input.fw-icon-v2-lucide-search {
+	width: 100% !important;
+}
+/* Inline-SVG tiles reuse the icon-fonts grid; just size the glyph. */
+.fw-icon-v2-lucide-icon .fw-icon-inner svg {
+	width: 26px;
+	height: 26px;
+	color: #1d2327;
+}

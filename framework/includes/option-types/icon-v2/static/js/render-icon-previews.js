@@ -1,5 +1,9 @@
 (function($) {
-	var $rootClass = '.fw-option-type-icon-v2';
+	// Bind via a stable hook class rendered by the shared view.php, so the
+	// picker works for every id this engine is registered under — 'icon-v2'
+	// and the reclaimed 'icon'. (Previously '.fw-option-type-icon-v2', which
+	// only matched the 'icon-v2' id.)
+	var $rootClass = '.fw-icon-picker';
 
 	/**
 	 * We'll have this HTML structure
@@ -143,11 +147,20 @@
 			.find('.fw-icon-v2-preview-wrapper')
 			.attr('data-icon-type', data['type']);
 
-		$root.find('i').attr('class', '');
-		$root.find('i').attr('style', '');
+		// Reset the preview glyph before re-rendering it for the current kind.
+		$root.find('i').attr('class', '').attr('style', '').empty();
 
 		if (data.type === 'icon-font') {
 			$root.find('i').attr('class', data['icon-class']);
+		}
+
+		if (data.type === 'emoji') {
+			$root.find('i').addClass('fw-icon-v2-preview-emoji').text(data['char'] || '');
+		}
+
+		if (data.type === 'svg') {
+			// markup is what the picker stored; server sanitises on save/render.
+			$root.find('i').addClass('fw-icon-v2-preview-svg').html(data['markup'] || '');
 		}
 
 		if (data.type === 'custom-upload') {
@@ -195,6 +208,22 @@
 			}
 		}
 
+		if (actualValue.type === 'emoji') {
+			if ((actualValue['char'] || '').trim() === '') {
+				actualValue.type = 'none';
+			}
+		}
+
+		if (actualValue.type === 'svg') {
+			if (
+				! (actualValue['markup'] || '') &&
+				! (actualValue['url'] || '') &&
+				! (actualValue['svg-id'] || '')
+			) {
+				actualValue.type = 'none';
+			}
+		}
+
 		$root.find('input').val(JSON.stringify(actualValue)).trigger('change');
 
 		fw.options.trigger.changeForEl($root, {
@@ -204,14 +233,30 @@
 		refreshSinglePreview($root);
 	}
 
-	fw.options.register('icon-v2', {
+	var iconOptionHandler = {
 		startListeningForChanges: $.noop,
 		getValue: function(optionDescriptor) {
+			var raw = $(optionDescriptor.el).find('input').val();
+			var parsed;
+			try {
+				parsed = JSON.parse(raw);
+			} catch (e) {
+				// Defensive: a legacy `icon` scalar ('fa fa-star') is not JSON.
+				// PHP _render normalizes before printing, so this should not
+				// happen, but tolerate it rather than throwing in the builder.
+				parsed = raw ? { type: 'icon-font', 'icon-class': raw } : { type: 'none' };
+			}
 			return {
-				value: JSON.parse($(optionDescriptor.el).find('input').val()),
+				value: parsed,
 
 				optionDescriptor: optionDescriptor,
 			};
 		},
-	});
+	};
+
+	// Registered under both ids: 'icon-v2' (existing consumers) and the
+	// reclaimed 'icon'. Both render via the same engine/view, so one handler
+	// serves both.
+	fw.options.register('icon-v2', iconOptionHandler);
+	fw.options.register('icon', iconOptionHandler);
 })(jQuery);

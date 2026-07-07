@@ -2,10 +2,71 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.34';
+$manifest['version'] = '2.14.45';
 
 /**
  * Changelog
+ * 2.14.44 - Custom SVG tab gains an "Upload .svg file" button. It reads the chosen
+ *          file client-side (FileReader) into the paste textarea/value — no media
+ *          upload, so it works even on sites that block the SVG mime type — and
+ *          stores it as { type:'svg', svg-source:'upload', markup }, sanitised on
+ *          save + render like a paste.
+ *
+ * 2.14.41 - Icon picker gains the bundled Lucide library as a searchable grid tab.
+ *          The new "Lucide" tab (after Icon Fonts) searches the ~1,994-glyph set
+ *          as-you-type via a new wp_ajax_fw_icon_v2_lucide_search action
+ *          (debounced; returns up to 150 { name, id, markup } entries from
+ *          fw_icon_lucide_search()), and renders inline-SVG tiles reusing the
+ *          icon-fonts grid styling. Picking one stores { type:'svg',
+ *          svg-source:'library', svg-id:'lucide/<name>', markup } — the frontend
+ *          resolves it through sc_icon_render()/fw_icon_lucide_markup(), so it
+ *          recolours via currentColor. prepareForPick opens a library value on the
+ *          Lucide tab and pasted-markup on Custom SVG; the grid lazy-loads its
+ *          defaults the first time the tab is shown. Still to come: SVG file
+ *          upload, and retiring the per-element Custom Icon field.
+ *
+ * 2.14.37 - Icon picker gains Emoji and Custom SVG tabs. The picker modal now has an
+ *          "Emoji" tab (type/paste any emoji -> { type:'emoji', char }) and a "Custom
+ *          SVG" tab (paste inline <svg> markup -> { type:'svg', svg-source:'inline',
+ *          markup }, sanitised on save + render). The tab->value-type mapping was made
+ *          MARKER-based instead of the old hard-coded tab-index check, so adding tabs
+ *          can't break the existing icon-font / upload selection; the new tabs sit last
+ *          so the indices prepareForPick still relies on are unchanged. The option
+ *          swatch previews emoji (the glyph) and SVG (inline markup). Still to come:
+ *          the Lucide search grid, SVG file upload, opening straight to the emoji/SVG
+ *          tab when editing such a value, and retiring the per-element Custom Icon field.
+ *
+ * 2.14.36 - Icon type gains emoji + SVG value kinds (foundation). The engine now
+ *          stores/round-trips two new value shapes — `{ type:'emoji', char }` and
+ *          `{ type:'svg', svg-source, svg-id | markup | url }` — alongside icon-font
+ *          and custom-upload; inline/pasted SVG markup is sanitised on the way in.
+ *          Bundled the Lucide icon library (~1,994 ISC-licensed glyphs) under
+ *          includes/option-types/icon-v2/data/ as a compact name->inner-markup map
+ *          plus a search-keyword map; includes/option-types/icon-v2/includes/lucide.php
+ *          (loaded from bootstrap) exposes fw_icon_lucide_markup() (name -> inline
+ *          <svg> using currentColor), fw_icon_lucide_all() and fw_icon_lucide_search().
+ *          The shortcodes helper's sc_icon_svg_library_markup() resolves `lucide/*`
+ *          ids through it, so sc_icon_render() already displays a picked Lucide / SVG /
+ *          emoji everywhere. Still to come (Phase 2B UI): the picker-modal tabs that
+ *          let users CHOOSE emoji / Lucide / custom SVG, and retiring the per-element
+ *          Custom Icon field.
+ *
+ * 2.14.35 - Reclaimed the `icon` option type. The legacy Font Awesome 4 `icon` picker is
+ *          retired and the clean `icon` id now resolves to the modern engine
+ *          (FW_Option_Type_Icon_v2), registered a second time under `icon` alongside its
+ *          `icon-v2` alias — so `type => 'icon'` gives the searchable multi-pack picker while
+ *          all existing `icon-v2` consumers keep working. The picker JS now binds via a stable
+ *          `.fw-icon-picker` hook class (rendered by the shared view) instead of the per-id
+ *          `.fw-option-type-icon-v2`, so both ids get the picker; the templates print once per
+ *          request. Legacy scalar values ('fa fa-linux', 'dashicons dashicons-book') are
+ *          migrated to the array shape on the fly by FW_Option_Type_Icon_v2::normalize_value()
+ *          across the render, input and JSON paths, so pre-existing saves never fatal on
+ *          $value['type']. The two former FA4 consumers moved over: the divider shortcode
+ *          (renders through sc_icon_render(), which tolerates both shapes) and the post-types
+ *          menu-icon field (reads either shape in resolve_menu_icon()). The old
+ *          FW_Option_Type_Icon class file stays on disk (autoloadable) but is no longer
+ *          registered.
+ *
  * 2.14.21 - New `responsive` option type — a generic per-device wrapper (Phone / Tablet / Desktop)
  *          around any single inner control (image-picker, select, …). Stores one value per layer,
  *          array( base, md, lg ), mobile-first: base applies at all widths, md/lg override upward, a

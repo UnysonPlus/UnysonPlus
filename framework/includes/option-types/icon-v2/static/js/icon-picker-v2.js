@@ -16,6 +16,12 @@
 				'click .fw-icon-v2-library-icon a': 'markIconAsFavorite',
 				'click button.fw-icon-v2-custom-upload-perform':
 					'performImageUpload',
+				'input .fw-icon-v2-emoji-input': 'onEmojiInput',
+				'input .fw-icon-v2-svg-input': 'onSvgInput',
+				'click .fw-icon-v2-svg-upload': 'onSvgUploadClick',
+				'change .fw-icon-v2-svg-file': 'onSvgFile',
+				'input .fw-icon-v2-lucide-search': 'onLucideSearch',
+				'click .fw-icon-v2-lucide-icon': 'onLucideSelect',
 				submit: 'onSubmit',
 			},
 
@@ -28,6 +34,14 @@
 				this.throttledApplyFilters = _.throttle(
 					_.bind(this.model.applyFilters, this.model),
 					200
+				)
+
+				// Lucide search: name → last-fetched item map, plus a debounced
+				// AJAX search so typing doesn't fire a request per keystroke.
+				this.lucideResults = {}
+				this.debouncedLucideSearch = _.debounce(
+					_.bind(this.doLucideSearch, this),
+					250
 				)
 			},
 
@@ -98,6 +112,14 @@
 				e.preventDefault()
 
 				var $el = $(e.currentTarget)
+
+				// Lucide tiles share the .fw-icon-v2-library-icon grid class but
+				// carry data-name (not data-fw-icon-v2) and are handled by
+				// onLucideSelect — skip them here so this doesn't throw on
+				// undefined.trim() and swallow the Lucide click.
+				if (!$el.attr('data-fw-icon-v2')) {
+					return
+				}
 
 				var type =
 					$el.closest(
@@ -204,6 +226,168 @@
 
 				this.previousSearch = $el.val()
 			},
+
+			// Emoji tab: a typed/pasted emoji becomes the whole value.
+			onEmojiInput: function(event) {
+				var char = $(event.currentTarget).val()
+
+				this.model.result = char
+					? { type: 'emoji', char: char }
+					: { type: 'none' }
+
+				$(event.currentTarget)
+					.closest('.fw-icon-v2-emoji-tab')
+					.find('.fw-icon-v2-emoji-live')
+					.text(char || '')
+			},
+
+			// Custom SVG tab: pasted inline markup. Real sanitisation happens
+			// server-side on save AND render; this preview is just what's typed.
+			onSvgInput: function(event) {
+				var markup = $(event.currentTarget).val()
+				var isSvg = markup.toLowerCase().indexOf('<svg') !== -1
+
+				// 'svg-id': '' clears any leftover Lucide id from a prior pick so
+				// it can't win over this markup when the value is merged/saved.
+				this.model.result = isSvg
+					? { type: 'svg', 'svg-source': 'inline', markup: markup, 'svg-id': '' }
+					: { type: 'none' }
+
+				$(event.currentTarget)
+					.closest('.fw-icon-v2-svg-tab')
+					.find('.fw-icon-v2-svg-live')
+					.html(isSvg ? markup : '')
+			},
+
+			// "Upload .svg file" → open the hidden file input.
+			onSvgUploadClick: function(event) {
+				event.preventDefault()
+				$(event.currentTarget)
+					.closest('.fw-icon-v2-toolbar')
+					.find('.fw-icon-v2-svg-file')
+					.trigger('click')
+			},
+
+			// Read the chosen .svg client-side (no media upload → no SVG-mime
+			// restriction) into the textarea + value, same shape as a paste.
+			onSvgFile: function(event) {
+				var input = event.currentTarget
+				var file = input.files && input.files[0]
+				if (!file) {
+					return
+				}
+
+				var view = this
+				var reader = new FileReader()
+
+				reader.onload = function(e) {
+					var markup = String((e.target && e.target.result) || '')
+					var isSvg = markup.toLowerCase().indexOf('<svg') !== -1
+
+					view.model.frame.$el
+						.find('.fw-icon-v2-svg-input')
+						.val(markup)
+					view.model.frame.$el
+						.find('.fw-icon-v2-svg-live')
+						.html(isSvg ? markup : '')
+
+					// 'svg-id': '' clears any leftover Lucide id from a prior pick.
+					view.model.result = isSvg
+						? {
+								type: 'svg',
+								'svg-source': 'upload',
+								markup: markup,
+								'svg-id': '',
+						  }
+						: { type: 'none' }
+				}
+
+				reader.readAsText(file)
+				input.value = '' // allow re-selecting the same file
+			},
+
+			// Lucide tab: search-as-you-type (debounced) against the bundled set.
+			onLucideSearch: function(event) {
+				this.debouncedLucideSearch($(event.currentTarget).val())
+			},
+
+			doLucideSearch: function(query) {
+				var view = this
+
+				$.post(ajaxurl, {
+					action: 'fw_icon_v2_lucide_search',
+					q: query || '',
+				}).done(function(resp) {
+					if (resp && resp.success) {
+						view.renderLucideResults(resp.data)
+					}
+				})
+			},
+
+			renderLucideResults: function(items) {
+				var view = this
+				view.lucideResults = {}
+
+				var $wrap = view.model.frame.$el.find(
+						'.fw-icon-v2-lucide-results'
+					)
+
+				if (!items || !items.length) {
+					$wrap.html(
+						'<div class="fw-icon-v2-note"><h3>' +
+							(window.fw_icon_v2_data &&
+							fw_icon_v2_data.no_results
+								? fw_icon_v2_data.no_results
+								: 'No icons found') +
+							'</h3></div>'
+					)
+					return
+				}
+
+				var currentId = view.model.result && view.model.result['svg-id']
+				var html = '<ul class="fw-icon-v2-library-pack">'
+
+				_.each(items, function(item) {
+					view.lucideResults[item.name] = item
+
+					html +=
+						'<li class="fw-icon-v2-library-icon fw-icon-v2-lucide-icon ' +
+						(currentId === item.id ? 'selected' : '') +
+						'" data-name="' +
+						_.escape(item.name) +
+						'" title="' +
+						_.escape(item.name) +
+						'"><div class="fw-icon-inner">' +
+						item.markup +
+						'</div></li>'
+				})
+
+				html += '</ul>'
+				$wrap.html(html)
+			},
+
+			onLucideSelect: function(event) {
+				event.preventDefault()
+
+				var $el = $(event.currentTarget)
+				var item = this.lucideResults[$el.attr('data-name')]
+
+				if (!item) {
+					return
+				}
+
+				this.model.result = {
+					type: 'svg',
+					'svg-source': 'library',
+					'svg-id': item.id,
+					markup: item.markup,
+				}
+
+				$el.closest('.fw-icon-v2-library-pack')
+					.find('.selected')
+					.removeClass('selected')
+				$el.addClass('selected')
+			},
 		}),
 
 		initialize: function(attributes, settings) {
@@ -304,34 +488,94 @@
 				.off('tabsactivate.fwiconv2')
 				.on('tabsactivate.fwiconv2', function(event, ui) {
 					/**
-					 * Every tab change should cause a change on a modal.
-					 *
-					 * It may be the case that the user will switch to
-					 * `Custom Upload` and the value of the option type won't change
-					 * because of the fact that `change:values` callback will not
-					 * be executed.
+					 * Every tab change should set a sensible default type on the
+					 * modal (the concrete value is set when the user actually picks
+					 * something in the tab). Detect the tab by a MARKER in its panel
+					 * rather than its index, so adding tabs (Emoji / Custom SVG /
+					 * Lucide) never breaks the existing icon-font / upload mapping.
+					 * Favorites has no marker → keep the current type (the clicked
+					 * favorite decides font-vs-upload).
 					 */
-					modal.result.type =
-						ui.newTab.index() === 1 ? 'custom-upload' : 'icon-font'
+					var $panel = ui.newPanel
+					var kind =
+						$panel.find('.fw-icon-v2-emoji-tab').length
+							? 'emoji'
+							: $panel.find('.fw-icon-v2-svg-tab').length
+							? 'svg'
+							: $panel.find('.fw-icon-v2-lucide-results').length
+							? 'svg'
+							: $panel.find(
+									'[data-fw-option-id="upload-custom-icon-recents"]'
+							  ).length
+							? 'custom-upload'
+							: $panel.find('.fw-icon-v2-icons-library').length
+							? 'icon-font'
+							: null
+
+					if (kind) {
+						modal.result.type = kind
+					}
+
+					// Lazy-load the Lucide grid the first time its tab is shown.
+					var $lucide = $panel.find('.fw-icon-v2-lucide-results')
+					if ($lucide.length && !$lucide.children().length) {
+						modal.content.doLucideSearch('')
+					}
 				})
 
 			this.content.renderFavoritesAndRecentUploads()
 			this.content.refreshFavorites()
 
 			var $tabs = modal.frame.$el.find('.ui-tabs')
-			var currentTab = $tabs.tabs('option', 'active')
+			var state = modal.get('current_state')
 
-			if (modal.get('current_state').type === 'custom-upload') {
-				if (currentTab !== 1) {
-					$tabs.tabs({active: 1})
-				}
+			// Open the modal on the tab matching the current value's type, found
+			// by a MARKER in each tab's panel — never by a fixed index — so the
+			// tabs can be reordered freely without breaking this.
+			var $panels = $tabs.find('.ui-tabs-panel')
+			if (!$panels.length) {
+				$panels = $tabs.find('[role="tabpanel"]')
 			}
 
-			if (modal.get('current_state').type !== 'custom-upload') {
-				if (currentTab === 1) {
-					$tabs.tabs({active: 0})
-				}
+			var typeSelectors = {
+				'custom-upload': '[data-fw-option-id="upload-custom-icon-recents"]',
+				'emoji': '.fw-icon-v2-emoji-tab',
+				'svg': '.fw-icon-v2-svg-tab',
+				'icon-font': '.fw-icon-v2-icons-library',
+			}
 
+			var wantSelector =
+				typeSelectors[state.type] || typeSelectors['icon-font']
+			// An SVG value has two possible tabs: a library pick opens Lucide,
+			// pasted markup opens Custom SVG.
+			if (state.type === 'svg') {
+				wantSelector =
+					state['svg-source'] === 'library'
+						? '.fw-icon-v2-lucide-results'
+						: '.fw-icon-v2-svg-tab'
+			}
+			var wantIndex = -1
+			$panels.each(function(i) {
+				if ($(this).find(wantSelector).length) {
+					wantIndex = i
+					return false
+				}
+			})
+			if (wantIndex >= 0 && $tabs.tabs('option', 'active') !== wantIndex) {
+				$tabs.tabs({active: wantIndex})
+			}
+
+			// Pre-fill the Emoji / Custom SVG inputs when editing such a value.
+			if (state.type === 'emoji') {
+				modal.frame.$el.find('.fw-icon-v2-emoji-input').val(state.char || '')
+				modal.frame.$el.find('.fw-icon-v2-emoji-live').text(state.char || '')
+			}
+			if (state.type === 'svg') {
+				modal.frame.$el.find('.fw-icon-v2-svg-input').val(state.markup || '')
+				modal.frame.$el.find('.fw-icon-v2-svg-live').html(state.markup || '')
+			}
+
+			if (state.type === 'icon-font') {
 				if (modal.result['icon-class']) {
 					this.frame.$el
 						.find(

@@ -63,6 +63,10 @@ if (defined('FW')) {
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';
             require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
+            // Bundled Lucide icon library resolver (fw_icon_lucide_markup / _all /
+            // _search) for the icon type's SVG kind. Loaded always so the frontend
+            // resolver is available even on requests that don't touch the option type.
+            require $dir . '/includes/option-types/icon-v2/includes/lucide.php';
             // unysonplus-theme ships its own (un-guarded) copy of the
             // fw-multi-inline option type. Loading the plugin's copy first
             // would cause a fatal "Cannot redeclare class" when the theme

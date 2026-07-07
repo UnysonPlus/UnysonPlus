@@ -16,6 +16,87 @@ $tabs = fw()->backend->render_options(
 			)
 		),
 
+		// Bundled Lucide SVG library. Toolbar (search) is a sibling first, like
+		// Icon Fonts; results are AJAX-searched and rendered into the grid below.
+		'lucide' => array(
+			'type' => 'tab',
+			'title' => __('Lucide', 'fw'),
+			'lazy_tabs' => false,
+			'options' => array(
+				'lucide-picker' => array(
+					'type' => 'html-full',
+					// Same shape as Icon Fonts: the option wrapper is a flex
+					// column so the toolbar (75px) + scrolling results split the
+					// height. Both are DIRECT children of .fw-option-html.
+					'attr' => array('class' => 'fw-icon-v2-lucide-library'),
+					'label' => false,
+					'html' =>
+						'<div class="fw-icon-v2-toolbar">'
+						. '<input type="text" class="fw-icon-v2-lucide-search fw-option fw-option-type-text" placeholder="' . esc_attr__( 'Search 1,900+ Lucide icons…', 'fw' ) . '" autocomplete="off" />'
+						. '</div>'
+						. '<div class="fw-icon-v2-library-pack-wrapper fw-icon-v2-lucide-results"></div>'
+				)
+			)
+		),
+
+		// Tab order is purely presentational: both tab→type detection AND the
+		// open-on-matching-tab logic (prepareForPick) are marker-based, so tabs
+		// can be arranged in any order. Current order: Icon Fonts, Lucide, Emoji,
+		// Custom SVG, Custom Upload, Favorites.
+		'emoji' => array(
+			'type' => 'tab',
+			'lazy_tabs' => false,
+			'title' => __('Emoji', 'fw'),
+			'options' => array(
+				'emoji-picker' => array(
+					'type' => 'html-full',
+					'label' => false,
+					'html' =>
+						// Toolbar is a sibling (first child), matching the Icon
+						// Fonts tab, so the heading aligns; the emoji-tab wrapper
+						// holds only the content below it.
+						'<div class="fw-icon-v2-toolbar"><h3>' . esc_html__( 'Emoji', 'fw' ) . '</h3></div>'
+						. '<div class="fw-icon-v2-emoji-tab">'
+						. '<p class="fw-icon-v2-hint">'
+						. esc_html__( 'Type or paste any emoji. Windows: press Win + . — macOS: Ctrl + Cmd + Space.', 'fw' )
+						. '</p>'
+						. '<input type="text" class="fw-icon-v2-emoji-input" maxlength="16" placeholder="' . esc_attr__( 'e.g. star, rocket, heart emoji', 'fw' ) . '" autocomplete="off" />'
+						. '<div class="fw-icon-v2-emoji-live" aria-hidden="true"></div>'
+						. '</div>'
+				)
+			)
+		),
+
+		'custom-svg' => array(
+			'type' => 'tab',
+			'lazy_tabs' => false,
+			'title' => __('Custom SVG', 'fw'),
+			'options' => array(
+				'custom-svg-picker' => array(
+					'type' => 'html-full',
+					'label' => false,
+					'html' =>
+						// Toolbar is a sibling (first child), matching the Icon
+						// Fonts tab, so the heading aligns; the svg-tab wrapper
+						// holds only the content below it. The Upload button reads
+						// the .svg client-side (FileReader) into the textarea, so
+						// it works even when the site blocks SVG media uploads.
+						'<div class="fw-icon-v2-toolbar">'
+						. '<h3>' . esc_html__( 'Custom SVG', 'fw' ) . '</h3>'
+						. '<button type="button" class="fw-icon-v2-svg-upload button button-secondary">' . esc_html__( 'Upload .svg file', 'fw' ) . '</button>'
+						. '<input type="file" class="fw-icon-v2-svg-file" accept=".svg,image/svg+xml" style="display:none" />'
+						. '</div>'
+						. '<div class="fw-icon-v2-svg-tab">'
+						. '<p class="fw-icon-v2-hint">'
+						. esc_html__( 'Paste inline <svg>…</svg> markup, or upload an .svg file. Scripts, event handlers and external references are stripped for safety. Use fill="currentColor" to inherit the element colour.', 'fw' )
+						. '</p>'
+						. '<textarea class="fw-icon-v2-svg-input" rows="7" spellcheck="false" placeholder="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;…&lt;/svg&gt;"></textarea>'
+						. '<div class="fw-icon-v2-svg-live" aria-hidden="true"></div>'
+						. '</div>'
+				)
+			)
+		),
+
 		'custom-upload' => array(
 			'type' => 'tab',
 			'lazy_tabs' => false,
