@@ -1,0 +1,647 @@
+.fw-icon-v3-preview-wrapper {
+	display: flex;
+	align-items: center;
+}
+
+.fw-icon-v3-preview-wrapper.fw-has-icon .fw-icon-v3-preview {
+	background-image: url(../img/transparent_bg.png);
+	background-size: 10px;
+}
+
+.fw-icon-v3-preview {
+	background-image: url('../img/no-image.png');
+	margin-right: 25px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	background-size: contain;
+	box-sizing: border-box;
+}
+
+.fw-icon-v3-preview:hover {
+	opacity: 0.9;
+}
+
+.fw-icon-v3-preview i {
+	color: #7a7a7a;
+	background-repeat: no-repeat;
+	line-height: 1em;
+	margin: 0;
+}
+
+/*** Unycon Icon fix ***/
+.fw-icon-v3-preview i.unycon:before {
+	font-size: 30px;
+}
+
+.fw-icon-v3-preview a {
+	position: absolute;
+	opacity: 0;
+	width: 12px;
+	height: 12px;
+	top: -9px;
+	right: -6px;
+	font-size: 14px !important;
+	outline: none;
+}
+
+.fw-icon-v3-preview-wrapper.fw-has-icon .fw-icon-v3-preview:hover {
+	opacity: 1;
+}
+
+.fw-icon-v3-preview-wrapper.fw-has-icon .fw-icon-v3-preview:hover a {
+	opacity: 1;
+}
+
+.fw-icon-v3-preview a:before {
+	background-color: #fff;
+	border-radius: 100%;
+}
+
+.fw-icon-v3-preview-wrapper[data-icon-type="custom-upload"] .fw-icon-v3-preview i {
+	background-size: cover;
+}
+
+.fw-icon-v3-preview-wrapper[data-icon-type="icon-font"] .fw-icon-v3-preview i {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/*** Small Preview ***/
+.fw-icon-v3-preview-small .fw-icon-v3-preview {
+	width: 30px;
+	height: 30px;
+	margin-right: 15px;
+}
+
+.fw-icon-v3-preview-small .fw-icon-v3-preview i {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+}
+
+/*** Medium Preview ***/
+.fw-icon-v3-preview-medium .fw-icon-v3-preview {
+	width: 55px;
+	height: 55px;
+}
+
+.fw-icon-v3-preview-medium .fw-icon-v3-preview i {
+	font-size: 50px;
+	width: 50px;
+	height: 50px;
+}
+
+/*** Large Preview ***/
+.fw-icon-v3-preview-large .fw-icon-v3-preview {
+	width: 70px;
+	height: 70px;
+}
+
+.fw-icon-v3-preview-large .fw-icon-v3-preview i {
+	font-size: 65px;
+	width: 65px;
+	height: 65px;
+}
+
+/*** Sauron Preview :) ***/
+.fw-icon-v3-preview-sauron .fw-icon-v3-preview {
+	background-image: url('../img/sauron.png');
+	width: 70px;
+	height: 70px;
+}
+
+.fw-icon-v3-preview-sauron .fw-icon-v3-preview i {
+	font-size: 65px;
+	width: 65px;
+	height: 65px;
+}
+
+/*** Icon Picker Modal *******************************************************/
+.fw-icon-v3-picker-modal .media-frame-title {
+	display: none;
+}
+
+.fw-icon-v3-picker-modal .media-frame-content {
+	overflow: hidden;
+	top: 0 !important;
+}
+
+.fw-icon-v3-picker-modal .media-frame-content form,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div > div,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div > div > div,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div > div > div > div,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div > div > div > div > div,
+.fw-icon-v3-picker-modal .media-frame-content form > .fw-options-tabs-wrapper .fw-inner .fw-options-tab > .fw-backend-option > div > div > div > div > div .fw-option-html {
+	height: 100%;
+}
+
+.fw-icon-v3-picker-modal .media-frame-content form > div .fw-options-tabs-contents {
+	height: calc( 100% - 58px);
+}
+
+.fw-icon-v3-picker-modal .fw-backend-options-last-border-hider {
+	display: none;
+}
+
+.fw-icon-v3-picker-modal .fw-options-tabs-list {
+	position: relative;
+	z-index: 2;
+	background-color: #fcfcfc;
+}
+
+.fw-icon-v3-picker-modal .fw-options-tabs-list li.ui-tabs-active,
+.fw-icon-v3-picker-modal .fw-options-tabs-list li.ui-state-active {
+	background: #fff;
+}
+
+.fw-icon-v3-picker-modal .fw-options-tabs-contents {
+	margin-top: 0;
+}
+
+.fw-icon-v3-picker-modal .fw-backend-option-design-default:not(.fw-backend-option-type-upload) {
+	padding: 0;
+}
+
+.fw-icon-v3-icons-library .fw-option-html {
+	display: flex;
+	flex-direction: column;
+}
+
+/*** Toolbar ***/
+.fw-icon-v3-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex: 0 0 auto;
+	height: 75px;
+	padding: 0 20px;
+	border-bottom: 1px solid #e5e5e5;
+	box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.02);
+}
+
+.fw-icon-v3-toolbar input,
+.fw-icon-v3-toolbar > div {
+	width: 49% !important;
+	height: 28px;
+	margin: 0;
+	flex: 1 1 auto;
+}
+
+.fw-icon-v3-toolbar > div {
+	margin-right: 15px;
+}
+
+.fw-icon-v3-toolbar > div > .selectize-input,
+.fw-icon-v3-toolbar > div > .selectize-dropdown {
+	margin: 0 !important;
+}
+
+.fw-icon-v3-toolbar input::-webkit-input-placeholder {
+	font-style: normal;
+}
+
+.fw-icon-v3-toolbar input::-moz-placeholder {
+	font-style: normal;
+}
+
+.fw-icon-v3-toolbar input:-ms-input-placeholder {
+	font-style: normal;
+}
+
+.fw-icon-v3-toolbar h3 {
+	margin: 0;
+}
+
+/* Make the selectize pack dropdown the same height as the search input (28px)
+   so the two toolbar controls line up. */
+.fw-icon-v3-toolbar .selectize-control,
+.fw-icon-v3-toolbar .selectize-control.single .selectize-input {
+	height: 28px !important;
+	min-height: 28px !important;
+}
+.fw-icon-v3-toolbar .selectize-control.single .selectize-input {
+	display: flex !important;
+	align-items: center;
+	padding: 0 24px 0 10px !important;
+	line-height: 1 !important;
+	box-sizing: border-box !important;
+}
+.fw-icon-v3-toolbar .selectize-control.single .selectize-input:after {
+	margin-top: 0 !important;
+	top: 50% !important;
+	transform: translateY(-25%);
+}
+.fw-icon-v3-toolbar .selectize-control.single .selectize-input input {
+	height: auto !important;
+	line-height: 1 !important;
+}
+
+/* Pack dropdown: make the "Icon Fonts" / "SVG Icons" group headers stand out
+   and indent their items beneath them so the two families read as nested. */
+.fw-icon-v3-toolbar .selectize-dropdown .optgroup-header {
+	font-weight: 600;
+	color: #1d2327;
+	padding-left: 10px;
+}
+.fw-icon-v3-toolbar .selectize-dropdown .optgroup .option {
+	padding-left: 26px;
+}
+
+/*** Pack wrapper ***/
+.fw-icon-v3-library-pack-wrapper {
+	flex: 1 1 auto;
+    overflow-y: auto;
+    /*padding: 0 20px 0 20px; */
+    box-shadow: inset 0px -5px 10px 0px rgba(0, 0, 0, 0.02);
+}
+
+.fw-icon-v3-library-pack-wrapper {
+	height: calc(100% - 75px);
+}
+
+/* Merged Icons tab: ONE scroll area holding both the font pane and the SVG
+   pane, so a merged search shows font results AND SVG results stacked together
+   and scrolling as one list (instead of each pane being full-height with the
+   SVG one pushed below the fold). Inside it the pane wrappers grow with their
+   content rather than each claiming the full height. */
+.fw-icon-v3-results {
+	flex: 1 1 auto;
+	height: calc(100% - 75px);
+	overflow-y: auto;
+}
+
+.fw-icon-v3-results .fw-icon-v3-library-pack-wrapper {
+	height: auto;
+	overflow: visible;
+	box-shadow: none;
+}
+
+.fw-favorite-icons-wrapper {
+	height: 100%;
+}
+
+/*** Search wrapper ***/
+.fw-search-icons-wrapper h2 {
+	position: relative;
+	text-align: left;
+	font-size: 13px;
+	color: #555d66;
+	overflow: hidden;
+}
+
+.fw-search-icons-wrapper h2 span {
+	position: relative;
+	padding: 0 10px;
+	background-color: #fff;
+	z-index: 2;
+	left: 10px;
+}
+
+.fw-search-icons-wrapper h2:before {
+	position: absolute;
+	left: 50px;
+	top: 10px;
+	content: '';
+	width: 100%;
+	height: 1px;
+	background-color: #e2e4e7;
+}
+
+.fw-search-icons-wrapper h2:after {
+	position: absolute;
+	left: -50px;
+	top: 10px;
+	content: '';
+	width: 100%;
+	height: 1px;
+	background-color: #e2e4e7;
+}
+
+
+/*** Note ***/
+.fw-icon-v3-note {
+	text-align: center;
+	padding-top: 30px;
+}
+
+.fw-icon-v3-note h3 {
+	margin: 10px 0 0 0;
+}
+
+.fw-icon-v3-note i {
+	width: 15px;
+	height: 15px;
+	font-size: 15px;
+	line-height: 19px;
+}
+
+/*** Icon List ***/
+.fw-icon-v3-library-pack {
+	display: flex;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	width: 100%;
+	margin: 0;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.fw-icon-v3-library-pack > li {
+	display: flex;
+	position: relative;
+	width: 65px;
+	height: 65px;
+	flex: 1 0 65px;
+	cursor: pointer;
+	margin-bottom: 0;
+	border-radius: 4px;
+}
+
+.fw-icon-v3-library-pack > li:before {
+	content: '';
+	width: 100%;
+	padding-top: 100%;
+}
+
+.fw-icon-v3-library-pack > li.fw-ghost-item {
+	opacity: 0;
+	height: 0;
+}
+
+.fw-icon-v3-library-pack > li.fw-ghost-item:before {
+	display: none;
+}
+
+.fw-icon-v3-library-pack > li.selected {
+	z-index: 5;
+	/* Scheme-aware default highlight (WP 5.7+ exposes this variable for every
+	   admin color scheme). Acts as the base so the selection always shows, even
+	   on WP 7's new "modern" default scheme. Per-scheme rules below refine it. */
+	box-shadow: inset 0px 0px 0px 3px var(--wp-admin-theme-color, #00aadc);
+}
+
+.fw-icon-v3-library-pack > li:hover:not(.selected) {
+	box-shadow: inset 0px 0px 0px 3px #d2d7dc;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner i {
+	font-size: 22px;
+	color: #6a737b;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner img {
+	max-width: 30px !important;
+	max-height: 30px !important;
+	height: auto;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner a {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 12px;
+	height: 12px;
+	font-size: 12px;
+	opacity: 0;
+	color: #d2d7dc;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner:hover a {
+	opacity: 1;
+}
+
+.fw-icon-v3-library-pack .fw-icon-inner a:hover,
+.fw-icon-v3-library-pack .fw-icon-v3-favorite a {
+	color: #ffb900;
+}
+
+.fw-favorite-icons-wrapper .fw-icon-inner a:hover,
+.fw-icon-v3-library-pack .fw-icon-inner .dashicons-no:hover {
+	color: #CC0000;
+}
+
+.fw-favorite-icons-wrapper .fw-icon-inner a:before {
+	content: "\f158";
+}
+
+/*** Color Schemes ***********************************************************/
+
+/*** Default (Fresh) ***/
+.admin-color-fresh .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #00aadc;
+}
+
+
+/*** Modern (WP 7 default) ***/
+.admin-color-modern .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #3858e9;
+}
+
+
+/*** Light ***/
+.admin-color-light .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #02A4C7;
+}
+
+
+/*** Blue ***/
+.admin-color-blue .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #e3af55;
+}
+
+
+/*** Cofee ***/
+.admin-color-coffee .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #c7a589;
+}
+
+
+/*** Ectoplasm ***/
+.admin-color-ectoplasm .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #a3b745;
+}
+
+
+/*** Midnight ***/
+.admin-color-midnight .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #e14d43;
+}
+
+
+/*** Ocean ***/
+.admin-color-ocean .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #9ebaa0;
+}
+
+
+/*** Sunrise ***/
+.admin-color-sunrise .fw-icon-v3-library-pack > li.selected {
+	box-shadow: inset 0px 0px 0px 3px #dd823b;
+}
+
+/* -----------------------------------------------------------------------------
+ * Emoji + Custom SVG picker tabs (Phase 2B)
+ * -------------------------------------------------------------------------- */
+.fw-icon-v3-emoji-tab,
+.fw-icon-v3-svg-tab {
+	padding: 8px 20px 16px;
+}
+.fw-icon-v3-hint {
+	color: #646970;
+	font-size: 12px;
+	margin: 6px 0 12px;
+}
+.fw-icon-v3-emoji-input {
+	width: 100%;
+	max-width: 320px;
+	font-size: 28px;
+	line-height: 1.4;
+	text-align: center;
+	padding: 8px 10px;
+}
+.fw-icon-v3-svg-input {
+	width: 100%;
+	min-height: 150px;
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre;
+	tab-size: 2;
+}
+.fw-icon-v3-emoji-live,
+.fw-icon-v3-svg-live {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 72px;
+	margin-top: 14px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	background: #f6f7f7;
+	color: #1d2327;
+}
+.fw-icon-v3-emoji-live {
+	font-size: 44px;
+	line-height: 1;
+}
+.fw-icon-v3-svg-live svg {
+	width: 48px;
+	height: 48px;
+	color: #1d2327;
+}
+
+/*** Merged Custom tab (SVG section + image upload section) ***/
+.fw-icon-v3-custom-tab {
+	height: calc(100% - 75px);
+	overflow-y: auto;
+}
+.fw-icon-v3-custom-tab .fw-icon-v3-svg-tab {
+	padding-top: 16px;
+}
+.fw-icon-v3-svg-input {
+	min-height: 120px;
+}
+/* Section header row: label on the left, upload button on the right. */
+.fw-icon-v3-custom-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0 0 6px;
+}
+.fw-icon-v3-section-label {
+	margin: 0;
+	font-size: 13px;
+	color: #555d66;
+}
+/* The embedded image-upload block keeps its own markup, but inside the merged
+   tab its toolbar becomes a light section header (not a full 75px bar), and its
+   grid grows with content instead of taking a fixed calc() height. */
+.fw-icon-v3-upload-section {
+	border-top: 1px solid #e5e5e5;
+	margin-top: 6px;
+	padding: 8px 20px 16px;
+}
+.fw-icon-v3-upload-section .fw-icon-v3-toolbar {
+	height: auto;
+	padding: 6px 0;
+	border-bottom: none;
+	box-shadow: none;
+}
+.fw-icon-v3-upload-section .fw-icon-v3-library-pack-wrapper {
+	height: auto;
+	box-shadow: none;
+}
+.fw-icon-v3-upload-section .fw-icon-v3-library-pack {
+	padding: 8px 0;
+}
+.fw-icon-v3-upload-section .fw-icon-v3-note {
+	padding-top: 12px;
+}
+/* Option-swatch preview for the new kinds. The core CSS only sizes/centers the
+ * <i> for data-icon-type="icon-font"; do the same for emoji + svg so their glyph
+ * fills and centers in the swatch instead of collapsing to the top-left. */
+.fw-icon-v3-preview-wrapper[data-icon-type="emoji"] .fw-icon-v3-preview i,
+.fw-icon-v3-preview-wrapper[data-icon-type="svg"] .fw-icon-v3-preview i {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	line-height: 1;
+	font-style: normal;
+}
+/* Emoji glyph scales with the swatch (small 26 / medium ~34 / large larger). */
+.fw-icon-v3-preview-emoji {
+	font-size: 26px;
+}
+.fw-icon-v3-preview-medium .fw-icon-v3-preview-emoji {
+	font-size: 34px;
+}
+.fw-icon-v3-preview-large .fw-icon-v3-preview-emoji {
+	font-size: 44px;
+}
+/* Inline SVG fills most of the swatch and inherits the preview grey. */
+.fw-icon-v3-preview-svg svg {
+	width: 78%;
+	height: 78%;
+	color: #7a7a7a;
+}
+
+/* -----------------------------------------------------------------------------
+ * Lucide library tab (Phase 2B) — mirrors the Icon Fonts layout.
+ * -------------------------------------------------------------------------- */
+.fw-icon-v3-lucide-library .fw-option-html {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+/* Search fills the toolbar (the shared rule sizes toolbar inputs to 49%). */
+.fw-icon-v3-toolbar input.fw-icon-v3-lucide-search {
+	width: 100% !important;
+}
+/* Inline-SVG tiles reuse the icon-fonts grid; just size the glyph. */
+.fw-icon-v3-lucide-icon .fw-icon-inner svg {
+	width: 26px;
+	height: 26px;
+	color: #1d2327;
+}

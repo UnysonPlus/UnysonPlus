@@ -1,4 +1,16 @@
 /* Split Slider option type — an N-pane, draggable, 100%-rule width bar. */
+
+/* The framework renders this (full-width) option's row as a `.fw-row` with 27px
+   horizontal padding. Because that row is content-box, the padding is ADDED to its
+   set width, so in a deeply-nested context (e.g. a footer multi-picker choice) the
+   row is ~54px wider than its container — pushing past the panel and creating a
+   horizontal scrollbar, with the track not lining up with sibling options. Border-box
+   keeps the padded row within its width so it fits and aligns. */
+.fw-backend-option.fw-backend-option-type-split-slider {
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
 .fw-option-type-split-slider .fw-ss-track {
 	display: flex;
 	align-items: stretch;
@@ -123,7 +135,9 @@
 .fw-option-type-split-slider.fw-ss-is-auto .fw-ss-track { opacity: .55; }
 .fw-option-type-split-slider .fw-ss-reset { margin-left: 4px; }
 
-/* Locked (fixed column count) — hide add/remove/count, keep drag + reset. */
+/* Locked (fixed column count) — hide add/remove/count + the widths hint, keep drag +
+   reset. (The column count is controlled elsewhere, e.g. a footer's count select.) */
 .fw-option-type-split-slider.fw-ss-locked .fw-ss-add,
 .fw-option-type-split-slider.fw-ss-locked .fw-ss-remove,
-.fw-option-type-split-slider.fw-ss-locked .fw-ss-count { display: none; }
+.fw-option-type-split-slider.fw-ss-locked .fw-ss-count,
+.fw-option-type-split-slider.fw-ss-locked .fw-ss-hint { display: none; }

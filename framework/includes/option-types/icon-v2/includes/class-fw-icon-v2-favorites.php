@@ -23,9 +23,15 @@ class FW_Icon_V2_Favorites_Manager
 			array($this, 'get_icon_packs')
 		);
 
+		// Pack-aware SVG search (Lucide, Tabler, …). The old lucide-only action
+		// name is kept as an alias so any cached picker JS keeps working.
+		add_action(
+			'wp_ajax_fw_icon_v2_svg_search',
+			array($this, 'svg_search_action')
+		);
 		add_action(
 			'wp_ajax_fw_icon_v2_lucide_search',
-			array($this, 'lucide_search_action')
+			array($this, 'svg_search_action')
 		);
 	}
 
@@ -36,24 +42,29 @@ class FW_Icon_V2_Favorites_Manager
 	}
 
 	/**
-	 * Search the bundled Lucide library for the picker grid. Returns up to a
-	 * capped number of { name, id, markup } entries for the query (empty query
-	 * → the first slice of the full set).
+	 * Search a bundled inline-SVG pack (Lucide, Tabler, …) for the picker grid.
+	 * Reads the POSTed `pack` (default 'lucide') + `q`, and returns up to a
+	 * capped number of { name, id:'<pack>/<name>', markup } entries (empty query
+	 * → the first slice of the pack).
 	 */
-	public function lucide_search_action() {
-		if ( ! function_exists( 'fw_icon_lucide_search' ) ) {
+	public function svg_search_action() {
+		if ( ! function_exists( 'fw_icon_svg_pack_search' ) ) {
 			wp_send_json_success( array() );
 		}
 
+		$pack  = FW_Request::POST( 'pack', 'lucide' );
+		$pack  = preg_replace( '/[^a-z0-9_-]/', '', strtolower( (string) $pack ) );
+		if ( $pack === '' ) { $pack = 'lucide'; }
+
 		$query = FW_Request::POST( 'q', '' );
-		$names = fw_icon_lucide_search( $query, 150 );
+		$names = fw_icon_svg_pack_search( $pack, $query, 150 );
 
 		$result = array();
 		foreach ( $names as $name ) {
 			$result[] = array(
 				'name'   => $name,
-				'id'     => 'lucide/' . $name,
-				'markup' => fw_icon_lucide_markup( $name ),
+				'id'     => $pack . '/' . $name,
+				'markup' => fw_icon_svg_pack_markup( $pack . '/' . $name ),
 			);
 		}
 

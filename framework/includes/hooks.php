@@ -51,12 +51,11 @@
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Range' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient_V2' );
-		// The legacy Font Awesome 4 `icon` type is retired: the `icon` id is now
-		// the modern engine (registered below, alongside its `icon-v2` alias).
-		// The old FW_Option_Type_Icon class file stays on disk (autoloadable) for
-		// reference but is no longer registered. Any stored legacy string value is
-		// migrated on the fly by FW_Option_Type_Icon_v2::normalize_value().
-		// FW_Option_Type::register( 'FW_Option_Type_Icon' );
+		// Stock font-icon `icon` type (original Unyson). The `icon` id was
+		// briefly reclaimed for the modern engine; that reclaim is reverted —
+		// the modern picker now lives in icon-v2 (stable) and icon-v3 (in
+		// development) only, so `icon` is the original font picker again.
+		FW_Option_Type::register( 'FW_Option_Type_Icon' );
 		FW_Option_Type::register( 'FW_Option_Type_Image_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Map' );
 		FW_Option_Type::register( 'FW_Option_Type_Multi' );
@@ -87,15 +86,21 @@
 
 			FW_Option_Type::register( 'FW_Option_Type_Icon_v2' );
 
-			// Reclaim the clean `icon` name for the same engine. Registering the
-			// class a second time under an explicit id makes `type => 'icon'`
-			// resolve to the modern picker while `icon-v2` keeps working for the
-			// existing consumers. get_type() stays 'icon-v2', so the shared
-			// static assets/templates still load from the icon-v2 folder; the
-			// picker JS binds via the stable `.fw-icon-picker` hook class, so
-			// both ids get the picker. Legacy string values are migrated by
-			// FW_Option_Type_Icon_v2::normalize_value().
-			FW_Option_Type::register( 'FW_Option_Type_Icon_v2', 'icon' );
+			// NOTE: the `icon` name is NO LONGER reclaimed for this engine — it
+			// resolves to the stock FW_Option_Type_Icon again (registered above).
+			// The modern engine is `icon-v2` (stable) plus `icon-v3` (the frozen
+			// in-development copy). When icon-v3 is finalised we can swap it in.
+		}
+
+		{
+			// icon-v3: the in-development next-gen picker (merged Icons + Custom
+			// tabs). Registered so it can be tested live alongside the stable
+			// icon-v2 — it uses fully distinct classes / hook classes / AJAX
+			// actions / template ids, so the two never clash on the same page.
+			$favorites_v3 = new FW_Icon_V3_Favorites_Manager();
+			$favorites_v3->attach_ajax_actions();
+
+			FW_Option_Type::register( 'FW_Option_Type_Icon_v3' );
 		}
 
 		{

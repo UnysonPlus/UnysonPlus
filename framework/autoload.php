@@ -328,6 +328,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Icon_v2':
 				require_once __DIR__ . '/includes/option-types/icon-v2/class-fw-option-type-icon-v2.php';
 				break;
+			case 'FW_Option_Type_Icon_v3':
+				require_once __DIR__ . '/includes/option-types/icon-v3/class-fw-option-type-icon-v3.php';
+				break;
 			case 'FW_Option_Type_Image_Picker':
 				require_once __DIR__ . '/includes/option-types/image-picker/class-fw-option-type-image-picker.php';
 				break;
@@ -408,6 +411,12 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 				break;
 			case 'FW_Icon_V2_Packs_Loader':
 				require_once __DIR__ . '/includes/option-types/icon-v2/includes/class-fw-icon-v2-packs-loader.php';
+				break;
+			case 'FW_Icon_V3_Favorites_Manager':
+				require_once __DIR__ . '/includes/option-types/icon-v3/includes/class-fw-icon-v3-favorites.php';
+				break;
+			case 'FW_Icon_V3_Packs_Loader':
+				require_once __DIR__ . '/includes/option-types/icon-v3/includes/class-fw-icon-v3-packs-loader.php';
 				break;
 		}
 	}

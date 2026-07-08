@@ -2,13 +2,13 @@
 
 if (! defined('FW')) { die('Forbidden'); }
 
-class FW_Icon_V2_Packs_Loader
+class FW_Icon_V3_Packs_Loader
 {
 	public $icon_packs = array();
 
 	/**
 	 * This array will contain name of packs retrieved from the
-	 * `fw:option_type:icon-v2:filter_packs` filter.
+	 * `fw:option_type:icon-v3:filter_packs` filter.
 	 *
 	 * array( 'font-awesome', 'unycon' )
 	 */
@@ -26,7 +26,7 @@ class FW_Icon_V2_Packs_Loader
 		 * Example:
 		 *
 		 * add_filter(
-		 *   'fw:option_type:icon-v2:packs',
+		 *   'fw:option_type:icon-v3:packs',
 		 *   '_add_more_packs'
 		 * );
 		 *
@@ -66,7 +66,7 @@ class FW_Icon_V2_Packs_Loader
 		 *       // - array - define list of icons by hand, that's the error prone one
 		 *       //
 		 *       // When you will set `icons` option as false for a specific pack,
-		 *       // the option type icon-v2 will try to do a guess by itself
+		 *       // the option type icon-v3 will try to do a guess by itself
 		 *       // about the icons you will want to be displayed inside the
 		 *       // picker. The mechanics are the following: Option type will
 		 *       // read all of CSS rules from the file in the `css_file` option.
@@ -90,7 +90,7 @@ class FW_Icon_V2_Packs_Loader
 		 * }
 		 */
 		$packs = apply_filters(
-			'fw:option_type:icon-v2:packs',
+			'fw:option_type:icon-v3:packs',
 			$this->get_default_icon_packs()
 		);
 
@@ -133,12 +133,12 @@ class FW_Icon_V2_Packs_Loader
 			/**
 			 * The file will be required on the frontend side only if you want
 			 * it to. You can totally change this behavior by using
-			 * `fw:option-type:icon-v2:packs` filter.
+			 * `fw:option-type:icon-v3:packs` filter.
 			 *
 			 * If you want to lazy load CSS on the frontend side you can
 			 * set `require_css_file` for this pack and load it by yourself,
 			 * you will receive information about the pack in the value
-			 * of the icon-v2 option type.
+			 * of the icon-v3 option type.
 			 *
 			 * By the way, even if you'll load all the CSS at once,
 			 * the browser won't download any fonts before you actually use any
@@ -152,7 +152,7 @@ class FW_Icon_V2_Packs_Loader
 				}
 
 				wp_enqueue_style(
-					'fw-option-type-icon-v2-pack-' . $pack_name,
+					'fw-option-type-icon-v3-pack-' . $pack_name,
 					$pack['css_file_uri'],
 					array(),
 					fw()->manifest->get_version()
@@ -165,10 +165,10 @@ class FW_Icon_V2_Packs_Loader
 	/**
 	 * Enqueue ONLY the icon pack a single picked icon needs, instead of loading
 	 * every pack via enqueue_frontend_css(). Call this from a shortcode's view
-	 * with the icon-v2 value it is about to render, so a page that uses one Font
+	 * with the icon-v3 value it is about to render, so a page that uses one Font
 	 * Awesome glyph doesn't also pull Entypo / Linearicons / Typicons / Unycon.
 	 *
-	 * Accepts either the icon-v2 value array (['type' => 'icon-font',
+	 * Accepts either the icon-v3 value array (['type' => 'icon-font',
 	 * 'icon-class' => 'fa fa-gear', ...]) or a raw class string ('fa fa-gear').
 	 * Custom-upload / none values need no pack CSS and are ignored.
 	 */
@@ -201,7 +201,7 @@ class FW_Icon_V2_Packs_Loader
 		// Same handle shape as enqueue_frontend_css(), so the two paths
 		// de-duplicate if both ever run on one request.
 		wp_enqueue_style(
-			'fw-option-type-icon-v2-pack-' . (isset($pack['name']) ? $pack['name'] : $pack['css_class_prefix']),
+			'fw-option-type-icon-v3-pack-' . (isset($pack['name']) ? $pack['name'] : $pack['css_class_prefix']),
 			$pack['css_file_uri'],
 			array(),
 			fw()->manifest->get_version()
@@ -223,7 +223,7 @@ class FW_Icon_V2_Packs_Loader
 			}
 
 			wp_enqueue_style(
-				'fw-option-type-icon-v2-pack-' . $pack_name,
+				'fw-option-type-icon-v3-pack-' . $pack_name,
 				$pack['css_file_uri'],
 				array(),
 				fw()->manifest->get_version()
@@ -354,7 +354,7 @@ class FW_Icon_V2_Packs_Loader
 		if ($this->filtered_icon_packs) return;
 
 		$packs = apply_filters(
-			'fw:option_type:icon-v2:filter_packs',
+			'fw:option_type:icon-v3:filter_packs',
 			$this->get_icon_packs_names()
 		);
 

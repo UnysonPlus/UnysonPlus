@@ -103,6 +103,38 @@ class FW_Option_Type_Split_Slider extends FW_Option_Type {
 				$segs[ $i ]['w'] = max( 0, $segs[ $i ]['w'] ) / $sum * 100;
 			}
 		}
+		// Grid mode: distribute $denom WHOLE grid units across the segments with the
+		// largest-remainder method, then express each as an exact percentage. This keeps
+		// widths perfectly proportional (e.g. 6 columns → 2 units = 16.6667% each, so an
+		// equal split renders truly equal — no fat first column from integer rounding).
+		$denom = max( 0, (int) $option['denominator'] );
+		if ( $denom > 0 ) {
+			$floor = array();
+			$rem   = array();
+			$ftot  = 0;
+			for ( $i = 0; $i < $n; $i++ ) {
+				$e            = $segs[ $i ]['w'] / 100 * $denom; // $segs already sum to 100
+				$f            = max( 1, (int) floor( $e ) );
+				$floor[ $i ]  = $f;
+				$rem[ $i ]    = $e - floor( $e );
+				$ftot        += $f;
+			}
+			$need = $denom - $ftot;
+			if ( $need > 0 ) {
+				$order = range( 0, $n - 1 );
+				usort( $order, function ( $a, $b ) use ( $rem ) { return $rem[ $b ] <=> $rem[ $a ]; } );
+				for ( $k = 0; $k < $need; $k++ ) { $floor[ $order[ $k % $n ] ]++; }
+			} elseif ( $need < 0 ) {
+				for ( $k = 0; $k < -$need; $k++ ) {
+					$bi = 0; $bv = -1;
+					for ( $i = 0; $i < $n; $i++ ) { if ( $floor[ $i ] > $bv ) { $bv = $floor[ $i ]; $bi = $i; } }
+					if ( $floor[ $bi ] > 1 ) { $floor[ $bi ]--; }
+				}
+			}
+			for ( $i = 0; $i < $n; $i++ ) { $segs[ $i ]['w'] = $floor[ $i ] / $denom * 100; }
+			return array( array_values( $segs ), $min, $max, $minw );
+		}
+
 		// Round, enforce the per-segment minimum, then fix any rounding drift on
 		// the largest segment so the total is exactly 100.
 		for ( $i = 0; $i < $n; $i++ ) {
@@ -198,6 +230,7 @@ class FW_Option_Type_Split_Slider extends FW_Option_Type {
 			'auto_count'  => $auto_count,
 			'is_auto'     => $is_auto,
 			'locked'      => $locked,
+			'denominator' => max( 0, (int) $option['denominator'] ),
 			'default'     => $default_segs,
 		);
 
@@ -255,6 +288,7 @@ class FW_Option_Type_Split_Slider extends FW_Option_Type {
 			'allow_names' => true,
 			'auto_count'  => 3,     // panes shown when value is empty (AUTO)
 			'locked'      => false, // hide add/remove (fixed column count)
+			'denominator' => 0,     // >0 snaps widths to a grid (e.g. 12) + shows N/denominator fractions instead of %
 		);
 	}
 }

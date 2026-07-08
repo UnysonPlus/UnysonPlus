@@ -73,10 +73,39 @@ class FW_Option_Type_Icon extends FW_Option_Type
 	}
 
 	/**
+	 * Reduce an icon value to the plain class string this type works with.
+	 * Accepts either the stock string value or a richer array shape saved by
+	 * another icon picker ({ icon-class | icon | class => "fa fa-star" }), so a
+	 * legacy/foreign value never fatals the render.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	protected function coerce_icon_value($value)
+	{
+		if (is_array($value)) {
+			foreach (array('icon-class', 'icon', 'class') as $k) {
+				if (isset($value[ $k ]) && is_string($value[ $k ])) {
+					return $value[ $k ];
+				}
+			}
+			return '';
+		}
+
+		return is_scalar($value) ? (string) $value : '';
+	}
+
+	/**
 	 * @internal
 	 */
 	protected function _render($id, $option, $data)
 	{
+		// Tolerate a value saved in a richer array shape (e.g. the merged icon
+		// picker's { type, icon-class } object). This stock type keys its icon
+		// sets by a plain class string, so an array value would throw an
+		// "Illegal offset type" fatal in view.php and take down the whole page.
+		$data['value'] = $this->coerce_icon_value($data['value']);
+
 		$sets = $this->get_sets();
 
 		if (isset($sets[ $option['set'] ])) {
@@ -100,6 +129,8 @@ class FW_Option_Type_Icon extends FW_Option_Type
 		if (is_null($input_value)) {
 			return $option['value'];
 		}
+
+		$input_value = $this->coerce_icon_value($input_value);
 
 		$sets = $this->get_sets();
 

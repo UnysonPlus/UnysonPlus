@@ -13,6 +13,15 @@ $wrapper_attr = array(
 );
 unset($option['attr']['class'], $option['attr']['id']);
 
+// Guard: this type keys $set['icons'] by a plain class string, so a value that
+// arrived as an array (a richer icon shape) must never be used as an offset -
+// it would throw "Illegal offset type" and take down the whole options page.
+if (is_array($data['value'])) {
+	$data['value'] = isset($data['value']['icon-class']) && is_string($data['value']['icon-class'])
+		? $data['value']['icon-class']
+		: (isset($data['value']['icon']) && is_string($data['value']['icon']) ? $data['value']['icon'] : '');
+}
+
 $icons = &$set['icons'];
 
 // build $groups array based on $icons

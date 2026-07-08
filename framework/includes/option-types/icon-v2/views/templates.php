@@ -1,5 +1,32 @@
 <?php
 
+// Available + enabled inline-SVG packs (Lucide, Tabler, …) for the SVG Icons
+// tab's pack dropdown. Derived from the multi-pack registry so a newly bundled
+// pack shows up automatically; each is gated by the Theme Settings -> Icons
+// checklist. When only one pack is enabled the dropdown is omitted.
+$svg_packs = array();
+if ( function_exists( 'unysonplus_svg_icon_pack_ids' ) ) {
+	$svg_reg = function_exists( 'fw_icon_svg_pack_registry' ) ? fw_icon_svg_pack_registry() : array();
+	foreach ( unysonplus_svg_icon_pack_ids() as $svg_pid ) {
+		if ( function_exists( 'unysonplus_icon_pack_enabled' ) && ! unysonplus_icon_pack_enabled( $svg_pid ) ) {
+			continue;
+		}
+		$svg_packs[ $svg_pid ] = isset( $svg_reg[ $svg_pid ]['title'] ) ? $svg_reg[ $svg_pid ]['title'] : ucfirst( $svg_pid );
+	}
+}
+
+$svg_toolbar = '<div class="fw-icon-v2-toolbar">';
+if ( count( $svg_packs ) > 1 ) {
+	$svg_toolbar .= '<select class="fw-icon-v2-svg-pack">';
+	foreach ( $svg_packs as $svg_pid => $svg_ptitle ) {
+		$svg_toolbar .= '<option value="' . esc_attr( $svg_pid ) . '">' . esc_html( $svg_ptitle ) . '</option>';
+	}
+	$svg_toolbar .= '</select>';
+}
+$svg_toolbar .= '<input type="text" class="fw-icon-v2-lucide-search fw-option fw-option-type-text" placeholder="'
+	. esc_attr__( 'Search SVG icons…', 'fw' ) . '" autocomplete="off" />'
+	. '</div>';
+
 $tab_config = array(
 		'icon-fonts' => array(
 			'type' => 'tab',
@@ -15,11 +42,12 @@ $tab_config = array(
 			)
 		),
 
-		// Bundled Lucide SVG library. Toolbar (search) is a sibling first, like
-		// Icon Fonts; results are AJAX-searched and rendered into the grid below.
+		// Bundled inline-SVG libraries (Lucide, Tabler, …). Toolbar (an optional
+		// pack dropdown + search) is a sibling first, like Icon Fonts; results
+		// are AJAX-searched per pack and rendered into the grid below.
 		'lucide' => array(
 			'type' => 'tab',
-			'title' => __('Lucide', 'fw'),
+			'title' => __('SVG Icons', 'fw'),
 			'lazy_tabs' => false,
 			'options' => array(
 				'lucide-picker' => array(
@@ -29,10 +57,7 @@ $tab_config = array(
 					// height. Both are DIRECT children of .fw-option-html.
 					'attr' => array('class' => 'fw-icon-v2-lucide-library'),
 					'label' => false,
-					'html' =>
-						'<div class="fw-icon-v2-toolbar">'
-						. '<input type="text" class="fw-icon-v2-lucide-search fw-option fw-option-type-text" placeholder="' . esc_attr__( 'Search 1,900+ Lucide icons…', 'fw' ) . '" autocomplete="off" />'
-						. '</div>'
+					'html' => $svg_toolbar
 						. '<div class="fw-icon-v2-library-pack-wrapper fw-icon-v2-lucide-results"></div>'
 				)
 			)
@@ -131,7 +156,8 @@ $tab_config = array(
 if ( function_exists( 'unysonplus_any_font_pack_enabled' ) && ! unysonplus_any_font_pack_enabled() ) {
 	unset( $tab_config['icon-fonts'] );
 }
-if ( function_exists( 'unysonplus_icon_pack_enabled' ) && ! unysonplus_icon_pack_enabled( 'lucide' ) ) {
+// Hide the SVG Icons tab only when no inline-SVG pack is enabled at all.
+if ( empty( $svg_packs ) ) {
 	unset( $tab_config['lucide'] );
 }
 
@@ -332,7 +358,7 @@ $tabs = fw()->backend->render_options(
 			<# var favoriteClass = _.contains(data.favorites, iconClass) ? 'fw-icon-v2-favorite' : '' #>
 
 			<li
-				data-fw-icon-v2="{{data.css_class_prefix}} {{icon}}"
+				data-fw-icon-v2="{{iconClass}}"
 				class="fw-icon-v2-library-icon {{selectedClass}} {{favoriteClass}}">
 
 				<div class="fw-icon-inner">

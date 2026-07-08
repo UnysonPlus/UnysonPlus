@@ -3,25 +3,26 @@
 		defaults: _.extend({}, fw.Modal.prototype.defaults, {
 			title: 'Icon V2',
 			size: 'small',
-			modalCustomClass: 'fw-icon-v2-picker-modal',
+			modalCustomClass: 'fw-icon-v3-picker-modal',
 			emptyHtmlOnClose: false,
 			disableResetButton: true,
 		}),
 
 		ContentView: fw.Modal.prototype.ContentView.extend({
 			events: {
-				'input .fw-icon-v2-icons-library .fw-icon-v2-toolbar input':
-					'onSearch',
-				'click .fw-icon-v2-library-icon': 'markIconAsSelected',
-				'click .fw-icon-v2-library-icon a': 'markIconAsFavorite',
-				'click button.fw-icon-v2-custom-upload-perform':
+				// One search box for the merged Icons tab; onIconsSearch routes to
+				// the font filter or the SVG AJAX search by the current mode.
+				'input .fw-icon-v3-icons-library .fw-icon-v3-toolbar input':
+					'onIconsSearch',
+				'click .fw-icon-v3-library-icon': 'markIconAsSelected',
+				'click .fw-icon-v3-library-icon a': 'markIconAsFavorite',
+				'click button.fw-icon-v3-custom-upload-perform':
 					'performImageUpload',
-				'input .fw-icon-v2-emoji-input': 'onEmojiInput',
-				'input .fw-icon-v2-svg-input': 'onSvgInput',
-				'click .fw-icon-v2-svg-upload': 'onSvgUploadClick',
-				'change .fw-icon-v2-svg-file': 'onSvgFile',
-				'input .fw-icon-v2-lucide-search': 'onLucideSearch',
-				'click .fw-icon-v2-lucide-icon': 'onLucideSelect',
+				'input .fw-icon-v3-emoji-input': 'onEmojiInput',
+				'input .fw-icon-v3-svg-input': 'onSvgInput',
+				'click .fw-icon-v3-svg-upload': 'onSvgUploadClick',
+				'change .fw-icon-v3-svg-file': 'onSvgFile',
+				'click .fw-icon-v3-lucide-icon': 'onLucideSelect',
 				submit: 'onSubmit',
 			},
 
@@ -41,6 +42,14 @@
 				this.lucideResults = {}
 				this.debouncedLucideSearch = _.debounce(
 					_.bind(this.doLucideSearch, this),
+					250
+				)
+
+				// Merged search: query EVERY SVG pack at once (pack='all').
+				this.debouncedSvgAll = _.debounce(
+					_.bind(function(q) {
+						this.doLucideSearch(q, 'all')
+					}, this),
 					250
 				)
 			},
@@ -113,11 +122,11 @@
 
 				var $el = $(e.currentTarget)
 
-				// Lucide tiles share the .fw-icon-v2-library-icon grid class but
-				// carry data-name (not data-fw-icon-v2) and are handled by
+				// Lucide tiles share the .fw-icon-v3-library-icon grid class but
+				// carry data-name (not data-fw-icon-v3) and are handled by
 				// onLucideSelect — skip them here so this doesn't throw on
 				// undefined.trim() and swallow the Lucide click.
-				if (!$el.attr('data-fw-icon-v2')) {
+				if (!$el.attr('data-fw-icon-v3')) {
 					return
 				}
 
@@ -128,7 +137,7 @@
 						? 'custom-upload'
 						: 'icon-font'
 
-				var result = $el.attr('data-fw-icon-v2').trim()
+				var result = $el.attr('data-fw-icon-v3').trim()
 
 				this.model.result[
 					type === 'custom-upload' ? 'attachment-id' : 'icon-class'
@@ -145,7 +154,7 @@
 
 			refreshSelectedIcon: function refreshSelectedIcon() {
 				this.model.frame.$el
-					.find('.fw-icon-v2-library-icon.selected')
+					.find('.fw-icon-v3-library-icon.selected')
 					.removeClass('selected')
 
 				if (this.model.result.type === 'icon-font') {
@@ -156,7 +165,7 @@
 
 				if (currentValue) {
 					this.model.frame.$el
-						.find('[data-fw-icon-v2$="' + currentValue + '"]')
+						.find('[data-fw-icon-v3$="' + currentValue + '"]')
 						.addClass('selected')
 				}
 			},
@@ -166,8 +175,8 @@
 				e.stopPropagation()
 
 				var icon = $(e.currentTarget)
-					.closest('.fw-icon-v2-library-icon')
-					.attr('data-fw-icon-v2')
+					.closest('.fw-icon-v3-library-icon')
+					.attr('data-fw-icon-v3')
 
 				this.model.markAsFavorite(icon)
 
@@ -176,7 +185,7 @@
 			},
 
 			refreshFavorites: function() {
-				$('.fw-icon-v2-favorite').removeClass('fw-icon-v2-favorite')
+				$('.fw-icon-v3-favorite').removeClass('fw-icon-v3-favorite')
 
 				_.map(this.model.currentFavorites, function(favorite) {
 					if (
@@ -188,8 +197,8 @@
 						return
 					}
 
-					$('[data-fw-icon-v2="' + favorite + '"]').addClass(
-						'fw-icon-v2-favorite'
+					$('[data-fw-icon-v3="' + favorite + '"]').addClass(
+						'fw-icon-v3-favorite'
 					)
 				})
 			},
@@ -236,8 +245,8 @@
 					: { type: 'none' }
 
 				$(event.currentTarget)
-					.closest('.fw-icon-v2-emoji-tab')
-					.find('.fw-icon-v2-emoji-live')
+					.closest('.fw-icon-v3-emoji-tab')
+					.find('.fw-icon-v3-emoji-live')
 					.text(char || '')
 			},
 
@@ -254,8 +263,8 @@
 					: { type: 'none' }
 
 				$(event.currentTarget)
-					.closest('.fw-icon-v2-svg-tab')
-					.find('.fw-icon-v2-svg-live')
+					.closest('.fw-icon-v3-svg-tab')
+					.find('.fw-icon-v3-svg-live')
 					.html(isSvg ? markup : '')
 			},
 
@@ -263,8 +272,8 @@
 			onSvgUploadClick: function(event) {
 				event.preventDefault()
 				$(event.currentTarget)
-					.closest('.fw-icon-v2-toolbar')
-					.find('.fw-icon-v2-svg-file')
+					.closest('.fw-icon-v3-toolbar')
+					.find('.fw-icon-v3-svg-file')
 					.trigger('click')
 			},
 
@@ -285,10 +294,10 @@
 					var isSvg = markup.toLowerCase().indexOf('<svg') !== -1
 
 					view.model.frame.$el
-						.find('.fw-icon-v2-svg-input')
+						.find('.fw-icon-v3-svg-input')
 						.val(markup)
 					view.model.frame.$el
-						.find('.fw-icon-v2-svg-live')
+						.find('.fw-icon-v3-svg-live')
 						.html(isSvg ? markup : '')
 
 					// 'svg-id': '' clears any leftover Lucide id from a prior pick.
@@ -311,18 +320,18 @@
 				this.debouncedLucideSearch($(event.currentTarget).val())
 			},
 
-			doLucideSearch: function(query) {
+			doLucideSearch: function(query, packOverride) {
 				var view = this
 
-				// Which inline-SVG pack is selected (Lucide, Tabler, …). The
-				// dropdown is absent when only one pack is enabled → default it.
+				// Which pack to search: an explicit override ('all' for the merged
+				// search), else the pack chosen in the unified dropdown.
 				var pack =
-					view.model.frame.$el
-						.find('.fw-icon-v2-svg-pack')
-						.val() || 'lucide'
+					packOverride ||
+					view.model.frame.$el.find('.fw-icon-v3-pack-select').val() ||
+					'lucide'
 
 				$.post(ajaxurl, {
-					action: 'fw_icon_v2_svg_search',
+					action: 'fw_icon_v3_svg_search',
 					pack: pack,
 					q: query || '',
 				}).done(function(resp) {
@@ -332,13 +341,155 @@
 				})
 			},
 
-			// Pack dropdown changed → re-run the search with the current query
-			// against the newly selected pack.
-			onSvgPackChange: function() {
-				var $search = this.model.frame.$el.find(
-					'.fw-icon-v2-lucide-search'
+			// Unified Icons-tab search box. Empty query → browse the selected pack
+			// (one pane). A query → MERGED search: font packs (client-side) AND
+			// every SVG pack (AJAX) at once, both panes shown.
+			onIconsSearch: function(event) {
+				var q = $(event.currentTarget).val()
+				var $lib = this.model.frame.$el.find('.fw-icon-v3-icons-library')
+
+				if (q.trim().length === 0) {
+					this.renderIconsTab()
+					return
+				}
+
+				// Leaving browse mode → stop the infinite-scroll pagination.
+				if (this.svgBrowse) { this.svgBrowse.active = false }
+
+				$lib.find('.fw-icon-v3-font-mode').show()
+				$lib.find('.fw-icon-v3-svg-mode').show()
+				this.throttledApplyFilters()
+				this.debouncedSvgAll(q)
+			},
+
+			// Render the Icons tab for whichever pack is selected: show the right
+			// pane and drive the matching render (client-side font filter vs. SVG
+			// AJAX search). Called on open, on pack change, and on tab activate.
+			renderIconsTab: function() {
+				var $lib = this.model.frame.$el.find('.fw-icon-v3-icons-library')
+				if (!$lib.length) { return }
+
+				var pack = $lib.find('.fw-icon-v3-pack-select').val() || ''
+				var type = (this.packTypes && this.packTypes[pack]) || 'font'
+				this.iconsMode = type
+
+				var $search = $lib.find(
+					'.fw-icon-v3-toolbar input.fw-option-type-text'
 				)
-				this.doLucideSearch($search.val() || '')
+
+				if (type === 'svg') {
+					$lib.find('.fw-icon-v3-font-mode').hide()
+					$lib.find('.fw-icon-v3-svg-mode').show()
+					// Browse the whole pack with lazy-load / infinite scroll.
+					this.startSvgBrowse(pack)
+				} else {
+					$lib.find('.fw-icon-v3-svg-mode').hide()
+					$lib.find('.fw-icon-v3-font-mode').show()
+					if (this.svgBrowse) { this.svgBrowse.active = false }
+					this.model.applyFilters()
+				}
+			},
+
+			// Start browsing a single SVG pack: load the first batch, then the
+			// scroll handler (bound in prepareForPick) pulls further batches as the
+			// user scrolls — so "select Lucide and keep scrolling" loads them all.
+			SVG_BATCH: 120,
+			startSvgBrowse: function(pack) {
+				var view = this
+				view.svgBrowse = { pack: pack, offset: 0, loading: true, done: false, active: true }
+
+				$.post(ajaxurl, {
+					action: 'fw_icon_v3_svg_search',
+					pack: pack,
+					q: '',
+					offset: 0,
+				}).done(function(resp) {
+					if (!view.svgBrowse || view.svgBrowse.pack !== pack) { return }
+					var data = (resp && resp.success) ? resp.data : {}
+					var items = (data && data.items) || []
+					view.renderLucideResults(items)
+					view.svgBrowse.offset = items.length
+					view.svgBrowse.loading = false
+					view.svgBrowse.done = ! ( data && data.has_more )
+				})
+			},
+
+			// Fetch + APPEND the next batch when scrolling near the bottom.
+			loadMoreSvg: function() {
+				var view = this
+				var s = view.svgBrowse
+				if ( ! s || ! s.active || s.loading || s.done ) { return }
+				s.loading = true
+
+				$.post(ajaxurl, {
+					action: 'fw_icon_v3_svg_search',
+					pack: s.pack,
+					q: '',
+					offset: s.offset,
+				}).done(function(resp) {
+					if ( ! view.svgBrowse || view.svgBrowse.pack !== s.pack ) { return }
+					var data = (resp && resp.success) ? resp.data : {}
+					var items = (data && data.items) || []
+					view.appendSvgResults(items)
+					s.offset += items.length
+					s.loading = false
+					if ( ! ( data && data.has_more ) || ! items.length ) { s.done = true }
+				})
+			},
+
+			// Append more SVG tiles to the existing browse grid (before the ghost
+			// fillers), keeping the left-aligned last row intact.
+			appendSvgResults: function(items) {
+				if ( ! items || ! items.length ) { return }
+				var view = this
+				var currentId = view.model.result && view.model.result['svg-id']
+				var $ul = view.model.frame.$el
+					.find('.fw-icon-v3-lucide-results .fw-icon-v3-library-pack')
+					.first()
+				if ( ! $ul.length ) { return }
+
+				var html = ''
+				_.each(items, function(item) {
+					view.lucideResults[item.id] = item
+					html +=
+						'<li class="fw-icon-v3-library-icon fw-icon-v3-lucide-icon ' +
+						(currentId === item.id ? 'selected' : '') +
+						'" data-svg-id="' + _.escape(item.id) +
+						'" data-name="' + _.escape(item.name) +
+						'" title="' + _.escape(item.name) +
+						'"><div class="fw-icon-inner">' + item.markup + '</div></li>'
+				})
+				$ul.find('.fw-ghost-item').remove()
+				$ul.append(html)
+				$ul.append(new Array(12).join('<li class="fw-ghost-item"></li>'))
+			},
+
+			// Which pack a stored value belongs to, so the dropdown pre-selects it
+			// when re-opening the picker. Null → keep the server default.
+			packForState: function(state) {
+				if (!state) { return null }
+
+				if (
+					state.type === 'svg' &&
+					state['svg-source'] === 'library' &&
+					state['svg-id']
+				) {
+					var sp = String(state['svg-id']).split('/')[0]
+					if (this.packTypes && this.packTypes[sp]) { return sp }
+				}
+
+				if (state.type === 'icon-font' && state['icon-class']) {
+					var first = String(state['icon-class']).trim().split(/\s+/)[0]
+					var found = null
+					_.each(this.model.getIconsData(), function(pk, id) {
+						if (found) { return }
+						var prefixes = pk.match_prefixes || [pk.css_class_prefix]
+						if (_.contains(prefixes, first)) { found = id }
+					})
+					if (found) { return found }
+				}
+
+				return null
 			},
 
 			renderLucideResults: function(items) {
@@ -346,15 +497,15 @@
 				view.lucideResults = {}
 
 				var $wrap = view.model.frame.$el.find(
-						'.fw-icon-v2-lucide-results'
+						'.fw-icon-v3-lucide-results'
 					)
 
 				if (!items || !items.length) {
 					$wrap.html(
-						'<div class="fw-icon-v2-note"><h3>' +
-							(window.fw_icon_v2_data &&
-							fw_icon_v2_data.no_results
-								? fw_icon_v2_data.no_results
+						'<div class="fw-icon-v3-note"><h3>' +
+							(window.fw_icon_v3_data &&
+							fw_icon_v3_data.no_results
+								? fw_icon_v3_data.no_results
 								: 'No icons found') +
 							'</h3></div>'
 					)
@@ -362,24 +513,51 @@
 				}
 
 				var currentId = view.model.result && view.model.result['svg-id']
-				var html = '<ul class="fw-icon-v2-library-pack">'
 
+				// Group by pack (items carry .pack) so a merged multi-pack search
+				// shows a heading per library, matching the font results. Key the
+				// lookup by full id ('<pack>/<name>') so same-named icons in
+				// different packs don't collide.
+				var order = []
+				var byPack = {}
 				_.each(items, function(item) {
-					view.lucideResults[item.name] = item
-
-					html +=
-						'<li class="fw-icon-v2-library-icon fw-icon-v2-lucide-icon ' +
-						(currentId === item.id ? 'selected' : '') +
-						'" data-name="' +
-						_.escape(item.name) +
-						'" title="' +
-						_.escape(item.name) +
-						'"><div class="fw-icon-inner">' +
-						item.markup +
-						'</div></li>'
+					var pk = item.pack || String(item.id).split('/')[0]
+					if (!byPack[pk]) {
+						byPack[pk] = []
+						order.push(pk)
+					}
+					byPack[pk].push(item)
+					view.lucideResults[item.id] = item
 				})
+				var multi = order.length > 1
 
-				html += '</ul>'
+				var html = ''
+				_.each(order, function(pk) {
+					if (multi) {
+						var title =
+							(view.packTitles && view.packTitles[pk]) || pk
+						html += '<h2><span>' + _.escape(title) + '</span></h2>'
+					}
+					html += '<ul class="fw-icon-v3-library-pack">'
+					_.each(byPack[pk], function(item) {
+						html +=
+							'<li class="fw-icon-v3-library-icon fw-icon-v3-lucide-icon ' +
+							(currentId === item.id ? 'selected' : '') +
+							'" data-svg-id="' +
+							_.escape(item.id) +
+							'" data-name="' +
+							_.escape(item.name) +
+							'" title="' +
+							_.escape(item.name) +
+							'"><div class="fw-icon-inner">' +
+							item.markup +
+							'</div></li>'
+					})
+					// Ghost fillers keep the last row LEFT-aligned (matching the
+					// font grid) instead of the growable tiles centering/spreading.
+					html += new Array(12).join('<li class="fw-ghost-item"></li>')
+					html += '</ul>'
+				})
 				$wrap.html(html)
 			},
 
@@ -387,7 +565,7 @@
 				event.preventDefault()
 
 				var $el = $(event.currentTarget)
-				var item = this.lucideResults[$el.attr('data-name')]
+				var item = this.lucideResults[$el.attr('data-svg-id')]
 
 				if (!item) {
 					return
@@ -400,7 +578,7 @@
 					markup: item.markup,
 				}
 
-				$el.closest('.fw-icon-v2-library-pack')
+				$el.closest('.fw-icon-v3-library-pack')
 					.find('.selected')
 					.removeClass('selected')
 				$el.addClass('selected')
@@ -495,57 +673,113 @@
 		prepareForPick: function() {
 			var modal = this
 
-			// Icon-Fonts pack dropdown → filters the font grid (applyFilters).
-			// Exclude the SVG Icons pack dropdown, which drives an AJAX re-search
-			// against the chosen inline-SVG library instead.
-			modal.frame.$el
-				.find('.fw-icon-v2-toolbar select:not(.fw-icon-v2-svg-pack)')
-				.selectize({
-					plugins: ['hidden_textfield'],
-					onChange: _.bind(modal.applyFilters, modal),
+			// Unified Icons-tab dropdown (Icon Fonts + SVG Icons optgroups). A
+			// pack-id → type map lets the JS switch between the client-side font
+			// filter and the SVG AJAX search when the selection changes.
+			// Selectize the unified dropdown ONCE (openIcon may call
+			// prepareForPick twice). selectize does NOT read DOM <optgroup>s on
+			// its own, so pass the options + optgroups explicitly, or the dropdown
+			// comes up empty.
+			var $packSelect = modal.frame.$el.find('.fw-icon-v3-pack-select')
+			var packSelectEl = $packSelect[0]
+
+			if (packSelectEl && !packSelectEl.selectize) {
+				var packTypes = {}
+				var packTitles = {}
+				var szOptions = []
+				var szGroups = []
+				var defaultPack = packSelectEl.value || ''
+
+				$packSelect.find('optgroup').each(function() {
+					var groupLabel = this.getAttribute('label') || ''
+					szGroups.push({ value: groupLabel, label: groupLabel })
+					$(this)
+						.find('option')
+						.each(function() {
+							var val = this.value
+							var txt = (this.textContent || val).trim()
+							packTypes[val] = this.getAttribute('data-type') || 'font'
+							packTitles[val] = txt
+							szOptions.push({ value: val, text: txt, group: groupLabel })
+							if (this.selected) { defaultPack = val }
+						})
 				})
 
-			modal.frame.$el.find('.fw-icon-v2-svg-pack').selectize({
-				onChange: _.bind(modal.content.onSvgPackChange, modal.content),
-			})
+				modal.content.packTypes = packTypes
+				modal.content.packTitles = packTitles
+
+				$packSelect.selectize({
+					plugins: ['hidden_textfield'],
+					options: szOptions,
+					optgroups: szGroups,
+					optgroupField: 'group',
+					optgroupValueField: 'value',
+					optgroupLabelField: 'label',
+					labelField: 'text',
+					valueField: 'value',
+					searchField: ['text', 'value'],
+					items: defaultPack ? [defaultPack] : [],
+					onChange: _.bind(modal.content.renderIconsTab, modal.content),
+				})
+				packSelectEl = $packSelect[0]
+			}
+
+			// Pre-select the pack for the stored value (its font pack or SVG pack)
+			// so re-opening lands on the right library; else the server default
+			// (Font Awesome). Render silently now so the grid is ready on open.
+			var initPack = modal.content.packForState(modal.get('current_state'))
+			if (initPack && packSelectEl && packSelectEl.selectize) {
+				packSelectEl.selectize.setValue(initPack, true)
+			}
+			modal.content.renderIconsTab()
+
+			// Infinite scroll for SVG browse: pull the next batch as the shared
+			// results container nears the bottom. Throttled; loadMoreSvg() no-ops
+			// unless a single SVG pack is being browsed.
+			modal.frame.$el
+				.find('.fw-icon-v3-results')
+				.off('scroll.fwiconv3svg')
+				.on('scroll.fwiconv3svg', _.throttle(function() {
+					var el = this
+					if (el.scrollTop + el.clientHeight >= el.scrollHeight - 240) {
+						modal.content.loadMoreSvg()
+					}
+				}, 150))
 
 			modal.frame.$el
 				.find('.fw-options-tabs-wrapper')
-				.off('tabsactivate.fwiconv2')
-				.on('tabsactivate.fwiconv2', function(event, ui) {
+				.off('tabsactivate.fwiconv3')
+				.on('tabsactivate.fwiconv3', function(event, ui) {
 					/**
-					 * Every tab change should set a sensible default type on the
-					 * modal (the concrete value is set when the user actually picks
-					 * something in the tab). Detect the tab by a MARKER in its panel
-					 * rather than its index, so adding tabs (Emoji / Custom SVG /
-					 * Lucide) never breaks the existing icon-font / upload mapping.
-					 * Favorites has no marker → keep the current type (the clicked
-					 * favorite decides font-vs-upload).
+					 * Set a sensible default type on the modal when a tab is shown
+					 * (the concrete value is set when the user picks something).
+					 * Detect the tab by a MARKER in its panel, never by index.
 					 */
 					var $panel = ui.newPanel
-					var kind =
-						$panel.find('.fw-icon-v2-emoji-tab').length
-							? 'emoji'
-							: $panel.find('.fw-icon-v2-svg-tab').length
-							? 'svg'
-							: $panel.find('.fw-icon-v2-lucide-results').length
-							? 'svg'
-							: $panel.find(
-									'[data-fw-option-id="upload-custom-icon-recents"]'
-							  ).length
-							? 'custom-upload'
-							: $panel.find('.fw-icon-v2-icons-library').length
-							? 'icon-font'
-							: null
+
+					// Merged Icons tab: render whichever mode its dropdown is on,
+					// and default the type to that mode.
+					if ($panel.find('.fw-icon-v3-icons-library').length) {
+						modal.content.renderIconsTab()
+						modal.result.type =
+							modal.content.iconsMode === 'svg' ? 'svg' : 'icon-font'
+						return
+					}
+
+					// Merged Custom tab holds BOTH an SVG section and an image
+					// uploader, so the type is decided by what the user does (paste
+					// SVG vs pick an image) — don't override the current/stored type
+					// on activate (that would clobber a stored upload value).
+					if ($panel.find('.fw-icon-v3-custom-tab').length) {
+						return
+					}
+
+					var kind = $panel.find('.fw-icon-v3-emoji-tab').length
+						? 'emoji'
+						: null
 
 					if (kind) {
 						modal.result.type = kind
-					}
-
-					// Lazy-load the Lucide grid the first time its tab is shown.
-					var $lucide = $panel.find('.fw-icon-v2-lucide-results')
-					if ($lucide.length && !$lucide.children().length) {
-						modal.content.doLucideSearch('')
 					}
 				})
 
@@ -565,9 +799,9 @@
 
 			var typeSelectors = {
 				'custom-upload': '[data-fw-option-id="upload-custom-icon-recents"]',
-				'emoji': '.fw-icon-v2-emoji-tab',
-				'svg': '.fw-icon-v2-svg-tab',
-				'icon-font': '.fw-icon-v2-icons-library',
+				'emoji': '.fw-icon-v3-emoji-tab',
+				'svg': '.fw-icon-v3-svg-tab',
+				'icon-font': '.fw-icon-v3-icons-library',
 			}
 
 			var wantSelector =
@@ -577,8 +811,8 @@
 			if (state.type === 'svg') {
 				wantSelector =
 					state['svg-source'] === 'library'
-						? '.fw-icon-v2-lucide-results'
-						: '.fw-icon-v2-svg-tab'
+						? '.fw-icon-v3-lucide-results'
+						: '.fw-icon-v3-svg-tab'
 			}
 			var wantIndex = -1
 			$panels.each(function(i) {
@@ -593,51 +827,22 @@
 
 			// Pre-fill the Emoji / Custom SVG inputs when editing such a value.
 			if (state.type === 'emoji') {
-				modal.frame.$el.find('.fw-icon-v2-emoji-input').val(state.char || '')
-				modal.frame.$el.find('.fw-icon-v2-emoji-live').text(state.char || '')
+				modal.frame.$el.find('.fw-icon-v3-emoji-input').val(state.char || '')
+				modal.frame.$el.find('.fw-icon-v3-emoji-live').text(state.char || '')
 			}
 			if (state.type === 'svg') {
-				modal.frame.$el.find('.fw-icon-v2-svg-input').val(state.markup || '')
-				modal.frame.$el.find('.fw-icon-v2-svg-live').html(state.markup || '')
+				modal.frame.$el.find('.fw-icon-v3-svg-input').val(state.markup || '')
+				modal.frame.$el.find('.fw-icon-v3-svg-live').html(state.markup || '')
 			}
 
-			if (state.type === 'icon-font') {
-				if (modal.result['icon-class']) {
-					this.frame.$el
-						.find(
-							'.fw-icon-v2-icons-library .fw-icon-v2-toolbar input.fw-option-type-text'
-						)
-						.val('')
-
-					var packForIcon = _.findWhere(
-						_.values(this.getIconsData()),
-						{
-							css_class_prefix: this.result['icon-class'].split(
-								' '
-							)[0],
-						}
-					)
-
-					var selectInput = modal.frame.$el.find(
-						'.fw-icon-v2-icons-library .fw-icon-v2-toolbar select'
-					)[0]
-
-					if (selectInput && selectInput.value !== packForIcon) {
-						this.frame.$el
-							.find(
-								'.fw-icon-v2-icons-library .fw-icon-v2-toolbar input.fw-option-type-text'
-							)
-							.val('')
-
-						selectInput.selectize.setValue(packForIcon.name)
-					}
-				}
-			}
+			// The stored icon-font value's pack is already pre-selected above via
+			// packForState() (which honours FA6's fas/far/fab prefixes), and its
+			// tile is highlighted by refreshSelectedIcon() after the grid renders.
 		},
 
 		applyFilters: function() {
 			var packSelect = this.frame.$el.find(
-				'.fw-icon-v2-icons-library .fw-icon-v2-toolbar select'
+				'.fw-icon-v3-icons-library .fw-icon-v3-toolbar select'
 			)[0]
 
 			var pack = packSelect
@@ -646,7 +851,7 @@
 
 			var search = this.frame.$el
 				.find(
-					'.fw-icon-v2-icons-library .fw-icon-v2-toolbar input.fw-option-type-text'
+					'.fw-icon-v3-icons-library .fw-icon-v3-toolbar input.fw-option-type-text'
 				)
 				.val()
 				.trim()
@@ -658,10 +863,10 @@
 
 			this.frame.$el
 				.find(
-					'[data-fw-option-id="icon-font"] .fw-icon-v2-library-pack-wrapper'
+					'[data-fw-option-id="icon-font"] .fw-icon-v3-library-pack-wrapper'
 				)
 				.html(
-					wp.template('fw-icon-v2-packs')({
+					wp.template('fw-icon-v3-packs')({
 						packs: packs,
 						current_state: this.result,
 						should_have_headings: search.trim().length > 0,
@@ -721,7 +926,7 @@
 			}
 
 			this.iconsDataPromise = jQuery.post(ajaxurl, {
-				action: 'fw_icon_v2_get_icons',
+				action: 'fw_icon_v3_get_icons',
 			})
 
 			this.iconsDataPromise.then(_.bind(this.preloadFonts, this))
@@ -751,7 +956,7 @@
 			modal.favoritesPromise = $.Deferred()
 
 			var ajaxPromise = $.post(ajaxurl, {
-				action: 'fw_icon_v2_get_favorites',
+				action: 'fw_icon_v3_get_favorites',
 			})
 
 			ajaxPromise.then(function() {
@@ -797,7 +1002,7 @@
 
 		syncFavoritesToServer: function() {
 			jQuery.post(ajaxurl, {
-				action: 'fw_icon_v2_update_favorites',
+				action: 'fw_icon_v3_update_favorites',
 				favorites: JSON.stringify(_.uniq(this.currentFavorites)),
 			})
 		},
@@ -843,7 +1048,7 @@
 		},
 
 		getTabsHtml: function() {
-			return wp.template('fw-icon-v2-tabs')({
+			return wp.template('fw-icon-v3-tabs')({
 				icons_library_html: this.getLibraryHtml(),
 				favorites_list_html: this.getFavoritesHtml(),
 				recently_used_custom_uploads_html: this.getRecentIconsHtml(),
@@ -856,7 +1061,7 @@
 			var packs = _.values(this.getIconsData())
 			var pack_to_select = [_.first(packs)]
 
-			return wp.template('fw-icon-v2-library')({
+			return wp.template('fw-icon-v3-library')({
 				packs: _.values(this.getIconsData()),
 				pack_to_select: pack_to_select,
 				current_state: this.result,
@@ -865,14 +1070,14 @@
 		},
 
 		getFavoritesHtml: function() {
-			return wp.template('fw-icon-v2-favorites')({
+			return wp.template('fw-icon-v3-favorites')({
 				favorites: this.currentFavorites || [],
 				current_state: this.result,
 			})
 		},
 
 		getRecentIconsHtml: function() {
-			return wp.template('fw-icon-v2-recent-custom-icon-uploads')({
+			return wp.template('fw-icon-v3-recent-custom-icon-uploads')({
 				favorites: this.currentFavorites || [],
 				current_state: this.result,
 			})

@@ -30,9 +30,20 @@ if ( ! function_exists( 'unysonplus_font_icon_pack_ids' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_svg_icon_pack_ids' ) ) :
-	/** Ids of the bundled inline-SVG libraries. More join here as they are added. */
+	/**
+	 * Ids of the bundled inline-SVG libraries that actually have data present.
+	 * Derived from the multi-pack registry so a new pack (Tabler, …) appears
+	 * everywhere just by dropping in its JSON + a registry entry.
+	 */
 	function unysonplus_svg_icon_pack_ids() {
-		return array( 'lucide' );
+		if ( ! function_exists( 'fw_icon_svg_pack_registry' ) ) {
+			return array( 'lucide' );
+		}
+		$ids = array();
+		foreach ( array_keys( fw_icon_svg_pack_registry() ) as $id ) {
+			if ( fw_icon_svg_pack_available( $id ) ) { $ids[] = $id; }
+		}
+		return $ids ? $ids : array( 'lucide' );
 	}
 endif;
 
@@ -48,9 +59,11 @@ if ( ! function_exists( 'unysonplus_icon_pack_choices' ) ) :
 				}
 			}
 		}
-		$svg_labels = array( 'lucide' => __( 'Lucide (SVG)', 'fw' ) );
+		$reg = function_exists( 'fw_icon_svg_pack_registry' ) ? fw_icon_svg_pack_registry() : array();
 		foreach ( unysonplus_svg_icon_pack_ids() as $id ) {
-			$choices[ $id ] = isset( $svg_labels[ $id ] ) ? $svg_labels[ $id ] : ( ucfirst( $id ) . ' (SVG)' );
+			$title = isset( $reg[ $id ]['title'] ) ? $reg[ $id ]['title'] : ucfirst( $id );
+			/* translators: %s: SVG icon pack title, e.g. "Lucide" */
+			$choices[ $id ] = sprintf( __( '%s (SVG)', 'fw' ), $title );
 		}
 		return $choices;
 	}
@@ -67,16 +80,30 @@ if ( ! function_exists( 'unysonplus_enabled_icon_packs' ) ) :
 	 * Ids of the enabled packs. Defaults to ALL when the setting was never saved
 	 * (existing sites are unchanged) and never returns empty (falls back to all),
 	 * so a stray "uncheck everything" can't blank the picker entirely.
+	 *
+	 * Iterates the CURRENT pack list, so a pack bundled AFTER the checklist was
+	 * last saved (e.g. Tabler, added in a later release) is absent from the saved
+	 * value and defaults ON — a new library is opt-out, not silently hidden.
+	 * Only a pack explicitly present-and-false in the saved value is disabled.
 	 */
 	function unysonplus_enabled_icon_packs() {
 		$all = unysonplus_all_icon_pack_ids();
-		if ( ! function_exists( 'fw_get_db_settings_option' ) ) { return $all; }
 
-		$saved = fw_get_db_settings_option( 'icon_packs_enabled' );
+		// The unified installer panel (icon-v3) owns the on/off toggle and stores it
+		// in its own option; fall back to the legacy theme-settings checklist value.
+		if ( function_exists( 'fw_icon_pack_enabled_map' ) ) {
+			$saved = fw_icon_pack_enabled_map();
+		} elseif ( function_exists( 'fw_get_db_settings_option' ) ) {
+			$saved = fw_get_db_settings_option( 'icon_packs_enabled' );
+		} else {
+			return $all;
+		}
 		if ( ! is_array( $saved ) || ! $saved ) { return $all; }
 
 		$enabled = array();
-		foreach ( $saved as $id => $on ) { if ( $on ) { $enabled[] = $id; } }
+		foreach ( $all as $id ) {
+			if ( ! array_key_exists( $id, $saved ) || $saved[ $id ] ) { $enabled[] = $id; }
+		}
 		return $enabled ? $enabled : $all;
 	}
 endif;

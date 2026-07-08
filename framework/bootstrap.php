@@ -63,14 +63,28 @@ if (defined('FW')) {
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';
             require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
-            // Bundled Lucide icon library resolver (fw_icon_lucide_markup / _all /
-            // _search) for the icon type's SVG kind. Loaded always so the frontend
-            // resolver is available even on requests that don't touch the option type.
-            require $dir . '/includes/option-types/icon-v2/includes/lucide.php';
+            // Multi-pack inline-SVG engine (fw_icon_svg_pack_* + the Lucide
+            // back-compat wrappers fw_icon_lucide_markup / _all / _search) for
+            // the icon type's SVG kind. Each pack ships two JSON files in data/;
+            // Lucide is bundled, more packs (Tabler, …) register on the
+            // `fw_icon_svg_packs` filter. Loaded always so the frontend resolver
+            // is available even on requests that don't touch the option type.
+            require $dir . '/includes/option-types/icon-v2/includes/svg-packs.php';
             // Icon-pack enable/disable: reads the Theme Settings -> Icons checklist
             // and filters which packs the icon picker offers. Loaded always so the
             // filter_packs hook + gating helpers exist wherever the picker renders.
             require $dir . '/includes/option-types/icon-v2/includes/pack-settings.php';
+            // On-demand SVG icon-pack installer (icon-v3): downloads packs from an
+            // external catalog into wp-content/uploads/unysonplus-icon-packs/ so the
+            // plugin ships only Lucide/Tabler and stays small. Registers installed
+            // packs into the shared fw_icon_svg_packs registry (local meta.json, no
+            // network) and exposes the install/uninstall AJAX. Loaded always so the
+            // installed-pack registry + frontend markup resolver work everywhere.
+            require $dir . '/includes/option-types/icon-v3/includes/pack-installer.php';
+            // Font Awesome 4 -> 6 class migration (fw_fa4_to_fa6). Loaded always
+            // so legacy `fa fa-*` values are normalised to FA6 wherever icons
+            // render, not only in the picker.
+            require $dir . '/includes/option-types/icon-v2/includes/fa-migrate.php';
             // unysonplus-theme ships its own (un-guarded) copy of the
             // fw-multi-inline option type. Loading the plugin's copy first
             // would cause a fatal "Cannot redeclare class" when the theme

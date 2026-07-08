@@ -16,6 +16,19 @@ unset( $wrapper_attr['value'], $wrapper_attr['name'] );
 // AUTO keeps the saved input empty; widths are only written once the user sets them.
 $json  = ! empty( $is_auto ) ? '' : ( function_exists( 'wp_json_encode' ) ? wp_json_encode( $value ) : json_encode( $value ) );
 $count = count( $value );
+
+// Grid mode (denominator > 0): show each pane as a reduced N/denominator fraction
+// (e.g. 6/12 → 1/2) instead of a percentage; the JS mirrors this exactly.
+$denom       = isset( $cfg['denominator'] ) ? (int) $cfg['denominator'] : 0;
+$fw_ss_label = function ( $w ) use ( $denom ) {
+	if ( $denom > 0 ) {
+		$u   = max( 1, (int) round( $w / 100 * $denom ) );
+		$gcd = function ( $a, $b ) use ( &$gcd ) { return $b ? $gcd( $b, $a % $b ) : $a; };
+		$d   = max( 1, $gcd( $u, $denom ) );
+		return ( $u / $d ) . '/' . ( $denom / $d );
+	}
+	return $w . '%';
+};
 ?>
 <div <?php echo fw_attr_to_html( $wrapper_attr ); ?>>
 	<div class="fw-ss-track">
@@ -36,7 +49,7 @@ $count = count( $value );
 				<?php else : ?>
 				<span class="fw-ss-pane-label"><?php echo esc_html( '' !== $name ? $name : ( $i + 1 ) ); ?></span>
 				<?php endif; ?>
-				<span class="fw-ss-pane-pct"><?php echo esc_html( $w ); ?>%</span>
+				<span class="fw-ss-pane-pct"><?php echo esc_html( $fw_ss_label( $w ) ); ?></span>
 			</div>
 		<?php endforeach; ?>
 	</div>
