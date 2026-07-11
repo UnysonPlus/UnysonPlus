@@ -2,10 +2,42 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.68';
+$manifest['version'] = '2.14.92';
 
 /**
  * Changelog
+ * 2.14.92 - Motion Path module (Animation Engine). A new per-element effect (Animations tab ->
+ *          Motion Path) that sends any element travelling along an SVG path instead of a straight
+ *          tween: eight preset shapes (wave, arc, loop, S-curve, zigzag, spiral, circle, incline)
+ *          or a custom path "d". Three drive modes - scroll-scrubbed (position tied to the
+ *          scrollbar), loop (travels the path forever), or on-view (plays once on enter) - plus a
+ *          start offset, direction, easing, path size, and an "Align to path" option that rotates
+ *          the element to the path tangent so it noses along the curve. Pure SVG geometry
+ *          (getPointAtLength) with one data-driven runtime; on-demand assets, reduced-motion safe.
+ * 2.14.87 - Section Styles preset library. The Section's "Section Variant" dropdown is
+ *          now backed by a customizable preset library (Theme Settings -> Components ->
+ *          Section Styles) instead of a hardcoded Default/Alt/Light/Dark select. Each
+ *          preset is a reusable section skin - a Background-Pro fill (color/gradient/
+ *          image), text / heading / link colors, its own border (style/width/color/
+ *          radius) and a padding size - that css-tokens.php turns into a `.section--{slug}`
+ *          rule. Users retint the three built-ins or add their own branded bands, which
+ *          appear in the dropdown automatically. The three seeded defaults keep the slugs
+ *          alt/light/dark so existing sections render identically (no migration), and the
+ *          old hardcoded variant CSS is retained as a zero-specificity `:where()` fallback
+ *          so the generated presets (or a child theme) always win. Getter/seed/slug-map/
+ *          choices/resolver live in framework/includes/presets/section-style-presets.php.
+ *
+ * 2.14.69 - Animated (Lottie) icons in the icon-v3 picker. New "Animated" tab: paste
+ *          a LottieFiles/Lordicon .json URL or upload a Lottie .json (stored under
+ *          uploads/unysonplus-lottie/ via the capability+nonce-gated
+ *          fw_icon_lottie_upload AJAX), pick a play trigger (loop / once / hover /
+ *          click) and speed, with a live preview in the modal. Value shape
+ *          { type:'lottie', src, trigger, speed }; sc_icon_render() renders it as a
+ *          <span class="upw-lottie" data-...> that the bundled lottie-web player (SVG
+ *          light build, ~168 KB, in framework/static/libs/lottie/) hydrates - loaded
+ *          lazily only when an animated icon is actually output. Currently reachable
+ *          via the icon-v3 dev picker; ships to every element when icon-v3 is promoted.
+ *
  * 2.14.63 - Icon-pack card previews. Each "Available to install" card now shows a
  *          small strip of 5 sample glyphs rendered in that pack's own style (stroke
  *          vs fill, weight), so you can see what a set looks like before installing.
