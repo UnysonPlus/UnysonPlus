@@ -1123,7 +1123,14 @@ fw.getQueryString = function(name) {
 						var left = Math.round((window.innerWidth  - w) / 2) + off;
 						pin(top, left); // pin() clamps to keep a grabbable strip on-screen
 					};
-					modal.on('open', function () { setTimeout(applyPosition, 60); });
+					modal.on('open', function () {
+						setTimeout(applyPosition, 60);
+						// WP core locks page scroll (body.modal-open { overflow:hidden })
+						// while any media modal is open. Our panel is non-blocking, so keep
+						// the page editor scrollable — a body marker class (see CSS) undoes
+						// the lock while a draggable panel is open.
+						jQuery('body').addClass('fw-nonblocking-modal-open');
+					});
 
 					// Keep the panel reachable if the window is resized smaller — the
 					// drag/open clamps only fire on those events, so re-clamp on resize too.
@@ -1133,7 +1140,15 @@ fw.getQueryString = function(name) {
 							pin(r.top, r.left);
 						}
 					});
-					modal.on('close', function () { jQuery(window).off('resize.fwModalDrag'); });
+					modal.on('close', function () {
+						jQuery(window).off('resize.fwModalDrag');
+						// Restore the scroll lock only once NO draggable panel remains open
+						// (this panel's fw-modal-open is already removed by the time close
+						// fires). If a nested/second panel is still up, leave it unlocked.
+						if (!jQuery('.fw-modal-draggable.fw-modal-open').length) {
+							jQuery('body').removeClass('fw-nonblocking-modal-open');
+						}
+					});
 
 					$modalWrapper.addClass('fw-modal-draggable');
 

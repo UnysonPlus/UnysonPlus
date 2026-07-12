@@ -3574,6 +3574,19 @@ body.rtl .fw-col-xs-25,body.rtl .fw-col-xs-35,body.rtl .fw-col-xs-45{float:right
 .fw-modal-draggable.fw-modal-hover > .media-modal-backdrop {
 	opacity: .45;
 }
+
+/* Keep the page editor scrollable while a non-blocking panel is open. WP core
+   locks scroll with `body.modal-open { overflow:hidden }` (and a mobile #wpwrap
+   variant) for its blocking modals; the `.fw-nonblocking-modal-open` marker
+   (added to <body> from JS while a draggable panel is open) undoes it. */
+body.modal-open.fw-nonblocking-modal-open {
+	overflow: visible !important;
+}
+body.mobile.modal-open.fw-nonblocking-modal-open #wpwrap {
+	overflow: visible !important;
+	position: static !important;
+	height: auto !important;
+}
 /* Put the shadow on .media-modal-CONTENT, not .media-modal. The open/close
    animation (fwGrowIn / fwGrowOut) runs on .media-modal-content, while
    .media-modal is the always-present positioning box — a shadow there would
