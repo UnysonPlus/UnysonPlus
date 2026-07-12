@@ -2,10 +2,48 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.14.92';
+$manifest['version'] = '2.15.12';
 
 /**
  * Changelog
+ * 2.15.6 - Draggable, non-blocking page-builder options panel. The element-edit modal is now a
+ *          floating panel you can drag by its header (jQuery UI). It opens centred every time and
+ *          can be parked mostly off-screen - a grabbable strip of the header always stays on-screen
+ *          so it can never be lost, and it re-clamps on window resize. Its dark full-screen backdrop
+ *          no longer blocks: the builder canvas stays visible AND clickable while you edit
+ *          (Divi/Elementor-style); the backdrop returns only as a dim FOCUS layer while the cursor
+ *          is inside the panel, fading out when it leaves (and never intercepting clicks). An
+ *          "Apply" button (save + live re-render WITHOUT
+ *          closing) now shows by default. Scoped via the `.fw-modal-draggable` class that is added
+ *          only to fw options modals, so the WP media library keeps its normal blocking backdrop.
+ * 2.15.1 - New `svg-code` option type (registered by the Shortcodes extension). An inline-SVG
+ *          field: paste <svg> markup, OR upload a .svg that is read CLIENT-SIDE (FileReader)
+ *          straight into the field - the file never touches the media library, so it needs no
+ *          "Safe SVG" plugin and no SVG-mime allowance. Sanitised server-side (sc_icon_sanitize_svg)
+ *          with a live preview + drag-and-drop. Used by the SVG Morph shortcode's per-shape
+ *          "Upload / paste SVG" source (replacing the media uploader).
+ * 2.14.96 - New `multi-inline` option type. The canonical, convention-compliant successor to the
+ *          legacy `fw-multi-inline` (same control - N child fields laid out side-by-side on one
+ *          row, e.g. the padding/margin T/R/B/L box or a border width/style/color row - but with a
+ *          proper id and `FW_Option_Type_Multi_Inline` class name). Standalone by design, so it
+ *          loads on any theme regardless of load order. Also a SUPERSET of the child types the old
+ *          type handled: adds `unit-input` (passes through units/min/max/step) and the palette-
+ *          linked `predefined-colors-color-picker-compact` (passes through picker/choices), so a
+ *          border row can be width(unit-input) + style(select) + color(compact preset) on one line.
+ *          `fw-multi-inline` still works; existing call sites are being migrated to `multi-inline`
+ *          one-by-one, after which the old type becomes a thin deprecated alias. New options should
+ *          use `'type' => 'multi-inline'`.
+ * 2.14.94 - SVG Morph shortcode (Animation Engine). A new [svg_morph] page-builder element that
+ *          morphs an SVG shape into another - a liquid blob loop, circle-to-square, heart-to-star,
+ *          or your own paths. Filled or outline; triggers loop / hover / on-view / click. The
+ *          runtime samples each shape into N points and cyclically aligns consecutive rings (so the
+ *          morph never twists or tears) then interpolates - no morph library. Distinct from SVG
+ *          Draw (which only traces a fixed outline). On-demand assets, reduced-motion safe.
+ * 2.14.93 - New `medium-select` option type. A select sized between the full-width `select` and
+ *          the ~100px `short-select` — it applies the shared `fw-option-width-medium` class
+ *          (50% width, min 300px) via a thin subclass of the Select type. For dropdowns that need
+ *          more room than short-select but shouldn't span the whole row (e.g. the header/footer
+ *          border-style pickers).
  * 2.14.92 - Motion Path module (Animation Engine). A new per-element effect (Animations tab ->
  *          Motion Path) that sends any element travelling along an SVG path instead of a straight
  *          tween: eight preset shapes (wave, arc, loop, S-curve, zigzag, spiral, circle, incline)

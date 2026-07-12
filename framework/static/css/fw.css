@@ -2898,6 +2898,44 @@ a.fw-wp-link:hover {
 
 /* modal */
 
+/* Footer (Reset / Save) height guard. A recent WordPress core change to
+   media-views.css lays `.media-toolbar-secondary` out as a 2×2 CSS grid with
+   `height: 100%` — intended for the media LIBRARY's multi-button select toolbar.
+   The FW options modal REUSES the wp.media modal chrome for its Reset / Save
+   footer, where that grid stretches the single Reset button's cell and blows the
+   footer up to ~110px. Reset the footer toolbars to their simple float layout.
+   Scoped to `.fw-modal` so the real media-library modal keeps WordPress's grid. */
+.fw-modal .media-frame-toolbar .media-toolbar-secondary,
+.fw-modal .media-frame-toolbar .media-toolbar-primary {
+	display: block !important;
+	height: auto !important;
+	grid-template-columns: none !important;
+	grid-template-rows: none !important;
+	gap: 0 !important;
+}
+
+/* Footer buttons vertical alignment. WP core gives the secondary (left / Reset)
+   toolbar's button a larger top margin than the primary (right / Save + Apply),
+   so Reset sat ~5px lower than Save / Apply. Normalise both toolbars' buttons to
+   one top margin so Reset / Save / Apply share a baseline. Scoped to `.fw-modal`
+   (options modals) — the real media-library toolbar (div:not(.fw-modal)) is left
+   alone. */
+.fw-modal .media-frame-toolbar .media-toolbar-secondary > .button,
+.fw-modal .media-frame-toolbar .media-toolbar-secondary > .media-button,
+.fw-modal .media-frame-toolbar .media-toolbar-primary > .button,
+.fw-modal .media-frame-toolbar .media-toolbar-primary > .media-button {
+	margin-top: 10px;
+	vertical-align: top;
+}
+
+/* Make the primary Save button a bit wider than Apply (~100px) so the main
+   "save & close" action reads as the emphasised one. Save is the only
+   .button-primary in the options-modal footer; Apply is a plain .button. */
+.fw-modal .media-frame-toolbar .media-toolbar-primary > .button-primary {
+	min-width: 100px;
+	text-align: center;
+}
+
 body > .fw-modal > .media-modal {
 	z-index: 100001;
 }
@@ -3126,6 +3164,18 @@ body.rtl .fw-modal .media-frame-content > form .fw-options-tabs-contents > .fw-i
 
 .fw-modal .media-frame-content > form > .fw-backend-option:last-child {
 	border-bottom: none;
+}
+
+/* Flat modals — addable-popup item editors like "Add / Edit Logo" — render
+   their fields directly in the form (no tabs). The modal JS then appends a
+   hidden submit <input> as the form's LAST child, so the last OPTION is not
+   :last-child and there was no bottom clearance — leaving it clipped behind the
+   footer (Save / Save All) toolbar. Pad the form itself so the last option can
+   always scroll clear. Scoped with :has() to forms that hold options directly
+   (flat popup modals); tabbed element modals nest their options and are
+   unaffected, so they get no extra bottom space. */
+.fw-modal .media-frame-content > form:has(> .fw-backend-option) {
+	padding-bottom: 60px;
 }
 
 .fw-modal .media-frame-content > form .fw-options-tabs-contents .fw-options-tabs-list {
@@ -3483,3 +3533,59 @@ body > .fw-sole-modal .fw-sole-modal-content p {
     display: block;
 }
 /* end: load-styles.php overrides */
+/* UnysonPlus fifths — backend canvas parity with .fw-col-*-15 (2/5 40%, 3/5 60%, 4/5 80%) */
+.fw-col-xs-25,.fw-col-xs-35,.fw-col-xs-45,.fw-col-sm-25,.fw-col-sm-35,.fw-col-sm-45,.fw-col-md-25,.fw-col-md-35,.fw-col-md-45,.fw-col-lg-25,.fw-col-lg-35,.fw-col-lg-45{position:relative;min-height:1px;box-sizing:border-box}
+.fw-col-xs-25,.fw-col-xs-35,.fw-col-xs-45{float:left}
+body.rtl .fw-col-xs-25,body.rtl .fw-col-xs-35,body.rtl .fw-col-xs-45{float:right}
+.fw-col-xs-25{width:40%}.fw-col-xs-35{width:60%}.fw-col-xs-45{width:80%}
+@media (min-width:783px){.fw-col-sm-25,.fw-col-sm-35,.fw-col-sm-45{float:left}body.rtl .fw-col-sm-25,body.rtl .fw-col-sm-35,body.rtl .fw-col-sm-45{float:right}.fw-col-sm-25{width:40%}.fw-col-sm-35{width:60%}.fw-col-sm-45{width:80%}}
+@media (min-width:901px){.fw-col-md-25,.fw-col-md-35,.fw-col-md-45{float:left}body.rtl .fw-col-md-25,body.rtl .fw-col-md-35,body.rtl .fw-col-md-45{float:right}.fw-col-md-25{width:40%}.fw-col-md-35{width:60%}.fw-col-md-45{width:80%}}
+@media (min-width:1200px){.fw-col-lg-25,.fw-col-lg-35,.fw-col-lg-45{float:left}body.rtl .fw-col-lg-25,body.rtl .fw-col-lg-35,body.rtl .fw-col-lg-45{float:right}.fw-col-lg-25{width:40%}.fw-col-lg-35{width:60%}.fw-col-lg-45{width:80%}}
+
+/* Phase 2 — draggable options modal: the header is the grab handle. */
+.fw-modal-draggable .media-frame-title {
+	cursor: move;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* Phase 3 — non-blocking options modal: drop the dark full-screen backdrop so
+   the page-builder canvas stays visible AND interactive while the modal is open
+   (Divi/Elementor-style). The modal wrapper itself is position:static/height:0,
+   so it never blocks — only the .media-modal-backdrop does. Scoped to
+   .fw-modal-draggable, which is added ONLY to fw options modals, so the WP media
+   library (uploads/image-picker) keeps its normal backdrop. A hairline box-shadow
+   replaces the lost separation from the page behind. */
+/* The dark backdrop is HIDDEN by default (canvas visible + clickable), but fades
+   back in as a dim FOCUS layer while the cursor is inside the panel, then fades
+   out again when the cursor leaves. It never blocks — pointer-events:none — so
+   the canvas stays clickable even mid-fade. The `.fw-modal-hover` class is
+   toggled from JS on the box's mouseenter/leave. Specificity matches WP core's
+   `.fw-modal.fw-modal-open > .media-modal-backdrop { opacity:.7 }` and sits after
+   it, so these win. */
+.fw-modal-draggable.fw-modal-open > .media-modal-backdrop,
+.fw-modal-draggable > .media-modal-backdrop {
+	display: block !important;
+	background-color: #000;
+	opacity: 0;
+	pointer-events: none !important;
+	transition: opacity .25s ease;
+}
+.fw-modal-draggable.fw-modal-hover > .media-modal-backdrop {
+	opacity: .45;
+}
+/* Put the shadow on .media-modal-CONTENT, not .media-modal. The open/close
+   animation (fwGrowIn / fwGrowOut) runs on .media-modal-content, while
+   .media-modal is the always-present positioning box — a shadow there would
+   show BEFORE the panel grows in and LINGER after it grows out. On the content
+   it fades/scales in lockstep with the visible panel. */
+.fw-modal-draggable .media-modal-content {
+	box-shadow: 0 10px 40px rgba(0, 0, 0, .28), 0 0 0 1px rgba(0, 0, 0, .06);
+}
+/* Neutralise the legacy per-level transparent border (JS sets it inline on
+   stacked modals to visually inset the stack — a hint that only made sense with
+   a backdrop). Draggable, no-backdrop panels cascade by POSITION instead, and
+   the border otherwise skewed each stacked panel's centred size. */
+.fw-modal-draggable .media-modal {
+	border-width: 0 !important;
+}

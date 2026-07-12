@@ -1067,6 +1067,97 @@ fw.getQueryString = function(name) {
 				}
 
 				/**
+				 * Draggable, non-blocking options panel. Drag the box by its header
+				 * (.media-frame-title) so it can be moved off whatever you're editing
+				 * (Divi/Elementor-style). Opens centred every time. jQuery UI draggable
+				 * ships with WP admin.
+				 *
+				 * NB: this 'ready' block runs while the modal is still hidden (0×0), so
+				 * we must NOT read/pin its geometry here — we only ATTACH draggable.
+				 * Centring the CSS-centred fixed box to explicit top/left/size happens on
+				 * the modal's `open` event (element is visible then → no jump, and jQuery
+				 * UI reads the real origin).
+				 */
+				(function () {
+					if (!jQuery.fn.draggable) { return; }
+					var $box = $modalWrapper.find('.media-modal');
+					if (!$box.length) { return; }
+
+					// The panel may be parked mostly off any edge (so the canvas beneath
+					// shows through), but a grabbable strip of the header must always stay
+					// on-screen or the panel would be lost. Never allow the header to leave
+					// the top; keep at least KEEP_X px horizontally and KEEP_BOTTOM px of the
+					// header reachable at the bottom.
+					var KEEP_X = 90, KEEP_BOTTOM = 44;
+					var clampPos = function (top, left, w, h) {
+						top  = Math.max(0, Math.min(top,  window.innerHeight - KEEP_BOTTOM));
+						left = Math.max(KEEP_X - w, Math.min(left, window.innerWidth - KEEP_X));
+						return { top: top, left: left };
+					};
+
+					var pin = function (top, left) {
+						// Lock the box's CURRENT rendered size before repositioning. The
+						// modal has no fixed CSS width — it stretches between left:30/right:30
+						// (capped at max-width/height), so dropping right/bottom to `auto`
+						// would collapse it to 0×0. Measure first, then apply explicit w/h.
+						var w = $box.outerWidth(), h = $box.outerHeight();
+						var c = clampPos(top, left, w, h);
+						$box.css({ position: 'fixed', top: c.top + 'px', left: c.left + 'px', right: 'auto', bottom: 'auto', width: w + 'px', height: h + 'px', margin: 0 });
+					};
+
+					// Open the panel CENTRED in the viewport every time (center-center).
+					// Runs on `open` (not the hidden `ready` above, and not in draggable's
+					// start, which is too late — jQuery UI has already captured the origin),
+					// so the box is visible and pin() reads a real size. A second panel
+					// opened while the first is still up (modal-stack level > 0) cascades by a
+					// small offset so it doesn't sit exactly on top of the one beneath it —
+					// the primary (level 0) panel stays dead-centre.
+					var stackLevel = function () {
+						var m = ($modalWrapper.attr('class') || '').match(/fw-modal-level-(\d+)/);
+						return m ? parseInt(m[1], 10) : 0;
+					};
+					var applyPosition = function () {
+						var w = $box.outerWidth(), h = $box.outerHeight();
+						var off  = stackLevel() * 32;
+						var top  = Math.round((window.innerHeight - h) / 2) + off;
+						var left = Math.round((window.innerWidth  - w) / 2) + off;
+						pin(top, left); // pin() clamps to keep a grabbable strip on-screen
+					};
+					modal.on('open', function () { setTimeout(applyPosition, 60); });
+
+					// Keep the panel reachable if the window is resized smaller — the
+					// drag/open clamps only fire on those events, so re-clamp on resize too.
+					jQuery(window).off('resize.fwModalDrag').on('resize.fwModalDrag', function () {
+						if ($box.is(':visible')) {
+							var r = $box[0].getBoundingClientRect();
+							pin(r.top, r.left);
+						}
+					});
+					modal.on('close', function () { jQuery(window).off('resize.fwModalDrag'); });
+
+					$modalWrapper.addClass('fw-modal-draggable');
+
+					// Hover-driven focus backdrop: dim the page behind ONLY while the
+					// cursor is inside the panel (see the matching CSS). Toggled here rather
+					// than with a CSS :hover sibling selector so it doesn't depend on the
+					// backdrop's DOM order relative to the box.
+					$box.on('mouseenter.fwHover', function () { $modalWrapper.addClass('fw-modal-hover'); })
+					    .on('mouseleave.fwHover', function () { $modalWrapper.removeClass('fw-modal-hover'); });
+
+					$box.draggable({
+						handle: '.media-frame-title',
+						// No hard containment — allow parking mostly off-screen, but clamp
+						// live so a grabbable strip of the header always stays visible.
+						drag: function (e, ui) {
+							var c = clampPos(ui.position.top, ui.position.left, $box.outerWidth(), $box.outerHeight());
+							ui.position.top = c.top;
+							ui.position.left = c.left;
+						},
+						cancel: '.media-modal-close, input, textarea, select, button, a, .fw-device-tabs'
+					});
+				})();
+
+				/**
 				 * Show effect on close
 				 */
 				(function(){
@@ -1635,14 +1726,17 @@ fw.getValuesFromServer = function (data) {
 			}
 
 			/**
-			 * Sometimes we want an apply button in order to save changes
-			 * that will not trigger a modal close.
+			 * Apply button — saves changes and live re-renders the element on the
+			 * canvas WITHOUT closing the modal (adds .fw-options-modal-no-close, which
+			 * the save handler honours). Phase 1 of the draggable/non-blocking modal:
+			 * shown by DEFAULT now (opt out with saveWithoutCloseButton:false) so every
+			 * page-builder element edit gets the "apply & keep editing" workflow.
 			 */
-			if (settings.saveWithoutCloseButton) {
+			if (settings.saveWithoutCloseButton !== false) {
 				buttons = buttons.concat([{
 					style: '',
-					text: _fw_localized.l10n.apply,
-					priority: 45,
+					text: (_fw_localized.l10n && _fw_localized.l10n.apply) || 'Apply',
+					priority: 35, // below Save (40) so Apply is LEFT of Save; Save stays rightmost
 					click: function () {
 						modal.frame.$el.addClass('fw-options-modal-no-close');
 						triggerSubmit();
