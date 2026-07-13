@@ -150,8 +150,14 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 				$off_valid = $this->_flatten_choice_keys( isset( $option['choices'] ) ? $option['choices'] : array() );
 				$cur_val   = (string) $option['value'];
 				if ( $cur_val !== '' && ! isset( $off_valid[ $cur_val ] ) ) {
+					// The plugin builds the tile <img> src from data-small-img-attr; without it the
+					// img gets NO src (plugin's "blank option" branch), so the src-based hide below
+					// can't match and a stray selected/green off-tile shows. Give it the transparent
+					// gif via data-small-img-attr so the img carries that src → CSS/JS hide it.
+					$off_gif = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 					$html .= '<option value="' . esc_attr( $cur_val ) . '" selected="selected"'
-						. ' data-img-src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="'
+						. ' data-small-img-attr="' . esc_attr( json_encode( array( 'src' => $off_gif ) ) ) . '"'
+						. ' data-img-src="' . esc_attr( $off_gif ) . '"'
 						. ' class="fw-image-picker-off-option"></option>';
 				}
 			}
