@@ -388,7 +388,14 @@ final class _FW_Component_Backend {
 			wp_register_script(
 				'fw',
 				fw_get_framework_asset_uri('/static/js/fw.js'),
-				['jquery', 'fw-events', 'backbone', 'qtip'],
+				// jquery-ui-draggable is required: fw.OptionsModal's draggable/centered
+				// panel attaches jQuery UI draggable. In wp-admin it happens to be loaded
+				// by other admin scripts, but on a front-end options editor (Live Editor)
+				// it isn't — without it the panel's draggable IIFE bails and the panel
+				// opens un-centered, un-draggable, with no backdrop. Declaring it here
+				// guarantees it wherever fw.js loads. (WP registers the handle on the
+				// front end too, so this only prints it when fw.js is actually enqueued.)
+				['jquery', 'jquery-ui-draggable', 'fw-events', 'backbone', 'qtip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);

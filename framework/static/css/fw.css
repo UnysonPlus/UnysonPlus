@@ -3147,6 +3147,18 @@ body.rtl .fw-modal .fw-options-tabs-wrapper > .fw-options-tabs-contents > .fw-in
 	position: relative;
 }
 
+/* The tab-content region is the options modal's vertical scroller (fw.js sets
+   overflow-y:auto on .fw-options-tabs-contents). Per the CSS overflow spec, when one
+   axis is a non-visible value the other computes from `visible` to `auto` — so overflow-x
+   silently became `auto` too. On Windows (classic 17px scrollbars) the vertical scrollbar
+   then steals width from the 100%-wide content, spawning a spurious HORIZONTAL scrollbar
+   across every element's options panel. Pin overflow-x:hidden so only the intended
+   vertical scroll remains — nothing at this level scrolls sideways (wide option types
+   like tables / code editors carry their own inner scrollers). */
+.fw-modal .fw-options-tabs-contents {
+	overflow-x: hidden;
+}
+
 .fw-modal .media-frame-content > form > .fw-backend-options-last-border-hider,
 .fw-modal .media-frame-content > form .fw-options-tabs-contents > .fw-inner > .fw-options-tab > .fw-backend-options-last-border-hider {
 	position: absolute;
@@ -3601,4 +3613,13 @@ body.mobile.modal-open.fw-nonblocking-modal-open #wpwrap {
    the border otherwise skewed each stacked panel's centred size. */
 .fw-modal-draggable .media-modal {
 	border-width: 0 !important;
+}
+/* The options panel can render on the FRONT END (the Live Editor shell loads the
+   active theme's stylesheet). That theme's body text color is inherited into the
+   panel and washes out the labels/title/help on dark-background themes (light
+   text on the panel's white surface). Pin the panel's own text color to the admin
+   default so it's always readable regardless of theme; elements with their own
+   explicit color (links, buttons) keep theirs. Harmless in wp-admin (already dark). */
+.fw-modal .media-modal-content {
+	color: #1d2327;
 }

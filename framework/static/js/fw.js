@@ -1079,9 +1079,66 @@ fw.getQueryString = function(name) {
 				 * UI reads the real origin).
 				 */
 				(function () {
-					if (!jQuery.fn.draggable) { return; }
+					var hasDraggable = !!jQuery.fn.draggable;
 					var $box = $modalWrapper.find('.media-modal');
 					if (!$box.length) { return; }
+
+					// ---- Debug instrumentation (opt-in, zero cost when off) -------------
+					// Enable with ANY of: ?fw-modal-debug=1 in the URL, localStorage
+					// fwModalDebug='1', or window.FW_MODAL_DEBUG=true. Logs '[fw-modal]' lines
+					// to the console AND paints a live on-screen overlay (top-right) with the
+					// panel's geometry, so positioning/drag can be diagnosed from real data
+					// instead of guessing. Also surfaces WHY drag may fail (is jQuery UI
+					// present? is the header handle the top element at its own centre?).
+					var FW_DEBUG = (function () {
+						try {
+							if (window.FW_MODAL_DEBUG) { return true; }
+							if (/[?&]fw-modal-debug=1/.test(String(location.search))) { return true; }
+							if (window.localStorage && localStorage.getItem('fwModalDebug') === '1') { return true; }
+						} catch (e) {}
+						return false;
+					})();
+					var fwDbgEl = null;
+					var fwDbg = function (label) {
+						if (!FW_DEBUG) { return; }
+						var box = $box[0], r = box.getBoundingClientRect(), cs = window.getComputedStyle(box);
+						var t = box.querySelector('.media-frame-title'), handleTop = 'n/a', handlePt = '';
+						if (t) {
+							var tr = t.getBoundingClientRect(), hx = Math.round(tr.left + tr.width / 2), hy = Math.round(tr.top + tr.height / 2);
+							var topEl = document.elementFromPoint(hx, hy);
+							handleTop = topEl ? (topEl.tagName.toLowerCase() + '.' + String(topEl.className || '').trim().split(/\s+/)[0]) : 'none';
+							handlePt = hx + ',' + hy;
+						}
+						var op = box.offsetParent;
+						var uiDrag = !!(jQuery(box).data('ui-draggable') || jQuery(box).data('uiDraggable'));
+						var expectX = Math.round((window.innerWidth - r.width) / 2);
+						var info = {
+							ev: label,
+							win: window.innerWidth + 'x' + window.innerHeight,
+							rect: Math.round(r.left) + ',' + Math.round(r.top) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height),
+							expectCenterX: expectX, offByX: Math.round(r.left) - expectX,
+							cssPos: cs.position, cssLeft: cs.left, cssRight: cs.right, cssMarginL: cs.marginLeft, cssMaxW: cs.maxWidth,
+							inline: box.getAttribute('style'),
+							offsetParent: op ? (op.tagName.toLowerCase() + '.' + String(op.className || '').trim().split(/\s+/)[0]) : 'VIEWPORT',
+							jqUiDraggable: hasDraggable, dragAttached: uiDrag,
+							level: (typeof stackLevel === 'function' ? stackLevel() : '?'), userMoved: userMoved,
+							handlePt: handlePt, handleTopEl: handleTop
+						};
+						try { console.log('[fw-modal]', label, info); } catch (e) {}
+						try {
+							if (!fwDbgEl) {
+								fwDbgEl = document.createElement('div');
+								fwDbgEl.id = 'fw-modal-debug';
+								fwDbgEl.style.cssText = 'position:fixed;top:6px;right:6px;z-index:2147483647;background:rgba(0,0,0,.92);color:#4f8;font:11px/1.4 Consolas,monospace;padding:7px 9px;max-width:380px;white-space:pre-wrap;word-break:break-all;border:1px solid #4f8;border-radius:4px;pointer-events:none';
+								document.body.appendChild(fwDbgEl);
+							}
+							var lines = [];
+							for (var k in info) { if (info.hasOwnProperty(k)) { lines.push(k + ': ' + info[k]); } }
+							fwDbgEl.textContent = lines.join('\n');
+						} catch (e) {}
+					};
+
+					if (!hasDraggable) { fwDbg('NO jQuery UI draggable — feature disabled'); return; }
 
 					// The panel may be parked mostly off any edge (so the canvas beneath
 					// shows through), but a grabbable strip of the header must always stay
@@ -1095,12 +1152,14 @@ fw.getQueryString = function(name) {
 						return { top: top, left: left };
 					};
 
-					var pin = function (top, left) {
-						// Lock the box's CURRENT rendered size before repositioning. The
-						// modal has no fixed CSS width — it stretches between left:30/right:30
-						// (capped at max-width/height), so dropping right/bottom to `auto`
-						// would collapse it to 0×0. Measure first, then apply explicit w/h.
-						var w = $box.outerWidth(), h = $box.outerHeight();
+					var pin = function (top, left, w, h) {
+						// Lock the box's rendered size before repositioning. The modal has no
+						// fixed CSS width — it stretches between left:30/right:30 (capped at
+						// max-width/height), so dropping right/bottom to `auto` would collapse
+						// it to 0×0. Callers can pass an already-measured w/h (the post-layout
+						// rect); otherwise measure now.
+						if (w == null) { w = $box.outerWidth(); }
+						if (h == null) { h = $box.outerHeight(); }
 						var c = clampPos(top, left, w, h);
 						$box.css({ position: 'fixed', top: c.top + 'px', left: c.left + 'px', right: 'auto', bottom: 'auto', width: w + 'px', height: h + 'px', margin: 0 });
 					};
@@ -1116,15 +1175,51 @@ fw.getQueryString = function(name) {
 						var m = ($modalWrapper.attr('class') || '').match(/fw-modal-level-(\d+)/);
 						return m ? parseInt(m[1], 10) : 0;
 					};
+					// Set once the user drags — stops the settle re-center from yanking the
+					// panel back to center after they've placed it.
+					var userMoved = false;
 					var applyPosition = function () {
-						var w = $box.outerWidth(), h = $box.outerHeight();
-						var off  = stackLevel() * 32;
-						var top  = Math.round((window.innerHeight - h) / 2) + off;
-						var left = Math.round((window.innerWidth  - w) / 2) + off;
-						pin(top, left); // pin() clamps to keep a grabbable strip on-screen
+						if (userMoved) { return -1; }
+						// Reset any prior pin so the box falls back to the stylesheet's native
+						// margin:auto centering, then FREEZE it exactly where CSS rendered it.
+						// Reading the post-layout rect (getBoundingClientRect forces layout, so
+						// max-width IS applied) gives the true centered position/size — avoiding
+						// the earlier innerWidth math that caught a pre-max-width transient and
+						// mis-centered large, async-sizing modals in the Live Editor.
+						// Wipe ALL inline style so the box falls fully back to the stylesheet's
+						// margin:auto centering. Clearing individual props isn't enough: the
+						// browser serializes top/left/right/bottom as the `inset` shorthand and
+						// margin as `margin`, and partial removes can leave residue that
+						// suppresses the auto-centering (leaving the box pinned to the bare inset,
+						// off-center). Preserve only z-index (set by the modal-stack handler).
+						var zi = $box[0].style.zIndex;
+						$box[0].style.cssText = '';
+						if (zi) { $box[0].style.zIndex = zi; }
+						var r   = $box[0].getBoundingClientRect();
+						var off = stackLevel() * 32; // cascade stacked panels so they don't overlap
+						pin(Math.round(r.top) + off, Math.round(r.left) + off, Math.round(r.width), Math.round(r.height));
+						return Math.round(r.left); // the native centered left, for settle detection
 					};
 					modal.on('open', function () {
-						setTimeout(applyPosition, 60);
+						userMoved = false;
+						setTimeout(function () { fwDbg('open'); }, 80);
+						// Center on open, then keep re-centering until the panel's natural
+						// position stops changing. A large modal / slow-loading options (the
+						// front-end Live Editor loads option HTML over AJAX) can keep resizing
+						// for a second or more after open, and there's no reliable single moment
+						// to measure — so poll: each tick unlocks, reads the native centered
+						// position, re-pins there, and stops once two consecutive reads agree
+						// (or a safety cap is hit). Skipped entirely once the user drags.
+						var settleLeft = -1, settleTicks = 0;
+						var settle = function () {
+							if (userMoved || settleTicks++ > 40) { return; }
+							var left = applyPosition();
+							fwDbg('settle#' + settleTicks + ' nativeLeft=' + left);
+							if (left < 0 || left === settleLeft) { return; } // stable → done
+							settleLeft = left;
+							setTimeout(settle, 150);
+						};
+						settle();
 						// WP core locks page scroll (body.modal-open { overflow:hidden })
 						// while any media modal is open. Our panel is non-blocking, so keep
 						// the page editor scrollable — a body marker class (see CSS) undoes
@@ -1159,17 +1254,28 @@ fw.getQueryString = function(name) {
 					$box.on('mouseenter.fwHover', function () { $modalWrapper.addClass('fw-modal-hover'); })
 					    .on('mouseleave.fwHover', function () { $modalWrapper.removeClass('fw-modal-hover'); });
 
+					// Debug: does a mousedown on the header even reach us? (If not, the handle
+					// is covered / the event is being swallowed → that's why drag can't start.)
+					$box.on('mousedown.fwdbg', '.media-frame-title', function () { fwDbg('handle:mousedown'); });
+
 					$box.draggable({
 						handle: '.media-frame-title',
+						// Once the user starts dragging, stop auto-centering it (see the
+						// settle re-center above).
+						start: function (e, ui) { userMoved = true; fwDbg('drag:START pos=' + ui.position.left + ',' + ui.position.top); },
 						// No hard containment — allow parking mostly off-screen, but clamp
 						// live so a grabbable strip of the header always stays visible.
 						drag: function (e, ui) {
+							var before = ui.position.left + ',' + ui.position.top;
 							var c = clampPos(ui.position.top, ui.position.left, $box.outerWidth(), $box.outerHeight());
 							ui.position.top = c.top;
 							ui.position.left = c.left;
+							fwDbg('drag:MOVE before=' + before + ' after=' + ui.position.left + ',' + ui.position.top);
 						},
+						stop: function (e, ui) { fwDbg('drag:STOP pos=' + ui.position.left + ',' + ui.position.top); },
 						cancel: '.media-modal-close, input, textarea, select, button, a, .fw-device-tabs'
 					});
+					fwDbg('draggable attached');
 				})();
 
 				/**
@@ -1412,8 +1518,11 @@ fw.getQueryString = function(name) {
 
 			$frame = $content.closest('.media-frame-content');
 
-			// resize icon list to fit entire window
-			$content.css('overflow-y', 'auto').height(1000000);
+			// resize icon list to fit entire window. Pin overflow-x:hidden alongside
+			// overflow-y:auto — otherwise the x-axis coerces from visible to auto (CSS
+			// overflow spec) and, with Windows' 17px scrollbars, the vertical bar steals
+			// width from the 100%-wide content and spawns a spurious horizontal scrollbar.
+			$content.css({ 'overflow-y': 'auto', 'overflow-x': 'hidden' }).height(1000000);
 			$frame.scrollTop(1000000);
 
 			// -1 is necessary for Linux and Windows
