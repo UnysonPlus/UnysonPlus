@@ -86,7 +86,45 @@
 .fw-option-type-image-picker select{
 	display: none;
 }
+/* The value-holder "off" option (1×1 transparent image) exists only to keep the <select> value
+ * correct when the selected value has no tile — hide its stray tile. JS in scripts.js hides it too
+ * for browsers without :has(). */
+.fw-option-type-image-picker .image_picker_selector li:has(img[src^="data:image/gif;base64,R0lGOD"]) {
+	display: none !important;
+}
 
 .qtip .qtip-content img.fw-option-type-image-picker-large-image {
 	display: block;
 }
+/* Searchable image-picker (opt-in via the `search` option): a filter box on top and category
+ * (optgroup) headers. Only applies to .fw-image-picker--searchable, so other pickers are unchanged. */
+.fw-image-picker-search {
+	display: block; width: 100%; box-sizing: border-box; margin: 0 0 18px;
+	padding: 7px 10px; border: 1px solid #d5dbe2; border-radius: 6px; font-size: 13px;
+}
+.fw-image-picker-search:focus {
+	outline: none; border-color: #2f74e6; box-shadow: 0 0 0 3px rgba(47,116,230,.15);
+}
+.fw-image-picker--searchable .image_picker_selector { margin-top: 0; }
+.fw-image-picker--searchable .image_picker_selector ul { list-style: none; margin: 0; padding: 0; }
+.fw-image-picker--searchable .image_picker_selector li.group_title {
+	width: 100%; margin: 6px 2px 8px; padding: 0;
+	font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #9aa4b0;
+}
+.fw-image-picker--searchable .image_picker_selector .thumbnail p,
+.fw-image-picker--tabs .image_picker_selector .thumbnail p,
+.fw-image-picker--labeled .image_picker_selector .thumbnail p {
+	margin: 3px 0 0; font-size: 11px; text-align: center; line-height: 1.2; color: #5a6675;
+}
+/* Labeled-only pickers (show_label, no search/tabs) still get the wrapping tile grid. */
+.fw-image-picker--labeled .image_picker_selector ul { list-style: none; margin: 0; padding: 0; }
+
+/* Tabs layout (opt-in via layout => 'tabs'): category pills above the tile grid. */
+.fw-image-picker-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.fw-ip-tab {
+	padding: 5px 12px; border: 1px solid #d5dbe2; border-radius: 999px; background: #fff;
+	font-size: 12px; font-weight: 600; color: #5a6675; cursor: pointer; line-height: 1.4;
+	transition: border-color .12s ease, color .12s ease, background .12s ease;
+}
+.fw-ip-tab:hover { border-color: #2f74e6; color: #2f74e6; }
+.fw-ip-tab.is-active { background: #2f74e6; border-color: #2f74e6; color: #fff; }

@@ -119,8 +119,17 @@
 
 /* Popover mode: restore the option row's 27px side padding that the grid layout
    zeroes out (.fw-backend-option-type-multi-picker padding-left/right:0), so the
-   compact trigger aligns with the other options in the section. */
-.fw-backend-option-type-multi-picker.fw-mp-pop-option {
+   compact trigger aligns with the other options in the section.
+
+   The `:has(.fw-mp-pop)` selector matches any multi-picker option that contains
+   a popover — applied in CSS so the padding is right on first paint. The JS
+   adds `.fw-mp-pop-option` for the same purpose, but from inside the panel its
+   `.closest('.fw-backend-option')` can land on a NESTED option (leaving the
+   top-level Card Style / Layout rows at 0 padding — the misalignment bug), so
+   the CSS rule is the reliable one. Options INSIDE a panel are re-zeroed by the
+   .fw-mp-pop-panel rule above, so nested popovers don't inherit this. */
+.fw-backend-option-type-multi-picker.fw-mp-pop-option,
+.fw-backend-option-type-multi-picker:has(.fw-mp-pop) {
 	padding-left: 27px;
 	padding-right: 27px;
 }
@@ -129,3 +138,6 @@
    'small' height, applied by image-picker.js as an attribute), so every module controls its own
    swatch size in every context. (There is deliberately NO global height override here: one shared
    size clobbered modules that need their own — Entrance, Physics, etc.) */
+
+/* Popover trigger placeholder — shown when nothing is picked (e.g. Entrance = "None"). */
+.fw-mp-pop-summary:empty::before { content: attr(data-placeholder); color: #9aa4b0; }

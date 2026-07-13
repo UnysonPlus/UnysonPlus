@@ -207,20 +207,45 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 			$selected   = isset($data['value'][$picker_key]) ? $data['value'][$picker_key] : '';
 			$pchoices   = isset($option['picker'][$picker_key]['choices']) ? $option['picker'][$picker_key]['choices'] : array();
 
+			// Resolve the selected choice's label — searching category GROUPS (image-picker choices
+			// can be nested as { label, choices } for optgroups) as well as the flat top level.
+			$find_label = function ( $choices, $key ) use ( &$find_label ) {
+				if ( isset( $choices[ $key ] ) ) {
+					$c = $choices[ $key ];
+					if ( is_array( $c ) && ! isset( $c['choices'] ) ) {
+						return isset( $c['label'] ) ? $c['label'] : $key;
+					}
+					if ( ! is_array( $c ) ) {
+						return (string) $c;
+					}
+				}
+				foreach ( $choices as $c ) {
+					if ( is_array( $c ) && isset( $c['choices'] ) && is_array( $c['choices'] ) ) {
+						$found = $find_label( $c['choices'], $key );
+						if ( $found !== null ) {
+							return $found;
+						}
+					}
+				}
+				return null;
+			};
+
 			$summary = '';
-			if ( is_string($selected) && isset($pchoices[$selected]) ) {
-				$c = $pchoices[$selected];
-				if ( is_array($c) ) {
-					$summary = isset($c['label']) ? $c['label'] : $selected;
-				} else {
-					$summary = (string) $c;
+			if ( is_string( $selected ) && $selected !== '' ) {
+				$lbl = $find_label( $pchoices, $selected );
+				if ( $lbl !== null ) {
+					$summary = $lbl;
 				}
 			}
+
+			$placeholder = isset($option['placeholder']) ? (string) $option['placeholder'] : '';
 
 			$html =
 				'<div class="fw-mp-pop">'
 				. '<div class="fw-mp-pop-trigger" tabindex="0" role="button">'
-					. '<span class="fw-mp-pop-summary">' . fw_htmlspecialchars($summary) . '</span>'
+					. '<span class="fw-mp-pop-summary"'
+						. ( $placeholder !== '' ? ' data-placeholder="' . fw_htmlspecialchars($placeholder) . '"' : '' )
+						. '>' . fw_htmlspecialchars($summary) . '</span>'
 					. '<span class="fw-mp-pop-caret dashicons dashicons-arrow-down-alt2"></span>'
 				. '</div>'
 				. '<div class="fw-mp-pop-panel">' . $html . '</div>'
@@ -468,12 +493,25 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 			}
 		}
 
+		// Persist ONLY the selected choice's sub-values. A multi-picker is single-select, so every
+		// OTHER choice's reveal values are dead weight — and collecting them all bloats the saved
+		// value enormously (e.g. the Entrance picker stores a settings block for ALL ~56 Animate.css
+		// effects, ~70KB), which OOMs the page builder when it processes the value on the edit screen.
+		// The canonical shape is [ picker => choice, <choice> => [ ...vals ] ]. Only prune when the
+		// selection is a clear scalar; otherwise fall back to the original collect-all behaviour.
+		$selected_choice = ( isset($value[$picker_key]) && ( is_string($value[$picker_key]) || is_numeric($value[$picker_key]) ) )
+			? (string) $value[$picker_key]
+			: null;
+
 		foreach (
 			$this->get_picker_choices(
 				$option
 			)
 			as $choice_id => $choice_options
 		) {
+			if ($selected_choice !== null && (string) $choice_id !== $selected_choice) {
+				continue; // not the selected choice — don't store its reveal values
+			}
 			if (is_null($input_value) && isset($option['value'][$choice_id])) {
 				$value[$choice_id] = $option['value'][$choice_id];
 			} else {

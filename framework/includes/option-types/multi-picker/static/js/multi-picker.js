@@ -227,15 +227,20 @@
 			}
 		}
 
-		// Popover display mode: reflect the picked label into the compact trigger.
-		var $pop = $this.closest('.fw-mp-pop');
-		if ($pop.length) {
+		// Popover display mode: reflect the picked label into the compact trigger. Bind ONLY the
+		// popover whose panel directly hosts THIS multi-picker — i.e. no other multi-picker sits
+		// between this one and the panel — so a NESTED picker's value can't leak into an ancestor
+		// popover's trigger (e.g. a gallery grid's nested "Columns" into the "Design" trigger).
+		var $panel = $this.closest('.fw-mp-pop-panel');
+		if ($panel.length && $this.parentsUntil($panel).filter('.fw-option-type-multi-picker').length === 0) {
+			var $pop = $panel.closest('.fw-mp-pop');
+
 			// Restore the option row's side padding (the grid layout zeroes it).
 			$this.closest('.fw-backend-option').addClass('fw-mp-pop-option');
 
 			var $pickerSelect = elements.$pickerGroup.find('select').first();
 			var updateSummary = function () {
-				var label = $pickerSelect.find('option:selected').text() || '';
+				var label = ($pickerSelect.find('option:selected').text() || '').replace(/\s+/g, ' ').replace(/^ | $/g, '');
 				$pop.children('.fw-mp-pop-trigger').find('.fw-mp-pop-summary').text(label);
 			};
 			$pickerSelect.on('change', updateSummary);

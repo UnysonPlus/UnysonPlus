@@ -76,3 +76,10 @@ picker never loses the other choices' values.
   *illegal string offset* → blank "error:" modal. Migrate JS-side in the item's `scripts.js` too.
 - Wrap the picker with a leading **optgroup** (not a bare loose choice) if you need a choice to sit
   first in a `select` that also has optgroups — loose choices render *after* all optgroups.
+- **Nesting a multi-picker inside a `'popover' => true` multi-picker's choice group** is supported,
+  but the popover **summary** (the compact `.fw-mp-pop-summary` trigger label) had a leak: the JS
+  `updateSummary` did `$this.closest('.fw-mp-pop')`, so a NESTED multi-picker climbed to the
+  *ancestor* popover and overwrote its summary with the nested picker's value (the gallery grid's
+  nested "Columns" count showed up as the "Design" trigger label). Fixed in `multi-picker.js` with a
+  `$pop.children('.fw-mp-pop-panel').is($this)` guard so each popover only syncs from its own picker.
+  If you nest option types inside a popover multi-picker, keep that guard in mind.
