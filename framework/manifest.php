@@ -2,10 +2,110 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.27';
+$manifest['version'] = '2.15.48';
 
 /**
  * Changelog
+ * 2.15.48 - New "Template Library" extension. A browsable library of premade page-builder templates
+ *           (sections, columns, whole pages), shipped inactive by default (activate it under Unyson+ →
+ *           Extensions). It reuses two things the builder already has, so there is no new insertion
+ *           code: (1) a remote-fetch installer modeled on the icon-pack installer — a GitHub
+ *           `catalog.json` (UnysonPlus/UnysonPlus-Templates) is fetched with a 12h transient, and each
+ *           template's export envelope is downloaded on demand into
+ *           wp-content/uploads/unysonplus-templates/<slug>/ (atomic temp-dir + rename), so the plugin
+ *           stays lean; and (2) the builder's native predefined-templates filter
+ *           (`fw_ext_builder:predefined_templates:page-builder:<kind>`) — installed and bundled
+ *           templates appear read-only under the builder's Templates menu and drop onto the canvas with
+ *           the existing JS. A dedicated admin page (Unyson+ → Template Library) is a searchable,
+ *           category-filtered card grid with thumbnails and Install / Remove. A few starter templates
+ *           ship bundled so the library is useful even offline; the resolver treats bundled and
+ *           downloaded templates identically (downloaded wins on a slug clash). Filters:
+ *           `fw_tpl_lib_catalog_url`, `fw_tpl_lib_install_dir`.
+ *
+ * 2.15.46 - Site Converter: "Attach media" uploader + video-hero backgrounds. The Convert box has an
+ *           optional media uploader — attach the real hero video(s) / poster images when the source
+ *           loads them from an external CDN (e.g. a Google Stitch cinematic video). On selection they
+ *           are sideloaded into the Media Library (Media::sideload_upload) and a basename→attachment
+ *           map is stashed; at build time the mapper rewrites captured media whose source URL filename
+ *           matches an upload to the Library copy (media_image / media_video), and — the fidelity win —
+ *           a full-screen background <video> (absolute + object-cover, flagged `bg` by both the JS
+ *           extractor and the PHP stitch parser) is wired into the SECTION background video
+ *           (autoplay/muted/loop) instead of a content media_video block. Works on every path (URL,
+ *           rendered file, offline file). No uploads = unchanged behavior.
+ *
+ * %s - rgba-color-picker also swapped to Coloris. The alpha colour picker now shares the
+ *          same Coloris engine as color-picker (a scoped instance with format:'rgb' + opacity),
+ *          so it keeps emitting its stored `rgba(r,g,b,a)` shape and all ~18 consumers
+ *          (background-pro overlays, hero overlays, multi-inline border colours, button
+ *          presets, the predefined-colors alpha variant) are unchanged. It reuses the
+ *          color-picker's bundled Coloris + shared init (no more wp-color-picker-alpha / Iris),
+ *          and its swatch grid is the Color Presets too. get_value_from_input now also accepts
+ *          rgb() (Coloris emits rgb() for a fully-opaque colour, rgba() once it has alpha) —
+ *          both are valid CSS, so consumers handle either.
+ * %s - Color picker swapped from Iris/wpColorPicker to Coloris (modern, vanilla, MIT,
+ *          bundled locally). Every `color-picker` control now shows the theme's Color Presets as
+ *          a wrapping swatch GRID (all of them, clickable), fixing Iris's single-row squish.
+ *          Opacity is opt-in per option via `'alpha' => true` (default off): off keeps the
+ *          6-digit hex behaviour every consumer expects; on shows the slider and stores an
+ *          8-digit #rrggbbaa. Value stays a plain colour string in the input, so the save path
+ *          and all consumers are unchanged; get_value_from_input now accepts 3/4/6/8-digit hex.
+ *          Coloris binds via document focus-delegation (works in page-builder modals); init runs
+ *          on window load (Coloris builds its picker on its own DOM-ready, so configuring earlier
+ *          threw). wrap:false avoids choking on detached builder-template inputs; a small preview
+ *          paints each input with its colour. 'wp-color-picker' is kept as a compat dependency
+ *          (box-shadow / gradient-v2 / rgba still call jQuery .wpColorPicker()), and the legacy
+ *          `gradient` type's fw:color:picker:changed live-preview event is still fired.
+ * 2.15.34 - Typography Size becomes a unit-input (px / rem / em). The `typography` option
+ *          type gains two format switches. `size_format` (default 'unit') renders the Size
+ *          field as a unit-input so authors can size type in rem/em, not just px; set it to
+ *          'number' where a consumer needs a raw pixel NUMBER (the cursor engine, which feeds
+ *          size into JS, opts out this way). The value becomes a { value, unit } array, but a
+ *          legacy bare-number save is fully tolerated: the editor normalizes it (shown as px)
+ *          before the unit-input renders — so there is NO editor-load migration — and a new
+ *          framework helper fw_typography_size_css() (plus the theme's unysonplus_css_length)
+ *          resolves int / {value,unit} / JSON / length-string to a CSS length in every
+ *          consumer (theme font-size tokens, header/footer custom styling, countdown, counter),
+ *          emitting exactly as before for untouched values. `color_format` (default 'picker')
+ *          documents that the Color field uses the basic color-picker (whose swatch row now
+ *          shows the Color Presets); 'preset' is reserved for a future reference-storing mode.
+ * 2.15.32 - Color pickers show the theme's Color Presets as swatches. The basic
+ *          `color-picker` option type now defaults its Iris swatch row (the boxes under the
+ *          picker) to ALL of the current Color Presets instead of WordPress's stock 8 colours,
+ *          so every plain colour control across the framework offers the brand palette as
+ *          quick-picks. The presets are ordered semantic-first (primary / secondary / accent /
+ *          muted / neutrals). An option can still override with its own `'palettes' => [..]`
+ *          array or hide the row with `'palettes' => false`. Guarded with function_exists, so
+ *          it falls back to WP's defaults when the presets component isn't loaded. (Iris renders
+ *          them in its native single row, so with many presets the swatches get thin — a
+ *          roomier grid layout is a later polish.) Note: this stores the resolved HEX when a
+ *          swatch is clicked (a quick-pick convenience) - it is NOT live-linked to the preset;
+ *          use the reference-storing predefined-colors picker when the value must follow edits.
+ * 2.15.29 - Typography option type promoted to the canonical name. UnysonPlus is a fresh
+ *          restart of Unyson, so the `-v2` option-type suffixes are being retired. The rich
+ *          typography control (family + Google-font variation/subset + size / line-height /
+ *          letter-spacing + color) that shipped as `typography-v2` is now the implementation
+ *          behind the clean `typography` type - use `'type' => 'typography'` in new code.
+ *          `typography-v2` still works: it is now a thin DEPRECATION ALIAS
+ *          (FW_Option_Type_Typography_v2) that subclasses FW_Option_Type_Typography and only
+ *          overrides get_type(), sharing the same view, editor JS/CSS, google-fonts and value
+ *          logic (the enqueue + view are pinned to the `typography` asset folder so the alias
+ *          reuses them). Value shape is unchanged and the option type string isn't stored, so
+ *          no data migration is needed - existing `typography-v2` schemas and saved values keep
+ *          rendering identically. The old, weaker `typography` (v1) implementation
+ *          (size/family/style/color only) is replaced. This is the pilot for retiring the other
+ *          `-v2`/`-v3` option types the same way.
+ * 2.15.28 - Box Presets: structured hover effects. Each Box Preset (Theme Settings -> Components
+ *          -> Box Presets) gains a "Hover Effects" multi-select layered on top of the Hover state's
+ *          border/shadow diffs - Lift (raises the card), Zoom Media (scales an inner image while the
+ *          box clips), Tilt (subtle 3D tilt), Glow (a colored halo merged into the hover shadow, hue
+ *          taken from the hover border color), and Shine (a diagonal sheen swept via a ::before
+ *          pseudo). Combine freely; Lift + Tilt compose into one transform. The CSS is emitted by
+ *          css-tokens as a raw block (so combined transforms, the Shine pseudo, and a
+ *          prefers-reduced-motion guard that neutralizes every effect all live together) and the
+ *          in-editor live preview reflects Lift / Tilt / Glow / Shine. This is the first axis of the
+ *          unified card/box design system - box styling stays engine-independent (a card always has
+ *          at least this hover), while the Animation Engine Hover module will surface as a separate
+ *          per-card picker for the richer animated effects.
  * 2.15.6 - Draggable, non-blocking page-builder options panel. The element-edit modal is now a
  *          floating panel you can drag by its header (jQuery UI). It opens centred every time and
  *          can be parked mostly off-screen - a grabbable strip of the header always stays on-screen
