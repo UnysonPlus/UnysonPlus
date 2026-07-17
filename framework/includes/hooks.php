@@ -28,6 +28,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Radio' );
 		FW_Option_Type::register( 'FW_Option_Type_Select' );
 		FW_Option_Type::register( 'FW_Option_Type_Short_Select' );
+		FW_Option_Type::register( 'FW_Option_Type_Medium_Select' );
 		FW_Option_Type::register( 'FW_Option_Type_Select_Multiple' );
 		FW_Option_Type::register( 'FW_Option_Type_Unique' );
 		FW_Option_Type::register( 'FW_Option_Type_GMap_Key' );
@@ -51,10 +52,12 @@
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Range' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient_V2' );
-		// Stock font-icon `icon` type (original Unyson). The `icon` id was
-		// briefly reclaimed for the modern engine; that reclaim is reverted —
-		// the modern picker now lives in icon-v2 (stable) and icon-v3 (in
-		// development) only, so `icon` is the original font picker again.
+		// `icon` — the original Unyson font-icon id, now RECLAIMED to run the
+		// canonical modern engine. FW_Option_Type_Icon subclasses
+		// FW_Option_Type_Icon_v3 (overriding only get_type()), so divider, the
+		// post-types CPT menu icon, and the theme demos get the modern picker
+		// (Icons/Emoji/Custom/Animated/Favorites) automatically. Legacy scalar
+		// values are bridged to the array shape by the engine's normalize_value().
 		FW_Option_Type::register( 'FW_Option_Type_Icon' );
 		FW_Option_Type::register( 'FW_Option_Type_Image_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Map' );
@@ -81,22 +84,25 @@
 		FW_Option_Type::register( 'FW_Option_Type_Wp_Editor' );
 
 		{
+			// icon-v2 — the production icon type (~23 shortcodes + megamenu). It
+			// now RUNS the canonical modern engine: FW_Option_Type_Icon_v2
+			// subclasses FW_Option_Type_Icon_v3 (only get_type() differs). The
+			// v2 favorites manager AJAX is kept attached for back-compat but the
+			// promoted engine uses the v3 favorites/packs loaders.
 			$favorites = new FW_Icon_V2_Favorites_Manager();
 			$favorites->attach_ajax_actions();
 
 			FW_Option_Type::register( 'FW_Option_Type_Icon_v2' );
-
-			// NOTE: the `icon` name is NO LONGER reclaimed for this engine — it
-			// resolves to the stock FW_Option_Type_Icon again (registered above).
-			// The modern engine is `icon-v2` (stable) plus `icon-v3` (the frozen
-			// in-development copy). When icon-v3 is finalised we can swap it in.
 		}
 
 		{
-			// icon-v3: the in-development next-gen picker (merged Icons + Custom
-			// tabs). Registered so it can be tested live alongside the stable
-			// icon-v2 — it uses fully distinct classes / hook classes / AJAX
-			// actions / template ids, so the two never clash on the same page.
+			// icon-v3 — the canonical modern engine itself (merged Icons + Custom
+			// tabs, Emoji, Animated/Lottie, favorites, SVG upload). It is the base
+			// class that `icon` and `icon-v2` subclass, and is also registered
+			// under its own id (used by the icon-v3-test shortcode). Its favorites
+			// AJAX + packs loader back every promoted id; the engine loads its
+			// assets from the fixed icon-v3 folder under shared handles, so all
+			// three ids share ONE picker instance with no clash.
 			$favorites_v3 = new FW_Icon_V3_Favorites_Manager();
 			$favorites_v3->attach_ajax_actions();
 

@@ -254,9 +254,16 @@
 		},
 	};
 
-	// Registered under both ids: 'icon-v3' (existing consumers) and the
-	// reclaimed 'icon'. Both render via the same engine/view, so one handler
-	// serves both.
-	fw.options.register('icon-v3', iconOptionHandler);
-	fw.options.register('icon', iconOptionHandler);
+	// This one engine now backs several option-type ids: the reclaimed 'icon'
+	// (divider, post-types CPT menu icon, theme demos), 'icon-v2' (the production
+	// type used by ~23 shortcodes + megamenu), and 'icon-v3' (the test type).
+	// FW_Option_Type_Icon and FW_Option_Type_Icon_v2 subclass this engine and no
+	// longer enqueue their own picker JS, so the stock backend.js that used to
+	// register 'icon' is retired — registering it here is now the sole
+	// registration. Register the SAME handler under each id. The script is
+	// enqueued once (shared handle), so each id is registered exactly once (no
+	// "Can't re-register an option type again").
+	['icon', 'icon-v2', 'icon-v3'].forEach(function(typeId) {
+		fw.options.register(typeId, iconOptionHandler);
+	});
 })(jQuery);

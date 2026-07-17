@@ -1,4 +1,5 @@
 ;(function($) {
+
 	window.fwOptionTypeIconV2Picker = fw.Modal.extend({
 		defaults: _.extend({}, fw.Modal.prototype.defaults, {
 			title: 'Icon V2',
@@ -22,6 +23,11 @@
 				'input .fw-icon-v3-svg-input': 'onSvgInput',
 				'click .fw-icon-v3-svg-upload': 'onSvgUploadClick',
 				'change .fw-icon-v3-svg-file': 'onSvgFile',
+				'input .fw-icon-v3-lottie-url': 'onLottieChange',
+				'change .fw-icon-v3-lottie-trigger': 'onLottieChange',
+				'input .fw-icon-v3-lottie-speed': 'onLottieChange',
+				'click .fw-icon-v3-lottie-upload': 'onLottieUploadClick',
+				'change .fw-icon-v3-lottie-file': 'onLottieFile',
 				'click .fw-icon-v3-lucide-icon': 'onLucideSelect',
 				submit: 'onSubmit',
 			},
@@ -139,6 +145,12 @@
 
 				var result = $el.attr('data-fw-icon-v3').trim()
 
+				// Set the value TYPE from what was clicked. The merged Custom tab's
+				// tabsactivate deliberately doesn't set a type (the tab holds both an
+				// SVG section and the image uploader), so without this a picked image
+				// keeps the previous type and never becomes a 'custom-upload' value.
+				this.model.result.type = type
+
 				this.model.result[
 					type === 'custom-upload' ? 'attachment-id' : 'icon-class'
 				] = result
@@ -208,11 +220,17 @@
 					.find('.fw-favorite-icons-wrapper')
 					.replaceWith(this.model.getFavoritesHtml())
 
-				this.model.frame.$el
-					.find(
-						'[data-fw-option-id="upload-custom-icon-recents"] .fw-option-html'
-					)
-					.html(this.model.getRecentIconsHtml())
+				// The recents list is injected DIRECTLY into the upload-section div
+				// (templates.php puts {{{data.recently_used_custom_uploads_html}}}
+				// straight inside it) — there is NO .fw-option-html child here, so
+				// target the section element itself. Using a .fw-option-html child
+				// selector matched nothing, which is why picking/uploading a raster
+				// image appeared to do nothing.
+				var $recents = this.model.frame.$el.find(
+					'[data-fw-option-id="upload-custom-icon-recents"]'
+				)
+
+				$recents.html(this.model.getRecentIconsHtml())
 			},
 
 			onSearch: function(event) {
@@ -271,8 +289,11 @@
 			// "Upload .svg file" → open the hidden file input.
 			onSvgUploadClick: function(event) {
 				event.preventDefault()
+				// The button + hidden file input live in .fw-icon-v3-custom-head
+				// (the merged Custom tab), NOT a .fw-icon-v3-toolbar — so scope the
+				// lookup to their shared parent, else the file dialog never opens.
 				$(event.currentTarget)
-					.closest('.fw-icon-v3-toolbar')
+					.closest('.fw-icon-v3-custom-head')
 					.find('.fw-icon-v3-svg-file')
 					.trigger('click')
 			},
@@ -313,6 +334,73 @@
 
 				reader.readAsText(file)
 				input.value = '' // allow re-selecting the same file
+			},
+
+			// --- Animated (Lottie) tab -----------------------------------------
+			// Any of the three controls (URL / trigger / speed) re-reads the tab and
+			// updates the value + the live preview.
+			onLottieChange: function(event) {
+				this.syncLottie($(event.currentTarget).closest('.fw-icon-v3-lottie-tab'))
+			},
+
+			// Read the tab's inputs into the picked value + (re)play the preview.
+			syncLottie: function($tab) {
+				var src     = $.trim($tab.find('.fw-icon-v3-lottie-url').val() || '')
+				var trigger = $tab.find('.fw-icon-v3-lottie-trigger').val() || 'loop'
+				var speed   = parseFloat($tab.find('.fw-icon-v3-lottie-speed').val()) || 1
+
+				this.model.result = src
+					? { type: 'lottie', src: src, trigger: trigger, speed: speed }
+					: { type: 'none' }
+
+				var $live = $tab.find('.fw-icon-v3-lottie-live')
+				if ($live[0] && $live[0].__upwLottie) { try { $live[0].__upwLottie.destroy() } catch (e) {} $live[0].__upwLottie = null }
+				$live.empty()
+				if (src && window.lottie) {
+					try {
+						var anim = window.lottie.loadAnimation({
+							container: $live[0], renderer: 'svg', loop: true, autoplay: true, path: src
+						})
+						anim.setSpeed(speed)
+						$live[0].__upwLottie = anim
+					} catch (e) {}
+				}
+			},
+
+			onLottieUploadClick: function(event) {
+				event.preventDefault()
+				$(event.currentTarget).closest('.fw-icon-v3-lottie-tab').find('.fw-icon-v3-lottie-file').trigger('click')
+			},
+
+			// Upload the chosen .json to the server (stored under uploads); on success
+			// drop the returned URL into the URL field and sync.
+			onLottieFile: function(event) {
+				var input = event.currentTarget
+				var file  = input.files && input.files[0]
+				if (!file) { return }
+
+				var view  = this
+				var $tab  = $(input).closest('.fw-icon-v3-lottie-tab')
+				var $msg  = $tab.find('.fw-icon-v3-lottie-msg').removeClass('fw-icon-v3-error').text(
+					(window.fwIconV3 && fwIconV3.i18n && fwIconV3.i18n.uploading) || 'Uploading…')
+
+				var fd = new FormData()
+				fd.append('action', 'fw_icon_lottie_upload')
+				fd.append('nonce', (window.fwIconV3 && fwIconV3.lottieNonce) || '')
+				fd.append('lottie_file', file)
+
+				$.ajax({ url: (window.ajaxurl || (window.fwIconV3 && fwIconV3.ajaxUrl)), method: 'POST', data: fd, processData: false, contentType: false })
+					.done(function(res) {
+						if (res && res.success && res.data && res.data.url) {
+							$tab.find('.fw-icon-v3-lottie-url').val(res.data.url)
+							$msg.text('')
+							view.syncLottie($tab)
+						} else {
+							$msg.addClass('fw-icon-v3-error').text((res && res.data && res.data.message) || 'Upload failed.')
+						}
+					})
+					.fail(function() { $msg.addClass('fw-icon-v3-error').text('Upload failed.') })
+				input.value = ''
 			},
 
 			// Lucide tab: search-as-you-type (debounced) against the bundled set.
@@ -801,6 +889,7 @@
 				'custom-upload': '[data-fw-option-id="upload-custom-icon-recents"]',
 				'emoji': '.fw-icon-v3-emoji-tab',
 				'svg': '.fw-icon-v3-svg-tab',
+				'lottie': '.fw-icon-v3-lottie-tab',
 				'icon-font': '.fw-icon-v3-icons-library',
 			}
 
@@ -833,6 +922,13 @@
 			if (state.type === 'svg') {
 				modal.frame.$el.find('.fw-icon-v3-svg-input').val(state.markup || '')
 				modal.frame.$el.find('.fw-icon-v3-svg-live').html(state.markup || '')
+			}
+			if (state.type === 'lottie') {
+				var $ltab = modal.frame.$el.find('.fw-icon-v3-lottie-tab')
+				$ltab.find('.fw-icon-v3-lottie-url').val(state.src || '')
+				$ltab.find('.fw-icon-v3-lottie-trigger').val(state.trigger || 'loop')
+				$ltab.find('.fw-icon-v3-lottie-speed').val(state.speed || 1)
+				if (modal.content && modal.content.syncLottie) { modal.content.syncLottie($ltab) }
 			}
 
 			// The stored icon-font value's pack is already pre-selected above via

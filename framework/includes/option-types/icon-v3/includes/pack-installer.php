@@ -777,3 +777,55 @@ add_action( 'admin_enqueue_scripts', function ( $hook_suffix = '' ) {
 	wp_enqueue_script( 'upw-icon-pack-installer', $base . '/installer.js', array( 'jquery' ), $ver, false );
 	wp_localize_script( 'upw-icon-pack-installer', 'upwIconPacks', fw_icon_pack_installer_payload() );
 }, 12 );
+
+/* -----------------------------------------------------------------------------
+ * Lottie animation upload (icon-v3 "Animated" tab)
+ *
+ * Stores a user-uploaded Lottie .json under uploads/unysonplus-lottie/ and returns
+ * its URL, which the icon value keeps as `src`. Validated as JSON with the shape
+ * of a Bodymovin/Lottie export ("v" + "layers"). Capability + nonce gated.
+ * -------------------------------------------------------------------------- */
+
+if ( ! function_exists( 'fw_icon_lottie_dir' ) ) :
+	/** { path, url } of the Lottie upload dir under wp-content/uploads. */
+	function fw_icon_lottie_dir() {
+		$up = wp_upload_dir();
+		return array(
+			'path' => trailingslashit( $up['basedir'] ) . 'unysonplus-lottie',
+			'url'  => trailingslashit( $up['baseurl'] ) . 'unysonplus-lottie',
+		);
+	}
+endif;
+
+add_action( 'wp_ajax_fw_icon_lottie_upload', function () {
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'fw' ) ), 403 );
+	}
+	check_ajax_referer( 'fw_icon_lottie_upload', 'nonce' );
+
+	if ( empty( $_FILES['lottie_file'] ) || ! is_uploaded_file( $_FILES['lottie_file']['tmp_name'] ) ) {
+		wp_send_json_error( array( 'message' => __( 'No file was uploaded.', 'fw' ) ) );
+	}
+	if ( (int) $_FILES['lottie_file']['size'] <= 0 || (int) $_FILES['lottie_file']['size'] > 5 * MB_IN_BYTES ) {
+		wp_send_json_error( array( 'message' => __( 'File is empty or larger than 5 MB.', 'fw' ) ) );
+	}
+
+	$raw     = file_get_contents( $_FILES['lottie_file']['tmp_name'] );
+	$decoded = json_decode( $raw, true );
+	if ( ! is_array( $decoded ) || ! isset( $decoded['v'] ) || ! isset( $decoded['layers'] ) ) {
+		wp_send_json_error( array( 'message' => __( 'That file is not a valid Lottie JSON.', 'fw' ) ) );
+	}
+
+	$dir = fw_icon_lottie_dir();
+	if ( ! wp_mkdir_p( $dir['path'] ) ) {
+		wp_send_json_error( array( 'message' => __( 'Could not create the upload folder.', 'fw' ) ) );
+	}
+
+	// Content-hashed filename → identical animations de-dupe, and the URL is stable.
+	$name = 'lottie-' . substr( md5( $raw ), 0, 16 ) . '.json';
+	if ( false === file_put_contents( trailingslashit( $dir['path'] ) . $name, wp_json_encode( $decoded ) ) ) {
+		wp_send_json_error( array( 'message' => __( 'Could not save the file.', 'fw' ) ) );
+	}
+
+	wp_send_json_success( array( 'url' => trailingslashit( $dir['url'] ) . $name ) );
+} );

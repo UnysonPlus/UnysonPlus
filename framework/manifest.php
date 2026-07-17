@@ -2,10 +2,37 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.48';
+$manifest['version'] = '2.15.53';
 
 /**
  * Changelog
+ * 2.15.53 - Icon option types unified on the modern engine. The `icon` (original stock font
+ *           picker) and `icon-v2` (the production type used by ~23 shortcodes + the megamenu)
+ *           types now RUN the canonical modern icon engine that previously lived only in
+ *           `icon-v3`: merged Icons/Custom tabs, Emoji, Animated (Lottie), favorites, and SVG
+ *           upload. Both keep their type ids, so every consumer — divider, the post-types CPT
+ *           menu-icon picker, and all icon-v2 shortcodes — upgrades automatically with no
+ *           shortcode edits. Implemented by making FW_Option_Type_Icon and
+ *           FW_Option_Type_Icon_v2 thin subclasses of FW_Option_Type_Icon_v3 (overriding only
+ *           get_type()); the engine loads its assets from the fixed icon-v3 folder under shared
+ *           handles and registers one JS handler per id, so all three ids share a single picker
+ *           instance with no re-registration clash. Backward compatibility is 100%: the stock
+ *           `icon` type's legacy scalar values (e.g. 'fa fa-star') are bridged to the canonical
+ *           {type:'icon-font',…} array by normalize_value(), icon-v2's stored array shape is a
+ *           strict subset of the engine's, and every consumer already reads either shape.
+ *
+ * 2.15.49 - Template Library: rich in-builder panel. When the Template Library extension is active it now
+ *           replaces the page-builder's plain "Templates" text-list button with a full panel — thumbnail
+ *           cards, search, category + kind (Sections/Columns/Full) filters, one-click Insert (append or
+ *           replace-page), inline Install for catalog templates you haven't downloaded, a thumbnail
+ *           lightbox, and a "My Templates" view for the user's own saved templates (Insert/Export/Delete/
+ *           Import). It is entirely self-contained in the extension (hides the native button via CSS on
+ *           the builder init event and mounts its own), so deactivating the extension restores the native
+ *           inserter. Insertion reuses the builder's own rootItems.add()/reset() API (with fresh
+ *           unique_ids generated per insert so repeated inserts never collide), and My-Templates actions
+ *           reuse the builder's existing per-kind endpoints — nothing forks the builder core. New AJAX:
+ *           fw_tpl_lib_builder_data (edit_posts).
+ *
  * 2.15.48 - New "Template Library" extension. A browsable library of premade page-builder templates
  *           (sections, columns, whole pages), shipped inactive by default (activate it under Unyson+ →
  *           Extensions). It reuses two things the builder already has, so there is no new insertion

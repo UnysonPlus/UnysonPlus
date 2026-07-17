@@ -51,21 +51,29 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
 
         $this->packs_loader->enqueue_admin_css();
 
+        // FIXED to the icon-v3 folder + FIXED handles (do NOT key off
+        // $this->get_type()). This class is the canonical modern icon engine and
+        // is subclassed by FW_Option_Type_Icon (id 'icon') and
+        // FW_Option_Type_Icon_v2 (id 'icon-v2'); every id must load the SAME
+        // assets from THIS folder, under ONE shared handle so WordPress enqueues
+        // them once (keying off get_type() would load the wrong folder for the
+        // subclasses and register the picker JS multiple times → "Can't
+        // re-register an option type again").
         $static_URI = fw_get_framework_directory_uri(
-            '/includes/option-types/' . $this->get_type() . '/static/'
+            '/includes/option-types/icon-v3/static/'
         );
 
         wp_enqueue_style('fw-selectize');
 
         wp_enqueue_script(
-            'fw-option-type-' . $this->get_type() . '-backend-previews',
+            'fw-option-type-icon-v3-backend-previews',
             $static_URI . 'js/render-icon-previews.js',
             ['jquery', 'fw', 'fw-events', 'fw-selectize'],
             fw()->manifest->get_version()
         );
 
         wp_enqueue_script(
-            'fw-option-type-' . $this->get_type() . '-backend-picker-v2',
+            'fw-option-type-icon-v3-backend-picker-v2',
             $static_URI . 'js/icon-picker-v3.js',
             ['fw'],
             fw()->manifest->get_version(),
@@ -73,14 +81,14 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
         );
 
         wp_enqueue_style(
-            'fw-option-type-' . $this->get_type() . '-backend-picker',
+            'fw-option-type-icon-v3-backend-picker',
             $static_URI . 'css/picker.css',
             [],
             fw()->manifest->get_version()
         );
 
         wp_localize_script(
-            'fw-option-type-' . $this->get_type() . '-backend-previews',
+            'fw-option-type-icon-v3-backend-previews',
             'fw_icon_v3_data',
             [
                 'edit_icon_label' => __('Change Icon', 'fw'),
@@ -88,12 +96,34 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
                 'no_results' => __('No icons found', 'fw')
             ]
         );
+
+        // Lottie player (bundled) + hydrator, so the Animated tab can preview the
+        // animation in the modal. Enqueued with the picker; on the frontend
+        // sc_icon_render() loads them lazily only when a lottie icon is output.
+        $lottie_uri = fw_get_framework_directory_uri('/static/libs/lottie');
+        wp_enqueue_style('upw-lottie', $lottie_uri . '/upw-lottie.css', [], fw()->manifest->get_version());
+        wp_enqueue_script('lottie-web', $lottie_uri . '/lottie.min.js', [], fw()->manifest->get_version(), true);
+        wp_enqueue_script('upw-lottie', $lottie_uri . '/upw-lottie.js', ['lottie-web'], fw()->manifest->get_version(), true);
+
+        // Data the picker's Lottie upload handler needs (ajax URL + nonce + i18n).
+        wp_localize_script(
+            'fw-option-type-icon-v3-backend-picker-v2',
+            'fwIconV3',
+            [
+                'ajaxUrl'     => admin_url('admin-ajax.php'),
+                'lottieNonce' => wp_create_nonce('fw_icon_lottie_upload'),
+                'i18n'        => [
+                    'uploading'    => __('Uploading…', 'fw'),
+                    'uploadFailed' => __('Upload failed.', 'fw'),
+                ],
+            ]
+        );
     }
 
     public function load_templates(): void
     {
-        // This option type is registered under two ids ('icon-v3' and the
-        // reclaimed 'icon'), which means two instances each hook
+        // This engine backs several option-type ids ('icon', 'icon-v2' and
+        // 'icon-v3' via subclasses), so multiple instances each hook
         // admin_print_footer_scripts. The picker templates are keyed by fixed
         // ids (tmpl-fw-icon-v3-*), so print them only once per request.
         static $printed = false;
@@ -224,6 +254,14 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
             }
         }
 
+        if ($input['type'] === 'lottie') {
+            $result['src'] = isset($input['src']) ? esc_url_raw((string) $input['src']) : '';
+            $trigger = isset($input['trigger']) ? preg_replace('/[^a-z]/', '', (string) $input['trigger']) : 'loop';
+            $result['trigger'] = in_array($trigger, ['loop', 'once', 'hover', 'click'], true) ? $trigger : 'loop';
+            $speed = isset($input['speed']) ? (float) $input['speed'] : 1;
+            $result['speed'] = ($speed > 0 && $speed <= 8) ? $speed : 1;
+        }
+
         return $result;
     }
 
@@ -255,6 +293,16 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
             $result['svg-source'] = isset($data['value']['svg-source']) ? (string) $data['value']['svg-source'] : '';
             foreach (['svg-id', 'attachment-id', 'url', 'markup'] as $k) {
                 if (!empty($data['value'][$k])) { $result[$k] = $data['value'][$k]; }
+            }
+            // A LIBRARY icon set programmatically (or by the Site Converter) carries only
+            // its `svg-id`, not `markup` — so the picker preview (which renders from
+            // `markup`) shows an empty box. Resolve the markup from the id here, mirroring
+            // the frontend's fw_icon_lucide_markup() fallback, so id-only values preview
+            // too. (The user-picked path already stores markup, so this only fills the gap.)
+            if ($result['svg-source'] === 'library' && empty($result['markup'])
+                && ! empty($result['svg-id']) && function_exists('fw_icon_lucide_markup')) {
+                $mk = fw_icon_lucide_markup($result['svg-id']);
+                if ($mk) { $result['markup'] = $mk; }
             }
         }
 

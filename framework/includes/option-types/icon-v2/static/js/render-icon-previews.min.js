@@ -254,9 +254,9 @@
 		},
 	};
 
-	// Registered under both ids: 'icon-v2' (existing consumers) and the
-	// reclaimed 'icon'. Both render via the same engine/view, so one handler
-	// serves both.
+	// Register ONLY this type's own id. The stock `icon` type is no longer
+	// reclaimed by this engine (it ships its own backend.js), so registering
+	// 'icon' here is stale — and both icon-v2 AND icon-v3 doing it collided
+	// ("Can't re-register an option type again").
 	fw.options.register('icon-v2', iconOptionHandler);
-	fw.options.register('icon', iconOptionHandler);
 })(jQuery);

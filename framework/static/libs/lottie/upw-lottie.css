@@ -1,0 +1,17 @@
+/**
+ * UnysonPlus Lottie icon container. Sized like a glyph: 1em square by default so
+ * it scales with the element's icon-size (font-size) setting, just like a font or
+ * SVG icon. The inner <svg> the player injects fills the box.
+ */
+.upw-lottie {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	line-height: 0;
+	vertical-align: middle;
+}
+.upw-lottie > svg {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+}

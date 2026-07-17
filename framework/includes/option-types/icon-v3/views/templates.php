@@ -159,6 +159,49 @@ $tab_config = array(
 			)
 		),
 
+		// Animated = a Lottie animation: paste a LottieFiles/Lordicon .json URL or
+		// upload a Lottie .json. Value shape { type:'lottie', src, trigger, speed };
+		// rendered on the frontend by sc_icon_render() via the bundled lottie-web
+		// player. The .fw-icon-v3-lottie-tab wrapper is the marker the JS uses to
+		// open this tab for a stored lottie value.
+		'animated' => array(
+			'type' => 'tab',
+			'lazy_tabs' => false,
+			'title' => __('Animated', 'fw'),
+			'options' => array(
+				'animated-picker' => array(
+					'type' => 'html-full',
+					'label' => false,
+					'html' =>
+						'<div class="fw-icon-v3-toolbar"><h3>' . esc_html__( 'Animated (Lottie)', 'fw' ) . '</h3></div>'
+						. '<div class="fw-icon-v3-lottie-tab">'
+						. '<div class="fw-icon-v3-custom-head">'
+						. '<h4 class="fw-icon-v3-section-label">' . esc_html__( 'Lottie animation', 'fw' ) . '</h4>'
+						. '<button type="button" class="fw-icon-v3-lottie-upload button button-secondary">' . esc_html__( 'Upload .json', 'fw' ) . '</button>'
+						. '<input type="file" class="fw-icon-v3-lottie-file" accept=".json,application/json" style="display:none" />'
+						. '</div>'
+						. '<p class="fw-icon-v3-hint">'
+						. esc_html__( 'Paste a LottieFiles or Lordicon animation URL (.json), or upload a Lottie .json file.', 'fw' )
+						. '</p>'
+						. '<input type="url" class="fw-icon-v3-lottie-url fw-option fw-option-type-text" placeholder="https://…/animation.json" autocomplete="off" spellcheck="false" />'
+						. '<div class="fw-icon-v3-lottie-controls">'
+						. '<label>' . esc_html__( 'Play', 'fw' ) . ' '
+						. '<select class="fw-icon-v3-lottie-trigger">'
+						. '<option value="loop">' . esc_html__( 'Loop', 'fw' ) . '</option>'
+						. '<option value="once">' . esc_html__( 'Once', 'fw' ) . '</option>'
+						. '<option value="hover">' . esc_html__( 'On hover', 'fw' ) . '</option>'
+						. '<option value="click">' . esc_html__( 'On click', 'fw' ) . '</option>'
+						. '</select></label>'
+						. '<label>' . esc_html__( 'Speed', 'fw' ) . ' '
+						. '<input type="number" class="fw-icon-v3-lottie-speed" value="1" min="0.1" max="4" step="0.1" /></label>'
+						. '</div>'
+						. '<div class="fw-icon-v3-lottie-live" aria-hidden="true"></div>'
+						. '<p class="fw-icon-v3-lottie-msg" aria-live="polite"></p>'
+						. '</div>'
+				)
+			)
+		),
+
 		'favorites' => array(
 			'type' => 'tab',
 			'attr' => array('class' => 'fw-icon-v3-favorites'),
