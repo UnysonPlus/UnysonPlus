@@ -93,9 +93,35 @@
 	opacity: 1;
 }
 
-/* Delete control in red (destructive action), matching the custom preset managers. */
-.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"] { color: #b32d2e; }
-.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"]:hover { color: #d63638; }
+/* Controls styled to match the Addable Popup: grey Duplicate (dashicons-admin-page)
+   darkening on hover, and the shared fw-x Delete (grey -> red on hover, from fw.css). */
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control-duplicate,
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="delete"] .fw-x {
+	font-size: 16px;
+	color: #aaaaaa;
+	transition: color .12s ease;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="duplicate"]:hover .fw-option-box-control-duplicate {
+	color: #787878;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="delete"]:hover .fw-x {
+	color: #cc0000;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-controls {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control-wrapper,
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control .dashicons {
+	line-height: 1;
+	vertical-align: middle;
+}
 
 /* Multi-column preset list from tablet up (opt-in via .fw-preset-2col).
    Uses CSS Grid, NOT CSS multi-column: the expanded box body is an absolutely

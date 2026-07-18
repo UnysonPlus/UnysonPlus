@@ -1,12 +1,13 @@
-<?php 
+<?php
 /**
- * PHP Version: 7.4 or higher
+ * PHP Version: 8.0 or higher
  */
 if (!defined('FW')) die('Forbidden');
 
 /**
  * Backend option container
  */
+#[\AllowDynamicProperties]
 abstract class FW_Container_Type
 {
 	/**

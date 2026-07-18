@@ -44,6 +44,9 @@ $box_view = fw_get_framework_directory( '/includes/option-types/button-presets/v
 				'option'    => $option,
 				'box_value' => $list_item_value,
 				'data'      => $list_item_data,
+				// Defer the heavy body of each existing preset — the JS hydrates it on
+				// first expand, so opening the Buttons tab is instant. @see box.php.
+				'defer'     => true,
 			) );
 		}
 		?>

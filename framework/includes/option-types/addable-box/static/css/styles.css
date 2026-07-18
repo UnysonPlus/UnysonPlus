@@ -93,9 +93,45 @@
 	opacity: 1;
 }
 
-/* Delete control in red (destructive action), matching the custom preset managers. */
-.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"] { color: #b32d2e; }
-.fw-option-type-addable-box .fw-option-box-control[data-control-id="delete"]:hover { color: #d63638; }
+/* Controls styled to match the Addable Popup: a small grey Duplicate icon
+   (dashicons-admin-page) that darkens on hover, and the shared fw-x Delete — grey,
+   turning red on hover. Both 16px, like the popup's clone icon. Scoped under the box
+   header's after-title area (high specificity) to beat the postbox header's inherited
+   #50575e text colour, which otherwise recolours both glyphs. */
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control-duplicate,
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="delete"] .fw-x {
+	font-size: 16px;
+	color: #aaaaaa;
+	transition: color .12s ease;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="duplicate"]:hover .fw-option-box-control-duplicate {
+	color: #787878;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control[data-control-id="delete"]:hover .fw-x {
+	color: #cc0000;
+}
+
+/* Line the icons up perfectly (vertically centred, evenly spaced) like the Addable
+   Popup. The glyphs have different intrinsic box heights — fw-x carries line-height
+   1.3 (a 21px box) while the duplicate is 16px — so with the default baseline/top
+   alignment the delete X sat ~3px lower. Flex-centre the whole controls row (the
+   equivalent of the popup's absolute top:50% centring) and normalise the glyph
+   line-height so every icon shares one vertical centre. */
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-controls {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control-wrapper,
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+}
+.fw-option-type-addable-box .hndle .fw-html-after-title .fw-option-box-control .dashicons {
+	line-height: 1;
+	vertical-align: middle;
+}
 
 /* Multi-column preset list from tablet up (opt-in via .fw-preset-2col).
    Uses CSS Grid, NOT CSS multi-column: the expanded box body is an absolutely

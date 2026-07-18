@@ -1,1 +1,214 @@
-.fw-dynamic-content-trigger{color:#2271b1;cursor:pointer;display:inline-block;font-size:18px;height:20px;line-height:20px;opacity:.7;text-align:center;text-decoration:none;transition:opacity .15s ease,color .15s ease;width:20px}.fw-dynamic-content-trigger:focus,.fw-dynamic-content-trigger:hover{color:#135e96;opacity:1}.fw-backend-option-descriptor[data-fw-option-type=text],.fw-backend-option-descriptor[data-fw-option-type=textarea]{display:block;position:relative}.fw-backend-option-descriptor[data-fw-option-type=text]>input[type=text],.fw-backend-option-descriptor[data-fw-option-type=textarea]>textarea{padding-right:30px}.fw-backend-option-descriptor[data-fw-option-type=text]>.fw-dynamic-content-trigger{margin:0;position:absolute;right:8px;top:50%;transform:translateY(-50%)}.fw-backend-option-descriptor[data-fw-option-type=textarea]>.fw-dynamic-content-trigger{margin:0;position:absolute;right:8px;top:7px}.fw-backend-option-descriptor[data-fw-option-type=short-text]>.fw-dynamic-content-trigger{margin-left:6px;vertical-align:middle}.fw-backend-option-descriptor[data-fw-option-type=wp-editor]{position:relative}.wp-media-buttons .fw-dc-editor-button{height:auto;line-height:28px;opacity:1;position:static;vertical-align:middle;width:auto}.wp-media-buttons .fw-dc-editor-button .dashicons{font-size:18px;height:28px;line-height:28px;margin-right:2px;vertical-align:top;width:18px}.wp-media-buttons .fw-dc-editor-button .fw-dc-label{vertical-align:top}.fw-dc-popover{background:#fff;border:1px solid #c3c4c7;border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;flex-direction:column;font-size:13px;max-height:360px;position:fixed;width:280px;z-index:100100}.fw-dc-search{border-bottom:1px solid #e0e0e0;padding:8px}.fw-dc-search input{box-sizing:border-box;width:100%}.fw-dc-body{overflow-y:auto;padding:4px 0}.fw-dc-group{color:#757575;font-size:11px;font-weight:600;letter-spacing:.04em;padding:8px 12px 4px;text-transform:uppercase}.fw-dc-item{color:#1d2327;display:block;padding:6px 12px;position:relative;text-decoration:none}.fw-dc-item:focus,.fw-dc-item:hover{background:#f0f6fc;color:#135e96}.fw-dc-item-params{float:right;font-size:14px;line-height:20px;opacity:.45}.fw-dc-empty{color:#757575;padding:12px;text-align:center}.fw-dc-param-form{padding:10px 12px}.fw-dc-param-title{font-weight:600;margin-bottom:8px}.fw-dc-param-row{display:block;margin-bottom:8px}.fw-dc-param-row>span{color:#50575e;display:block;font-size:12px;margin-bottom:3px}.fw-dc-param-input{box-sizing:border-box;width:100%}.fw-dc-param-row span.fw-dc-param-help{color:#757575;display:block;font-size:11px;line-height:1.45;margin:4px 0 0;white-space:pre-line}.fw-dc-param-actions{display:flex;gap:6px;margin-top:4px}
+/* Dynamic Content — admin picker trigger + popover */
+
+.fw-dynamic-content-trigger {
+	display: inline-block;
+	color: #2271b1;
+	text-decoration: none;
+	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	font-size: 18px;
+	text-align: center;
+	opacity: .7;
+	transition: opacity .15s ease, color .15s ease;
+}
+
+.fw-dynamic-content-trigger:hover,
+.fw-dynamic-content-trigger:focus {
+	opacity: 1;
+	color: #135e96;
+}
+
+/*
+ * Full-width single-line text & textarea: pin the icon inside the right edge of
+ * the field (the descriptor is the input's positioning context) and reserve room
+ * with padding so typed text never slides under the icon.
+ */
+.fw-backend-option-descriptor[data-fw-option-type="text"],
+.fw-backend-option-descriptor[data-fw-option-type="textarea"] {
+	position: relative;
+	display: block;
+}
+
+.fw-backend-option-descriptor[data-fw-option-type="text"] > input[type="text"],
+.fw-backend-option-descriptor[data-fw-option-type="textarea"] > textarea {
+	padding-right: 30px;
+}
+
+.fw-backend-option-descriptor[data-fw-option-type="text"] > .fw-dynamic-content-trigger {
+	position: absolute;
+	top: 50%;
+	right: 8px;
+	margin: 0;
+	transform: translateY(-50%);
+}
+
+.fw-backend-option-descriptor[data-fw-option-type="textarea"] > .fw-dynamic-content-trigger {
+	position: absolute;
+	top: 7px;
+	right: 8px;
+	margin: 0;
+}
+
+/* Narrow Short Text: the field is small, so sit the icon inline beside it */
+.fw-backend-option-descriptor[data-fw-option-type="short-text"] > .fw-dynamic-content-trigger {
+	margin-left: 6px;
+	vertical-align: middle;
+}
+
+/*
+ * Rich Editor: the icon is relocated by JS into the editor's media-buttons row,
+ * next to "Add Media", and gets the WP `.button` class so it matches that row.
+ */
+.fw-backend-option-descriptor[data-fw-option-type="wp-editor"] {
+	position: relative;
+}
+
+.wp-media-buttons .fw-dc-editor-button {
+	position: static;
+	width: auto;
+	height: auto;
+	line-height: 28px;
+	opacity: 1;
+	vertical-align: middle;
+}
+
+.wp-media-buttons .fw-dc-editor-button .dashicons {
+	font-size: 18px;
+	line-height: 28px;
+	width: 18px;
+	height: 28px;
+	vertical-align: top;
+	margin-right: 2px;
+}
+
+.wp-media-buttons .fw-dc-editor-button .fw-dc-label {
+	vertical-align: top;
+}
+
+/* Popover */
+.fw-dc-popover {
+	position: fixed;
+	z-index: 100100;
+	width: 280px;
+	max-height: 360px;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+	font-size: 13px;
+}
+
+.fw-dc-search {
+	padding: 8px;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.fw-dc-search input {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.fw-dc-body {
+	overflow-y: auto;
+	padding: 4px 0;
+}
+
+.fw-dc-group {
+	padding: 8px 12px 4px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: #757575;
+}
+
+.fw-dc-item {
+	display: block;
+	padding: 6px 12px;
+	color: #1d2327;
+	text-decoration: none;
+	position: relative;
+}
+
+.fw-dc-item:hover,
+.fw-dc-item:focus {
+	background: #f0f6fc;
+	color: #135e96;
+}
+
+.fw-dc-item-params {
+	float: right;
+	font-size: 14px;
+	line-height: 20px;
+	opacity: .45;
+}
+
+.fw-dc-empty {
+	padding: 12px;
+	color: #757575;
+	text-align: center;
+}
+
+/* Param form */
+.fw-dc-param-form {
+	padding: 10px 12px;
+}
+
+.fw-dc-param-title {
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.fw-dc-param-row {
+	display: block;
+	margin-bottom: 8px;
+}
+
+.fw-dc-param-row > span {
+	display: block;
+	font-size: 12px;
+	color: #50575e;
+	margin-bottom: 3px;
+}
+
+.fw-dc-param-input {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.fw-dc-param-row span.fw-dc-param-help {
+	display: block;
+	margin: 4px 0 0;
+	font-size: 11px;
+	line-height: 1.45;
+	color: #757575;
+	white-space: pre-line; /* honor the newline after "Date Format:" */
+}
+
+.fw-dc-param-actions {
+	margin-top: 4px;
+	display: flex;
+	gap: 6px;
+}
+
+/* Dynamic-content chip — a {{token}} shown as a pill in the builder (see the chip styler at the
+   end of dynamic-content.js). Reads as "this is dynamic content" at a glance. */
+.fw-dc-chip {
+	display: inline-block;
+	padding: 0 7px;
+	margin: 0 1px;
+	border-radius: 10px;
+	background: #ede9fe;
+	color: #5b21b6;
+	box-shadow: inset 0 0 0 1px rgba(91, 33, 182, .18);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 18px;
+	vertical-align: baseline;
+	white-space: nowrap;
+}

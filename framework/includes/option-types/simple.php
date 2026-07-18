@@ -889,9 +889,15 @@ class FW_Option_Type_Select extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _render( $id, $option, $data ) {
-		$option['value'] = $data['value'];
+		// A select's value must be scalar. A stray array/object (e.g. left over from an option
+		// that changed type between a `unit-input` and a `select`, whose value shapes differ)
+		// would be cast to string by `selected()` (per choice) and by `data-saved-value` in
+		// fw_attr_to_html — flooding the admin with "Array to string conversion" warnings. Coerce
+		// it to '' so the default choice shows instead.
+		$value = ( is_array( $data['value'] ) || is_object( $data['value'] ) ) ? '' : $data['value'];
+		$option['value'] = $value;
 
-		$option['attr']['data-saved-value'] = $data['value'];
+		$option['attr']['data-saved-value'] = $value;
 		unset(
 			$option['attr']['value'],
 			$option['attr']['multiple']
@@ -1032,6 +1038,34 @@ class FW_Option_Type_Short_Select extends FW_Option_Type_Select {
 	 */
 	protected function _render( $id, $option, $data ) {
 		$option['attr']['class'] .= ' fw-option-width-short';
+
+		return parent::_render( $id, $option, $data );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 * @internal
+	 */
+	public function _get_backend_width_type() {
+		return 'auto';
+	}
+}
+
+/**
+ * A select sized between `select` (full width) and `short-select` (~100px): the
+ * shared `fw-option-width-medium` width (50%, min 300px). For choices that need a
+ * bit more room than short-select but shouldn't span the whole row.
+ */
+class FW_Option_Type_Medium_Select extends FW_Option_Type_Select {
+	public function get_type() {
+		return 'medium-select';
+	}
+
+	/**
+	 * @internal
+	 */
+	protected function _render( $id, $option, $data ) {
+		$option['attr']['class'] .= ' fw-option-width-medium';
 
 		return parent::_render( $id, $option, $data );
 	}

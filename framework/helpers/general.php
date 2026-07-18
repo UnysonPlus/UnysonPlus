@@ -2302,3 +2302,45 @@ function fw_is_callback( $value ) {
 function fw_is_cli() {
 	return ( php_sapi_name() === 'cli' ) && defined( 'WP_CLI' );
 }
+
+if ( ! function_exists( 'fw_typography_size_css' ) ) {
+	/**
+	 * Resolve a typography `size` value to a CSS length string, tolerating every
+	 * shape the value can take across the size_format migration:
+	 *   - a `unit-input` array  array( 'value' => '1.5', 'unit' => 'rem' )  -> "1.5rem"
+	 *   - a JSON string of that  '{"value":"24","unit":"px"}'               -> "24px"
+	 *   - a legacy plain number  16 / "16"                                  -> "16px"
+	 *   - an already-typed CSS length string "1.25em"                       -> passthrough
+	 *   - blank / false                                                     -> ''
+	 * So a size that predates the unit-input control (a bare integer) resolves
+	 * exactly as before (+px), and a new unit-input value keeps its chosen unit.
+	 *
+	 * @param mixed  $size
+	 * @param string $default_unit unit appended to a bare number (default 'px').
+	 * @return string CSS length, or '' when there's nothing to emit.
+	 */
+	function fw_typography_size_css( $size, $default_unit = 'px' ) {
+		if ( is_string( $size ) ) {
+			$t = trim( $size );
+			if ( $t === '' ) { return ''; }
+			if ( $t[0] === '{' ) {
+				$d = json_decode( $t, true );
+				if ( is_array( $d ) ) { $size = $d; }
+			}
+		}
+
+		if ( is_array( $size ) ) {
+			if ( class_exists( 'FW_Option_Type_Unit_Input' ) ) {
+				return FW_Option_Type_Unit_Input::to_string( $size );
+			}
+			$v = isset( $size['value'] ) ? trim( (string) $size['value'] ) : '';
+			if ( $v === '' || ! is_numeric( $v ) ) { return ''; }
+			$u = ( isset( $size['unit'] ) && $size['unit'] !== '' ) ? (string) $size['unit'] : $default_unit;
+			return $v . $u;
+		}
+
+		if ( is_numeric( $size ) ) { return $size . $default_unit; }
+
+		return trim( (string) $size ); // already a length string (e.g. "1.5rem")
+	}
+}

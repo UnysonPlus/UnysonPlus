@@ -142,11 +142,16 @@
 .fw-sp-slot {
 	flex: 1;
 	min-width: 0;
+	position: relative; /* anchor for the absolutely-positioned slot label */
 }
 
+/* Lift the Top / Right / Bottom / Left labels OUT of flow and float them just
+   above each select. This keeps the selects at their natural height so the
+   row's link icon stays vertically centred against them (no label row pushing
+   the fields down and misaligning the link). */
 .fw-sp-slot-label {
-	display: block;
-	margin: 0 0 2px;
+	position: absolute;
+	top: -12px;
 	font-size: 10px;
 	font-weight: 500;
 	line-height: 1.3;
@@ -160,6 +165,16 @@
 }
 
 .fw-sp-row:not(.is-linked) .fw-sp-all {
+	display: none;
+}
+
+/* Padding normally shows its own labels. The ONLY time they're redundant (and
+   would crowd/overlap the Margin labels floating just above) is when BOTH rows
+   are unlinked — i.e. both showing their individual Top/Right/Bottom/Left
+   slots, in perfectly aligned columns. In that one case the Margin labels head
+   both rows, so hide Padding's duplicate set. Any other state (either row
+   linked) → Padding keeps its labels. */
+.fw-sp-row--margin:not(.is-linked) ~ .fw-sp-row--padding:not(.is-linked) .fw-sp-slot-label {
 	display: none;
 }
 

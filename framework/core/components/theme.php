@@ -18,7 +18,12 @@ final class _FW_Component_Theme {
 		$manifest = array();
 
 		if ( ( $manifest_file = apply_filters( 'fw_framework_manifest_path', fw_get_template_customizations_directory( '/theme/manifest.php' ) ) ) && is_file( $manifest_file ) ) {
-			@include $manifest_file;
+			// Load in an isolated scope (no leaking locals, no silent @-suppression),
+			// matching the child-theme path below.
+			$extracted = fw_get_variables_from_file( $manifest_file, array( 'manifest' => array() ) );
+			if ( isset( $extracted['manifest'] ) && is_array( $extracted['manifest'] ) ) {
+				$manifest = $extracted['manifest'];
+			}
 		}
 
 		if ( is_child_theme() && ( $manifest_file = fw_get_stylesheet_customizations_directory( '/theme/manifest.php' ) ) && is_file( $manifest_file ) ) {
@@ -214,7 +219,7 @@ final class _FW_Component_Theme {
 		if ( is_admin() && ! fw()->theme->manifest->check_requirements() && current_user_can( 'manage_options' ) ) {
 			echo '<div class="notice notice-warning">
 					<p>' .
-						__( 'Theme requirements not met:', 'fw' ) . ' ' . fw()->theme->manifest->get_not_met_requirement_text() .
+						esc_html( __( 'Theme requirements not met:', 'fw' ) . ' ' . fw()->theme->manifest->get_not_met_requirement_text() ) .
 					'</p>
 				</div>';
 		}

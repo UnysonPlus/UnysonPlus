@@ -74,7 +74,7 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 		}
 
 		// save zip to file
-		if ( ! $wp_filesystem->put_contents( $zip_path, $response['body'] ) ) {
+		if ( ! $wp_filesystem->put_contents( $zip_path, wp_remote_retrieve_body( $response ) ) ) {
 			return new WP_Error(
 				$wp_error_id,
 				sprintf( __( 'Cannot save the "%s" extension zip.', 'fw' ), $extension_title )
@@ -110,7 +110,7 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 		}
 
 		if ( ! ( $versions = json_decode( wp_remote_retrieve_body( $request ), true ) ) || is_wp_error( $versions ) ) {
-			return ! $versions ? new WP_Error( sprintf( __( 'Empty version for item: %s', 'fw' ), $user_repo ) ) : $versions;
+			return ! $versions ? new WP_Error( 'fw_ext_bitbucket_empty_version', sprintf( __( 'Empty version for item: %s', 'fw' ), $user_repo ) ) : $versions;
 		}
 
 		if ( isset( $versions['next'] ) ) {
@@ -119,6 +119,6 @@ class FW_Ext_Download_Source_Bitbucket extends FW_Ext_Download_Source {
 
 		$data_version = end( $versions['values'] );
 
-		return ! empty( $data_version['name'] ) ? $data_version['name'] : new WP_Error( sprintf( __( 'Wrong Bibucket version for item: %s', 'fw' ), $user_repo ) );
+		return ! empty( $data_version['name'] ) ? $data_version['name'] : new WP_Error( 'fw_ext_bitbucket_wrong_version', sprintf( __( 'Wrong Bitbucket version for item: %s', 'fw' ), $user_repo ) );
 	}
 }

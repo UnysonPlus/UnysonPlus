@@ -415,11 +415,11 @@ class FW_Framework_Manifest extends FW_Manifest
 	{
 		return [
 			'php' => [
-				'min_version' => '5.2.4',
+				'min_version' => '8.0.0',
 				/*'max_version' => '10000.0.0',*/
 			],
 			'wordpress' => [
-				'min_version' => '4.0',
+				'min_version' => '5.6',
 				/*'max_version' => '10000.0.0',*/
 			],
 		];
@@ -489,11 +489,11 @@ class FW_Theme_Manifest extends FW_Manifest
 	{
 		return [
 			'php' => [
-				'min_version' => '5.2.4',
+				'min_version' => '8.0.0',
 				/*'max_version' => '10000.0.0',*/
 			],
 			'wordpress' => [
-				'min_version' => '4.0',
+				'min_version' => '5.6',
 				/*'max_version' => '10000.0.0',*/
 			],
 			'framework' => [
@@ -550,11 +550,11 @@ class FW_Extension_Manifest extends FW_Manifest
 	{
 		return [
 			'php' => [
-				'min_version' => '5.2.4',
+				'min_version' => '8.0.0',
 				/*'max_version' => '10000.0.0',*/
 			],
 			'wordpress' => [
-				'min_version' => '4.0',
+				'min_version' => '5.6',
 				/*'max_version' => '10000.0.0',*/
 			],
 			'framework' => [

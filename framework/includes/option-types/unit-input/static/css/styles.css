@@ -3,23 +3,34 @@
 .fw-option-type-unit-input { box-sizing: border-box; }
 .fw-option-type-unit-input * { box-sizing: border-box; }
 
+/* The value input + unit select read as ONE joined control: no gap, matched heights
+   (align-items:stretch), and flat inner corners so only the outer corners round. The
+   input drops its RIGHT border so the select's LEFT border is the single 1px seam
+   (avoids a doubled/mismatched line — WP styles the number input's border, the
+   framework styles the select's). Selectors are element-qualified (input./select.) so
+   these resets beat the framework's `.fw-backend-option-input select|input` rule. */
 .fw-option-type-unit-input .fw-unit-input-row {
 	display: flex;
-	gap: 6px;
-	align-items: center;
+	gap: 0;
+	align-items: stretch;
 }
 
-.fw-option-type-unit-input .fw-unit-input-value {
+.fw-option-type-unit-input input.fw-unit-input-value {
 	flex: 1 1 auto;
-	min-width: 70px;
-	max-width: 140px;
+	min-width: 0;
+	max-width: 72px;
+	margin: 0; /* WP admin gives inputs a 1px margin — kill it so there's no seam gap */
+	border-right: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }
 
-.fw-option-type-unit-input .fw-unit-input-unit {
+.fw-option-type-unit-input select.fw-unit-input-unit {
 	flex: 0 0 auto;
 	width: auto;
 	min-width: 64px;
-}
-.fw-option-type-unit-input select.fw-unit-input-unit {
-    max-width: max-content;
+	max-width: max-content;
+	margin: 0; /* WP admin gives selects a 1px margin — kill it so there's no seam gap */
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }

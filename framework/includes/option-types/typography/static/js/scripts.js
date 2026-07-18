@@ -1,7 +1,11 @@
-/*global fw_typography_fonts */
+/*global fw_typography_v2_fonts, jQuery, _ */
 ( function ($) {
 	$(document).ready(function () {
-		var optionTypeClass = '.fw-option-type-typography',
+		// Match BOTH the canonical `typography` type and its deprecation alias
+		// `typography-v2` (the framework stamps `.fw-option-type-{schema type}` on the
+		// wrapper, so both class names occur depending on how a schema declares the type).
+		var optionTypeClass = '.fw-option-type-typography, .fw-option-type-typography-v2',
+			googleFonts = fw_typography_v2_fonts['google'],
 			/**
 			 * [ {'value': 'Font Family', 'text': 'Font Family'} ]
 			 */
@@ -15,7 +19,7 @@
 					fontsOptions = [];
 					fontsOptionsHTML = {};
 
-					_.each(fw_typography_fonts['standard'], function (item) {
+					_.each(fw_typography_v2_fonts['standard'], function (item) {
 						fontsOptionsHTML[item] = '<option value="' + item + '">' + item + '</option>';
 						fontsOptions.push({
 							value: item,
@@ -23,7 +27,7 @@
 						});
 					});
 
-					_.each(fw_typography_fonts['google'], function (item) {
+					_.each(googleFonts['items'], function (item) {
 						fontsOptionsHTML[item['family']] = '<option value="' + item['family'] + '">' + item['family'] + '</option>';
 						fontsOptions.push({
 							value: item['family'],
@@ -40,62 +44,193 @@
 				}
 
 				return fontsOptionsHTML[fontFamily];
+			},
+			_to_ascii = {
+				'188': '44',
+				'109': '45',
+				'190': '46',
+				'191': '47',
+				'192': '96',
+				'220': '92',
+				'222': '39',
+				'221': '93',
+				'219': '91',
+				'173': '45',
+				'187': '61', //IE Key codes
+				'186': '59', //IE Key codes
+				'189': '45'  //IE Key codes
+			},
+			shiftUps = {
+				"96": "~",
+				"49": "!",
+				"50": "@",
+				"51": "#",
+				"52": "$",
+				"53": "%",
+				"54": "^",
+				"55": "&",
+				"56": "*",
+				"57": "(",
+				"48": ")",
+				"45": "_",
+				"61": "+",
+				"91": "{",
+				"93": "}",
+				"92": "|",
+				"59": ":",
+				"39": "\"",
+				"44": "<",
+				"46": ">",
+				"47": "?"
 			};
 
+		var loadedFonts = (typeof Set !== 'undefined') ? new Set() : null;
+		var googleFontNames = (typeof Set !== 'undefined') ? new Set() : null;
+		if (googleFontNames && googleFonts && googleFonts['items']) {
+			_.each(googleFonts['items'], function (item) {
+				googleFontNames.add(item['family']);
+			});
+		}
+
+		function loadGoogleFont(family) {
+			if (!loadedFonts || !googleFontNames) return;
+			if (loadedFonts.has(family) || !googleFontNames.has(family)) return;
+			loadedFonts.add(family);
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'https://fonts.googleapis.com/css?family=' +
+				encodeURIComponent(family).replace(/%20/g, '+') +
+				'&display=swap';
+			document.head.appendChild(link);
+		}
+
+		var fontObserver = (typeof IntersectionObserver !== 'undefined' && loadedFonts) ? new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				if (entry.isIntersecting) {
+					var family = entry.target.getAttribute('data-value');
+					if (family) loadGoogleFont(family);
+				}
+			});
+		}, { rootMargin: '50px' }) : null;
+
 		fwEvents.on('fw:options:init', function (data) {
-			data.$elements.find(optionTypeClass +':not(.initialized)').each(function(){
+			data.$elements.find('.fw-option-type-typography:not(.initialized), .fw-option-type-typography-v2:not(.initialized)').each(function(){
 				var $option = $(this);
 
+				$option.find([
+					'.fw-option-typography-v2-option .fw-option-typography-v2-option-size-input',
+					'.fw-option-typography-v2-option .fw-option-typography-v2-option-line-height-input',
+					'.fw-option-typography-v2-option .fw-option-typography-v2-option-letter-spacing-input'
+				].join(', ')).keydown(function (e) {
+					// Allow: backspace, delete, tab, escape, enter and .
+					if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+							// Allow: Ctrl+A
+						(e.keyCode == 65 && e.ctrlKey === true) ||
+							//Allow -
+						(e.keyCode == 109 ) || (e.keyCode == 189 ) || (e.keyCode == 173 ) ||
+							// Allow: Ctrl+C
+						(e.keyCode == 67 && e.ctrlKey === true) ||
+							// Allow: Ctrl+X
+						(e.keyCode == 88 && e.ctrlKey === true) ||
+							// Allow: home, end, left, right
+						(e.keyCode >= 35 && e.keyCode <= 39)) {
+						// let it happen, don't do anything
+						return;
+					}
+					// Ensure that it is a number and stop the keypress
+					if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+						e.preventDefault();
+					}
+				});
+
 				{
-					var $fontFamilySelect = $option.find('.fw-option-typography-option-family select[data-type="family"]');
+					var $fontFamilySelect = $option.find('.fw-option-typography-v2-option-family select[data-type="family"]');
 
 					$fontFamilySelect
 						.html(getFontsOptionHTML($fontFamilySelect.attr('data-value')))
 						.selectize({
 							render: {
-								option: function (item) {
-									if (fw_typography_fonts['google'].hasOwnProperty(item.value)) {
-										var background = (typeof fw_typography_fonts['google'][item.value].position === "number")
-											? 'style="background-position: 0 -' + fw_typography_fonts['google'][item.value].position + 'px;'
-											: 'style="background: none;';
-
-										return ''+
-										'<div data-value="' + item.value + '" data-selectable="" class="option">' +
-											item.text +
-											'<div class="preview" ' + background + '"></div>'+
-										'</div>';
-									} else {
-										return ''+
-										'<div data-value="' + item.value + '" data-selectable="" class="option">' +
-											item.text +
-											'<div class="preview" style="background: none; font-family: ' + item.value + '">' + item.value + '</div>'+
-										'</div>';
-									}
+								option: function (item, escape) {
+									return '<div data-value="' + escape(item.value) + '" data-selectable="" class="option" style="font-family: \'' + escape(item.value) + '\', sans-serif;">' + escape(item.text) + '</div>';
+								},
+								item: function (item, escape) {
+									return '<div class="item" style="font-family: \'' + escape(item.value) + '\', sans-serif;">' + escape(item.text) + '</div>';
 								}
 							},
+							onDropdownOpen: function ($dropdown) {
+								if (!fontObserver) return;
+								$dropdown.find('.option').each(function () {
+									fontObserver.observe(this);
+								});
+							},
 							onChange: function (selected) {
-								var html = '';
+								var results = $.grep(googleFonts['items'], function (font) { return font['family'] === selected; }),
+									$variations = $option.find('.fw-option-typography-v2-option-variation'),
+									$subsets = $option.find('.fw-option-typography-v2-option-subset'),
+									$style = $option.find('.fw-option-typography-v2-option-style'),
+									$weight = $option.find('.fw-option-typography-v2-option-weight');
 
-								if (fw_typography_fonts['google'].hasOwnProperty(selected)) {
-									var font = fw_typography_fonts['google'][selected];
-									_.each(font.variants, function (variant) {
-										html += '<option value="' + variant + '">' + fw.capitalizeFirstLetter(variant) + '</option>';
+								if (results.length === 1) {
+									var variations = '', subsets = '';
+									_.each(results[0]['variants'], function (variation) {
+										variations += '<option value="' + variation + '">' + variation + '</option>';
 									});
+									_.each(results[0]['subsets'], function (subset) {
+										subsets += '<option value="' + subset + '">' + subset + '</option>';
+									});
+
+									$variations.find('select[data-type="variation"]').html(variations);
+									$variations.show();
+
+									$subsets.find('select[data-type="subset"]').html(subsets);
+									$subsets.show();
+									$style.hide();
+									$weight.hide();
 								} else {
-									html += [ // todo: translate these strings
-										'<option value="300">Thin</option>',
-										'<option value="300italic">Thin/Italic</option>',
-										'<option value="400" selected="selected">Normal</option>',
-										'<option value="italic">Italic</option>',
-										'<option value="700">Bold</option>',
-										'<option value="700italic">Bold/Italic</option>'
-									].join("\n");
+									$style.show();
+									$weight.show();
+
+									$variations.hide();
+									$subsets.hide();
 								}
 
-								this.$dropdown
-									.closest('.fw-option-typography-option-family')
-									.next('.fw-option-typography-option-style')
-									.find('select[data-type="style"]').html(html);
+								this.$wrapper.find('input[type="text"]').attr('data-fw-pressed-backspace', 'false');
+							},
+							onInitialize: function () {
+								var self = this;
+								this.$wrapper.find('input[type="text"]').attr('data-fw-pressed-backspace', 'false');
+								this.$wrapper.find('input[type="text"]').on('keydown', function (e) {
+									if (e.keyCode === 40) {
+										$(this).attr('data-fw-pressed-backspace', 'true');
+									} else {
+										if ($(this).attr('data-fw-pressed-backspace') == 'false') {
+
+											self.clear(true);
+
+											var c = e.which;
+
+											if (_to_ascii.hasOwnProperty(c)) {
+												c = _to_ascii[c];
+											}
+
+											if (!e.shiftKey && (c >= 65 && c <= 90)) {
+												c = String.fromCharCode(c + 32);
+											} else if (e.shiftKey && shiftUps.hasOwnProperty(c)) {
+												c = shiftUps[c];
+											} else {
+												c = String.fromCharCode(c);
+											}
+											$(this).val(c);
+
+											$(this).attr('data-fw-pressed-backspace', 'true');
+										}
+									}
+								});
+
+								$fontFamilySelect.removeAttr('data-value');
+
+								$fontFamilySelect.trigger('selectizeLoaded', [$fontFamilySelect[0].selectize]);
+
 							},
 							onFocus: function() {
 								var selectize = $fontFamilySelect[0].selectize;
@@ -124,11 +259,6 @@
 								});
 
 								selectize.refreshOptions(false);
-							},
-							onInitialize: function(){
-								$fontFamilySelect.removeAttr('data-value');
-
-								$fontFamilySelect.trigger('selectizeLoaded', [$fontFamilySelect[0].selectize]);
 							}
 						});
 				}

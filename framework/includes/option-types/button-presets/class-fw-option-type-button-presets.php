@@ -69,10 +69,15 @@ class FW_Option_Type_Button_Presets extends FW_Option_Type {
 		);
 	}
 
-	/** Compact color picker field wired to the supplied palette choices. */
+	/** Compact color picker field wired to the supplied palette choices. Uses the
+	 *  alpha-capable (`rgba-color-picker`) custom picker so a preset can carry a
+	 *  transparent or TRANSLUCENT fill (e.g. rgba(255,255,255,0.2) for a frosted /
+	 *  glass button). The generator (css-tokens.php) passes a custom rgba value
+	 *  straight through, and the base `.btn` no longer forces a fill, so it shows. */
 	protected static function color_field( $label, $choices ) {
 		return array(
 			'type'    => 'predefined-colors-color-picker-compact',
+			'picker'  => 'rgba-color-picker',
 			'label'   => $label,
 			'choices' => is_array( $choices ) ? $choices : array(),
 		);
@@ -91,7 +96,7 @@ class FW_Option_Type_Button_Presets extends FW_Option_Type {
 				'dynamic_content' => false,
 			),
 			'font' => array(
-				'type'       => 'typography-v2',
+				'type'       => 'typography',
 				'label'      => __( 'Font', 'fw' ),
 				// Identity only — family / weight / letter-spacing / style.
 				// size + line-height belong to the SIZE axis (Theme Settings →

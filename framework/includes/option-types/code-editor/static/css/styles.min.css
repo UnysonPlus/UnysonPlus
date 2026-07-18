@@ -1,1 +1,133 @@
-textarea.fw-option-code-editor{min-height:200px;-o-tab-size:2;tab-size:2;-moz-tab-size:2;width:100%}.CodeMirror,.fw-backend-option .CodeMirror,.fw-option-box .CodeMirror,textarea.fw-option-code-editor{font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;font-size:12px;line-height:1.5}.CodeMirror,.fw-backend-option .CodeMirror,.fw-option-box .CodeMirror{border:1px solid #ddd;border-radius:3px}.CodeMirror-focused{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1}.fw-option-type-code-editor .CodeMirror{background:#fbfcfe;color:#1e293b}.fw-option-type-code-editor .cm-s-default .cm-builtin,.fw-option-type-code-editor .cm-s-default .cm-qualifier,.fw-option-type-code-editor .cm-s-default .cm-tag,.fw-option-type-code-editor .cm-s-default .cm-variable-3{color:#2563eb;font-weight:600}.fw-option-type-code-editor .cm-s-default .cm-def,.fw-option-type-code-editor .cm-s-default .cm-meta{color:#db2777}.fw-option-type-code-editor .cm-s-default .cm-property{color:#0d9488}.fw-option-type-code-editor .cm-s-default .cm-keyword,.fw-option-type-code-editor .cm-s-default .cm-variable-2{color:#7c3aed}.fw-option-type-code-editor .cm-s-default .cm-atom{color:#c026d3}.fw-option-type-code-editor .cm-s-default .cm-number,.fw-option-type-code-editor .cm-s-default .cm-unit{color:#16a34a}.fw-option-type-code-editor .cm-s-default .cm-string,.fw-option-type-code-editor .cm-s-default .cm-string-2{color:#dc2626}.fw-option-type-code-editor .cm-s-default .cm-variable{color:#ea580c}.fw-option-type-code-editor .cm-s-default .cm-operator{color:#475569}.fw-option-type-code-editor .cm-s-default .cm-important{color:#e11d48;font-weight:600}.fw-option-type-code-editor .cm-s-default .cm-comment{color:#94a3b8;font-style:italic}.fw-option-type-code-editor .CodeMirror-gutters{background:#f1f5f9;border-right:1px solid #e2e8f0}.fw-option-type-code-editor .CodeMirror-linenumber{color:#94a3b8}.fw-option-type-code-editor .CodeMirror-activeline-background{background:rgba(37,99,235,.05)}.fw-option-type-code-editor .CodeMirror-cursor{border-left-color:#2563eb}
+/* Code-editor option type — minimal styling.
+   Most visuals come from WP core's CodeMirror CSS (loaded by wp_enqueue_code_editor()). */
+
+/* Fallback textarea look — used when CodeMirror is disabled in user profile,
+   or briefly before the editor finishes initialising. */
+textarea.fw-option-code-editor {
+	width: 100%;
+	min-height: 200px;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	tab-size: 2;
+	-moz-tab-size: 2;
+}
+
+/* CodeMirror inside an Unyson option box — give it a subtle frame so it
+   reads as a field rather than free-floating text. */
+.fw-backend-option .CodeMirror,
+.fw-option-box .CodeMirror,
+.CodeMirror {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+/* Editor focus state — match WP's standard focus blue. */
+.CodeMirror-focused {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Greyed sample overlay (initPlaceholder() in scripts.js). CodeMirror's WP bundle has no
+   native placeholder, so we overlay a <pre>. Its `left` is set in JS to the gutter width
+   (getGutterElement().offsetWidth) so it aligns with line 1's content and never hides
+   under the line-number column. pointer-events:none lets a click fall through to the
+   editor (which focuses it and hides this). */
+.fw-option-type-code-editor .fw-code-editor-placeholder {
+	position: absolute;
+	top: 4px;
+	right: 8px;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	pointer-events: none;
+	color: #94a3b8;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow: hidden;
+	z-index: 4;
+}
+
+/* ---------------------------------------------------------------------------
+   Syntax highlighting palette.
+
+   WP's default CodeMirror theme (`cm-s-default`) leaves CSS *property names*
+   uncolored (plain black) and tints only a few tokens, so selectors,
+   properties and values don't visually separate — the editor reads "flat".
+   Below is a readable light-theme palette that clearly distinguishes them.
+   Scoped to `.fw-option-type-code-editor` so other admin CodeMirror instances
+   (e.g. the plugin/theme file editors) are untouched. Token classes are shared
+   across CSS, JS and HTML modes, so this improves all of them.
+   --------------------------------------------------------------------------- */
+.fw-option-type-code-editor .CodeMirror {
+	background: #fbfcfe;
+	color: #1e293b; /* default text — punctuation, plain identifiers */
+}
+
+/* Selectors — class (.foo), id (#foo), element, pseudo (:hover), at-rules. */
+.fw-option-type-code-editor .cm-s-default .cm-qualifier,   /* .class            */
+.fw-option-type-code-editor .cm-s-default .cm-tag,         /* element selector  */
+.fw-option-type-code-editor .cm-s-default .cm-builtin,     /* #id               */
+.fw-option-type-code-editor .cm-s-default .cm-variable-3 { /* pseudo / type     */
+	color: #2563eb;
+	font-weight: 600;
+}
+.fw-option-type-code-editor .cm-s-default .cm-meta,        /* @media, @import   */
+.fw-option-type-code-editor .cm-s-default .cm-def {        /* JS definitions    */
+	color: #db2777;
+}
+
+/* Property names (background, padding, transition …). */
+.fw-option-type-code-editor .cm-s-default .cm-property {
+	color: #0d9488;
+}
+
+/* Values. */
+.fw-option-type-code-editor .cm-s-default .cm-keyword,     /* value keywords / JS keywords */
+.fw-option-type-code-editor .cm-s-default .cm-variable-2 {
+	color: #7c3aed;
+}
+.fw-option-type-code-editor .cm-s-default .cm-atom {       /* hex colors, true/false, units-ish */
+	color: #c026d3;
+}
+.fw-option-type-code-editor .cm-s-default .cm-number,
+.fw-option-type-code-editor .cm-s-default .cm-unit {       /* 135deg, 5rem, 18px, .06 */
+	color: #16a34a;
+}
+.fw-option-type-code-editor .cm-s-default .cm-string,
+.fw-option-type-code-editor .cm-s-default .cm-string-2 {
+	color: #dc2626;
+}
+.fw-option-type-code-editor .cm-s-default .cm-variable {   /* functions (rgba/linear-gradient), JS vars */
+	color: #ea580c;
+}
+.fw-option-type-code-editor .cm-s-default .cm-operator {
+	color: #475569;
+}
+
+/* `!important` and the like. */
+.fw-option-type-code-editor .cm-s-default .cm-important {
+	color: #e11d48;
+	font-weight: 600;
+}
+
+/* Comments — muted + italic. */
+.fw-option-type-code-editor .cm-s-default .cm-comment {
+	color: #94a3b8;
+	font-style: italic;
+}
+
+/* Gutter + active line + cursor — subtle, on-brand. */
+.fw-option-type-code-editor .CodeMirror-gutters {
+	background: #f1f5f9;
+	border-right: 1px solid #e2e8f0;
+}
+.fw-option-type-code-editor .CodeMirror-linenumber { color: #94a3b8; }
+.fw-option-type-code-editor .CodeMirror-activeline-background { background: rgba(37, 99, 235, .05); }
+.fw-option-type-code-editor .CodeMirror-cursor { border-left-color: #2563eb; }

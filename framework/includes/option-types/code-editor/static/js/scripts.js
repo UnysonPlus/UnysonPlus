@@ -68,9 +68,30 @@ jQuery( document ).ready( function ( $ ) {
 				$( textarea ).trigger( 'change' );
 			} );
 
-			// CodeMirror needs a kick when it's instantiated in an initially
-			// hidden container (Unyson popup). Refresh once on the next tick.
-			setTimeout( function () { editor.codemirror.refresh(); }, 50 );
+			// CodeMirror measures its gutter + viewport from the container size at init
+			// time. When created inside a hidden/collapsed box — or before its grid column
+			// has laid out — that measurement is wrong and the text is clipped to the LEFT
+			// under the line-number gutter. Refresh it (a) after layout settles (double rAF
+			// + a fallback) and (b) the first time it actually becomes visible — covering a
+			// new row added open AND a collapsed row later expanded.
+			var kick = function () {
+				try {
+					editor.codemirror.refresh();
+					if ( typeof editor.codemirror._fwSyncPlaceholder === 'function' ) {
+						editor.codemirror._fwSyncPlaceholder();
+					}
+				} catch ( e ) {}
+			};
+			requestAnimationFrame( function () { requestAnimationFrame( kick ); } );
+			setTimeout( kick, 150 );
+			if ( window.IntersectionObserver ) {
+				var io = new IntersectionObserver( function ( entries ) {
+					for ( var i = 0; i < entries.length; i++ ) {
+						if ( entries[ i ].isIntersecting ) { kick(); }
+					}
+				} );
+				io.observe( editor.codemirror.getWrapperElement() );
+			}
 
 			initPlaceholder( $option, textarea, editor.codemirror );
 		}
@@ -91,17 +112,27 @@ jQuery( document ).ready( function ( $ ) {
 		var $ph = $( '<pre class="fw-code-editor-placeholder"></pre>' ).text( text );
 		$wrap.append( $ph );
 
+		// Sit the overlay PAST the gutter, aligned with line 1's content, so the absolutely
+		// positioned line-number column never covers its first characters. Re-aligned on every
+		// CodeMirror refresh (the gutter width changes once the editor is properly measured).
+		function place () {
+			var gutter = cm.getGutterElement();
+			$ph.css( 'left', ( ( gutter ? gutter.offsetWidth : 0 ) + 4 ) + 'px' );
+		}
+
 		function sync () {
 			var empty = cm.getValue().length === 0;
 			$ph.toggle( empty && ! cm.hasFocus() );
 		}
 
-		cm.on( 'focus', function () { $ph.hide(); } );
-		cm.on( 'blur', sync );
-		cm.on( 'change', sync );
-		// Clicking the overlay should drop into the editor.
-		$ph.on( 'mousedown', function () { cm.focus(); } );
+		// Exposed so the refresh `kick` (initOne) can re-place + re-sync after a measure.
+		cm._fwSyncPlaceholder = function () { place(); sync(); };
 
+		cm.on( 'focus', function () { $ph.hide(); } );
+		cm.on( 'blur', function () { place(); sync(); } );
+		cm.on( 'change', sync );
+
+		place();
 		sync();
 	}
 
@@ -109,6 +140,25 @@ jQuery( document ).ready( function ( $ ) {
 		data.$elements.find( '.' + optionTypeClass + ':not(.fw-option-initialized)' ).each( function () {
 			initOne( $( this ) );
 		} );
+	} );
+
+	// CodeMirror measures its gutter + viewport from the container size at init time.
+	// Inside a COLLAPSED addable-box row (postboxes start `.closed`) that measurement is
+	// wrong, so once the row is expanded the text is clipped to the LEFT under the
+	// line-number gutter until the editor is refreshed. The one-shot refresh in initOne()
+	// runs while the box is still hidden, and Unyson fires no box-open event — so refresh
+	// every CodeMirror inside a postbox whenever it is expanded (the header toggle removes
+	// `.closed`). Delegated + guarded, so it's a no-op on pages without CodeMirror.
+	$( document ).on( 'click', '.fw-postbox .postbox-header, .fw-postbox > .hndle, .fw-postbox .handlediv', function () {
+		var $box = $( this ).closest( '.fw-postbox' );
+		setTimeout( function () {
+			if ( $box.hasClass( 'closed' ) ) { return; } // only when it ended up OPEN
+			$box.find( '.CodeMirror' ).each( function () {
+				if ( this.CodeMirror && typeof this.CodeMirror.refresh === 'function' ) {
+					this.CodeMirror.refresh();
+				}
+			} );
+		}, 60 );
 	} );
 
 } );

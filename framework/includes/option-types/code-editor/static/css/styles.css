@@ -31,6 +31,29 @@ textarea.fw-option-code-editor {
 	box-shadow: 0 0 0 1px #2271b1;
 }
 
+/* Greyed sample overlay (initPlaceholder() in scripts.js). CodeMirror's WP bundle has no
+   native placeholder, so we overlay a <pre>. Its `left` is set in JS to the gutter width
+   (getGutterElement().offsetWidth) so it aligns with line 1's content and never hides
+   under the line-number column. pointer-events:none lets a click fall through to the
+   editor (which focuses it and hides this). */
+.fw-option-type-code-editor .fw-code-editor-placeholder {
+	position: absolute;
+	top: 4px;
+	right: 8px;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	pointer-events: none;
+	color: #94a3b8;
+	font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow: hidden;
+	z-index: 4;
+}
+
 /* ---------------------------------------------------------------------------
    Syntax highlighting palette.
 

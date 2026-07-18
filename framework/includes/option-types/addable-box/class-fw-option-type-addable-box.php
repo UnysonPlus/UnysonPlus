@@ -85,12 +85,15 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 		{
 			$controls = array_merge(
 				array(
-					'delete' => '<small class="dashicons dashicons-no-alt" title="'. esc_attr__('Remove', 'fw') .'"></small>'
+					// Delete uses the shared `fw-x` glyph (grey → red on hover), matching
+					// the Addable Popup's X, instead of the plain dashicons-no-alt cross.
+					'delete' => '<small class="dashicons fw-x" title="'. esc_attr__('Remove', 'fw') .'"></small>'
 				),
 				$option['box-controls']
 			);
 
-			// Optional duplicate control (opt-in via the 'box-duplicate' option flag).
+			// Duplicate control (on by default, like the Addable Popup's Clone). An
+			// instance can opt out with 'box-duplicate' => false.
 			if ( ! empty( $option['box-duplicate'] ) ) {
 				$controls = array_merge(
 					array( 'duplicate' => '<small class="dashicons dashicons-admin-page fw-option-box-control-duplicate" title="'. esc_attr__('Duplicate', 'fw') .'"></small>' ),
@@ -194,7 +197,7 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 				// 'control_id' => '<small class="dashicons dashicons-..." title="Some action"></small>'
 			),
 			// Show a Duplicate control on each box (clones it as a new entry). Opt-in.
-			'box-duplicate' => false,
+			'box-duplicate' => true,
 			'box-options' => array(),
 			/**
 			 * Limit boxes that can be added

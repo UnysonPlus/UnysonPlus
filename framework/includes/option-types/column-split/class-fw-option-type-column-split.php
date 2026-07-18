@@ -10,19 +10,26 @@
  * (a dashicon / image + text) to show what it represents — e.g. "Image | Content"
  * for [image_content], "Content | Button" for a call-to-action.
  *
- * The stored value is a single integer: the LEFT pane's column span out of
- * `denominator` (default 12). The right pane fills the rest. This is the same value
- * shape as a plain `slider` storing a column count, so it is a drop-in replacement
- * for such a slider with no value migration.
+ * The stored value is the LEFT pane's fraction as a lowest-terms **"n/d" string**
+ * (e.g. "1/3", "2/5"). This is SELF-IDENTIFYING: a legacy bare integer (the old
+ * shape — the left span out of `denominator`, default 12) is still understood and
+ * migrated on the fly (it has no "/"), so switching an existing control to the
+ * fraction shape needs no data migration and never resets a saved split.
+ *
+ * The divider snaps to the ordered `fractions` set (default = twelfths 1/12…11/12).
+ * Pass a richer set — e.g. twelfths + fifths — to let it stop on 1/5, 2/5, 3/5, 4/5.
+ * Because consumers derive either flex-grow ratios OR grid classes from n/d, the set
+ * can mix denominators freely.
  *
  * Config:
- *   'value'         int    left pane span (default 6)
- *   'denominator'   int    total columns (default 12)
- *   'min' / 'max'   int    clamp for the left span (default 1 / denominator-1, so
- *                          each side always keeps at least one column)
- *   'show_fraction' bool   show each pane's lowest-form fraction (default true)
- *   'panes'         array  [ left, right ] — each: array('label' => '', 'icon' => '')
- *                          where `icon` is a dashicons-* class OR an image URL.
+ *   'value'         string  left pane fraction "n/d" (default "1/2"); a legacy int is
+ *                           accepted and read as int/denominator.
+ *   'fractions'     array   ordered allowed left-pane fractions as "n/d" strings
+ *                           (default = twelfths 1/12…11/12).
+ *   'denominator'   int     ONLY used to interpret a legacy integer value (default 12).
+ *   'show_fraction' bool    show each pane's lowest-form fraction (default true)
+ *   'panes'         array   [ left, right ] — each: array('label' => '', 'icon' => '')
+ *                           where `icon` is a dashicons-* class OR an image URL.
  */
 class FW_Option_Type_Column_Split extends FW_Option_Type {
 
@@ -45,20 +52,88 @@ class FW_Option_Type_Column_Split extends FW_Option_Type {
 		return 'full';
 	}
 
-	private function clamp( $value, $option ) {
-		$denominator = max( 2, (int) $option['denominator'] );
-		$min         = max( 1, (int) $option['min'] );
-		$max         = (int) $option['max'];
-		if ( $max <= 0 || $max > $denominator - 1 ) {
-			$max = $denominator - 1;
+	/**
+	 * Reduce n/d to lowest terms. Returns array( n, d ).
+	 */
+	private function reduce( $n, $d ) {
+		$n = (int) $n;
+		$d = (int) $d;
+		$a = abs( $n );
+		$b = abs( $d );
+		while ( $b ) { $t = $b; $b = $a % $b; $a = $t; }
+		$g = max( 1, $a );
+		return array( (int) ( $n / $g ), (int) ( $d / $g ) );
+	}
+
+	/**
+	 * Parse a stored/entered value into array( n, d ) lowest terms, or null.
+	 *  - "n/d" string  → parsed directly (must be a proper fraction 0 < n < d).
+	 *  - bare integer  → legacy left span out of $denominator.
+	 */
+	private function parse_fraction( $value, $denominator ) {
+		if ( is_string( $value ) && strpos( $value, '/' ) !== false ) {
+			$p = explode( '/', $value );
+			$n = (int) $p[0];
+			$d = isset( $p[1] ) ? (int) $p[1] : 0;
+			if ( $n > 0 && $d > 0 && $n < $d ) {
+				return $this->reduce( $n, $d );
+			}
+			return null;
 		}
-		if ( $min > $max ) {
-			$min = $max;
+		$n = (int) $value;
+		$d = max( 2, (int) $denominator );
+		if ( $n > 0 && $n < $d ) {
+			return $this->reduce( $n, $d );
 		}
-		$value = (int) $value;
-		if ( $value < $min ) { $value = $min; }
-		if ( $value > $max ) { $value = $max; }
-		return array( $value, $min, $max, $denominator );
+		return null;
+	}
+
+	/**
+	 * Ordered list of allowed left-pane fractions as lowest-terms "n/d" strings.
+	 * Defaults to twelfths (1/12…11/12) when the option supplies no `fractions`.
+	 */
+	private function allowed_fractions( $option ) {
+		$raw = ( isset( $option['fractions'] ) && is_array( $option['fractions'] ) && $option['fractions'] )
+			? $option['fractions']
+			: null;
+		if ( ! $raw ) {
+			$raw = array();
+			for ( $i = 1; $i <= 11; $i++ ) { $raw[] = $i . '/12'; }
+		}
+		$map = array();
+		foreach ( $raw as $f ) {
+			$r = $this->parse_fraction( $f, 12 );
+			if ( $r ) { $map[ $r[0] . '/' . $r[1] ] = $r[0] / $r[1]; }
+		}
+		asort( $map );
+		return array_keys( $map );
+	}
+
+	/**
+	 * Normalise any incoming value to one of the allowed "n/d" fractions, snapping
+	 * to the nearest allowed fraction by position when it isn't an exact member.
+	 */
+	private function normalize( $value, $option ) {
+		$allowed     = $this->allowed_fractions( $option );
+		$denominator = max( 2, (int) ( isset( $option['denominator'] ) ? $option['denominator'] : 12 ) );
+
+		$r = $this->parse_fraction( $value, $denominator );
+		if ( ! $r ) { $r = $this->parse_fraction( $option['value'], $denominator ); }
+		if ( ! $r ) { $r = array( 1, 2 ); }
+
+		$key = $r[0] . '/' . $r[1];
+		if ( $allowed && ! in_array( $key, $allowed, true ) ) {
+			$target = $r[0] / $r[1];
+			$best   = $allowed[0];
+			$bd     = INF;
+			foreach ( $allowed as $a ) {
+				list( $an, $ad ) = explode( '/', $a );
+				$dd = abs( ( (int) $an / (int) $ad ) - $target );
+				if ( $dd < $bd ) { $bd = $dd; $best = $a; }
+			}
+			$key = $best;
+		}
+		return $key;
 	}
 
 	/**
@@ -89,16 +164,19 @@ class FW_Option_Type_Column_Split extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _render( $id, $option, $data ) {
-		list( $value, $min, $max, $denominator ) = $this->clamp( $data['value'], $option );
+		$allowed     = $this->allowed_fractions( $option );
+		$denominator = max( 2, (int) ( isset( $option['denominator'] ) ? $option['denominator'] : 12 ) );
+
+		$frac = $this->normalize( $data['value'], $option );
+		list( $n, $d ) = array_map( 'intval', explode( '/', $frac ) );
 
 		$panes = is_array( $option['panes'] ) ? array_values( $option['panes'] ) : array();
 		$left  = isset( $panes[0] ) && is_array( $panes[0] ) ? $panes[0] : array();
 		$right = isset( $panes[1] ) && is_array( $panes[1] ) ? $panes[1] : array();
 
 		$cfg = array(
+			'fractions'     => $allowed,
 			'denominator'   => $denominator,
-			'min'           => $min,
-			'max'           => $max,
 			'show_fraction' => ! empty( $option['show_fraction'] ),
 		);
 
@@ -113,7 +191,9 @@ class FW_Option_Type_Column_Split extends FW_Option_Type {
 				'id'     => $id,
 				'option' => $option,
 				'data'   => $data,
-				'value'  => $value,
+				'value'  => $frac,   // "n/d" string (the hidden input's value)
+				'n'      => $n,      // left pane numerator (flex-grow)
+				'd'      => $d,      // denominator (right grow = d - n)
 				'cfg'    => $cfg,
 				'left'   => $left,
 				'right'  => $right,
@@ -128,8 +208,7 @@ class FW_Option_Type_Column_Split extends FW_Option_Type {
 		if ( is_null( $input_value ) ) {
 			$input_value = $option['value'];
 		}
-		list( $value ) = $this->clamp( $input_value, $option );
-		return $value;
+		return $this->normalize( $input_value, $option );
 	}
 
 	/**
@@ -137,10 +216,9 @@ class FW_Option_Type_Column_Split extends FW_Option_Type {
 	 */
 	protected function _get_defaults() {
 		return array(
-			'value'         => 6,
-			'denominator'   => 12,
-			'min'           => 1,
-			'max'           => 11,
+			'value'         => '1/2',
+			'fractions'     => null, // null → twelfths 1/12…11/12
+			'denominator'   => 12,   // legacy-integer interpretation only
 			'show_fraction' => true,
 			'panes'         => array(
 				array( 'label' => __( 'Left', 'fw' ),  'icon' => 'dashicons-align-pull-left' ),

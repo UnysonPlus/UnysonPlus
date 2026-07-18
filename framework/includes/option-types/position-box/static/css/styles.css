@@ -36,7 +36,7 @@
 	font-weight: 500;
 	line-height: 1.3;
 	color: #646970;
-	text-align: center;
+	text-align: left;
 }
 
 /* The nested unit-input renders inside a light descriptor wrapper — let it fill
@@ -47,9 +47,10 @@
 	width: 100%;
 }
 
-/* Override unit-input's stock 70px/64px min-widths so four fit one row. */
+/* Override unit-input's stock min-widths so four fit one row. gap:0 so each side's
+   number + unit read as ONE joined control (matches the unit-input styling). */
 .fw-pos-box .fw-unit-input-row {
-	gap: 3px;
+	gap: 0;
 }
 
 .fw-pos-box .fw-unit-input-value {

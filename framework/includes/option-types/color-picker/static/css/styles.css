@@ -52,3 +52,13 @@ input.fw-option-type-color-picker.iris-error {
 #customize-controls .customize-pane-child .customize-control:last-child .fw-backend-customizer-option .fw-backend-option-type-gradient {
  padding-bottom: 170px;
 }
+
+/* Coloris (modern color picker) — lift the popup above the fw options modal (which sits
+   very high) so it is never clipped inside the page-builder. The popup is appended to
+   <body> by Coloris. */
+.clr-picker { z-index: 999999 !important; }
+/* The wrapped input shows a colour thumbnail button (Coloris wrap); keep it aligned. */
+.fw-backend-option-type-color-picker .clr-field { display: inline-block; }
+
+/* Coloris popup width — roomier so the preset swatch grid + picker read cleanly. */
+.clr-picker { width: 260px !important; }

@@ -11,6 +11,42 @@ if (!defined('FW')) die('Forbidden');
  * @internal
  */
 class FW_Settings_Form_Theme extends FW_Settings_Form {
+	/** @var bool Whether the late side-tabs re-resolution already ran this request. */
+	private bool $side_tabs_resolved = false;
+
+	/**
+	 * Re-resolve `settings_form_side_tabs` late (on an admin hook), after every extension
+	 * has loaded.
+	 *
+	 * This form is constructed during backend init — loop 1 of the framework boot
+	 * (`_init()` on each component) — where it reads the theme config, resolving AND caching
+	 * it. But extensions only ACTIVATE in loop 2 (`_after_components_init()`), so any plugin
+	 * that injects Theme Settings and sets a side-tabs default through the `fw_theme_config`
+	 * filter (e.g. the Shortcodes extension forcing side tabs on a generic, non-Unyson theme
+	 * that ships no config.php) registers that filter AFTER the config was already cached —
+	 * i.e. the value captured in `_init()` can be stale (horizontal tabs when it should be a
+	 * side rail). On a theme whose own config.php sets the flag this never bites, because the
+	 * value is read straight from the file, pre-filter.
+	 *
+	 * By the time any admin hook fires, every `fw_theme_config` filter is registered, so drop
+	 * the possibly-stale cached theme config and read the flag again. Runs once per request.
+	 *
+	 * @internal
+	 */
+	private function resolve_side_tabs_late(): void {
+		if ( $this->side_tabs_resolved ) {
+			return;
+		}
+		$this->side_tabs_resolved = true;
+
+		if ( class_exists( 'FW_Cache' ) ) {
+			// Config is cached under '<theme-component-cache-key>/config' = 'fw_theme/config'.
+			FW_Cache::del( 'fw_theme/config' );
+		}
+
+		$this->set_is_side_tabs( (bool) fw()->theme->get_config( 'settings_form_side_tabs' ) );
+	}
+
 	protected function _init() {
 		$this
 			->set_is_ajax_submit( fw()->theme->get_config('settings_form_ajax_submit') )
@@ -51,6 +87,8 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 	 * @internal
 	 */
 	public function _action_get_title_from_menu() {
+		$this->resolve_side_tabs_late();
+
 		if ($this->get_is_side_tabs()) {
 			$title = fw()->theme->manifest->get_name();
 
@@ -102,6 +140,8 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 	 * @internal
 	 */
 	public function _action_admin_menu() {
+		$this->resolve_side_tabs_late();
+
 		$data = [
 			'capability'       => 'manage_options',
 			'slug'             => fw()->backend->_get_settings_page_slug(),

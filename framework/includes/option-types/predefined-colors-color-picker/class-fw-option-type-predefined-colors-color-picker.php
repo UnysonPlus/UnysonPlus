@@ -60,55 +60,15 @@ class FW_Option_Type_Predefined_Colors_Color_Picker extends FW_Option_Type {
 			true
 		);
 
-		// Standard color picker
-		wp_enqueue_style(
-			'fw-option-color-picker',
-			fw_get_framework_asset_uri() . '/includes/option-types/color-picker/static/css/styles.css',
-			array(),
-			fw()->manifest->get_version()
-		);
-		wp_enqueue_script(
-			'fw-option-color-picker',
-			fw_get_framework_asset_uri() . '/includes/option-types/color-picker/static/js/scripts.js',
-			array( 'jquery', 'fw-events', 'wp-color-picker' ),
-			fw()->manifest->get_version(),
-			true
-		);
-		wp_localize_script(
-			'fw-option-color-picker',
-			'_fw_option_type_color_picker_localized',
-			array(
-				'l10n' => array(
-					'reset_to_default' => __( 'Reset', 'fw' ),
-					'reset_to_initial' => __( 'Reset', 'fw' ),
-				),
-			)
-		);
-
-		// RGBA color picker
-		wp_enqueue_style(
-			'fw-option-rgba-color-picker',
-			fw_get_framework_asset_uri() . '/includes/option-types/rgba-color-picker/static/css/styles.css',
-			array(),
-			fw()->manifest->get_version()
-		);
-		wp_enqueue_script(
-			'fw-option-rgba-color-picker',
-			fw_get_framework_asset_uri() . '/includes/option-types/rgba-color-picker/static/js/scripts.js',
-			array( 'jquery', 'fw-events', 'iris' ),
-			fw()->manifest->get_version(),
-			true
-		);
-		wp_localize_script(
-			'fw-option-rgba-color-picker',
-			'_fw_option_type_rgba_color_picker_localized',
-			array(
-				'l10n' => array(
-					'reset_to_default' => __( 'Reset', 'fw' ),
-					'reset_to_initial' => __( 'Reset', 'fw' ),
-				),
-			)
-		);
+		// Standard + RGBA color pickers — both are now powered by Coloris. Delegate to the
+		// option types' OWN enqueue so the correct assets load (Coloris library + the shared
+		// init that configures color-picker AND rgba-color-picker inputs, plus the preset
+		// swatches). This replaces the old direct enqueue of the Iris / wp-color-picker-alpha
+		// scripts, whose init ran $('input.fw-option-type-rgba-color-picker').wpColorPicker()
+		// on EVERY rgba input on the page — which was re-skinning the swapped pickers back to
+		// the old "Select Color" UI.
+		fw()->backend->option_type( 'color-picker' )->enqueue_static();
+		fw()->backend->option_type( 'rgba-color-picker' )->enqueue_static();
 
 		// This option type's own assets
 		wp_enqueue_style(

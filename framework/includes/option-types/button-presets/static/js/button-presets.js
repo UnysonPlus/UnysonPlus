@@ -195,26 +195,54 @@
 		return css;
 	}
 
+	// Hydrate a DEFERRED box: move its stashed body (data-bp-body) into live DOM. With
+	// withInit !== false, also fire fw:options:init so the body's heavy widgets
+	// (typography-v2, code-editor, gradient-v2, box-shadow, pickers) initialize — this
+	// is the cost we deferred, now paid for ONE box on expand instead of all at once.
+	// On submit we hydrate WITHOUT init (withInit === false): the server-rendered
+	// inputs already carry their values, so the preset saves without re-initializing.
+	function hydrateBody($item, withInit) {
+		if (!$item.hasClass('fw-bp-deferred') || $item.data('bp-hydrated')) { return; }
+		$item.data('bp-hydrated', true);
+		var html = $item.attr('data-bp-body') || '';
+		$item.removeAttr('data-bp-body').removeClass('fw-bp-deferred');
+		var $body = $item.find('.fw-option-type-button-presets-item-body').html(html);
+		if (withInit !== false) {
+			fwEvents.trigger('fw:options:init', { $elements: $body });
+		}
+	}
+
 	function initItem($item) {
 		if ($item.data('bp-init')) { return; }
 		$item.data('bp-init', true);
 
 		var uid = 'bpb-' + (++uidCounter);
-		var $btn = $item.find('.fw-bp-btn');
-		var $style = $item.find('.fw-bp-preview-style');
-		var $stage = $item.find('.fw-bp-preview-stage');
+		// The scoped <style> lives in the header (outside the deferrable body) so it
+		// styles the header title even while the body is not yet hydrated.
+		var $style = $item.find('.fw-bp-preview-style').first();
 		// The header title IS the quick preview: it carries the generated `.uid`
 		// rule, so it shows the preset's default-state look (and its name) even
 		// while the box is collapsed.
 		var $header = $item.find('.fw-option-type-button-presets-item-title');
-		$btn.addClass(uid);
 		$header.addClass(uid);
 
+		// Read this preset's value — from the live body once hydrated, otherwise by
+		// parsing the stashed data-bp-body template into a DETACHED fragment (no widget
+		// init) so the collapsed header preview is correct without paying the init cost.
+		function readValue() {
+			if (!$item.hasClass('fw-bp-deferred') || $item.data('bp-hydrated')) {
+				return readBox($item);
+			}
+			return readBox($('<div>').html($item.attr('data-bp-body') || ''));
+		}
+
 		function refresh() {
-			var d = readBox($item);
+			var d = readValue();
 			$style.html(buildCss('.' + uid, d));
 			var label = (d.color_name && d.color_name !== '') ? d.color_name : 'Button';
-			$btn.text(label);
+			// The preview button is inside the (possibly not-yet-hydrated) body — style
+			// + label it when present; a no-op while deferred.
+			$item.find('.fw-bp-btn').addClass(uid).text(label);
 			$header.text(label);
 		}
 
@@ -222,6 +250,7 @@
 		$item.on('fw:pccp:change', PCCP, refresh);
 
 		// State tabs: switch the visible panel AND the previewed pseudo-state.
+		// Query the preview button fresh (it may have been hydrated after init).
 		$item.on('click', '.fw-bp-tab', function (e) {
 			e.preventDefault();
 			var state = $(this).attr('data-bp-tab');
@@ -229,6 +258,7 @@
 			$(this).addClass('is-active');
 			$item.find('.fw-bp-panel').removeClass('is-active')
 				.filter('[data-bp-panel="' + state + '"]').addClass('is-active');
+			var $btn = $item.find('.fw-bp-btn');
 			$btn.removeClass('is-hover is-active is-focus is-disabled');
 			if (state !== 'default') { $btn.addClass('is-' + state); }
 		});
@@ -239,13 +269,15 @@
 			var mode = $(this).attr('data-swatch');
 			$item.find('.fw-bp-swatch').removeClass('is-active');
 			$(this).addClass('is-active');
-			$stage.toggleClass('is-light', mode === 'light').toggleClass('is-dark', mode === 'dark');
+			$item.find('.fw-bp-preview-stage')
+				.toggleClass('is-light', mode === 'light').toggleClass('is-dark', mode === 'dark');
 		});
 
-		// Collapse / expand. Boxes start collapsed, so CodeMirror (custom CSS)
-		// and the preview may have initialised while hidden — refresh on expand.
+		// Collapse / expand. On first expand, hydrate the deferred body (+ init its
+		// widgets), then refresh the preview from the now-live inputs.
 		function onExpand() {
 			if ($item.hasClass('is-collapsed')) { return; }
+			hydrateBody($item, true);
 			$item.find('.CodeMirror').each(function () {
 				if (this.CodeMirror) { this.CodeMirror.refresh(); }
 			});
@@ -263,8 +295,19 @@
 			onExpand();
 		});
 
+		// Initial collapsed preview (parsed from data-bp-body when deferred — cheap).
 		refresh();
 	}
+
+	// Safety net: before the settings form submits, materialize any deferred preset
+	// body that was never expanded so its inputs are present in the DOM and save.
+	// No widget init — the server-rendered inputs carry their values. Mirrors
+	// Unyson's own lazy-tab "init all on submit" hook (backend-options.js).
+	$(document).on('submit', 'form', function () {
+		$(this).find('.fw-option-type-button-presets-item.fw-bp-deferred').each(function () {
+			hydrateBody($(this), false);
+		});
+	});
 
 	fwEvents.on('fw:options:init', function (data) {
 		data.$elements.find('.fw-option-type-button-presets:not(.fw-bp-initialized)').each(function () {
@@ -324,6 +367,12 @@
 	});
 
 	function duplicateItem($item) {
+		// If the source is still deferred, hydrate it (with widget init) first so its
+		// body inputs are live DOM — otherwise reindex() can't re-point the clone's
+		// body field names/ids (they'd live inside data-bp-body) and the duplicate
+		// would collide with the original on save.
+		hydrateBody($item, true);
+
 		var oldIdx = String($item.attr('data-bp-index') || '');
 		var newIdx = (typeof fwUniqueIncrement === 'function') ? fwUniqueIncrement() : ('' + (+new Date()) + uidCounter);
 

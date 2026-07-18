@@ -245,6 +245,9 @@
 			};
 			$pickerSelect.on('change', updateSummary);
 			updateSummary();
+			// NOTE: click-again-to-deselect now lives in the image-picker option type itself
+			// (image-picker/static/js/scripts.js), scoped to popover contexts — so it covers this
+			// multi-picker popover AND the standalone `popover` option type from one place.
 		}
 	};
 

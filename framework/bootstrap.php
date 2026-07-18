@@ -94,6 +94,14 @@ if (defined('FW')) {
             if ( 'unysonplus-theme' !== get_template() ) {
                 require $dir . '/includes/option-types/fw-multi-inline/class-fw-option-type-fw-multi-inline.php';
             }
+            // multi-inline — the canonical, correctly-named successor to
+            // fw-multi-inline (same control, convention-compliant id + class).
+            // Standalone (does NOT extend FwMultiInline), so it loads
+            // unconditionally regardless of active theme; the class_exists
+            // guard inside the file keeps a stale theme-side copy from fataling.
+            // Call sites are being migrated fw-multi-inline -> multi-inline
+            // one-by-one; both coexist during the transition.
+            require $dir . '/includes/option-types/multi-inline/class-fw-option-type-multi-inline.php';
             // background-pro lives only in the plugin — load unconditionally.
             // The class itself is wrapped in a class_exists guard, so a stale
             // theme-side copy on a partially-upgraded deploy won't fatal.

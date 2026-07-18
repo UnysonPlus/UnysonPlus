@@ -194,3 +194,21 @@
 	display: flex;
 	gap: 6px;
 }
+
+/* Dynamic-content chip — a {{token}} shown as a pill in the builder (see the chip styler at the
+   end of dynamic-content.js). Reads as "this is dynamic content" at a glance. */
+.fw-dc-chip {
+	display: inline-block;
+	padding: 0 7px;
+	margin: 0 1px;
+	border-radius: 10px;
+	background: #ede9fe;
+	color: #5b21b6;
+	box-shadow: inset 0 0 0 1px rgba(91, 33, 182, .18);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 18px;
+	vertical-align: baseline;
+	white-space: nowrap;
+}

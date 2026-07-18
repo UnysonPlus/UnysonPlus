@@ -1,69 +1,70 @@
-.fw-backend-option-input-type-typography .fw-option-help-in-input {
+.fw-option[class*="fw-option-type-typography"] .fw-option-typography-v2-option {
+	display: inline-block;
+	text-align: left;
+	float: inherit;
+}
+[class*="fw-backend-option-input-type-typography"] .fw-option-help-in-input {
 	top: 4px !important;
 }
 
-.fw-option-type-typography .fw-option-typography-option {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-right: 5px;
 	width: 167px;
 }
-body.rtl .fw-option-type-typography .fw-option-typography-option {
+body.rtl [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-right: 0;
 	padding-left: 5px;
 }
 
-.fw-option-type-typography .fw-option-typography-option.fw-option-typography-option-size {
-	width: 67px;
-}
-
-.fw-option-type-typography .fw-option-typography-option:last-child,
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option:last-child,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-right: 0;
 }
-body.rtl .fw-option-type-typography .fw-option-typography-option:last-child,
-body.rtl .fw-force-xs .fw-option-type-typography .fw-option-typography-option {
+body.rtl [class*="fw-option-type-typography"] .fw-option-typography-v2-option:last-child,
+body.rtl .fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-left: 0;
 }
 
 @media (max-width: 782px) {
-	.fw-backend-option-input-type-typography {
+	[class*="fw-backend-option-input-type-typography"] {
 		width: 100%;
 	}
 
-	.fw-option-type-typography .fw-option-typography-option {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 		padding-top: 5px;
 		padding-right: 0;
 	}
-	body.rtl .fw-option-type-typography .fw-option-typography-option {
+	body.rtl [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 		padding-left: 0;
 	}
 
-	.fw-option-type-typography .fw-option-typography-option:first-child {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option:first-child {
 		padding-top: 0;
 	}
 
-	.fw-option-type-typography .fw-option-typography-option.fw-option-typography-option-size {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option.fw-option-typography-v2-option-size {
 		width: 100%;
 	}
 }
-.fw-force-xs .fw-backend-option-input-type-typography {
+.fw-force-xs [class*="fw-backend-option-input-type-typography"] {
 	width: 100%;
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-top: 5px;
 	padding-right: 0;
 }
-body.rtl .fw-force-xs .fw-option-type-typography .fw-option-typography-option {
+body.rtl .fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option {
 	padding-left: 0;
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option:first-child {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option:first-child {
 	padding-top: 0;
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option.fw-option-typography-option-size {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option.fw-option-typography-v2-option-size {
 	width: 100%;
 }
 
-.fw-option-type-typography .fw-option-typography-option input,
-.fw-option-type-typography .fw-option-typography-option select {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option input,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option select {
 	display: inline-block;
 	margin: 0;
 	width: 100%;
@@ -73,59 +74,59 @@ body.rtl .fw-force-xs .fw-option-type-typography .fw-option-typography-option {
 /* Color */
 
 @media (min-width: 783px) {
-	.fw-option-type-typography .fw-option-typography-option-color input {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-color input {
 		height: 28px;
 	}
 }
 
 /* Family */
 
-.fw-option-type-typography .fw-option-typography-option-family-input {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input {
 	background: #fff;
 }
 
-.fw-option-type-typography .fw-option-typography-option-family-input .selectize-input {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input .selectize-input {
 	height: 32px;
 }
 
-.fw-option-type-typography .fw-option-typography-option-family-input .selectize-input.dropdown-active::before {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input .selectize-input.dropdown-active::before {
 	background: none;
 	height: 0;
 }
 
-.fw-option-type-typography .fw-option-typography-option-family .selectize-control.single .selectize-input:after {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family .selectize-control.single .selectize-input:after {
 	right: 8px;
 	margin-top: -2px;
 	border-width: 6px 3px 0 3px;
 	border-color: #000000 transparent transparent transparent;
 }
-body.rtl .fw-option-type-typography .fw-option-typography-option-family .selectize-control.single .selectize-input:after {
+body.rtl [class*="fw-option-type-typography"] .fw-option-typography-v2-option-family .selectize-control.single .selectize-input:after {
 	right: auto;
 	left: 8px;
 }
 
 @media (max-width: 782px) {
-	.fw-option-type-typography .fw-option-typography-option-family .selectize-control.single .selectize-input:after {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family .selectize-control.single .selectize-input:after {
 		right: 6px;
 	}
 
-	.fw-option-typography-option.fw-option-typography-option-family,
-	.fw-option-type-typography .fw-option-typography-option-family-input {
+	.fw-option-typography-v2-option.fw-option-typography-v2-option-family,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input {
 		width: 100%;
 		margin-right: 0;
 	}
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-family .selectize-control.single .selectize-input:after {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-family .selectize-control.single .selectize-input:after {
 	right: 6px;
 }
-.fw-force-xs .fw-option-typography-option.fw-option-typography-option-family,
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-family-input {
+.fw-force-xs .fw-option-typography-v2-option.fw-option-typography-v2-option-family,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input {
 	width: 100%;
 	margin-right: 0;
 }
 
-.fw-option-type-typography .fw-option-typography-option-family-input:focus,
-.fw-option-type-typography .fw-option-typography-option-family-input.single .selectize-input.focus {
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input:focus,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input.single .selectize-input.focus {
 	/*border: 1px solid #5b9dd9;
 
 	-webkit-box-shadow: 0 0 2px rgba(30,140,190,.8);
@@ -135,13 +136,13 @@ body.rtl .fw-option-type-typography .fw-option-typography-option-family .selecti
 	transition: .05s border-color ease-in-out;
 }
 
-.fw-option-type-typography .selectize-dropdown.fw-option-typography-option-family-input {
+/*[class*="fw-option-type-typography"] .selectize-dropdown.fw-option-typography-v2-option-family-input {
 	width: 335px !important;
 	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
 	border: 1px solid #ddd;
-}
+}*/
 
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content div {
+[class*="fw-option-type-typography"] .selectize-dropdown .selectize-dropdown-content div {
 	height: 30px;
 	background-color: #fff;
 	cursor: pointer;
@@ -149,40 +150,28 @@ body.rtl .fw-option-type-typography .fw-option-typography-option-family .selecti
 	line-height: 30px;
 }
 
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content div div.preview {
-	display: block;
-	font-size: 15px;
-	padding-left: 10px;
-	height: 30px;
-	width: 125px;
-	float: right;
-	border: none;
-	background: transparent url(../images/google-fonts.png) no-repeat;
-}
-
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content div.option span {
+[class*="fw-option-type-typography"] .selectize-dropdown .selectize-dropdown-content div.option span {
 	border: none;
 	background: none;
 	color: red;
 }
 
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content div:hover,
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content div div.preview:hover {
+[class*="fw-option-type-typography"] .selectize-dropdown .selectize-dropdown-content div:hover{
 	background-color: #f0f0f0;
 }
 
-.fw-option-type-typography .selectize-dropdown.single {
+[class*="fw-option-type-typography"] .selectize-dropdown.single {
 	border: 1px solid #ddd;
 }
 
-.fw-option-type-typography .selectize-control.single .selectize-input {
+[class*="fw-option-type-typography"] .selectize-control.single .selectize-input {
 	background: none;
 	margin: 0;
 	vertical-align: middle;
 	border: 1px solid #dddddd;
 	color: #333333;
-	height: 28px;
-	line-height: 27px;
+	height: 30px;
+	line-height: 29px;
 	font-size: 14px;
 	padding: 0 6px;
 
@@ -196,58 +185,70 @@ body.rtl .fw-option-type-typography .fw-option-typography-option-family .selecti
 }
 
 @media (max-width: 782px) {
-	.fw-option-type-typography .selectize-dropdown.fw-option-typography-option-family-input {
+	[class*="fw-option-type-typography"] .selectize-dropdown.fw-option-typography-v2-option-family-input {
 		width: 100% !important;
 	}
 
-	.fw-option-type-typography .selectize-control.single .selectize-input {
+	[class*="fw-option-type-typography"] .selectize-control.single .selectize-input {
 		font-size: 16px;
 		height: 36px;
 		line-height: 36px;
 	}
 
-	#edittag .fw-option-type-typography .selectize-control.single .selectize-input {
+	#edittag [class*="fw-option-type-typography"] .selectize-control.single .selectize-input {
 		padding: 0 14px;
 	}
 }
-.fw-force-xs .fw-option-type-typography .selectize-dropdown.fw-option-typography-option-family-input {
+.fw-force-xs [class*="fw-option-type-typography"] .selectize-dropdown.fw-option-typography-v2-option-family-input {
 	width: 100%!important;
 }
-.fw-force-xs .fw-option-type-typography .selectize-control.single .selectize-input {
+.fw-force-xs [class*="fw-option-type-typography"] .selectize-control.single .selectize-input {
 	font-size: 16px;
 }
-#edittag .fw-force-xs .fw-option-type-typography .selectize-control.single .selectize-input {
+#edittag .fw-force-xs [class*="fw-option-type-typography"] .selectize-control.single .selectize-input {
 	padding: 0 14px;
 }
 
-.fw-option-type-typography div.selectize-input.items.full.has-options.has-items {
+[class*="fw-option-type-typography"] div.selectize-input.items.full.has-options.has-items {
 	background: none;
 }
 
-.fw-option-type-typography .selectize-dropdown .selectize-dropdown-content {
+[class*="fw-option-type-typography"] .selectize-dropdown .selectize-dropdown-content {
 	border: 1px solid #ddd;
 }
 
-.fw-option-type-typography .selectize-control .selectize-dropdown {
+[class*="fw-option-type-typography"] .selectize-control .selectize-dropdown {
 	border: none;
 	top: 33px !important;
 }
 @media (max-width: 782px) {
-	.fw-option-type-typography .selectize-control .selectize-dropdown {
+	[class*="fw-option-type-typography"] .selectize-control .selectize-dropdown {
 		top: 42px !important;
 	}
 }
 
 @media (max-width: 782px) {
-	.fw-option-type-typography .fw-option-typography-option-style,
-	.fw-option-type-typography .fw-option-typography-option-color,
-	.fw-option-type-typography .fw-option-typography-option-color .fw-option-type-color-picker {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-style,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-subset,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-variation,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-weight,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-line-height,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-letter-spacing,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-color,
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-color .fw-option-type-color-picker {
 		width: 100% !important;
 	}
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-style,
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-color,
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-color .fw-option-type-color-picker {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-subset,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-variation,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-weight,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-style,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-size,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-line-height,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-letter-spacing,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-color,
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-color .fw-option-type-color-picker {
 	width: 100% !important;
 }
 
@@ -261,34 +262,55 @@ color:      fw-col-sm-2 = 16.66666667%
 25% + 16.66666667% = 41.66666667%
 */
 
-.fw-option-type-typography .fw-option-typography-option-color {
-	width: 70px; /* should be same width as option type color-picker */
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-color {
+	width: 80px; /* should be same width as option type color-picker */
 }
 
-.fw-option-type-typography .fw-option-typography-option-style {
-	width: 98px;
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-style,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-weight,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-variation,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-subset {
+	width: 120px;
 }
 
-.fw-option-type-typography .fw-option-typography-option-size {
-	width: 67px;
+
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-line-height,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-letter-spacing {
+	width: 86px;
+}
+
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-letter-spacing {
+	width: 86px;
 }
 
 @media (max-width: 782px) {
-	.fw-option-type-typography .fw-option-typography-option-size {
+	[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size {
 		width: 100%;
 	}
 }
-.fw-force-xs .fw-option-type-typography .fw-option-typography-option-size {
+.fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography-v2-option-size {
 	width: 100%;
 }
 
-
-/* Disable Selectize search */
-
-.fw-option-type-typography .fw-option-typography-option .selectize-control.single .selectize-input input {
-	display: none;
+[class*="fw-option-type-typography"] .fw-inner {
+	font-size: 12px;
+	padding-left: 1px;
+	padding-bottom: 10px;
+	font-style: italic;
+	color: #666;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
-.fw-option-type-typography .fw-option-typography-option .selectize-control.single .selectize-input.input-active {
-	 cursor: default;
+/* Size field rendered as a unit-input (size_format: 'unit', the default) needs more
+   room than the legacy plain number input for the value + unit dropdown. Scoped to the
+   unit variant via the data-size-format hook so the 'number' format keeps its narrow slot. */
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size[data-size-format="unit"] {
+	width: 140px;
+}
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size[data-size-format="unit"] .fw-option-type-unit-input,
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-size[data-size-format="unit"] .fw-backend-option-input {
+	width: 100%;
 }

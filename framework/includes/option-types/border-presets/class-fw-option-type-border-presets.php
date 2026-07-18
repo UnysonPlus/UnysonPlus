@@ -120,6 +120,20 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 				'desc'            => __( 'Animates the hover change. Milliseconds, e.g. 200.', 'fw' ),
 				'dynamic_content' => false,
 			),
+			'hover_fx' => array(
+				'type'       => 'multi-select',
+				'label'      => __( 'Hover Effects', 'fw' ),
+				'desc'       => __( 'Special animated hover effects, layered on top of the Hover state above — combine freely. Lift raises the card, Zoom Media scales an inner image (box clips), Tilt adds a subtle 3D tilt, Glow adds a colored halo, Shine sweeps a sheen across it. Honors reduced-motion.', 'fw' ),
+				'population' => 'array',
+				'choices'    => array(
+					'lift'  => __( 'Lift', 'fw' ),
+					'zoom'  => __( 'Zoom Media', 'fw' ),
+					'tilt'  => __( 'Tilt', 'fw' ),
+					'glow'  => __( 'Glow', 'fw' ),
+					'shine' => __( 'Shine', 'fw' ),
+				),
+				'value'      => array(),
+			),
 			'custom_css' => array(
 				'type'        => 'code-editor',
 				'label'       => __( 'Custom CSS (advanced)', 'fw' ),

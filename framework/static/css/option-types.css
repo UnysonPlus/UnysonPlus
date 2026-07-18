@@ -46,6 +46,14 @@ textarea.fw-option-type-textarea {
 	width: 100px !important;
 }
 
+/* `number`: a consistent width so a bounded field (with a `max`) and an unbounded one
+   match — otherwise the browser sizes <input type=number> by its `max` digit count,
+   making them different widths. The class is ON the <input> (input.fw-option-type-number),
+   not a wrapper. !important to beat WP admin's form-table input width. */
+input.fw-option-type-number {
+	width: 100px !important;
+}
+
 /* `medium-text`: ~half the regular text width, but at least ~3x short-text. */
 .fw-option-width-medium {
 	width: 50% !important;

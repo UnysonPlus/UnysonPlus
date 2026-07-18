@@ -97,56 +97,12 @@ class FW_Option_Type_Predefined_Colors_Color_Picker_Compact extends FW_Option_Ty
 		$uri    = $fw_uri . '/includes/option-types/' . $this->get_type() . '/static';
 		$ver    = fw()->manifest->get_version();
 
-		// Standard color picker (the 'custom' half — default picker)
-		wp_enqueue_style(
-			'fw-option-color-picker',
-			$fw_uri . '/includes/option-types/color-picker/static/css/styles.css',
-			array(),
-			$ver
-		);
-		wp_enqueue_script(
-			'fw-option-color-picker',
-			$fw_uri . '/includes/option-types/color-picker/static/js/scripts.js',
-			array( 'jquery', 'fw-events', 'wp-color-picker' ),
-			$ver,
-			true
-		);
-		wp_localize_script(
-			'fw-option-color-picker',
-			'_fw_option_type_color_picker_localized',
-			array(
-				'l10n' => array(
-					'reset_to_default' => __( 'Reset', 'fw' ),
-					'reset_to_initial' => __( 'Reset', 'fw' ),
-				),
-			)
-		);
-
-		// RGBA color picker (alternative picker — enqueued unconditionally
-		// because the option config can pick either at runtime)
-		wp_enqueue_style(
-			'fw-option-rgba-color-picker',
-			$fw_uri . '/includes/option-types/rgba-color-picker/static/css/styles.css',
-			array(),
-			$ver
-		);
-		wp_enqueue_script(
-			'fw-option-rgba-color-picker',
-			$fw_uri . '/includes/option-types/rgba-color-picker/static/js/scripts.js',
-			array( 'jquery', 'fw-events', 'iris' ),
-			$ver,
-			true
-		);
-		wp_localize_script(
-			'fw-option-rgba-color-picker',
-			'_fw_option_type_rgba_color_picker_localized',
-			array(
-				'l10n' => array(
-					'reset_to_default' => __( 'Reset', 'fw' ),
-					'reset_to_initial' => __( 'Reset', 'fw' ),
-				),
-			)
-		);
+		// The 'custom' half embeds either a color-picker or an rgba-color-picker — both are
+		// now Coloris. Delegate to the option types' OWN enqueue so the correct Coloris assets
+		// + shared init + preset swatches load. Replaces the old direct enqueue of the Iris /
+		// wp-color-picker-alpha scripts (whose init wpColorPicker-ified every rgba input).
+		fw()->backend->option_type( 'color-picker' )->enqueue_static();
+		fw()->backend->option_type( 'rgba-color-picker' )->enqueue_static();
 
 		// This option type's own assets
 		wp_enqueue_style(

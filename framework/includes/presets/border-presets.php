@@ -70,6 +70,7 @@ if ( ! function_exists( 'unysonplus_default_border_presets' ) ) :
 				'border_radius' => $u( 8 ),
 				'padding'       => $pad( 'p-4' ),
 				'transition'    => '200',
+				'hover_fx'      => array( 'lift' ),
 				'custom_css'    => '',
 				'states'        => array(
 					'default' => array( 'border_style' => 'solid', 'border_width' => $u( 1 ), 'border_color' => $col( 'light-gray' ), 'box_shadow' => $sh( 1, 3, '0.08' ) ),
@@ -112,6 +113,7 @@ if ( ! function_exists( 'unysonplus_default_border_presets' ) ) :
 				'border_radius' => $u( 8 ),
 				'padding'       => $pad( 'p-4' ),
 				'transition'    => '200',
+				'hover_fx'      => array( 'lift', 'glow' ),
 				'custom_css'    => '',
 				'states'        => array(
 					'default' => array( 'border_style' => 'solid', 'border_width' => $u( 1 ), 'border_color' => $col( 'light-gray' ) ),

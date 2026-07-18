@@ -84,6 +84,11 @@ final class _FW_Extensions_Manager
 				add_action('wp_ajax_fw_extensions_check_direct_fs_access', [$this, '_action_ajax_check_direct_fs_access']);
                 add_action('wp_ajax_fw_extensions_install', [$this, '_action_ajax_install']);
                 add_action('wp_ajax_fw_extensions_uninstall', [$this, '_action_ajax_uninstall']);
+
+				// Install a 3rd-party extension from an arbitrary .zip upload or GitHub URL
+				// (not in the curated available-extensions registry).
+				add_action('wp_ajax_fw_ext_install_custom_zip', [$this, '_action_ajax_install_custom_zip']);
+				add_action('wp_ajax_fw_ext_install_custom_github', [$this, '_action_ajax_install_custom_github']);
 			}
 		}
 
@@ -171,6 +176,11 @@ final class _FW_Extensions_Manager
 				return array(
 					'name' => '_nonce_fw_extensions_install',
 					'action' => 'install',
+				);
+			case 'install-custom':
+				return array(
+					'name' => '_nonce_fw_ext_install_custom',
+					'action' => 'install-custom',
 				);
 			case 'delete':
 				return array(
@@ -842,6 +852,9 @@ final class _FW_Extensions_Manager
 			case 'install':
 				$this->display_install_page();
 				break;
+			case 'install-custom':
+				$this->display_install_custom_page();
+				break;
 			case 'delete':
 				$this->display_delete_page();
 				break;
@@ -927,7 +940,14 @@ final class _FW_Extensions_Manager
 
 		echo '<div class="wrap">';
 
-		echo '<h2>'. sprintf(__('%s Extensions', 'fw'), fw()->manifest->get_name()) .'</h2><br/>';
+		echo '<h2>'. sprintf(__('%s Extensions', 'fw'), fw()->manifest->get_name());
+
+		if ($this->can_install()) {
+			echo ' <a href="'. esc_url($this->get_link() .'&sub-page=install-custom') .'" class="add-new-h2">'.
+				esc_html__('Install Extension', 'fw') .'</a>';
+		}
+
+		echo '</h2><br/>';
 
 		echo '<div id="fw-extensions-list-wrapper">';
 
@@ -948,6 +968,378 @@ final class _FW_Extensions_Manager
 		echo '</div>';
 
 		echo '</div>';
+	}
+
+	/**
+	 * "Install Extension" page — install a 3rd-party extension from a .zip upload
+	 * or a GitHub URL (not from the curated available-extensions registry).
+	 */
+	private function display_install_custom_page()
+	{
+		if (!$this->can_install()) {
+			FW_Flash_Messages::add(
+				'fw_ext_install_custom',
+				__('You are not allowed to install extensions.', 'fw'),
+				'error'
+			);
+			$this->js_redirect();
+			return;
+		}
+
+		fw_render_view(dirname(__FILE__) .'/views/install-custom-page.php', array(
+			'back_link'   => $this->get_link(),
+			'direct_fs'   => FW_WP_Filesystem::has_direct_access(fw_get_framework_directory('/extensions')),
+		), false);
+	}
+
+	/* ---------------------------------------------------------------------- *
+	 * Custom (3rd-party) extension installer — AJAX
+	 * ---------------------------------------------------------------------- */
+
+	private function guard_install_custom() {
+		$nonce = $this->get_nonce('install-custom');
+
+		if (
+			empty($_POST['nonce'])
+			|| ! wp_verify_nonce($_POST['nonce'], $nonce['action'])
+		) {
+			wp_send_json_error(array('message' => __('Invalid or expired request. Reload the page and try again.', 'fw')));
+		}
+
+		if (!$this->can_install() || (is_multisite() && !is_super_admin())) {
+			wp_send_json_error(array('message' => __('You are not allowed to install extensions.', 'fw')));
+		}
+
+		if (!FW_WP_Filesystem::has_direct_access(fw_get_framework_directory('/extensions'))) {
+			wp_send_json_error(array(
+				'message' => __('The extensions directory is not directly writable on this server. Install via SFTP/FTP, or ask your host to enable direct filesystem access.', 'fw'),
+			));
+		}
+	}
+
+	/**
+	 * @internal
+	 */
+	public function _action_ajax_install_custom_zip() {
+		$this->guard_install_custom();
+
+		if (empty($_FILES['extension_zip']) || !empty($_FILES['extension_zip']['error'])) {
+			wp_send_json_error(array('message' => __('No file was uploaded.', 'fw')));
+		}
+
+		$name = isset($_FILES['extension_zip']['name']) ? sanitize_file_name($_FILES['extension_zip']['name']) : '';
+		if ('zip' !== strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
+			wp_send_json_error(array('message' => __('The file must be a .zip archive.', 'fw')));
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$upload = wp_handle_upload(
+			$_FILES['extension_zip'],
+			array(
+				'test_form' => false,
+				'mimes'     => array('zip' => 'application/zip'),
+			)
+		);
+
+		if (!$upload || isset($upload['error'])) {
+			wp_send_json_error(array('message' => isset($upload['error']) ? $upload['error'] : __('Upload failed.', 'fw')));
+		}
+
+		$result = $this->install_custom_from_zip($upload['file'], 'zip', null);
+
+		@unlink($upload['file']);
+
+		$this->respond_install_custom($result);
+	}
+
+	/**
+	 * @internal
+	 */
+	public function _action_ajax_install_custom_github() {
+		$this->guard_install_custom();
+
+		$url  = isset($_POST['github_url']) ? esc_url_raw(wp_unslash($_POST['github_url'])) : '';
+		$repo = $this->parse_github_repo($url);
+
+		if (!$repo) {
+			wp_send_json_error(array('message' => __('Enter a valid GitHub repository URL (https://github.com/owner/repo).', 'fw')));
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$zip_url = $this->resolve_github_zip_url($repo);
+		if (is_wp_error($zip_url)) {
+			wp_send_json_error(array('message' => $zip_url->get_error_message()));
+		}
+
+		$response = wp_remote_get($zip_url, array('timeout' => 300));
+		if (is_wp_error($response)) {
+			wp_send_json_error(array('message' => $response->get_error_message()));
+		}
+		if (200 !== (int) wp_remote_retrieve_response_code($response)) {
+			wp_send_json_error(array('message' => __('Could not download the repository archive.', 'fw')));
+		}
+
+		$tmp_zip = trailingslashit(get_temp_dir()) . 'fw-ext-' . wp_generate_password(10, false) . '.zip';
+		if (false === file_put_contents($tmp_zip, wp_remote_retrieve_body($response))) {
+			wp_send_json_error(array('message' => __('Could not write the downloaded archive.', 'fw')));
+		}
+
+		$result = $this->install_custom_from_zip($tmp_zip, 'github', $repo['repo']);
+		@unlink($tmp_zip);
+
+		$this->respond_install_custom($result);
+	}
+
+	/* ---------------------------------------------------------------------- *
+	 * Custom extension installer — helpers
+	 * ---------------------------------------------------------------------- */
+
+	/**
+	 * Unzip, validate (manifest.php) and move an extension folder into the
+	 * framework extensions directory. Lands installed-but-inactive.
+	 *
+	 * @param string      $zip_real_path  Absolute path to the .zip on disk.
+	 * @param string      $source         'zip' | 'github'
+	 * @param string|null $preferred_name Fallback folder name (e.g. GitHub repo name).
+	 * @return array|WP_Error array('slug','name','source') on success.
+	 */
+	private function install_custom_from_zip($zip_real_path, $source, $preferred_name) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+
+		$tmp_dir = trailingslashit(get_temp_dir()) . 'fw-ext-extract-' . wp_generate_password(10, false);
+		if (!wp_mkdir_p($tmp_dir)) {
+			return new WP_Error('fw_ext', __('Could not create a temporary directory.', 'fw'));
+		}
+
+		$unzip = unzip_file($zip_real_path, $tmp_dir);
+		if (is_wp_error($unzip)) {
+			$this->rmdir_recursive($tmp_dir);
+			return $unzip;
+		}
+
+		list($folder_path, $descended) = $this->locate_extension_folder($tmp_dir);
+
+		if (!$folder_path) {
+			$this->rmdir_recursive($tmp_dir);
+			return new WP_Error('fw_ext', __('The archive does not contain a valid extension folder (missing manifest.php).', 'fw'));
+		}
+
+		// Read manifest.php in an isolated scope and sanity-check it.
+		// NOTE: fw_get_variables_from_file() require()s the file, so its PHP
+		// executes here. This is gated behind the install_plugins capability
+		// (same trust as uploading a plugin), but do not treat the manifest as
+		// inert data — validate before relying on it.
+		$vars = fw_get_variables_from_file($folder_path . '/manifest.php', array('manifest' => array()));
+		if (empty($vars['manifest']) || !is_array($vars['manifest']) || empty($vars['manifest']['name'])) {
+			$this->rmdir_recursive($tmp_dir);
+			return new WP_Error('fw_ext', __('The extension manifest.php is missing or invalid.', 'fw'));
+		}
+		$manifest = $vars['manifest'];
+
+		// Folder name = extension slug (extensions are keyed by their dir name).
+		$raw_slug = ($descended || !$preferred_name) ? basename($folder_path) : $preferred_name;
+		$slug     = $this->sanitize_extension_slug($raw_slug);
+
+		if ('' === $slug) {
+			$this->rmdir_recursive($tmp_dir);
+			return new WP_Error('fw_ext', __('Could not derive a valid name for the extension.', 'fw'));
+		}
+
+		// Collision: never shadow a bundled/installed/available extension.
+		$installed = array_keys($this->get_installed_extensions());
+		$available = array_keys($this->get_available_extensions());
+		if (in_array($slug, $installed, true) || in_array($slug, $available, true)) {
+			$this->rmdir_recursive($tmp_dir);
+			return new WP_Error('fw_ext', sprintf(
+				/* translators: %s: extension slug */
+				__('An extension named "%s" already exists.', 'fw'),
+				$slug
+			));
+		}
+
+		$destination = wp_normalize_path(fw_get_framework_directory('/extensions') . '/' . $slug);
+
+		// Hard guard: destination must live inside the extensions dir.
+		$base = wp_normalize_path(trailingslashit(fw_get_framework_directory('/extensions')));
+		if (strpos($destination . '/', $base) !== 0) {
+			$this->rmdir_recursive($tmp_dir);
+			return new WP_Error('fw_ext', __('Invalid destination path.', 'fw'));
+		}
+
+		$copy = copy_dir($folder_path, $destination);
+		if (is_wp_error($copy)) {
+			$this->rmdir_recursive($tmp_dir);
+			return $copy;
+		}
+
+		// Record the source for a badge / "custom-installed" label.
+		@file_put_contents($destination . '/.fw-source', $source);
+
+		$this->rmdir_recursive($tmp_dir);
+
+		// Refresh the installed-extensions cache so the new one lists immediately.
+		$this->get_installed_extensions(true);
+
+		return array(
+			'slug'   => $slug,
+			'name'   => is_string($manifest['name']) ? $manifest['name'] : $slug,
+			'source' => $source,
+		);
+	}
+
+	/**
+	 * Find the extension folder inside an extracted archive.
+	 * Handles a directly-zipped folder and the GitHub "repo-branch/" wrapper.
+	 *
+	 * @return array array($path|null, $descended_bool)
+	 */
+	private function locate_extension_folder($root) {
+		// Case A: the archive root IS the extension folder.
+		if (file_exists($root . '/manifest.php')) {
+			return array($root, false);
+		}
+
+		$top = glob($root . '/*', GLOB_ONLYDIR);
+		if (empty($top)) {
+			return array(null, false);
+		}
+
+		// Case B: a single wrapper dir (zipped folder, or GitHub "repo-branch/").
+		foreach ($top as $dir) {
+			if (file_exists($dir . '/manifest.php')) {
+				return array($dir, false);
+			}
+		}
+
+		// Case C: descend one level — the extension lives in a subfolder.
+		foreach ($top as $dir) {
+			$sub = glob($dir . '/*', GLOB_ONLYDIR);
+			if (empty($sub)) {
+				continue;
+			}
+			foreach ($sub as $candidate) {
+				if (file_exists($candidate . '/manifest.php')) {
+					return array($candidate, true);
+				}
+			}
+		}
+
+		return array(null, false);
+	}
+
+	private function sanitize_extension_slug($name) {
+		$name = strtolower((string) $name);
+		$name = preg_replace('/\.git$/', '', $name);
+		$name = preg_replace('/[^a-z0-9-]+/', '-', $name);
+		$name = trim($name, '-');
+		return $name;
+	}
+
+	/**
+	 * Parse owner/repo from a GitHub URL or "owner/repo" string.
+	 *
+	 * @return array|null array('owner','repo','user_repo')
+	 */
+	private function parse_github_repo($url) {
+		$url = trim((string) $url);
+		if ('' === $url) {
+			return null;
+		}
+
+		if (preg_match('#^([\w.-]+)/([\w.-]+)$#', $url, $m)) {
+			$owner = $m[1];
+			$repo  = preg_replace('/\.git$/', '', $m[2]);
+		} else {
+			$host = wp_parse_url($url, PHP_URL_HOST);
+			if ('github.com' !== strtolower((string) $host)) {
+				return null;
+			}
+			$path  = trim((string) wp_parse_url($url, PHP_URL_PATH), '/');
+			$parts = explode('/', $path);
+			if (count($parts) < 2 || '' === $parts[0] || '' === $parts[1]) {
+				return null;
+			}
+			$owner = $parts[0];
+			$repo  = preg_replace('/\.git$/', '', $parts[1]);
+		}
+
+		if ('' === $owner || '' === $repo) {
+			return null;
+		}
+
+		return array(
+			'owner'     => $owner,
+			'repo'      => $repo,
+			'user_repo' => $owner . '/' . $repo,
+		);
+	}
+
+	/**
+	 * Resolve a downloadable .zip URL for a GitHub repo: latest release if any,
+	 * otherwise the default-branch archive.
+	 *
+	 * @return string|WP_Error
+	 */
+	private function resolve_github_zip_url($repo) {
+		$api_args = array(
+			'timeout' => 25,
+			'headers' => array('Accept' => 'application/vnd.github+json', 'User-Agent' => 'UnysonPlus'),
+		);
+
+		$release = wp_remote_get('https://api.github.com/repos/' . $repo['user_repo'] . '/releases/latest', $api_args);
+		if (!is_wp_error($release) && 200 === (int) wp_remote_retrieve_response_code($release)) {
+			$body = json_decode(wp_remote_retrieve_body($release), true);
+			if (!empty($body['tag_name'])) {
+				return 'https://github.com/' . $repo['user_repo'] . '/archive/refs/tags/' . $body['tag_name'] . '.zip';
+			}
+		}
+
+		$info = wp_remote_get('https://api.github.com/repos/' . $repo['user_repo'], $api_args);
+		if (is_wp_error($info)) {
+			return $info;
+		}
+		$code = (int) wp_remote_retrieve_response_code($info);
+		if (404 === $code) {
+			return new WP_Error('fw_ext', __('Repository not found (it may be private or misspelled).', 'fw'));
+		}
+		if (200 !== $code) {
+			$branch = 'main';
+		} else {
+			$body   = json_decode(wp_remote_retrieve_body($info), true);
+			$branch = !empty($body['default_branch']) ? $body['default_branch'] : 'main';
+		}
+
+		return 'https://github.com/' . $repo['user_repo'] . '/archive/refs/heads/' . $branch . '.zip';
+	}
+
+	private function respond_install_custom($result) {
+		if (is_wp_error($result)) {
+			wp_send_json_error(array('message' => $result->get_error_message()));
+		}
+
+		wp_send_json_success(array(
+			'slug'   => $result['slug'],
+			'name'   => $result['name'],
+			'source' => $result['source'],
+		));
+	}
+
+	/**
+	 * Recursively remove a directory (best effort, real paths).
+	 */
+	private function rmdir_recursive($dir) {
+		if (!is_dir($dir)) {
+			return;
+		}
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+		global $wp_filesystem;
+		if ($wp_filesystem) {
+			$wp_filesystem->delete($dir, true);
+		}
 	}
 
 	private function display_install_page()
@@ -1640,15 +2032,25 @@ final class _FW_Extensions_Manager
 				empty($installed_extensions[ $extension_name ]['path'])
 			) {
 				/**
-				 * This happens sometimes, but I don't know why
-				 * If the script will continue, it will delete the root folder
+				 * This happens sometimes, but I don't know why.
+				 * If the script continued it would delete the root folder, so skip
+				 * this extension and record an error instead of die-ing mid-request
+				 * (die corrupts the AJAX/form response). Report if seen:
+				 * https://github.com/UnysonPlus/UnysonPlus/issues
 				 */
-				fw_print(
-					'Please report this to https://github.com/UnysonPlus/UnysonPlus/issues',
-					$extension_name,
-					$installed_extensions
+				$result[ $extension_name ] = new WP_Error(
+					'fw_ext_missing_path',
+					sprintf(
+						__( 'Cannot uninstall "%s": its install path is missing. Please report this.', 'fw' ),
+						$extension_name
+					)
 				);
-				die;
+
+				if ( $cancel_on_error ) {
+					break;
+				} else {
+					continue;
+				}
 			}
 
 			$wp_fs_extension_path = FW_WP_Filesystem::real_path_to_filesystem_path(
@@ -3061,6 +3463,55 @@ final class _FW_Extensions_Manager
 				fw()->backend->enqueue_options_static($extension_settings_options);
 			}
 		}
+
+		if ($this->is_install_custom_page()) {
+			wp_enqueue_style(
+				'fw-ext-install-custom',
+				$this->get_uri('/static/install-custom.css'),
+				array('fw'),
+				fw()->manifest->get_version()
+			);
+			wp_enqueue_script(
+				'fw-ext-install-custom',
+				$this->get_uri('/static/install-custom.js'),
+				array('fw', 'jquery'),
+				fw()->manifest->get_version(),
+				true
+			);
+			wp_localize_script('fw-ext-install-custom', '_fw_ext_install_custom', array(
+				'ajaxurl' => admin_url('admin-ajax.php'),
+				'nonce'   => wp_create_nonce($this->get_nonce('install-custom')['action']),
+				'link'    => $this->get_link(),
+				'l10n'    => array(
+					'installing' => __('Installing…', 'fw'),
+					'no_file'    => __('Choose a .zip file first.', 'fw'),
+					'no_url'     => __('Enter a GitHub repository URL.', 'fw'),
+					'done'       => __('Installed. Activate it from the Extensions list.', 'fw'),
+					'failed'     => __('Install failed.', 'fw'),
+					'go_to_list' => __('Go to Extensions', 'fw'),
+				),
+			));
+		}
+	}
+
+	/**
+	 * Is the current screen the "Install Extension" (custom 3rd-party) sub-page?
+	 */
+	public function is_install_custom_page()
+	{
+		$current_screen = get_current_screen();
+
+		if (empty($current_screen)) {
+			return false;
+		}
+
+		return (
+			property_exists($current_screen, 'base') && strpos($current_screen->base, $this->get_page_slug()) !== false
+			&&
+			property_exists($current_screen, 'id') && strpos($current_screen->id, $this->get_page_slug()) !== false
+			&&
+			isset($_GET['sub-page']) && $_GET['sub-page'] === 'install-custom'
+		);
 	}
 
 	private function activate_theme_extensions()
@@ -3517,6 +3968,19 @@ final class _FW_Extensions_Manager
 	 */
 	public function collect_extension_requirements($extension_name, $can_install = null) {
 		$installed_extensions = $this->get_installed_extensions();
+
+		/**
+		 * The "disabled / not-installed required extension" branches below reference
+		 * $lists, $link and $nonces. They used to be undefined here (leftovers from a
+		 * view scope), producing broken markup + undefined-variable notices. Rebuild
+		 * them from the real sources so the requirement UI renders correctly.
+		 */
+		$lists  = array(
+			'installed' => $installed_extensions,
+			'available' => $this->get_available_extensions(),
+		);
+		$link   = $this->get_link();
+		$nonces = array( 'activate' => $this->get_nonce( 'activate' ) );
 
 		if (is_null($can_install)) {
 			$can_install = $this->can_install();

@@ -222,7 +222,7 @@ final class _FW_Component_Backend {
 				$type = $this->get_instance($option_type_class)->get_type();
 			} catch (FW_Option_Type_Exception_Invalid_Class $exception) {
 				if (!is_subclass_of($option_type_class, 'FW_Option_Type')) {
-					trigger_error('Invalid option type class ' . get_class($option_type_class), E_USER_WARNING);
+					trigger_error('Invalid option type class ' . $option_type_class, E_USER_WARNING);
 					return;
 				}
 			}
@@ -248,7 +248,7 @@ final class _FW_Component_Backend {
 				$type = $this->get_instance($container_type_class)->get_type();
 			} catch (FW_Option_Type_Exception_Invalid_Class $exception) {
 				if (!is_subclass_of($container_type_class, 'FW_Container_Type')) {
-					trigger_error('Invalid container type class ' . get_class($container_type_class), E_USER_WARNING);
+					trigger_error('Invalid container type class ' . $container_type_class, E_USER_WARNING);
 					return;
 				}
 			}
@@ -649,6 +649,10 @@ final class _FW_Component_Backend {
 			 * 1. https://github.com/ThemeFuse/Unyson/issues/3052
 			 * 2. This is wrong, comment is not a post(type) it is stored in a separate db table and has a separate meta (wp_comments and wp_commentmeta)
 			 */
+			return;
+		}
+
+		if (!($post instanceof WP_Post)) {
 			return;
 		}
 
@@ -1158,6 +1162,16 @@ final class _FW_Component_Backend {
 	{
 		check_ajax_referer( 'fw_backend_options', '_nonce' );
 
+		/**
+		 * Defense-in-depth: the nonce alone gates these endpoints, so any
+		 * logged-in user able to obtain it could drive option rendering /
+		 * value processing. Require an editing capability as well. Filterable
+		 * so contexts that need a different capability can adjust it.
+		 */
+		if ( ! current_user_can( apply_filters( 'fw_backend_options_ajax_capability', 'edit_posts' ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'fw' ) ), 403 );
+		}
+
 		// options
 		{
 			if (!isset($_POST['options'])) {
@@ -1182,6 +1196,10 @@ final class _FW_Component_Backend {
 
 				if (is_string($values)) {
 					$values = json_decode($values, true);
+				}
+
+				if (!is_array($values)) {
+					$values = [];
 				}
 			} else {
 				$values = [];
@@ -1224,6 +1242,16 @@ final class _FW_Component_Backend {
 	public function _action_ajax_options_get_values(): void
 	{
 		check_ajax_referer( 'fw_backend_options', '_nonce' );
+
+		/**
+		 * Defense-in-depth: the nonce alone gates these endpoints, so any
+		 * logged-in user able to obtain it could drive option rendering /
+		 * value processing. Require an editing capability as well. Filterable
+		 * so contexts that need a different capability can adjust it.
+		 */
+		if ( ! current_user_can( apply_filters( 'fw_backend_options_ajax_capability', 'edit_posts' ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'fw' ) ), 403 );
+		}
 
 		// options
 		{
@@ -1291,6 +1319,16 @@ final class _FW_Component_Backend {
 	{
 		check_ajax_referer( 'fw_backend_options', '_nonce' );
 
+		/**
+		 * Defense-in-depth: the nonce alone gates these endpoints, so any
+		 * logged-in user able to obtain it could drive option rendering /
+		 * value processing. Require an editing capability as well. Filterable
+		 * so contexts that need a different capability can adjust it.
+		 */
+		if ( ! current_user_can( apply_filters( 'fw_backend_options_ajax_capability', 'edit_posts' ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'fw' ) ), 403 );
+		}
+
 		// options
 		{
 			if (!isset($_POST['options'])) {
@@ -1327,11 +1365,9 @@ final class _FW_Component_Backend {
 			}
 
 			if (!is_array($values)) {
-				if (!$values) {
-					wp_send_json_error([
-						'message' => 'Wrong values'
-					]);
-				}
+				wp_send_json_error([
+					'message' => 'Wrong values'
+				]);
 			}
 		}
 
@@ -1576,7 +1612,7 @@ final class _FW_Component_Backend {
 
 		if (!in_array($design, $this->available_render_designs, true)) {
 			trigger_error('Invalid render design specified: ' . $design, E_USER_WARNING);
-			$design = 'post';
+			$design = $this->default_render_design;
 		}
 
 		$data['id_prefix'] = $data['id_prefix'] ?? $this->get_options_id_attr_prefix();
@@ -2080,6 +2116,21 @@ final class _FW_Component_Backend {
 	{
 		if ($fresh_instance || $this->markdown_parser === null) {
 			$this->markdown_parser = new Parsedown();
+
+			/**
+			 * Harden the shared Markdown parser against stored XSS.
+			 * Extension README/docs may come from third parties (installable
+			 * from an arbitrary GitHub URL / uploaded zip), so raw HTML in the
+			 * Markdown must not be trusted. Safe mode escapes inline HTML; the
+			 * render site additionally runs the output through wp_kses_post().
+			 * NOTE: safe mode alone has documented bypasses — keep both layers.
+			 */
+			if (method_exists($this->markdown_parser, 'setSafeMode')) {
+				$this->markdown_parser->setSafeMode(true);
+			}
+			if (method_exists($this->markdown_parser, 'setMarkupEscaped')) {
+				$this->markdown_parser->setMarkupEscaped(true);
+			}
 		}
 
 		return $this->markdown_parser;

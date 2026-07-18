@@ -360,13 +360,22 @@ abstract class FW_Extension
                         return false;
                 }
 
-                return fw()->backend->get_markdown_parser()->text(
+                $rendered = fw()->backend->get_markdown_parser()->text(
                         /**
                          * TODO: Perhaps send here some values in order to make extension docs
                          * more dynamic???
                          */
                         fw_render_view($docs_path, array())
                 );
+
+                /**
+                 * Second XSS layer: an extension's readme.md.php may be authored by a
+                 * third party (installable from an arbitrary GitHub URL / uploaded zip)
+                 * and its rendered HTML is echoed into wp-admin. Parsedown safe mode is
+                 * enabled on the parser, but it is documented as not a full sanitizer,
+                 * so strip anything wp_kses_post() would not allow in post content.
+                 */
+                return wp_kses_post($rendered);
         }
 
         /**

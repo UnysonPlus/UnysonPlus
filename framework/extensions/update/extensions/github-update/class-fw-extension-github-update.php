@@ -98,6 +98,19 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 
 			$response_code = intval(wp_remote_retrieve_response_code($response));
 
+			// 429 (rate-limited) / 403 (abuse limit) from raw.githubusercontent — a
+			// TRANSIENT condition that happens when many extensions are checked from one
+			// IP. Treat it exactly like a lost connection: back off for the rest of this
+			// refresh (so we don't hammer and trigger yet more 429s) and return the fake
+			// version silently. The next check after the transient expires tries again —
+			// no user-facing error for something benign and self-resolving.
+			if ($response_code === 429 || $response_code === 403) {
+				$no_internet_connection = true;
+				unset($http);
+
+				return $this->fake_latest_version;
+			}
+
 			if ($response_code === 200) {
 				$body = wp_remote_retrieve_body($response);
 
@@ -198,19 +211,15 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 
 		if (is_wp_error($latest_version)) {
 			/**
-			 * Internet connection problems or Github API requests limit reached.
-			 * Cache fake version to prevent requests to Github API on every refresh.
+			 * A genuine fetch error (connection, or a non-200/404/429 response). Cache
+			 * the fake version so we don't re-request on every refresh. The error is NOT
+			 * shown as a global flash message — that nagged on EVERY wp-admin page. It is
+			 * already surfaced where it belongs: the Extensions manager (the updates list
+			 * table renders each errored extension's message, and the update extension's
+			 * own admin notice is scoped to the manager screen). Transient rate-limits
+			 * (429/403) never reach here — they return the fake version silently upstream.
 			 */
 			$cache = array_merge($cache, array($user_slash_repo => $this->fake_latest_version));
-
-			/**
-			 * Show the error to the user because it is not visible elsewhere
-			 */
-			FW_Flash_Messages::add(
-				'fw_ext_github_update_error',
-				$latest_version->get_error_message(),
-				'error'
-			);
 		} else {
 			$cache = array_merge($cache, array($user_slash_repo => $latest_version));
 		}

@@ -81,7 +81,7 @@
 
 	/* read one box's full nested value from the DOM */
 	function readBox($item) {
-		var d = { preset_name: '', border_sides: 'all', border_radius: {}, padding: {}, transition: '', custom_css: '', states: {} };
+		var d = { preset_name: '', border_sides: 'all', border_radius: {}, padding: {}, transition: '', hover_fx: [], custom_css: '', states: {} };
 		STATES.forEach(function (s) { d.states[s] = {}; });
 
 		function stateOf(name) {
@@ -149,6 +149,13 @@
 			}
 		});
 
+		// Hover Effects (multi-select) — read the selected options.
+		d.hover_fx = [];
+		$item.find('[name*="[hover_fx]"] option:selected').each(function () {
+			var v = $(this).val();
+			if (v) { d.hover_fx.push(v); }
+		});
+
 		// Background fill (background-pro) PER STATE — read each state panel's bg-pro into
 		// d.states[state].background; mirrors css-tokens (default -> base, hover -> :hover).
 		$item.find('.fw-bp-panel[data-bp-panel]').each(function () {
@@ -206,6 +213,11 @@
 		});
 		if (d.transition) { base.push('transition:all ' + (parseInt(d.transition, 10) || 0) + 'ms ease'); }
 
+		// Hover Effects (mirror css-tokens): Shine/Zoom need a clipping box.
+		var fx = d.hover_fx || [];
+		var has = function (k) { return fx.indexOf(k) > -1; };
+		if (has('shine') || has('zoom')) { base.push('position:relative'); base.push('overflow:hidden'); }
+
 		// Default state: border skin + background fill (fill sits under the border/shadow).
 		base = base.concat(stateDecls(d.states.default, d.border_sides));
 		base = base.concat(bgDecls(d.states.default && d.states.default.background));
@@ -215,7 +227,32 @@
 		// Hover state: border + background diffs.
 		var hov = stateDecls(d.states.hover, d.border_sides)
 			.concat(bgDecls(d.states.hover && d.states.hover.background));
+
+		// Lift + Tilt compose into one transform; Glow merges into the hover shadow.
+		var tf = [];
+		if (has('tilt')) { tf.push('perspective(600px)'); }
+		if (has('lift')) { tf.push('translateY(-6px)'); }
+		if (has('tilt')) { tf.push('rotateX(4deg)'); }
+		if (tf.length) { hov.push('transform:' + tf.join(' ')); }
+		if (has('glow')) {
+			var gc = (d.states.hover && d.states.hover.border_color) || (d.states.default && d.states.default.border_color) || 'rgba(47,116,230,0.45)';
+			var glow = '0 0 24px ' + gc, merged = false, i;
+			for (i = 0; i < hov.length; i++) {
+				if (hov[i].indexOf('box-shadow:') === 0) { hov[i] += ', ' + glow; merged = true; break; }
+			}
+			if (!merged) {
+				var ds = boxShadowCss(d.states.default && d.states.default.box_shadow);
+				hov.push('box-shadow:' + (ds ? ds + ', ' : '') + glow);
+			}
+		}
 		if (hov.length) { css += sel + ':hover,' + sel + '.is-hover{' + rule(hov) + '}'; }
+
+		// Zoom Media — the preview card has no media, so it's a no-op here (works on real cards).
+		// Shine — a diagonal sheen swept via a ::before pseudo.
+		if (has('shine')) {
+			css += sel + '::before{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);pointer-events:none;transition:left .6s ease;z-index:2}';
+			css += sel + ':hover::before,' + sel + '.is-hover::before{left:125%}';
+		}
 
 		if (d.custom_css) { css += ('' + d.custom_css).split('{{SELECTOR}}').join(sel); }
 

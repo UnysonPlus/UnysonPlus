@@ -18,34 +18,18 @@ class FW_Option_Type_Rgba_Color_Picker extends FW_Option_Type {
 	 * {@inheritdoc}
 	 */
 	protected function _enqueue_static( $id, $option, $data ) {
+		// Same Coloris engine as `color-picker`. Delegating to its enqueue loads Coloris +
+		// the SHARED init, which configures rgba-color-picker inputs (via a scoped
+		// Coloris.setInstance) to use `format:'rgb'` + opacity — so this type keeps emitting
+		// `rgba(r,g,b,a)`, its existing stored value shape. No wp-color-picker-alpha / Iris.
+		fw()->backend->option_type( 'color-picker' )->enqueue_static();
 
-		if ( ! wp_style_is( 'wp-color-picker' ) ) {
-			wp_enqueue_style( 'wp-color-picker' );
-		}
-
-		if ( ! wp_script_is( 'wp-color-picker' ) ) {
-			wp_enqueue_script( 'wp-color-picker' );
-		}
-
+		// This type's own input styles (preview / layout).
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/css/styles.css' ),
 			array(),
 			fw()->manifest->get_version()
-		);
-
-		wp_enqueue_script(
-			'fw-option-' . $this->get_type(),
-			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-			array( 'fw-events', 'iris' ),
-			fw()->manifest->get_version(),
-			true
-		);
-
-		wp_localize_script(
-			'fw-option-' . $this->get_type(),
-			'_fw_option_type_' . str_replace( '-', '_', $this->get_type() ) . '_localized',
-			array( 'l10n' => array( 'reset_to_default' => esc_html__( 'Reset', 'fw' ) ) )
 		);
 	}
 
@@ -61,12 +45,14 @@ class FW_Option_Type_Rgba_Color_Picker extends FW_Option_Type {
 	 * @return string
 	 */
 	protected function _render( $id, $option, $data ) {
-		$option['attr']['value']        = $data['value'];
-		$option['attr']['data-default'] = $option['value'];
+		$option['attr']['value']        = (string) $data['value'];
+		$option['attr']['class']       .= ' code';
+		$option['attr']['size']         = '22'; // fits "rgba(255, 255, 255, 0.55)"
+		$option['attr']['autocomplete'] = 'off';
+		$option['attr']['data-coloris']  = '';
+		$option['attr']['data-default']  = $option['value'];
 
-		$option['attr']['data-palettes'] = ! empty( $option['palettes'] ) && is_array( $option['palettes'] ) ? json_encode( $option['palettes'] ) : '';
-
-		return '<input type="text" ' . fw_attr_to_html( $option['attr'] ) . ' data-alpha="true">';
+		return '<input type="text" ' . fw_attr_to_html( $option['attr'] ) . '>';
 	}
 
 	/**
@@ -81,9 +67,11 @@ class FW_Option_Type_Rgba_Color_Picker extends FW_Option_Type {
 				! empty( $input_value )
 				&&
 				! (
-					preg_match( '/^#([a-f0-9]{3}){1,2}$/i', $input_value )
+					// hex (3/4/6/8), OR rgb()/rgba() — Coloris (format:'rgb') emits rgb() when a
+					// colour is fully opaque and rgba() when it has alpha; both are valid CSS.
+					preg_match( '/^#([a-f0-9]{3}|[a-f0-9]{4}|[a-f0-9]{6}|[a-f0-9]{8})$/i', $input_value )
 					||
-					preg_match( '/^rgba\( *([01]?\d\d?|2[0-4]\d|25[0-5]) *\, *([01]?\d\d?|2[0-4]\d|25[0-5]) *\, *([01]?\d\d?|2[0-4]\d|25[0-5]) *\, *(1|0|0?.\d+) *\)$/', $input_value )
+					preg_match( '/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+)\s*)?\)$/i', $input_value )
 				)
 			)
 		) {

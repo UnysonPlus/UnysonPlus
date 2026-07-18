@@ -101,7 +101,7 @@ if ( ! function_exists( '_fw_dc_enqueue_picker_assets' ) ) :
 endif;
 
 /* -----------------------------------------------------------------------------
- * 2. Frontend resolution of {{tokens}} in post content / excerpt
+ * 2. Frontend resolution of {{tokens}} in post content / excerpt / title
  * -------------------------------------------------------------------------- */
 
 if ( ! function_exists( '_fw_dc_resolve_post_content' ) ) :
@@ -122,4 +122,66 @@ if ( ! function_exists( '_fw_dc_resolve_post_content' ) ) :
 	// Run before do_shortcode (priority 11) so tokens inside content are resolved first.
 	add_filter( 'the_content', '_fw_dc_resolve_post_content', 9 );
 	add_filter( 'the_excerpt', '_fw_dc_resolve_post_content', 9 );
+endif;
+
+if ( ! function_exists( '_fw_dc_resolve_post_title' ) ) :
+	/**
+	 * Resolve {{tokens}} in a post title — e.g. an evergreen SEO title like
+	 * "Best Casino Sites UK {{current_year}}". Covers the_title() output anywhere
+	 * on the front end: headings, nav-menu labels, archive/related lists.
+	 *
+	 * FRONT-END ONLY, deliberately. `the_title` also feeds the admin posts-list
+	 * table and Quick Edit's inline data — resolving there would show the year in
+	 * place of the token and, worse, a Quick Edit save could write the resolved
+	 * year back over the title, silently destroying the token. Admin keeps the raw
+	 * value so what you edit is what is stored.
+	 *
+	 * Uses the filter's own $post_id rather than get_the_ID(): in menus, widgets
+	 * and lists the title being filtered is often NOT the current loop post.
+	 *
+	 * @param string $title
+	 * @param int    $post_id
+	 * @return string
+	 */
+	function _fw_dc_resolve_post_title( $title, $post_id = 0 ) {
+		if ( is_admin()
+			|| ! is_string( $title )
+			|| false === strpos( $title, '{{' )
+			|| ! function_exists( 'fw_dynamic_content' )
+		) {
+			return $title;
+		}
+
+		$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
+
+		return fw_dynamic_content()->resolve( $title, array( 'post_id' => $post_id ) );
+	}
+
+	add_filter( 'the_title', '_fw_dc_resolve_post_title', 9, 2 );
+
+	// The native <title> tag. (An SEO plugin that generates its own title — Yoast,
+	// Rank Math — bypasses this filter and needs its own year variable instead.)
+	add_filter( 'document_title_parts', '_fw_dc_resolve_document_title', 9 );
+endif;
+
+if ( ! function_exists( '_fw_dc_resolve_document_title' ) ) :
+	/**
+	 * Resolve {{tokens}} in the native document title parts.
+	 *
+	 * @param array $parts
+	 * @return array
+	 */
+	function _fw_dc_resolve_document_title( $parts ) {
+		if ( ! is_array( $parts ) || ! function_exists( 'fw_dynamic_content' ) ) {
+			return $parts;
+		}
+
+		foreach ( $parts as $k => $v ) {
+			if ( is_string( $v ) && false !== strpos( $v, '{{' ) ) {
+				$parts[ $k ] = fw_dynamic_content()->resolve( $v, array( 'post_id' => (int) get_the_ID() ) );
+			}
+		}
+
+		return $parts;
+	}
 endif;

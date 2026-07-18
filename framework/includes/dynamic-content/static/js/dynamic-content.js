@@ -407,3 +407,81 @@
 		$('.fw-dc-classic-trigger').each(initClassicTrigger);
 	});
 })(jQuery, window.fwEvents);
+
+/**
+ * Dynamic-content CHIPS.
+ *
+ * Style every `{{token}}` shown as TEXT in the admin (page-builder item titles, etc.) as a small
+ * pill, so a value like "New Bingo Sites {{current_year}}" reads clearly as containing dynamic
+ * content — no need to resolve it or check. Display-only: the stored value keeps the raw token,
+ * and the actual editable fields are never touched (inputs / textareas / CodeMirror / the options
+ * + media modals / the token picker are all skipped). A debounced MutationObserver re-chips as the
+ * builder re-renders item titles; an existing chip is never re-processed (no loop).
+ */
+(function () {
+	'use strict';
+	if (typeof MutationObserver === 'undefined' || typeof document.createTreeWalker === 'undefined') { return; }
+
+	var TOKEN   = /\{\{[^{}]+\}\}/;
+	var TOKEN_G = /\{\{[^{}]+\}\}/g;
+	var SKIP_TAGS = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1, SELECT: 1, OPTION: 1 };
+	var SKIP_CLASS = ['fw-dc-chip', 'CodeMirror', 'fw-modal', 'media-modal', 'fw-dc-popover', 'wp-editor-wrap'];
+
+	function skip(node) {
+		var el = node.parentNode;
+		while (el && el.nodeType === 1) {
+			if (SKIP_TAGS[el.nodeName]) { return true; }
+			if (el.classList) {
+				for (var i = 0; i < SKIP_CLASS.length; i++) {
+					if (el.classList.contains(SKIP_CLASS[i])) { return true; }
+				}
+			}
+			el = el.parentNode;
+		}
+		return false;
+	}
+
+	function chipify(root) {
+		if (!root) { return; }
+		var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+		var batch = [], n;
+		while ((n = walker.nextNode())) {
+			if (n.nodeValue && n.nodeValue.indexOf('{{') !== -1 && TOKEN.test(n.nodeValue) && !skip(n)) {
+				batch.push(n);
+			}
+		}
+		batch.forEach(function (node) {
+			var s = node.nodeValue, frag = document.createDocumentFragment(), last = 0, m;
+			TOKEN_G.lastIndex = 0;
+			while ((m = TOKEN_G.exec(s))) {
+				if (m.index > last) { frag.appendChild(document.createTextNode(s.slice(last, m.index))); }
+				var chip = document.createElement('span');
+				chip.className = 'fw-dc-chip';
+				chip.setAttribute('title', 'Dynamic content');
+				chip.textContent = m[0];
+				frag.appendChild(chip);
+				last = m.index + m[0].length;
+			}
+			if (last < s.length) { frag.appendChild(document.createTextNode(s.slice(last))); }
+			if (node.parentNode) { node.parentNode.replaceChild(frag, node); }
+		});
+	}
+
+	var scheduled = false;
+	function schedule() {
+		if (scheduled) { return; }
+		scheduled = true;
+		setTimeout(function () { scheduled = false; chipify(document.body); }, 120);
+	}
+
+	function start() {
+		chipify(document.body);
+		new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', start);
+	} else {
+		start();
+	}
+})();

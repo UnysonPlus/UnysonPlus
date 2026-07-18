@@ -177,6 +177,62 @@
 				// the fallback for older browsers.
 				$wrap.find('.image_picker_selector img[src^="data:image/gif;base64,R0lGOD"]').closest('li').hide();
 
+				// Click-again-to-deselect (popover-hosted image-pickers). The image-picker library
+				// only auto-clears on re-click when the <select> carries an *implicit blank* option,
+				// which our pickers don't emit — so wire the natural toggle here. Scoped to a popover
+				// context (the multi-picker popover `.fw-mp-pop` or the `popover` option type), and
+				// single-select only (a `multiple` picker already toggles per tile). Clearing prefers
+				// the picker's own "none"/"off" choice when it has one, else '' — either of which
+				// existing renderers already treat as "no effect".
+				if (this.addEventListener && !$wrap.attr('multiple')
+					&& $wrap.closest('.fw-mp-pop, .fw-option-type-popover, .fw-backend-option-type-popover').length) {
+					var $ipSelect = $wrap.find('select').first();
+					if ($ipSelect.length && !$ipSelect.attr('multiple')) {
+						// Hide the redundant "none"/"off" TILE in popover pickers. That choice STAYS a
+						// real <option> in the value model — it's the default value and the target
+						// click-again-to-deselect clears back to — it just shouldn't show as a pickable
+						// tile now that deselect is the way to clear. Keeping it a real choice (rather
+						// than a synthetic off-tile) is what makes the picker reliably hold "none" across
+						// the modal's collect / re-render / lazy-tab cycles: without it the <select>
+						// falls back to the FIRST tile and any save silently stores that (e.g. a Section
+						// storing "dots" the moment any option changed). Group-agnostic: walk the
+						// library's own option objects (works with tabbed / optgroup layouts too).
+						var _picker = $ipSelect.data('picker');
+						if (_picker && _picker.picker_options) {
+							jQuery.each(_picker.picker_options, function (_i, o) {
+								var v = (o && o.option && o.option.val) ? o.option.val() : null;
+								if ((v === 'none' || v === 'off') && o.node) { jQuery(o.node).hide(); }
+							});
+						}
+						var clearedValue = function () {
+							if ($ipSelect.find('option[value="none"]').length) { return 'none'; }
+							if ($ipSelect.find('option[value="off"]').length)  { return 'off'; }
+							return '';
+						};
+						var ipEl = this;
+						// Capture phase: read the tile's selected state BEFORE the library's own
+						// thumbnail handler re-affirms it, so a re-click of the ACTIVE tile (→ deselect)
+						// is distinguishable from the first click of a new tile (→ normal select).
+						ipEl.addEventListener('click', function (e) {
+							var thumb = (e.target && e.target.closest) ? e.target.closest('.thumbnail') : null;
+							if (!thumb || !ipEl.contains(thumb)) { return; }
+							if (thumb.className.indexOf('selected') === -1) { return; } // new tile → select
+							setTimeout(function () {
+								var val = clearedValue();
+								var picker = $ipSelect.data('picker');
+								$ipSelect.val(val);
+								if (picker && typeof picker.sync_picker_with_select === 'function') {
+									picker.sync_picker_with_select();
+								}
+								if (fw.options && fw.options.trigger && fw.options.trigger.changeForEl) {
+									fw.options.trigger.changeForEl($ipSelect[0], { value: val });
+								}
+								$ipSelect.trigger('change'); // drives multi-picker reveal / popover summary
+							}, 0);
+						}, true);
+					}
+				}
+
 				$wrap.find('.image_picker_selector .image_picker_image').each(function(){
 					var $this = $(this);
 					var largeImageAttr = $this.data('large-img-attr');

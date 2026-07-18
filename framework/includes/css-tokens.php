@@ -35,30 +35,65 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		$tokens        = array();
 		$utility_rules = array();
 
-		// --- Font size scale ---
+		// --- Text Styles (font-size scale + optional weight / line-height /
+		// letter-spacing / text-transform). Each property is OPT-IN: a style emits
+		// only the props that are filled in, scoped to its own class, so any blank
+		// prop INHERITS from the element's tag token (a blank weight ≠ thin). Size
+		// still keeps a --font-size-{slug} token (+ !important) so it also feeds
+		// mobile scaling and beats Bootstrap / component utilities.
+		// (Stored under the legacy `font_sizes` key — a size-only Text Style.) ---
 		if ( is_array( $font_sizes ) ) {
 			foreach ( $font_sizes as $entry ) {
-				if ( empty( $entry['size'] ) ) { continue; }
-
+				// Resolve the target selector: an explicit class (e.g. Bootstrap
+				// `display-1`) or a `.font-{slug}` derived from the style name.
 				if ( ! empty( $entry['class'] ) ) {
 					$class_literal = preg_replace( '/[^a-zA-Z0-9_-]/', '', trim( $entry['class'] ) );
 					if ( $class_literal === '' ) { continue; }
 					$slug     = strtolower( $class_literal );
 					$selector = '.' . $class_literal;
-				} else {
-					if ( empty( $entry['name'] ) ) { continue; }
+				} elseif ( ! empty( $entry['name'] ) ) {
 					$slug = trim( preg_replace( '/[^a-z0-9]+/', '-', strtolower( $entry['name'] ) ), '-' );
 					if ( $slug === '' ) { continue; }
 					$selector = ".font-{$slug}";
+				} else {
+					continue;
 				}
 
-				$size_value = is_numeric( $entry['size'] ) ? $entry['size'] . 'px' : $entry['size'];
-				$var_name   = "--font-size-{$slug}";
+				$decls = array();
 
-				$tokens[ $var_name ] = $size_value;
-				// Specificity boost (`:root`) + !important so preset utilities
-				// reliably override Bootstrap utilities and component CSS.
-				$utility_rules[ ":root {$selector}" ] = "font-size:var({$var_name}) !important;";
+				// Size — token + !important (unchanged; also feeds mobile scaling).
+				if ( ! empty( $entry['size'] ) ) {
+					$size_value          = is_numeric( $entry['size'] ) ? $entry['size'] . 'px' : $entry['size'];
+					$var_name            = "--font-size-{$slug}";
+					$tokens[ $var_name ] = $size_value;
+					$decls[]             = "font-size:var({$var_name}) !important";
+				}
+				// Weight — numeric. No !important needed: `:root .{class}` (0,2,0)
+				// already outranks Bootstrap's .display-N (0,1,0) and the tag-token
+				// weight override (hN.heading-title = 0,1,1), while element Custom CSS
+				// can still win. Blank ⇒ not emitted ⇒ inherits the tag weight.
+				if ( ! empty( $entry['weight'] ) && is_numeric( $entry['weight'] ) ) {
+					$decls[] = 'font-weight:' . (int) $entry['weight'];
+				}
+				// Line-height — unitless number or an explicit length/percentage.
+				if ( isset( $entry['line_height'] ) && trim( (string) $entry['line_height'] ) !== '' ) {
+					$decls[] = 'line-height:' . preg_replace( '/[^0-9a-z.%\-]/i', '', trim( (string) $entry['line_height'] ) );
+				}
+				// Letter-spacing — a bare number is treated as em (tracking); a value
+				// carrying its own unit passes through.
+				if ( isset( $entry['letter_spacing'] ) && trim( (string) $entry['letter_spacing'] ) !== '' ) {
+					$ls      = trim( (string) $entry['letter_spacing'] );
+					$ls      = is_numeric( $ls ) ? $ls . 'em' : preg_replace( '/[^0-9a-z.%\-]/i', '', $ls );
+					$decls[] = 'letter-spacing:' . $ls;
+				}
+				// Text-transform — whitelisted keyword.
+				if ( ! empty( $entry['transform'] ) && in_array( $entry['transform'], array( 'none', 'uppercase', 'lowercase', 'capitalize' ), true ) ) {
+					$decls[] = 'text-transform:' . $entry['transform'];
+				}
+
+				if ( ! empty( $decls ) ) {
+					$utility_rules[ ":root {$selector}" ] = implode( ';', $decls ) . ';';
+				}
 			}
 		}
 
@@ -481,6 +516,71 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 				if ( $hov ) { $utility_rules[ ".boxp-{$slug}:hover" ] = implode( ';', $hov ) . ';'; }
 
+				/* ---- structured hover effects (Box Style → Hover Effects) ---- */
+				// A curated set of named advanced hovers layered ON TOP of the Hover
+				// state's border/shadow diffs — Lift · Zoom Media · Tilt · Glow · Shine.
+				// Emitted as a raw block (not $utility_rules) so combined transforms, the
+				// Shine ::before pseudo, and a reduced-motion guard all fit in one place;
+				// it sits AFTER the flat rules in the output, so it composes/overrides
+				// cleanly. Value is a multi-select array (tolerates a legacy scalar).
+				$fx = isset( $bp['hover_fx'] ) ? $bp['hover_fx'] : array();
+				if ( is_string( $fx ) ) { $fx = ( $fx === '' ) ? array() : array( $fx ); }
+				if ( ! is_array( $fx ) ) { $fx = array(); }
+				$fx = array_values( array_filter( array_map( 'strval', $fx ) ) );
+				if ( $fx ) {
+					$sel   = ".boxp-{$slug}";
+					$block = '';
+
+					// base needs relative + clip for Shine / Zoom Media.
+					$base_extra = array();
+					if ( in_array( 'shine', $fx, true ) || in_array( 'zoom', $fx, true ) ) {
+						$base_extra[] = 'position:relative';
+						$base_extra[] = 'overflow:hidden';
+					}
+					if ( $base_extra ) { $block .= "{$sel}{" . implode( ';', $base_extra ) . ';}'; }
+
+					// Lift + Tilt compose into a single box transform (perspective first).
+					$tf = array();
+					if ( in_array( 'tilt', $fx, true ) ) { $tf[] = 'perspective(600px)'; }
+					if ( in_array( 'lift', $fx, true ) ) { $tf[] = 'translateY(-6px)'; }
+					if ( in_array( 'tilt', $fx, true ) ) { $tf[] = 'rotateX(4deg)'; }
+					if ( $tf ) { $block .= "{$sel}:hover{transform:" . implode( ' ', $tf ) . ' !important;}'; }
+
+					// Glow — merge with the preset's own hover (else default) shadow so it
+					// isn't clobbered; derive the halo color from the hover/default border
+					// color, falling back to the brand blue.
+					if ( in_array( 'glow', $fx, true ) ) {
+						$shadow_css = '';
+						if ( class_exists( 'FW_Option_Type_Box_Shadow' ) ) {
+							if ( isset( $hover['box_shadow'] ) ) { $shadow_css = FW_Option_Type_Box_Shadow::to_css( $hover['box_shadow'] ); }
+							if ( $shadow_css === '' && isset( $def['box_shadow'] ) ) { $shadow_css = FW_Option_Type_Box_Shadow::to_css( $def['box_shadow'] ); }
+						}
+						$glow_color = $resolve_btn_color( isset( $hover['border_color'] ) ? $hover['border_color'] : ( isset( $def['border_color'] ) ? $def['border_color'] : '' ) );
+						if ( $glow_color === '' ) { $glow_color = 'rgba(47,116,230,0.45)'; }
+						$glow     = '0 0 24px ' . $glow_color;
+						$combined = ( $shadow_css !== '' ) ? ( $shadow_css . ', ' . $glow ) : $glow;
+						$block   .= "{$sel}:hover{box-shadow:{$combined} !important;}";
+					}
+
+					// Zoom Media — scale an inner image/video; the box (overflow:hidden) clips.
+					if ( in_array( 'zoom', $fx, true ) ) {
+						$m      = "{$sel} img,{$sel} video,{$sel} .wp-post-image";
+						$block .= "{$m}{transition:transform .5s ease;transform-origin:center center;}";
+						$block .= "{$sel}:hover img,{$sel}:hover video,{$sel}:hover .wp-post-image{transform:scale(1.06) !important;}";
+					}
+
+					// Shine — a diagonal sheen sweeps across the box on hover.
+					if ( in_array( 'shine', $fx, true ) ) {
+						$block .= "{$sel}::before{content:'';position:absolute;top:0;left:-75%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.35),transparent);transform:skewX(-20deg);pointer-events:none;transition:left .6s ease;z-index:2;}";
+						$block .= "{$sel}:hover::before{left:125%;}";
+					}
+
+					// Reduced-motion — neutralize every fx.
+					$block .= "@media (prefers-reduced-motion:reduce){{$sel},{$sel}:hover,{$sel} img,{$sel} video,{$sel} .wp-post-image{transition:none !important;transform:none !important;}{$sel}::before{display:none !important;}}";
+
+					$button_extra_css .= "\n" . $block;
+				}
+
 				/* ---- freeform custom CSS ---- */
 				$custom_css = isset( $bp['custom_css'] ) ? (string) $bp['custom_css'] : '';
 				if ( trim( $custom_css ) !== '' ) {
@@ -490,6 +590,126 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 			}
 		}
+
+			// --- Section Style presets -> .section--{slug} rules (a reusable section
+			// "skin", Theme Settings → Components → Section Styles). Background is a
+			// background-pro value ($bg_pro_decls); text/heading/link/border colors are
+			// compact-picker values ($resolve_btn_color); border_width/radius are unit-
+			// input; padding is a spacing value (mode 'padding', $resolve_pad_class). No
+			// !important, so a section's own one-off Background / Spacing still wins. The
+			// three seeded defaults reproduce the old hardcoded .section--alt|light|dark.
+			$section_styles   = function_exists( 'unysonplus_get_section_style_presets' )     ? unysonplus_get_section_style_presets()     : array();
+			$section_slug_map = function_exists( 'unysonplus_section_style_preset_slug_map' ) ? unysonplus_section_style_preset_slug_map() : array();
+
+			$unit_len = function ( $u ) use ( $len ) {
+				// A unit-input value can arrive as a JSON STRING ('{"value":"1","unit":"px"}')
+				// when it rode inside a multi-inline row saved before that control decoded
+				// its children. Decode it so the length resolves instead of leaking JSON.
+				if ( is_string( $u ) ) {
+					$t = trim( $u );
+					if ( isset( $t[0] ) && $t[0] === '{' ) {
+						$d = json_decode( $t, true );
+						if ( is_array( $d ) && ( isset( $d['value'] ) || isset( $d['unit'] ) ) ) { $u = $d; }
+					}
+				}
+				if ( is_array( $u ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) {
+					return $len( FW_Option_Type_Unit_Input::to_string( $u ) );
+				}
+				return $len( is_array( $u ) ? '' : (string) $u );
+			};
+
+			if ( is_array( $section_styles ) ) {
+				foreach ( $section_styles as $sp ) {
+					if ( ! is_array( $sp ) || empty( $sp['id'] ) ) { continue; }
+					$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $sp['id'] );
+					if ( $id === '' ) { continue; }
+					$slug = isset( $section_slug_map[ $id ] ) ? $section_slug_map[ $id ] : $id;
+					$sel  = ".section--{$slug}";
+
+					$base = array();
+					if ( isset( $sp['background'] ) ) {
+						$bg_decls = rtrim( $bg_pro_decls( $sp['background'] ), ';' );
+						if ( $bg_decls !== '' ) { $base[] = $bg_decls; }
+					}
+					$tc = $resolve_btn_color( isset( $sp['text_color'] ) ? $sp['text_color'] : '' );
+					if ( $tc !== '' ) { $base[] = 'color:' . $tc; }
+					// Border is the combined multi-inline row { width, style, color } applied to
+					// the edge(s) chosen in Border Sides at the reach set by Border Extent;
+					// tolerate the legacy flat border_style/width/color too. Emitted only when
+					// a style is chosen (None = no border), as before.
+					$bd     = ( isset( $sp['border'] ) && is_array( $sp['border'] ) ) ? $sp['border'] : array();
+					$bstyle = isset( $bd['style'] ) ? (string) $bd['style'] : ( isset( $sp['border_style'] ) ? (string) $sp['border_style'] : '' );
+					if ( $bstyle !== '' ) {
+						$bw_src = array_key_exists( 'width', $bd ) ? $bd['width'] : ( isset( $sp['border_width'] ) ? $sp['border_width'] : '' );
+						$bc_src = array_key_exists( 'color', $bd ) ? $bd['color'] : ( isset( $sp['border_color'] ) ? $sp['border_color'] : '' );
+						$bw   = $unit_len( $bw_src );
+						$bc   = $resolve_btn_color( $bc_src );
+						$bval = ( $bw !== '' ? $bw : '1px' ) . ' ' . $bstyle . ' ' . ( $bc !== '' ? $bc : 'currentColor' );
+
+						// Sides: array of top/right/bottom/left. Legacy presets (no border_sides)
+						// = all four (identical to the old all-around border). Tolerate the legacy
+						// single-select strings ('top'|'bottom'|'both'). An explicit empty array
+						// = no border.
+						$sides_raw = array_key_exists( 'border_sides', $sp ) ? $sp['border_sides'] : null;
+						$sides     = array();
+						if ( is_array( $sides_raw ) ) {
+							foreach ( array( 'top', 'right', 'bottom', 'left' ) as $s ) {
+								if ( in_array( $s, $sides_raw, true ) ) { $sides[] = $s; }
+							}
+						} elseif ( is_string( $sides_raw ) && $sides_raw !== '' ) {
+							$sides = ( $sides_raw === 'both' )
+								? array( 'top', 'bottom' )
+								: ( in_array( $sides_raw, array( 'top', 'right', 'bottom', 'left' ), true ) ? array( $sides_raw ) : array() );
+						} elseif ( $sides_raw === null ) {
+							$sides = array( 'top', 'right', 'bottom', 'left' );
+						}
+
+						$do_top   = in_array( 'top', $sides, true );
+						$do_bot   = in_array( 'bottom', $sides, true );
+						$do_left  = in_array( 'left', $sides, true );
+						$do_right = in_array( 'right', $sides, true );
+
+						// Left/right are vertical — always real borders (Extent caps only the
+						// horizontal reach).
+						if ( $do_left )  { $base[] = 'border-left:' . $bval; }
+						if ( $do_right ) { $base[] = 'border-right:' . $bval; }
+
+						// Extent (top/bottom only): full = edge to edge; container/custom = a
+						// centered pseudo-element capped at the max width.
+						$ext   = ( isset( $sp['border_extent'] ) && is_array( $sp['border_extent'] ) ) ? $sp['border_extent'] : array();
+						$emode = isset( $ext['mode'] ) ? (string) $ext['mode'] : 'full';
+						$emax  = '';
+						if ( $emode === 'container' ) {
+							$emax = 'var(--container-max-desktop, var(--site-max-width, 1170px))';
+						} elseif ( $emode === 'custom' ) {
+							$emax = isset( $ext['custom']['border_extent_width'] ) ? $unit_len( $ext['custom']['border_extent_width'] ) : '';
+						}
+
+						if ( $emode === 'full' || $emax === '' ) {
+							if ( $do_top ) { $base[] = 'border-top:' . $bval; }
+							if ( $do_bot ) { $base[] = 'border-bottom:' . $bval; }
+						} else {
+							if ( $do_top || $do_bot ) { $base[] = 'position:relative'; }
+							$pd = 'content:"";display:block;max-width:' . $emax . ';margin-inline:auto;border-top:' . $bval;
+							if ( $do_top ) { $utility_rules[ "{$sel}::before" ] = $pd . ';'; }
+							if ( $do_bot ) { $utility_rules[ "{$sel}::after" ]  = $pd . ';'; }
+						}
+					}
+					$br = $unit_len( isset( $sp['border_radius'] ) ? $sp['border_radius'] : '' );
+					if ( $br !== '' ) { $base[] = 'border-radius:' . $br; }
+					$pad_tree = ( isset( $sp['padding']['padding'] ) && is_array( $sp['padding']['padding'] ) ) ? $sp['padding']['padding'] : array();
+					foreach ( array( 'all', 'top', 'right', 'bottom', 'left' ) as $slot ) {
+						$dec = $resolve_pad_class( isset( $pad_tree[ $slot ] ) ? $pad_tree[ $slot ] : '' );
+						if ( $dec !== null ) { $base[] = $dec; }
+					}
+					if ( $base ) { $utility_rules[ $sel ] = implode( ';', $base ) . ';'; }
+
+					$lc = $resolve_btn_color( isset( $sp['link_color'] ) ? $sp['link_color'] : '' );
+					if ( $lc !== '' ) { $utility_rules[ "{$sel} a" ] = 'color:' . $lc . ';'; }
+					$hc = $resolve_btn_color( isset( $sp['heading_color'] ) ? $sp['heading_color'] : '' );
+					if ( $hc !== '' ) { $utility_rules[ "{$sel} :is(h1,h2,h3,h4,h5,h6)" ] = 'color:' . $hc . ';'; }
+				}
+			}
 
 		// --- Table presets -> .tbl-{slug} rules (applied to the table wrapper) ---
 		// Each saved preset is a reusable table look (Theme Settings → Components →
@@ -655,6 +875,43 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				);
 
 				$button_extra_css .= "\n" . $anim_css;
+			}
+		}
+
+		// --- Background Patterns -> scoped `.pattern-{slug}` blocks (Theme Settings →
+		// Components → Background Patterns). Each saved pattern's pasted CSS is scoped to
+		// `.pattern-{slug}` and its @keyframes / SVG-filter ids namespaced by
+		// unysonplus_pattern_scope(), then appended RAW (it's a full block — its own rules +
+		// @keyframes + @media — not a single selector→decls entry, so it can't go through
+		// $utility_rules). The pattern's HTML + SVG defs are emitted by the render layer
+		// (Section / Container / body); here we only emit the CSS so the classes exist. ---
+		$patterns  = function_exists( 'unysonplus_get_pattern_presets' )     ? unysonplus_get_pattern_presets()     : array();
+		$pat_slugs = function_exists( 'unysonplus_pattern_preset_slug_map' ) ? unysonplus_pattern_preset_slug_map() : array();
+		if ( is_array( $patterns ) && ! empty( $patterns ) && function_exists( 'unysonplus_pattern_scope' ) ) {
+			// Base layer mechanics (emitted once): the pattern renders as an aria-hidden
+			// `.pattern-layer` behind the host's content. The host carries `.upw-has-pattern`
+			// (Section / Container / body wrapper); its non-layer children ride above at z-index 1.
+			$button_extra_css .= "\n.pattern-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}"
+				. "\n.pattern-layer--fixed{position:fixed;z-index:-1;}" // whole-site background (behind everything)
+				. "\n.upw-has-pattern{position:relative;}"
+				. "\n.upw-has-pattern>:not(.pattern-layer){position:relative;z-index:1;}";
+
+			foreach ( $patterns as $p ) {
+				if ( ! is_array( $p ) || empty( $p['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $p['id'] );
+				if ( $id === '' || ! isset( $pat_slugs[ $id ] ) ) { continue; }
+
+				$css_in = isset( $p['css'] ) ? (string) $p['css'] : '';
+				if ( trim( $css_in ) === '' ) { continue; }
+
+				$scoped = unysonplus_pattern_scope(
+					isset( $p['html'] ) ? (string) $p['html'] : '',
+					$css_in,
+					$pat_slugs[ $id ]
+				);
+				if ( ! empty( $scoped['css'] ) ) {
+					$button_extra_css .= "\n" . trim( $scoped['css'] );
+				}
 			}
 		}
 
@@ -841,6 +1098,11 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
 				$responsive_spacing[768][ ".section--gap-md-{$slug} .row, .section--gap-md-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
 				$responsive_spacing[992][ ".section--gap-lg-{$slug} .row, .section--gap-lg-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
+				// Per-device Gap X / Y overrides (single-axis) — mirror the both-axis md/lg above.
+				$responsive_spacing[768][ ".section--gap-x-md-{$slug} .row, .section--gap-x-md-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
+				$responsive_spacing[992][ ".section--gap-x-lg-{$slug} .row, .section--gap-x-lg-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
+				$responsive_spacing[768][ ".section--gap-y-md-{$slug} .row, .section--gap-y-md-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
+				$responsive_spacing[992][ ".section--gap-y-lg-{$slug} .row, .section--gap-y-lg-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
 			}
 
 			// Site-wide default gutter on every .row. Resolve the three fields
@@ -948,7 +1210,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 16, // bumped: added per-device .section--gap-{md,lg}-{slug} row-gutter overrides
+			'schema'    => 20, // bumped: added Background Patterns + the fixed site-background layer
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),
@@ -963,6 +1225,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 			'gap_def'   => function_exists( 'unysonplus_get_default_gap' )          ? unysonplus_get_default_gap()          : '',
 			'gap_def_x' => function_exists( 'unysonplus_get_default_gap_x' )        ? unysonplus_get_default_gap_x()        : '',
 			'gap_def_y' => function_exists( 'unysonplus_get_default_gap_y' )        ? unysonplus_get_default_gap_y()        : '',
+			'patterns'  => function_exists( 'unysonplus_get_pattern_presets' )      ? unysonplus_get_pattern_presets()      : array(),
 		);
 		return substr( md5( wp_json_encode( $inputs ) ), 0, 12 );
 	}
@@ -1034,7 +1297,7 @@ if ( ! function_exists( 'unysonplus_styling_presets_enabled' ) ) :
 	 * it never loads the settings schema (avoids firing fw_option_types_init early).
 	 */
 	function unysonplus_styling_presets_enabled() {
-		if ( function_exists( 'fw_get_db_ext_settings_option' ) ) {
+		if ( function_exists( 'fw_get_db_ext_settings_option' ) && function_exists( 'fw_ext' ) && fw_ext( 'page-builder' ) ) { // guard: page-builder must be active or fw_get_db_ext_settings_option() warns "Invalid extension" on a fresh install
 			// Opt-OUT checkbox `disable_styling_presets` (default false = enabled).
 			$disabled = fw_get_db_ext_settings_option( 'page-builder', 'disable_styling_presets', false );
 			return ! ( $disabled === true || $disabled === '1' || $disabled === 1 || $disabled === 'yes' );

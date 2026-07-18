@@ -94,7 +94,11 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 
 		if ( is_array( $saved ) ) {
 			foreach ( self::DEVICES as $k ) {
-				if ( isset( $saved[ $k ] ) && ! is_array( $saved[ $k ] ) ) {
+				// Keep the per-device value as-is — a SCALAR (select / image-picker /
+				// short-select) OR an ARRAY (a composite inner such as unit-input, whose
+				// value is { value, unit }). The input side already round-trips both via
+				// the inner control's own get_value_from_input().
+				if ( isset( $saved[ $k ] ) ) {
 					$out[ $k ] = $saved[ $k ];
 				}
 			}

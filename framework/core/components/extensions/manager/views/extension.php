@@ -106,9 +106,9 @@ if (!$installed_data && !$is_compatible) {
                     <h3 class="fw-extensions-list-item-title"<?php echo ($is_active && $version ? ' title="v' . esc_attr($version) . '"' : ''); ?>>
                         <?php
                         if ($is_active && $ext_page) {
-                            echo fw_html_tag('a', ['href' => $ext_page], $title ?? '');
+                            echo fw_html_tag('a', ['href' => $ext_page], esc_html($title ?? ''));
                         } else {
-                            echo $title ?? '';
+                            echo esc_html($title ?? '');
                         }
                         ?>
                     </h3>
@@ -215,7 +215,7 @@ if (!$installed_data && !$is_compatible) {
                     $parent_extension_title = $lists['available'][$parent_extension_name]['name'];
                 }
                 ?>
-                <p class="fw-text-muted"><?php echo sprintf(__('Parent extension "%s" is disabled', 'fw'), $parent_extension_title); ?></p>
+                <p class="fw-text-muted"><?php echo esc_html(sprintf(__('Parent extension "%s" is disabled', 'fw'), $parent_extension_title)); ?></p>
             <?php else: ?>
                 <div class="fw-extension-disabled fw-border-box-sizing">
                     <div class="fw-extension-disabled-panel fw-border-box-sizing">
