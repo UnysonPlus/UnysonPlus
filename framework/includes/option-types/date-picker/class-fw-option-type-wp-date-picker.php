@@ -3,6 +3,12 @@
 }
 
 class FW_Option_Type_Date_Picker extends FW_Option_Type {
+	/**
+	 * Bundled Air Datepicker version (static/vendor/air-datepicker). Used for
+	 * asset cache-busting, independent of the plugin version.
+	 */
+	const AIR_DATEPICKER_VERSION = '3.6.0';
+
 	private $internal_options = array();
 
 	public function get_type() {
@@ -24,7 +30,9 @@ class FW_Option_Type_Date_Picker extends FW_Option_Type {
 	 * @internal
 	 */
 	public function _get_backend_width_type() {
-		return 'fixed';
+		// 'auto' lets the option shrink to the input's own width (190px via CSS);
+		// 'fixed' would force the full column and ignore the input width.
+		return 'auto';
 	}
 
 	/**
@@ -34,8 +42,8 @@ class FW_Option_Type_Date_Picker extends FW_Option_Type {
 		return array(
 			'value' => '',
 			'monday-first' => true, // The week will begin with Monday; for Sunday, set to false
-			'min-date' => date('d-m-Y'), // Minimum date will be current day, set a date in format d-m-Y as a start date, or set null for no minimum date
-			'max-date' => null, // There will not be set the maximum date by default, set a date in format d-m-Y as a start date
+			'min-date' => null, // No minimum by default (past dates ARE selectable). Set 'min-date' => date('d-m-Y') to restrict to today onward, or any 'd-m-Y' string.
+			'max-date' => null, // No maximum by default. Set a 'd-m-Y' string to cap the latest selectable date.
 		);
 	}
 
@@ -46,45 +54,45 @@ class FW_Option_Type_Date_Picker extends FW_Option_Type {
 	protected function _enqueue_static($id, $option, $data)
 	{
 		$uri = fw_get_framework_directory_uri('/includes/option-types/' . $this->get_type() . '/static');
-		$css_uri = $uri .'/css/datepicker.css';
-		$js_uri = $uri .'/js/scripts.js';
-		$date_picker_js_uri = $uri .'/js/bootstrap-datepicker.js';
-		$locale_uri = ($language = substr(get_locale(), 0, 2)) != 'en'
-			? $uri . '/js/locales/bootstrap-datepicker.' . $language . '.min.js'
-			: null;
+
+		self::enqueue_air_datepicker();
 
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
-			$css_uri,
-			array(),
+			$uri . '/css/date-picker.css',
+			array('fw-air-datepicker'),
 			fw()->manifest->get_version()
 		);
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
-			$js_uri,
-			array('jquery', 'fw-events'),
+			$uri . '/js/scripts.js',
+			array('jquery', 'fw-events', 'fw-air-datepicker'),
 			fw()->manifest->get_version(),
 			true
 		);
-		wp_enqueue_script(
-			'fw-option-' . $this->get_type() . '-date-picker',
-			$date_picker_js_uri,
-			array('jquery', 'fw-events'),
-			fw()->manifest->get_version(),
-			true
-		);
-
-		if ($locale_uri) {
-			wp_enqueue_script(
-				'fw-option-' . $this->get_type() . '-date-picker-locale',
-				$locale_uri,
-				array('fw-option-' . $this->get_type() . '-date-picker'),
-				fw()->manifest->get_version(),
-				true
-			);
-		}
 
 		fw()->backend->option_type( 'text' )->enqueue_static();
+	}
+
+	/**
+	 * Register + enqueue the shared Air Datepicker library ONCE (a single
+	 * physical copy under date-picker/static/vendor), so date-picker,
+	 * datetime-picker and datetime-range all load one copy instead of
+	 * duplicating it.
+	 */
+	public static function enqueue_air_datepicker() {
+		if ( ! wp_script_is( 'fw-air-datepicker', 'registered' ) ) {
+			$base   = fw_get_framework_directory_uri( '/includes/option-types/date-picker/static' );
+			$vendor = $base . '/vendor/air-datepicker';
+			wp_register_style( 'fw-air-datepicker', $vendor . '/air-datepicker.css', array(), self::AIR_DATEPICKER_VERSION );
+			// Shared theme override (WP-admin blue accent + z-index above modals),
+			// loaded for every picker type, not just date-picker.
+			wp_register_style( 'fw-air-datepicker-theme', $base . '/css/air-datepicker-theme.css', array( 'fw-air-datepicker' ), fw()->manifest->get_version() );
+			wp_register_script( 'fw-air-datepicker', $vendor . '/air-datepicker.js', array(), self::AIR_DATEPICKER_VERSION, true );
+		}
+		wp_enqueue_style( 'fw-air-datepicker' );
+		wp_enqueue_style( 'fw-air-datepicker-theme' );
+		wp_enqueue_script( 'fw-air-datepicker' );
 	}
 
 	/**
@@ -104,7 +112,9 @@ class FW_Option_Type_Date_Picker extends FW_Option_Type {
 			'maxDate'  => ( $option['max-date'] !== null ) ? $option['max-date'] : null,
 		);
 
-		$option['attr']['readonly'] = 'readonly';
+		// Editable input: users may type a date directly (Air Datepicker still
+		// opens on click). The saved value is taken from the input as-is.
+		$option['attr']['autocomplete'] = 'off';
 		$option['attr']['data-fw-option-date-picker-opts'] = json_encode( $properties );
 
 		return fw()->backend->option_type( 'text' )->render( $id, $option, $data );

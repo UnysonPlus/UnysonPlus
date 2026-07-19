@@ -49,6 +49,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Color_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Date_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Time_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Range' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient_V2' );

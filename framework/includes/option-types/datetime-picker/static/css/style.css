@@ -1,10 +1,13 @@
-.fw_xdsoft_datetimepicker.fw_xdsoft_noselect {
-	z-index: 560100; /* bigger than fw.OptionsModal's z-index */
-}
-
+/**
+ * Datetime Picker option type styles (Air Datepicker). Also covers the thin
+ * time-picker subclass, which shares this stylesheet via the inherited enqueue.
+ */
 .fw-backend-option-input-type-datetime-picker .fw-option-help-in-input {
 	top: 4px !important;
 }
-.fw-option-type-datetime-picker input[readonly] {
+.fw-option-type-datetime-picker input.fw-option-type-text,
+.fw-option-type-time-picker input.fw-option-type-text {
+	box-sizing: border-box;
+	width: 190px !important;
 	background-color: #fff;
 }

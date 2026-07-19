@@ -60,13 +60,13 @@
 				create: false,
 				render: {
           option: function (item) {
-            var title = '<span class="title">' + item.title + '</span>'
-            var type = item.type !== undefined ? '<span class="type">' + item.type + '</span>' : ''
+            var title = '<span class="title">' + _.escape(item.title) + '</span>'
+            var type = item.type !== undefined ? '<span class="type">' + _.escape(item.type) + '</span>' : ''
             return '<div>' + title + type + '</div>'
           },
 					item: function (item) {
-            var title = '<span class="title">' + item.title + '</span>'
-            var type = item.type !== undefined ? '<span class="type">' + item.type + '</span>' : ''
+            var title = '<span class="title">' + _.escape(item.title) + '</span>'
+            var type = item.type !== undefined ? '<span class="type">' + _.escape(item.type) + '</span>' : ''
             return '<div>' + title + type + '</div>'
           }
 				},

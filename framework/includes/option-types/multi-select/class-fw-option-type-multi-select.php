@@ -476,7 +476,7 @@ if ( ! class_exists( 'FW_Option_Type_Multi_Select' ) ):
 			wp_enqueue_script(
 				$this->get_type() . '-styles',
 				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-				array( 'jquery', 'fw-events', 'fw-selectize' ),
+				array( 'jquery', 'underscore', 'fw-events', 'fw-selectize' ),
 				fw()->manifest->get_version(),
 				true
 			);

@@ -313,6 +313,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Datetime_Picker':
 				require_once __DIR__ . '/includes/option-types/datetime-picker/class-fw-option-type-datetime-picker.php';
 				break;
+			case 'FW_Option_Type_Time_Picker':
+				require_once __DIR__ . '/includes/option-types/time-picker/class-fw-option-type-time-picker.php';
+				break;
 			case 'FW_Option_Type_Datetime_Range':
 				require_once __DIR__ . '/includes/option-types/datetime-range/class-fw-option-type-datetime-range.php';
 				break;

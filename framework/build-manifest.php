@@ -225,7 +225,6 @@ return array(
 	'/includes/option-types/range-slider/static/js/scripts.js',
 	'/includes/option-types/range-slider/static/libs/ion-range-slider/ion.rangeSlider.css',
 	'/includes/option-types/rgba-color-picker/static/css/styles.css',
-	'/includes/option-types/rgba-color-picker/static/js/scripts.js',
 	'/includes/option-types/slider/static/css/styles.css',
 	'/includes/option-types/slider/static/js/scripts.js',
 	'/includes/option-types/slider/static/libs/ion-range-slider/ion.rangeSlider.css',

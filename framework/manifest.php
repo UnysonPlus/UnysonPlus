@@ -2,10 +2,23 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.58';
+$manifest['version'] = '2.15.59';
 
 /**
  * Changelog
+ * 2.15.59 - Date & time option types modernised onto Air Datepicker; new `time-picker` type.
+ *           The `date-picker`, `datetime-picker` and `datetime-range` option types now run on
+ *           Air Datepicker (vanilla, no jQuery / moment.js), replacing the legacy
+ *           bootstrap-datepicker and xdsoft jquery.datetimepicker + moment.js stacks. Stored value
+ *           formats are unchanged (no migration). The date-picker input is now editable and allows
+ *           past dates by default; datetime-range is now a single native range input storing a
+ *           [from, to] array. New thin `time-picker` option type (a datetime-picker locked to
+ *           time-only) gives a clean 'type' => 'time-picker' — set format 'h:i A' for 12-hour
+ *           AM/PM. Also fixed the gradient primary-to-secondary colour sync (it called a stale
+ *           Iris method after the Coloris migration and threw), hardened the multi-select renderer
+ *           against stored XSS, and removed the orphaned rgba-color-picker wp-color-picker-alpha
+ *           script.
+ *
  * 2.15.53 - Icon option types unified on the modern engine. The `icon` (original stock font
  *           picker) and `icon-v2` (the production type used by ~23 shortcodes + the megamenu)
  *           types now RUN the canonical modern icon engine that previously lived only in

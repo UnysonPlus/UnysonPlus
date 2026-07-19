@@ -8,7 +8,9 @@ class FW_Option_Type_Datetime_Picker extends FW_Option_Type {
 	}
 
 	public function _get_backend_width_type() {
-		return 'fixed';
+		// 'auto' lets the option shrink to the input's own width (190px via CSS);
+		// 'fixed' would force the full column and ignore the input width.
+		return 'auto';
 	}
 
 	protected function _get_data_for_js($id, $option, $data = array()) {
@@ -76,23 +78,22 @@ class FW_Option_Type_Datetime_Picker extends FW_Option_Type {
 	 * {@inheritdoc}
 	 */
 	protected function _enqueue_static($id, $option, $data) {
-		//plugin styles & js
-		{
-			$css_lib_uri        = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/css/jquery.datetimepicker.css');
-			$js_lib_uri         = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/js/jquery.datetimepicker.js');
-		}
+		// Use directory_uri (not asset_uri, which auto-swaps to *.min in
+		// production) so the real script.js / style.css are served.
+		$css_main_uri = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/css/style.css');
+		$js_main_uri  = fw_get_framework_directory_uri('/includes/option-types/datetime-picker/static/js/script.js');
 
-		//framework styles & js
-		{
-			$css_main_uri    = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/css/style.css');
-			$js_main_uri     = fw_get_framework_asset_uri('/includes/option-types/datetime-picker/static/js/script.js');
-		}
+		// Shared Air Datepicker library (registered once, loaded once).
+		FW_Option_Type_Date_Picker::enqueue_air_datepicker();
 
-		wp_enqueue_style( 'fw-option-datetime-picker-lib-css', $css_lib_uri );
-		wp_enqueue_style( 'fw-option-datetime-picker-main-css', $css_main_uri );
-		wp_enqueue_script( 'fw-moment' );
-		wp_enqueue_script( 'fw-option-datetime-picker-lib-js', $js_lib_uri, array('jquery', 'fw-moment'), false, true );
-		wp_enqueue_script( 'fw-option-datetime-picker-main-js', $js_main_uri, array('jquery', 'fw-option-datetime-picker-lib-js', 'fw-events' ), false, true );
+		wp_enqueue_style( 'fw-option-datetime-picker-main-css', $css_main_uri, array( 'fw-air-datepicker' ), fw()->manifest->get_version() );
+		wp_enqueue_script(
+			'fw-option-datetime-picker-main-js',
+			$js_main_uri,
+			array( 'jquery', 'fw-events', 'fw-air-datepicker' ),
+			fw()->manifest->get_version(),
+			true
+		);
 
 		fw()->backend->option_type( 'text' )->enqueue_static();
 	}

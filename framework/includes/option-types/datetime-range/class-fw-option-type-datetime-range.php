@@ -1,9 +1,26 @@
 <?php if ( ! defined( 'FW' ) ) die( 'Forbidden' );
 
 
+/**
+ * Date/time RANGE, rendered as a SINGLE Air Datepicker input (range mode).
+ *
+ * Value shape: a plain indexed array of two formatted strings, [from, to]
+ * (empty array when nothing is selected). This is Air Datepicker's native
+ * two-date representation — simpler than the legacy {from,to} associative map
+ * the old xdsoft version used.
+ *
+ * Config (all optional, sensible defaults):
+ *   'timepicker' => bool   (default false)  include a time picker
+ *   'datepicker' => bool   (default true)   include the calendar
+ *   'format'     => string (default derived) PHP date() format of each end
+ *   'min-date'   => 'd/m/…' string|null      earliest selectable
+ *   'max-date'   => 'd/m/…' string|null      latest selectable
+ */
 class FW_Option_Type_Datetime_Range extends FW_Option_Type {
 
-	private function  _get_static_uri() {
+	const SEPARATOR = ' — ';
+
+	private function _get_static_uri() {
 		return fw_get_framework_directory_uri('/includes/option-types/datetime-range/static');
 	}
 
@@ -20,34 +37,34 @@ class FW_Option_Type_Datetime_Range extends FW_Option_Type {
 	}
 
 	/**
-	 * Avaible options on http://xdsoft.net/jqplugins/datetimepicker/ excepts: [value, format]
 	 * @internal
 	 */
 	protected function _get_defaults() {
 		return array(
-			'datetime-pickers' => array(
-				'from' => array(
-					'minDate' => '1970/01/01',
-					'maxDate' => '2038/01/19',
-					'format'  => 'Y/m/d H:i',
-					'timepicker'  => true,
-					'datepicker'  => true,
-					'scrollInput' => false,
-				),
-				'to' => array(
-					'minDate' => '1970/01/01',
-					'maxDate' => '2038/01/19',
-					'format'  => 'Y/m/d H:i',
-					'timepicker'  => true,
-					'datepicker'  => true,
-					'scrollInput' => false,
-				)
-			),
-			'value' => array(
-				'from' => '',
-				'to' => ''
-			)
+			'value'      => array(), // [from, to] formatted strings; empty = nothing selected
+			'format'     => null,    // null => derived from timepicker/datepicker
+			'timepicker' => false,
+			'datepicker' => true,
+			'min-date'   => null,
+			'max-date'   => null,
 		);
+	}
+
+	/**
+	 * Resolve the effective PHP date format from the timepicker/datepicker flags
+	 * (unless an explicit 'format' was provided).
+	 */
+	private function resolve_format($option) {
+		if ( ! empty( $option['format'] ) ) {
+			return $option['format'];
+		}
+		$has_time = ! empty( $option['timepicker'] );
+		$has_date = ( $option['datepicker'] !== false );
+
+		if ( ! $has_date ) {
+			return 'H:i';
+		}
+		return $has_time ? 'Y/m/d H:i' : 'Y/m/d';
 	}
 
 	/**
@@ -56,66 +73,63 @@ class FW_Option_Type_Datetime_Range extends FW_Option_Type {
 	 */
 	protected function _enqueue_static($id, $option, $data)
 	{
-		wp_enqueue_style('fw-option-datetime-range-CSS', $this->_get_static_uri() . '/css/styles.css' );
-		wp_enqueue_script( 'fw-option-datetime-range-js', $this->_get_static_uri() . '/js/script.js', array('jquery', 'fw-events'));
+		FW_Option_Type_Date_Picker::enqueue_air_datepicker();
 
-		fw()->backend->option_type('datetime-picker')->enqueue_static();
+		wp_enqueue_style(
+			'fw-option-datetime-range-CSS',
+			$this->_get_static_uri() . '/css/styles.css',
+			array( 'fw-air-datepicker' ),
+			fw()->manifest->get_version()
+		);
+		wp_enqueue_script(
+			'fw-option-datetime-range-js',
+			$this->_get_static_uri() . '/js/script.js',
+			array( 'jquery', 'fw-events', 'fw-air-datepicker' ),
+			fw()->manifest->get_version(),
+			true
+		);
+
+		fw()->backend->option_type( 'text' )->enqueue_static();
 	}
 
 	protected function _render( $id, $option, $data ) {
-
-		//replace option datetime formats with moment.js compatible datetime format
-		foreach($option['datetime-pickers'] as &$datetime_picker) {
-			if (isset($datetime_picker['timepicker']) && isset($datetime_picker['datepicker'])) {
-				if ($datetime_picker['timepicker'] === false && $datetime_picker['datepicker'] ) {
-					$datetime_picker['format'] = 'Y/m/d';
-					$datetime_picker['moment-format'] = 'YYYY/MM/DD';
-				} elseif ($datetime_picker['datepicker'] === false && $datetime_picker['timepicker']) {
-					$datetime_picker['format'] = 'H:i';
-					$datetime_picker['moment-format'] = 'HH:mm';
-				} else {
-					$datetime_picker['format'] = 'Y/m/d H:i';
-					$datetime_picker['moment-format'] = 'YYYY/MM/DD HH:mm';
-				}
-			}  else {
-				$datetime_picker['format'] = 'Y/m/d H:i';
-				$datetime_picker['moment-format'] = 'YYYY/MM/DD HH:mm';
-			}
-
-			if (!isset($datetime_picker['scrollInput'])) {
-				$datetime_picker['scrollInput'] = false;
-			}
-		}
+		$option['format'] = $this->resolve_format( $option );
 
 		return fw_render_view( dirname(__FILE__) . '/view.php', array(
-			'id' => $id,
+			'id'     => $id,
 			'option' => $option,
-			'data' => $data
-		));
+			'data'   => $data,
+		) );
 	}
 
 	/**
 	 * @internal
+	 * The hidden field posts a JSON array [from, to]. Validate and normalize it.
 	 */
 	protected function _get_value_from_input($option, $input_value)
 	{
-		if (is_null($input_value) or !isset($input_value['from']) or !isset($input_value['to']) ) {
-			return $option['value'];
+		$decoded = is_string( $input_value ) ? json_decode( $input_value, true ) : $input_value;
+
+		if ( ! is_array( $decoded ) ) {
+			return array();
 		}
 
-		$from = fw()->backend->option_type('datetime-picker')->get_value_from_input(array('datetime-picker' => $option['datetime-pickers']['from'], 'value' => $option['value']['from'] ), $input_value['from']);
-		$to = fw()->backend->option_type('datetime-picker')->get_value_from_input(array('datetime-picker' => $option['datetime-pickers']['to'],  'value' => $option['value']['to']), $input_value['to']);
+		$decoded = array_values( $decoded );
+		$from = isset( $decoded[0] ) ? (string) $decoded[0] : '';
+		$to   = isset( $decoded[1] ) ? (string) $decoded[1] : '';
 
-		if (empty($from) or empty($to) or (strtotime($from) > strtotime($to)) ) {
-			return $option['value'];
+		if ( $from === '' || $to === '' ) {
+			return array();
 		}
 
-		if ( (( strtotime($from) % 86400 ) !== 0)  and (strtotime($from) === strtotime($to)) ) {
-			return $option['value'];
+		$ts_from = strtotime( $from );
+		$ts_to   = strtotime( $to );
+
+		// Reject unparsable or out-of-order ranges (keep the previous value).
+		if ( $ts_from === false || $ts_to === false || $ts_from > $ts_to ) {
+			return is_array( $option['value'] ) ? $option['value'] : array();
 		}
 
-		 return $input_value;
+		return array( $from, $to );
 	}
-
-
 }

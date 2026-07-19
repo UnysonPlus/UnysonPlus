@@ -1,51 +1,64 @@
 /**
- * Script file that will manage the "map" option
+ * Date Picker option type — powered by Air Datepicker (vanilla, no jQuery/moment).
+ * Replaces the legacy jQuery bootstrap-datepicker. Stored value format stays
+ * "dd-mm-yyyy" so existing saved values keep working with no migration.
  */
 
 "use strict";
 
-function fw_option_type_date_picker_initialize(object) {
-	var defaults = {
-		autoclose: true,
-		format: "dd-mm-yyyy",
-		weekStart: 1,
-		startDate: new Date(),
-		endDate: null,
-		language: jQuery('html').attr('lang').split('-').shift()
+var FW_AD_LOCALE_EN = {
+	days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+	daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+	daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+	months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+	monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+	today: 'Today', clear: 'Clear', dateFormat: 'dd-MM-yyyy', timeFormat: 'HH:mm', firstDay: 1
+};
+
+/** Parse a "dd-mm-yyyy" string into a Date (or null). */
+function fw_date_picker_parse(value) {
+	if (!value) { return null; }
+	var m = /^(\d{2})-(\d{2})-(\d{4})/.exec(value);
+	if (!m) { return null; }
+	var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+	return isNaN(d.getTime()) ? null : d;
+}
+
+function fw_option_type_date_picker_initialize(el) {
+	var AD = window.AirDatepicker;
+	if (typeof AD !== 'function') { return; }
+
+	var opts = {};
+	try { opts = JSON.parse(el.getAttribute('data-fw-option-date-picker-opts') || '{}'); } catch (e) { opts = {}; }
+
+	var config = {
+		locale: FW_AD_LOCALE_EN,
+		dateFormat: 'dd-MM-yyyy',
+		autoClose: true,
+		firstDay: (opts.weekStart != null) ? parseInt(opts.weekStart, 10) : 1
 	};
-	var options = JSON.parse(object.attr('data-fw-option-date-picker-opts'));
 
-	var date = null;
+	if (opts.minDate) { var mn = fw_date_picker_parse(opts.minDate); if (mn) { config.minDate = mn; } }
+	if (opts.maxDate) { var mx = fw_date_picker_parse(opts.maxDate); if (mx) { config.maxDate = mx; } }
 
-	if (options.minDate != null || options.minDate != undefined) {
-		date = options.minDate.split('-').map(Number);
-		defaults.startDate = new Date(date[2], date[1] - 1, date[0]);
-	}
+	// preselect the stored value so the calendar opens on / highlights it
+	if (el.value) { var cur = fw_date_picker_parse(el.value); if (cur) { config.selectedDates = [cur]; } }
 
-	if (options.maxDate != null || options.maxDate != undefined) {
-		date = options.maxDate.split('-').map(Number);
-		defaults.endDate = new Date(date[2], date[1] - 1, date[0]);
-	}
-
-	if (options.weekStart != null || options.weekStart != undefined) {
-		defaults.weekStart = options.weekStart;
-	}
-
-	object.datepicker(defaults);
+	new AD(el, config);
 }
 
 jQuery(document).ready(function ($) {
 	fwEvents.on('fw:options:init', function (data) {
-		var obj = data.$elements.find('.fw-option-type-date-picker:not(.initialized)');
+		var $obj = data.$elements.find('.fw-option-type-date-picker:not(.initialized)');
 
-		if (!obj.length) {
+		if (!$obj.length) {
 			return;
 		}
 
-		for (var i = 0; i < obj.length; i++) {
-			fw_option_type_date_picker_initialize(jQuery(obj[i]));
-		}
+		$obj.each(function () {
+			fw_option_type_date_picker_initialize(this);
+		});
 
-		obj.addClass('initialized');
+		$obj.addClass('initialized');
 	});
 });

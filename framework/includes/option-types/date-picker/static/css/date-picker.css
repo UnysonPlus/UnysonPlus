@@ -1,0 +1,12 @@
+/**
+ * Date Picker option-type styles. Accent + z-index come from the shared Air
+ * Datepicker theme (enqueue_air_datepicker). Width uses !important to win over
+ * the framework/WP-admin default input widths. box-sizing:border-box so 190px
+ * is the exact rendered width.
+ */
+.fw-option-type-date-picker {
+	box-sizing: border-box;
+	width: 190px !important;
+	background-color: #fff;
+	cursor: pointer;
+}

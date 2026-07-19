@@ -1,311 +1,118 @@
-(function($, fwe){
+/**
+ * Datetime Range option type — a SINGLE Air Datepicker input in range mode.
+ * Replaces the legacy two-field xdsoft + moment.js implementation.
+ *
+ * The visible (readonly) input shows "from — to"; the real value lives in a
+ * sibling hidden input as a JSON array [from, to] of formatted strings.
+ */
+(function ($, fwe) {
 
-	//waiting for datetime-picker init
-	$(document).ready(function(){
-		var init = function(){
-			var $dateTimeRange = $(this),
-				$dateTimeFirstWrapper = $dateTimeRange.find('.fw-option-type-datetime-picker:first'),
-				$dateTimeLastWrapper = $dateTimeRange.find('.fw-option-type-datetime-picker:last'),
-				$dateTimeFirstInput = $dateTimeFirstWrapper.find('input'),
-				$dateTimeLastInput = $dateTimeLastWrapper.find('input'),
-				dateTimeFirstPicker = $dateTimeFirstInput.data('fw_xdsoft_datetimepicker'),
-				dateTimeLastPicker = $dateTimeLastInput.data('fw_xdsoft_datetimepicker');
+	var localeEn = {
+		days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+		daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+		daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+		months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+		monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+		today: 'Today', clear: 'Clear', dateFormat: 'yyyy/MM/dd', timeFormat: 'HH:mm', firstDay: 1
+	};
 
-			fwe.trigger('fw:options:datetime-range:before-init', {el: $dateTimeRange} );
+	var TOKEN_MAP = { Y: 'yyyy', y: 'yy', m: 'MM', n: 'M', d: 'dd', j: 'd', H: 'HH', G: 'H', h: 'hh', g: 'h', i: 'mm', s: 'ss', A: 'AA', a: 'aa' };
+	var TIME_TOKEN = /[HGghisAa]/;
 
-			var dateMomentFormat = 'YYYY/MM/DD';
+	function phpToAir(fmt) {
+		return String(fmt).replace(/[A-Za-z]/g, function (c) { return TOKEN_MAP[c] || c; });
+	}
 
-			var setMinTimeLimit = function(){
-				var firstInputMomentFormat = $dateTimeFirstInput.data('moment-format'),
-					lastInputMomentFormat = $dateTimeLastInput.data('moment-format'),
-					dateTimeAttrs = $dateTimeLastWrapper.data('datetime-attr');
+	function splitFormat(fmt) {
+		var parts = String(fmt).split(' ');
+		return {
+			date: parts.filter(function (p) { return !TIME_TOKEN.test(p); }).join(' '),
+			time: parts.filter(function (p) { return TIME_TOKEN.test(p); }).join(' ')
+		};
+	}
 
-				if ($.type(dateTimeAttrs.timepicker) === 'boolean' && dateTimeAttrs.timepicker ) {
-
-					if (moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) === moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat)) {
-						dateTimeAttrs.minTime = moment($dateTimeFirstInput.val(), firstInputMomentFormat).add(1, 'hours').format('HH:mm');
-					} else {
-						dateTimeAttrs.minTime = false;
-					}
-
-					if ($dateTimeFirstInput.val() === '' || $dateTimeLastInput.val() === '' ) {
-						dateTimeAttrs.minTime = false;
-					}
-
-				}
-
-				dateTimeAttrs.value = null;
-				if ($dateTimeLastInput.val() !== '') {
-					dateTimeLastPicker.setOptions(dateTimeAttrs);
-				}
-				return true;
-			}
-
-			var setMaxTimeLimit = function(){
-				var firstInputMomentFormat = $dateTimeFirstInput.data('moment-format'),
-					lastInputMomentFormat = $dateTimeLastInput.data('moment-format'),
-					dateTimeAttrs = $dateTimeFirstWrapper.data('datetime-attr');
-
-				if ($.type(dateTimeAttrs.timepicker) === 'boolean' && dateTimeAttrs.timepicker ) {
-					if (moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) === moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat)) {
-						dateTimeAttrs.maxTime = moment($dateTimeLastInput.val(), lastInputMomentFormat).format('HH:mm');
-					} else {
-						dateTimeAttrs.maxTime = false;
-					}
-
-					if ($dateTimeFirstInput.val() === '' || $dateTimeLastInput.val() === '' ) {
-						dateTimeAttrs.maxTime = false;
-					}
-				}
-
-				dateTimeAttrs.value = null;
-				if ($dateTimeFirstInput.val() !== '') {
-					dateTimeFirstPicker.setOptions(dateTimeAttrs);
-				}
-				return true;
-			}
-
-			dateTimeFirstPicker.on('open.fw_xdsoft', function(e){
-
-				var firstInputMomentFormat = $dateTimeFirstInput.data('moment-format'),
-					lastInputMomentFormat = $dateTimeLastInput.data('moment-format'),
-					dateTimeAttrs = $dateTimeFirstWrapper.data('datetime-attr');
-
-				//set max date in first datetime picker
-				dateTimeAttrs.maxDate = function(){
-					if ($dateTimeLastInput.val())
-					{
-						if ( $.type($dateTimeFirstWrapper.data('max-date') ) === 'string' )
-						{
-							if ( moment($dateTimeLastInput.val(), lastInputMomentFormat) > moment($dateTimeFirstWrapper.data('max-date'), dateMomentFormat) )
-							{
-								return moment($dateTimeFirstWrapper.data('max-date'), dateMomentFormat).format(dateMomentFormat);
-							}
-						}
-
-						if ( $.type($dateTimeFirstWrapper.data('min-date') ) === 'string' )
-						{
-							if ( moment($dateTimeLastInput.val(), lastInputMomentFormat) < moment($dateTimeFirstWrapper.data('min-date'), dateMomentFormat) )
-							{
-								return moment($dateTimeFirstWrapper.data('min-date'), dateMomentFormat).format(dateMomentFormat);
-							}
-						}
-
-						return moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat);
-					}
-
-					if ( $.type($dateTimeFirstWrapper.data('max-date') ) === 'string' )
-					{
-						return moment($dateTimeFirstWrapper.data('max-date'), dateMomentFormat).format(dateMomentFormat);
-					}
-
-					return false;
-				}();
-
-				//set first datetime picker default value
-				dateTimeAttrs.value = function(){
-					if (!$dateTimeFirstInput.val() && $dateTimeLastInput.val() ) {
-						return moment($dateTimeLastInput.val(), lastInputMomentFormat).subtract(1, 'hours').format(firstInputMomentFormat);
-					}
-
-					var minDate = dateTimeAttrs.minDate
-					if ($.type($dateTimeFirstWrapper.data('min-date')) === 'string'
-						&& moment($dateTimeFirstWrapper.data('min-date'), dateMomentFormat) > moment(minDate, dateMomentFormat) ) {
-						minDate = moment($dateTimeFirstWrapper.data('min-date'), dateMomentFormat).format(dateMomentFormat);
-					}
-
-					if ($dateTimeFirstInput.val() && !$dateTimeLastInput.val()) {
-						if ( 'undefined' !== typeof minDate && moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) < moment(minDate, dateMomentFormat).format(dateMomentFormat) ) {
-							return moment(minDate, dateMomentFormat).format(firstInputMomentFormat);
-						}
-
-						if ( 'undefined' !== typeof dateTimeAttrs.maxDate && moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) > moment(dateTimeAttrs.maxDate, dateMomentFormat).format(dateMomentFormat) ) {
-							return moment(dateTimeAttrs.maxDate, dateMomentFormat).format(firstInputMomentFormat);
-						}
-					}
-
-					if ($dateTimeFirstInput.val() && $dateTimeLastInput.val()) {
-						if ( moment($dateTimeFirstInput.val(), firstInputMomentFormat) > moment($dateTimeLastInput.val(), lastInputMomentFormat) ) {
-
-							if ('undefined' !== typeof minDate && moment($dateTimeFirstInput.val(), firstInputMomentFormat) < moment(minDate, dateMomentFormat)
-								&& moment($dateTimeLastInput.val(), lastInputMomentFormat) < moment(minDate, dateMomentFormat)) {
-								return moment(minDate, dateMomentFormat).format(firstInputMomentFormat);
-							}
-
-							if ('undefined' !== typeof minDate && moment($dateTimeLastInput.val(), lastInputMomentFormat) < moment(minDate, dateMomentFormat)) {
-								return moment(minDate, dateMomentFormat).format(firstInputMomentFormat);
-							}
-							return moment($dateTimeLastInput.val(), lastInputMomentFormat).subtract(1, 'hours').format(firstInputMomentFormat);
-						}
-
-						if  ( moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat) > moment(minDate, dateMomentFormat).format(dateMomentFormat)
-							&& moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) < moment(minDate, dateMomentFormat).format(dateMomentFormat)
-							) {
-							return moment($dateTimeLastInput.val(), lastInputMomentFormat).subtract(1, 'hours').format(firstInputMomentFormat);
-						}
-
-						if ( 'undefined' !== typeof minDate && moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) < moment(minDate, dateMomentFormat).format(dateMomentFormat)) {
-							return moment(minDate, dateMomentFormat).format(firstInputMomentFormat);
-						}
-					}
-					return null;
-				}();
-
-				dateTimeFirstPicker.setOptions(dateTimeAttrs);
-				setMaxTimeLimit();
-
-				//$dateTimeFirstInput.data('xdsoft_datetimepicker',dateTimeFirstPicker );
-				//fwe.trigger('fw:datetime-range:first:open', { dateTimePicker: dateTimeFirstPicker, dateTimeInput: $dateTimeFirstInput }); ????
-			});
-
-			$dateTimeFirstInput.on('change', function () {
-				setMaxTimeLimit();
-				triggerChangeFor(this);
-			});
-
-			$dateTimeLastInput.on('change', function () {
-				setMinTimeLimit();
-				triggerChangeFor(this);
-			});
-
-			dateTimeLastPicker.on('open.xdsoft', function(e){
-				var firstInputMomentFormat = $dateTimeFirstInput.data('moment-format'),
-					lastInputMomentFormat = $dateTimeLastInput.data('moment-format'),
-					dateTimeAttrs = $dateTimeLastWrapper.data('datetime-attr');
-
-
-				//set last datetime picker minDate
-				dateTimeAttrs.minDate = function(){
-					if ($dateTimeFirstInput.val()) {
-
-						if ( $.type($dateTimeLastWrapper.data('min-date') ) === 'string' )
-						{
-							if (moment($dateTimeFirstInput.val(), firstInputMomentFormat) < moment($dateTimeLastWrapper.data('min-date'), dateMomentFormat))
-							{
-								return moment($dateTimeLastWrapper.data('min-date'), dateMomentFormat).format(dateMomentFormat);
-							}
-						}
-
-						if ( $.type($dateTimeLastWrapper.data('max-date') ) === 'string' )
-						{
-							if ( moment($dateTimeFirstInput.val(), firstInputMomentFormat) > moment($dateTimeLastWrapper.data('max-date'), dateMomentFormat) )
-							{
-								return moment($dateTimeFirstWrapper.data('max-date'), dateMomentFormat).format(dateMomentFormat);
-							}
-						}
-
-						return moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat);
-					}
-
-					if ( $.type($dateTimeLastWrapper.data('min-date') ) === 'string' )
-					{
-						return moment($dateTimeLastWrapper.data('min-date'), dateMomentFormat).format(dateMomentFormat);
-					}
-
-					return false;
-				}();
-
-				//set last datetime picker default value
-				dateTimeAttrs.value = function(){
-
-					if ($dateTimeFirstInput.val() && !$dateTimeLastInput.val()) {
-						return moment($dateTimeFirstInput.val(), firstInputMomentFormat).add(1, 'hours').format(lastInputMomentFormat);
-					}
-
-					var maxDate = dateTimeAttrs.maxDate
-					if ($.type($dateTimeLastWrapper.data('max-date')) === 'string'
-						&& moment($dateTimeLastWrapper.data('max-date'), dateMomentFormat) < moment(maxDate, dateMomentFormat) ) {
-						maxDate = moment($dateTimeLastWrapper.data('max-date'), dateMomentFormat).format(dateMomentFormat);
-					}
-
-					if (!$dateTimeFirstInput.val() && $dateTimeLastInput.val()) {
-						if ( 'undefined' !== typeof maxDate && moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat) > moment(maxDate, dateMomentFormat).format(dateMomentFormat) ) {
-							return moment(maxDate, dateMomentFormat).format(lastInputMomentFormat);
-						}
-
-						if ( 'undefined' !== typeof dateTimeAttrs.minDate && moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat) < moment(dateTimeAttrs.minDate, dateMomentFormat).format(dateMomentFormat) ) {
-							return moment(dateTimeAttrs.minDate, dateMomentFormat).format(lastInputMomentFormat);
-						}
-					}
-
-					if ($dateTimeFirstInput.val() && $dateTimeLastInput.val()) {
-						if ( moment($dateTimeFirstInput.val(), firstInputMomentFormat) > moment($dateTimeLastInput.val(), lastInputMomentFormat) ) {
-
-							if ( 'undefined' !== typeof maxDate &&
-								moment($dateTimeLastInput.val(), lastInputMomentFormat) > moment(maxDate, dateMomentFormat)
-								&& moment($dateTimeFirstInput.val(), firstInputMomentFormat) > moment(maxDate, dateMomentFormat)) {
-								return moment(maxDate, dateMomentFormat).format(lastInputMomentFormat);
-							}
-
-							if ( 'undefined' !== typeof maxDate && moment($dateTimeFirstInput.val(), firstInputMomentFormat) > moment(maxDate, dateMomentFormat)) {
-								return moment(maxDate, dateMomentFormat).format(lastInputMomentFormat);
-							}
-
-							return moment($dateTimeFirstInput.val(), firstInputMomentFormat).add(1, 'hours').format(lastInputMomentFormat);
-						}
-
-						if ( moment($dateTimeFirstInput.val(), firstInputMomentFormat).format(dateMomentFormat) < moment(maxDate, dateMomentFormat).format(dateMomentFormat)
-							&& moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat) > moment(maxDate, dateMomentFormat).format(dateMomentFormat)
-							) {
-							return moment($dateTimeFirstInput.val(), firstInputMomentFormat).add(1, 'hours').format(lastInputMomentFormat);
-						}
-
-						if ( 'undefined' !== typeof maxDate && moment($dateTimeLastInput.val(), lastInputMomentFormat).format(dateMomentFormat) > moment(maxDate, dateMomentFormat).format(dateMomentFormat)) {
-							return moment(maxDate, dateMomentFormat).format(lastInputMomentFormat);
-						}
-					}
-
-					return null;
-				}();
-
-				dateTimeLastPicker.setOptions(dateTimeAttrs);
-				setMinTimeLimit();
-
-				//$dateTimeLastInput.data('xdsoft_datetimepicker', dateTimeLastPicker);
-				//fwe.trigger('fw:datetime-range:last:open', { dateTimePicker: dateTimeLastPicker, dateTimeInput: $dateTimeLastInput }); ????
-			});
+	function parseByFormat(value, fmt) {
+		if (!value) { return null; }
+		var groups = [], re = '';
+		var caps = { Y: ['(\\d{4})', 'Y'], y: ['(\\d{2})', 'y'], m: ['(\\d{1,2})', 'm'], n: ['(\\d{1,2})', 'm'], d: ['(\\d{1,2})', 'd'], j: ['(\\d{1,2})', 'd'], H: ['(\\d{1,2})', 'H'], G: ['(\\d{1,2})', 'H'], i: ['(\\d{1,2})', 'i'], s: ['(\\d{1,2})', 's'] };
+		for (var k = 0; k < fmt.length; k++) {
+			var c = fmt[k];
+			if (caps[c]) { re += caps[c][0]; groups.push(caps[c][1]); }
+			else { re += c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 		}
-
-		fwe.on('fw:options:init', function(data) {
-			data.$elements
-				.find('.fw-option-type-datetime-range:not(.fw-option-initialized)').each(init)
-				.addClass('fw-option-initialized');
-		});
-
-		fw.options.register('datetime-range', {
-			startListeningForChanges: $.noop,
-			getValue: function (optionDescriptor) {
-				return {
-					value: getValueForEl(optionDescriptor.el),
-					optionDescriptor: optionDescriptor
-				};
-			}
-		});
-
-		function triggerChangeFor ($container) {
-			$container = $($container).closest(
-				'[data-fw-option-type="datetime-range"]'
-			);
-
-			fw.options.trigger.changeForEl($container, {
-				value: getValueForEl($container)
-			});
+		var m = new RegExp('^' + re).exec(value);
+		if (!m) { return null; }
+		var p = { Y: 1970, m: 1, d: 1, H: 0, i: 0, s: 0 };
+		for (var g = 0; g < groups.length; g++) {
+			var name = groups[g], val = parseInt(m[g + 1], 10);
+			if (name === 'y') { p.Y = 2000 + val; } else { p[name] = val; }
 		}
+		var dt = new Date(p.Y, p.m - 1, p.d, p.H, p.i, p.s);
+		return isNaN(dt.getTime()) ? null : dt;
+	}
 
-		function getValueForEl (el) {
-			return {
-				from: $(el).find(
-					'[data-fw-option-id="from"] input'
-				).val(),
+	var init = function () {
+		var $wrap = $(this),
+			$display = $wrap.find('.fw-datetime-range-display'),
+			$hidden = $wrap.find('.fw-datetime-range-value');
 
-				to: $(el).find(
-					'[data-fw-option-id="to"] input'
-				).val()
+		if (!$display.length || typeof window.AirDatepicker !== 'function') { return; }
+
+		var attrs = {};
+		try { attrs = JSON.parse($wrap.attr('data-range-attr') || '{}'); } catch (e) { attrs = {}; }
+
+		var phpFmt = attrs.format || 'Y/m/d';
+		var sep = attrs.separator || ' — ';
+		var hasTime = !!attrs.timepicker;
+		var hasDate = attrs.datepicker !== false;
+		var fmt = splitFormat(phpFmt);
+
+		var config = {
+			locale: localeEn,
+			range: true,
+			multipleDatesSeparator: sep,
+			timepicker: hasTime,
+			onlyTimepicker: !hasDate,
+			autoClose: false, // a range needs two picks
+			firstDay: 1,
+			onSelect: function (o) {
+				var vals = [];
+				if (Array.isArray(o.formattedDate)) { vals = o.formattedDate.slice(0, 2); }
+				else if (o.formattedDate) { vals = [o.formattedDate]; }
+				$hidden.val(JSON.stringify(vals));
+				fw.options.trigger.changeForEl(
+					$wrap.closest('[data-fw-option-type="datetime-range"]'), { value: vals }
+				);
 			}
+		};
+		if (hasDate) { config.dateFormat = phpToAir(fmt.date || 'Y/m/d'); }
+		if (hasTime) { config.timeFormat = phpToAir(fmt.time || 'H:i'); }
+		if (attrs.minDate) { var mn = parseByFormat(attrs.minDate, phpFmt) || parseByFormat(attrs.minDate, 'Y/m/d'); if (mn) { config.minDate = mn; } }
+		if (attrs.maxDate) { var mx = parseByFormat(attrs.maxDate, phpFmt) || parseByFormat(attrs.maxDate, 'Y/m/d'); if (mx) { config.maxDate = mx; } }
+
+		// preselect the stored range
+		var cur = [];
+		try { cur = JSON.parse($hidden.val() || '[]'); } catch (e) { cur = []; }
+		var dates = (cur || []).map(function (s) { return parseByFormat(s, phpFmt); }).filter(Boolean);
+		if (dates.length) { config.selectedDates = dates; }
+
+		var inst = new window.AirDatepicker($display.get(0), config);
+		$wrap.data('air-dp', inst);
+	};
+
+	fw.options.register('datetime-range', {
+		startListeningForChanges: $.noop,
+		getValue: function (optionDescriptor) {
+			var v = [];
+			try { v = JSON.parse($(optionDescriptor.el).find('.fw-datetime-range-value').val() || '[]'); } catch (e) { v = []; }
+			return { value: v, optionDescriptor: optionDescriptor };
 		}
+	});
 
-
+	fwe.on('fw:options:init', function (data) {
+		data.$elements
+			.find('.fw-option-type-datetime-range:not(.fw-option-initialized)').each(init)
+			.addClass('fw-option-initialized');
 	});
 
 })(jQuery, fwEvents);
-
