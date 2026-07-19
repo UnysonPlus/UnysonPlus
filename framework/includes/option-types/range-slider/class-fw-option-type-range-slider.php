@@ -13,33 +13,9 @@ class FW_Option_Type_Range_Slider extends FW_Option_Type {
 	 * {@inheritdoc}
 	 */
 	protected function _enqueue_static( $id, $option, $data ) {
-		{
-			wp_enqueue_style(
-				'fw-option-' . $this->get_type() . 'ion-range-slider',
-				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.css' ),
-				fw()->manifest->get_version()
-			);
-
-			wp_enqueue_script(
-				'fw-option-' . $this->get_type() . 'ion-range-slider',
-				fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.min.js' ),
-				array( 'jquery', 'fw-moment' ),
-				fw()->manifest->get_version()
-			);
-		}
-
-		wp_enqueue_style(
-			'fw-option-' . $this->get_type(),
-			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/css/styles.css' ),
-			fw()->manifest->get_version()
-		);
-
-		wp_enqueue_script(
-			'fw-option-' . $this->get_type(),
-			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-			array( 'jquery', 'fw-events', 'underscore', 'fw-option-' . $this->get_type() . 'ion-range-slider' ),
-			fw()->manifest->get_version()
-		);
+		// Shared noUiSlider library + adapter (the adapter also initialises
+		// `.fw-option-type-range-slider` and registers this type's value getter).
+		FW_Option_Type_Slider::enqueue_nouislider();
 	}
 
 	public function get_type() {

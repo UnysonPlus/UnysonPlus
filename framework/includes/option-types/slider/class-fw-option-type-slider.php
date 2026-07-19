@@ -8,6 +8,9 @@
  */
 class FW_Option_Type_Slider extends FW_Option_Type {
 
+	const NOUISLIDER_VERSION = '15.8.1';
+	const WNUMB_VERSION      = '1.2.0';
+
 	/**
 	 * This class is extended by 'short-slider' option type
 	 * but the type here should be this
@@ -26,33 +29,38 @@ class FW_Option_Type_Slider extends FW_Option_Type {
 	 * {@inheritdoc}
 	 */
 	protected function _enqueue_static( $id, $option, $data ) {
-		{
-			wp_enqueue_style(
-				'fw-option-' . $this->_get_type() . 'ion-range-slider',
-				fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.css' ),
-				fw()->manifest->get_version()
-			);
+		self::enqueue_nouislider();
+	}
 
-			wp_enqueue_script(
-				'fw-option-' . $this->_get_type() . 'ion-range-slider',
-				fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/libs/ion-range-slider/ion.rangeSlider.min.js' ),
-				array( 'jquery', 'fw-moment' ),
-				fw()->manifest->get_version()
+	/**
+	 * Register + enqueue the shared noUiSlider library (+ wNumb + the adapter
+	 * script + theme) ONCE. Both the single `slider` and the double
+	 * `range-slider` load through this, so noUiSlider is loaded a single time.
+	 */
+	public static function enqueue_nouislider() {
+		if ( ! wp_script_is( 'fw-nouislider', 'registered' ) ) {
+			$base   = fw_get_framework_directory_uri( '/includes/option-types/slider/static' );
+			$vendor = $base . '/vendor';
+
+			wp_register_style( 'fw-nouislider', $vendor . '/nouislider/nouislider.min.css', array(), self::NOUISLIDER_VERSION );
+			wp_register_style( 'fw-nouislider-theme', $base . '/css/nouislider-theme.css', array( 'fw-nouislider' ), fw()->manifest->get_version() );
+
+			wp_register_script( 'fw-nouislider', $vendor . '/nouislider/nouislider.min.js', array(), self::NOUISLIDER_VERSION, true );
+			wp_register_script( 'fw-wnumb', $vendor . '/wnumb/wNumb.min.js', array(), self::WNUMB_VERSION, true );
+			wp_register_script(
+				'fw-nouislider-adapter',
+				$base . '/js/scripts.js',
+				array( 'jquery', 'fw-events', 'underscore', 'fw-nouislider', 'fw-wnumb' ),
+				fw()->manifest->get_version(),
+				true
 			);
 		}
 
-		wp_enqueue_style(
-			'fw-option-' . $this->_get_type(),
-			fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/css/styles.css' ),
-			fw()->manifest->get_version()
-		);
-
-		wp_enqueue_script(
-			'fw-option-' . $this->_get_type(),
-			fw_get_framework_asset_uri( '/includes/option-types/' . $this->_get_type() . '/static/js/scripts.js' ),
-			array( 'jquery',  'fw-events', 'underscore', 'fw-option-' . $this->_get_type() . 'ion-range-slider' ),
-			fw()->manifest->get_version()
-		);
+		wp_enqueue_style( 'fw-nouislider' );
+		wp_enqueue_style( 'fw-nouislider-theme' );
+		wp_enqueue_script( 'fw-nouislider' );
+		wp_enqueue_script( 'fw-wnumb' );
+		wp_enqueue_script( 'fw-nouislider-adapter' );
 	}
 
 	public function get_type() {

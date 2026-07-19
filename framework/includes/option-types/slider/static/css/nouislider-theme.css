@@ -1,0 +1,48 @@
+/**
+ * Shared noUiSlider theme for the `slider` + `range-slider` option types.
+ * Loaded once via FW_Option_Type_Slider::enqueue_nouislider(). Recreates the
+ * original Unyson (Ion) look on noUiSlider: a thin track, a light-blue fill,
+ * and a blue handle "pill" with the value shown INSIDE it.
+ */
+
+/* The raw value input stays in the DOM (for save/getValue) but is hidden;
+   noUiSlider is the visible control. */
+.fw-noui-value-input {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px !important;
+	height: 1px !important;
+	opacity: 0 !important;
+}
+
+/* Bottom margin reserves room for the absolutely-positioned pips ruler
+   (top:100%), so it never overlaps the option description below. */
+.fw-noui { margin: 10px 0 38px; }
+
+.fw-noui.noUi-target { border: none; box-shadow: none; background: #dcdcde; border-radius: 3px; }
+.fw-noui.noUi-horizontal { height: 5px; }
+.fw-noui .noUi-connect { background: #cfe4f5; }
+
+.fw-noui.noUi-horizontal .noUi-handle {
+	width: 34px; height: 22px; right: -17px; top: -9px;
+	border-radius: 11px; border: none; background: #2271b1;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .28); cursor: grab;
+}
+.fw-noui .noUi-handle::before, .fw-noui .noUi-handle::after { display: none; }
+.fw-noui .noUi-handle:focus { outline: 2px solid #135e96; outline-offset: 1px; }
+
+/* Value sits INSIDE the handle pill (like Ion). */
+.fw-noui .noUi-tooltip {
+	position: absolute; inset: 0; transform: none;
+	display: flex; align-items: center; justify-content: center;
+	background: transparent; border: none; padding: 0;
+	color: #fff; font-weight: 600; font-size: 11px; line-height: 1;
+}
+
+/* Ruler (pips) — thin, light ticks + small labels. */
+.fw-noui .noUi-pips { height: auto; padding: 8px 0 0; color: #646970; }
+.fw-noui .noUi-marker { background: #dcdcde; }
+.fw-noui .noUi-marker-horizontal.noUi-marker { width: 1px; height: 4px; margin-left: 0; }
+.fw-noui .noUi-marker-horizontal.noUi-marker-large { height: 8px; }
+.fw-noui .noUi-marker-horizontal.noUi-marker-sub { height: 6px; }
+.fw-noui .noUi-value { font-size: 10px; padding-top: 2px; }
