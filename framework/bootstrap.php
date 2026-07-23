@@ -63,6 +63,8 @@ if (defined('FW')) {
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';
             require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
+            // Shared image-mask shape library (Image Style preset + Image Box shortcode).
+            require $dir . '/extensions/shortcodes/includes/image-mask-library.php';
             // Multi-pack inline-SVG engine (fw_icon_svg_pack_* + the Lucide
             // back-compat wrappers fw_icon_lucide_markup / _all / _search) for
             // the icon type's SVG kind. Each pack ships two JSON files in data/;

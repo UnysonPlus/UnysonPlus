@@ -26,5 +26,6 @@ require_once $fw_presets_dir . 'table-presets.php';
 require_once $fw_presets_dir . 'section-style-presets.php'; // .section--{slug} skins
 require_once $fw_presets_dir . 'pattern-presets.php';       // .pattern-{slug} background patterns
 require_once $fw_presets_dir . 'pattern-scope.php';         // pattern cleanup/scope transform
+require_once $fw_presets_dir . 'image-style-presets.php';   // .imgs-{slug} image treatments (radius/mask/filter/scrim)
 
 unset( $fw_presets_dir );

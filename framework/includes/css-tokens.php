@@ -915,6 +915,116 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			}
 		}
 
+		// --- Image Styles -> `.imgs-{slug}` token bundles + one shared `.imgs-wrap` base ---
+		// Token-bundle model: each preset emits ONLY CSS custom properties; the single
+		// base rule (emitted once) consumes them so radius / mask / filter / scrim apply
+		// uniformly to any element's image wrapper. A power user overrides one var in an
+		// element's Custom CSS. Angular masks use clip-path; organic masks use a
+		// self-contained SVG data-URI (CSP-safe); duotone is a grayscale image + a
+		// mix-blend `color` tint layer.
+		$image_styles = function_exists( 'unysonplus_get_image_style_presets' )      ? unysonplus_get_image_style_presets()      : array();
+		$imgs_slugs   = function_exists( 'unysonplus_image_style_preset_slug_map' )  ? unysonplus_image_style_preset_slug_map()  : array();
+		if ( is_array( $image_styles ) && ! empty( $image_styles ) ) {
+			$imgs_aspect  = array( '1-1' => '1/1', '4-3' => '4/3', '3-2' => '3/2', '16-9' => '16/9', '3-4' => '3/4' );
+			$imgs_filter  = array(
+				'grayscale' => 'grayscale(1)', 'sepia' => 'sepia(.7)', 'contrast' => 'contrast(1.4)',
+				'saturate'  => 'saturate(1.8)', 'blur' => 'blur(2px)', 'duotone' => 'grayscale(1) contrast(1.05)',
+			);
+			// Shape / mask now comes from the SHARED mask library (also used by Image Box).
+			$imgs_masklib = function_exists( 'sc_image_mask_library' ) ? sc_image_mask_library() : array();
+			// Shared base rule (once). Class on the image WRAPPER; the <img> inside reads the
+			// inherited custom props; ::before = duotone tint, ::after = scrim; isolation
+			// contains the blend so it can't leak to siblings.
+			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:hidden;border-radius:var(--imgs-radius,0)}"
+				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;aspect-ratio:var(--imgs-aspect,auto);object-fit:cover;border-radius:var(--imgs-radius,0);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
+				. "\n.imgs-wrap::before{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-duo,transparent);mix-blend-mode:color;pointer-events:none}"
+				. "\n.imgs-wrap::after{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-scrim,transparent);pointer-events:none}";
+
+			foreach ( $image_styles as $s ) {
+				if ( ! is_array( $s ) || empty( $s['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $s['id'] );
+				if ( $id === '' || ! isset( $imgs_slugs[ $id ] ) ) { continue; }
+				$slug = $imgs_slugs[ $id ];
+				$vars = array();
+
+				$ar = isset( $s['aspect'] ) ? (string) $s['aspect'] : 'auto';
+				if ( isset( $imgs_aspect[ $ar ] ) ) { $vars[] = '--imgs-aspect:' . $imgs_aspect[ $ar ]; }
+
+				/* Shape / Mask from the shared library: radius → --imgs-radius, clip → --imgs-clip,
+				   svg → --imgs-mask; a "square" shape forces --imgs-aspect:1/1 (emitted AFTER the
+				   aspect field so it wins). mask=none uses the simple custom `radius` field. */
+				// mask is a multi-picker { mask:'key', custom:{custom_svg,custom_clip} } — tolerate a legacy scalar.
+				$mraw = isset( $s['mask'] ) ? $s['mask'] : 'none';
+				$mask = is_array( $mraw ) ? ( isset( $mraw['mask'] ) ? (string) $mraw['mask'] : 'none' ) : (string) $mraw;
+				$mdef = isset( $imgs_masklib[ $mask ] ) ? $imgs_masklib[ $mask ] : array( 'kind' => 'none' );
+				$mask_square = false;
+				if ( $mask === 'custom' ) {
+					$mcustom = ( is_array( $mraw ) && isset( $mraw['custom'] ) && is_array( $mraw['custom'] ) ) ? $mraw['custom'] : array();
+					$c_svg  = trim( (string) ( isset( $mcustom['custom_svg'] ) ? $mcustom['custom_svg'] : '' ) );
+					$c_clip = trim( (string) ( isset( $mcustom['custom_clip'] ) ? $mcustom['custom_clip'] : '' ) );
+					if ( $c_svg !== '' ) {
+						if ( stripos( $c_svg, '<svg' ) !== false ) {
+							$clean = function_exists( 'sc_imgbox_sanitize_svg' ) ? sc_imgbox_sanitize_svg( $c_svg ) : preg_replace( '#<(script|style)[^>]*>.*?</\1>#is', '', $c_svg );
+							if ( trim( (string) $clean ) !== '' ) { $vars[] = '--imgs-mask:url("data:image/svg+xml,' . rawurlencode( $clean ) . '")'; }
+						} else {
+							$u = preg_replace( '/["\'\s()]/', '', $c_svg ); // url-safe
+							if ( $u !== '' ) { $vars[] = '--imgs-mask:url("' . $u . '")'; }
+						}
+					} elseif ( $c_clip !== '' ) {
+						$clip = function_exists( 'sc_imgbox_sanitize_clip' ) ? sc_imgbox_sanitize_clip( $c_clip ) : preg_replace( '/[^a-zA-Z0-9%.,()\/\s"\'#-]/', '', $c_clip );
+						if ( trim( (string) $clip ) !== '' ) { $vars[] = '--imgs-clip:' . $clip; }
+					}
+				} elseif ( $mdef['kind'] === 'radius' ) {
+					$vars[] = '--imgs-radius:' . $mdef['value'];
+					$mask_square = ! empty( $mdef['square'] );
+				} elseif ( $mdef['kind'] === 'clip' ) {
+					$vars[] = '--imgs-clip:' . $mdef['value'];
+					$mask_square = ! empty( $mdef['square'] );
+				} elseif ( $mdef['kind'] === 'svg' && ! empty( $mdef['value'] ) ) {
+					$vars[] = '--imgs-mask:' . $mdef['value'];
+					$mask_square = ! empty( $mdef['square'] );
+				} else {
+					// mask = none → simple custom corner radius, if any.
+					$rad = $len( isset( $s['radius'] ) ? (string) $s['radius'] : '' );
+					if ( $rad !== '' ) { $vars[] = '--imgs-radius:' . $rad; }
+				}
+				if ( $mask_square ) { $vars[] = '--imgs-aspect:1/1'; }
+
+				$filter = isset( $s['filter'] ) ? (string) $s['filter'] : 'none';
+				if ( isset( $imgs_filter[ $filter ] ) ) { $vars[] = '--imgs-filter:' . $imgs_filter[ $filter ]; }
+				if ( $filter === 'duotone' ) {
+					$duo = $resolve_btn_color( isset( $s['duo_color'] ) ? $s['duo_color'] : '' );
+					if ( $duo !== '' ) { $vars[] = '--imgs-duo:' . $duo; }
+				}
+
+				$scrim = isset( $s['scrim'] ) ? (string) $s['scrim'] : 'none';
+				if ( $scrim !== 'none' ) {
+					$sc = $resolve_btn_color( isset( $s['scrim_color'] ) ? $s['scrim_color'] : '' );
+					if ( $sc === '' ) { $sc = '#0b0b0f'; }
+					$grad = array(
+						'bottom' => "linear-gradient(180deg,transparent 55%,{$sc})",
+						'top'    => "linear-gradient(0deg,transparent 55%,{$sc})",
+						'radial' => "radial-gradient(120% 100% at 50% 100%,{$sc},transparent 60%)",
+					);
+					if ( isset( $grad[ $scrim ] ) ) { $vars[] = '--imgs-scrim:' . $grad[ $scrim ]; }
+				}
+
+				if ( ! empty( $vars ) ) {
+					$button_extra_css .= "\n.imgs-{$slug}{" . implode( ';', $vars ) . ";}";
+				}
+
+				/* ---- freeform per-preset Custom CSS (advanced) ----
+				   {{SELECTOR}} → the wrapper class .imgs-{slug}; sanitised like the Box
+				   Preset custom CSS (no <style>/<script>, no raw angle brackets). */
+				$imgs_css = isset( $s['custom_css'] ) ? (string) $s['custom_css'] : '';
+				if ( trim( $imgs_css ) !== '' ) {
+					$imgs_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $imgs_css );
+					$imgs_css = str_replace( array( '<', '>' ), '', $imgs_css );
+					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".imgs-{$slug}", $imgs_css );
+				}
+			}
+		}
+
 		// --- Spacing scale -> CSS variables + Bootstrap-class overrides ---
 		// Emits `:root { --spacer-{slug} }` plus utility rules that override
 		// Bootstrap's `.m-N` / `.p-N` / `.mt-N` etc. Our presets-css now loads
@@ -1210,7 +1320,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 20, // bumped: added Background Patterns + the fixed site-background layer
+			'schema'    => 21, // bumped: added Image Styles (.imgs-{slug} token bundles + base rule)
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),
@@ -1226,6 +1336,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 			'gap_def_x' => function_exists( 'unysonplus_get_default_gap_x' )        ? unysonplus_get_default_gap_x()        : '',
 			'gap_def_y' => function_exists( 'unysonplus_get_default_gap_y' )        ? unysonplus_get_default_gap_y()        : '',
 			'patterns'  => function_exists( 'unysonplus_get_pattern_presets' )      ? unysonplus_get_pattern_presets()      : array(),
+			'imgstyles' => function_exists( 'unysonplus_get_image_style_presets' ) ? unysonplus_get_image_style_presets() : array(),
 		);
 		return substr( md5( wp_json_encode( $inputs ) ), 0, 12 );
 	}

@@ -134,6 +134,53 @@
 	padding-right: 27px;
 }
 
+/* …EXCEPT inside an addable-box row (e.g. the Image Styles preset library, where the
+   Shape / Mask control is a popover picker). There the sibling options render with the
+   `design-customizer` design, which the addable-box pads at 15px — NOT the section's
+   27px. Match that 15px so the trigger lines up with the other fields in the row (not
+   the section's 27px, and not flush at 0). (Higher specificity wins.) */
+.fw-backend-option-type-addable-box .fw-backend-option-type-multi-picker.fw-mp-pop-option,
+.fw-backend-option-type-addable-box .fw-backend-option-type-multi-picker:has(.fw-mp-pop) {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+/* Labeled image-picker tiles in a popover (e.g. the Image Style Shape / Mask picker):
+   each tile is a FLOATED <li> that shrink-wraps to its content, so tiles must be made
+   UNIFORM in BOTH dimensions or the float grid goes ragged —
+     • width  — a long caption (Rounded XL, Diagonal cut, Water Splash …) would widen
+       just that tile, so cap the caption to the swatch width and let it WRAP.
+     • height — but wrapping makes 2-line captions taller than 1-line ones, and floats
+       snag on the taller neighbours (staggered half-rows). So RESERVE a fixed two-line
+       caption height (clamped to 2) — now every tile is the same size and they tile
+       into clean rows. (Deliberately NOT a CSS grid — the image-picker inner is a
+       shrink-to-fit inline-block a grid collapses; this is the smallest lever.) */
+.fw-mp-pop-panel .fw-option-type-image-picker li .thumbnail > p {
+	width: 54px;
+	height: 27px; /* two lines at 11px / 1.2 — reserved so 1- and 2-line captions match */
+	box-sizing: border-box;
+	margin: 4px auto 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	white-space: normal;
+	text-align: center;
+	font-size: 11px;
+	line-height: 1.2;
+	overflow: hidden;
+	overflow-wrap: break-word;
+	hyphens: auto;
+}
+/* Tighten the tile chrome (margin / border / padding) — WITHOUT shrinking the 53px
+   swatch — so five ~65px tiles fit the panel row instead of four ~71px ones. */
+.fw-mp-pop-panel .fw-option-type-image-picker ul.thumbnails.image_picker_selector li {
+	margin: 0 3px 6px 0;
+}
+.fw-mp-pop-panel .fw-option-type-image-picker li .thumbnail {
+	border-width: 2px;
+	padding: 1px;
+}
+
 /* Popover tile size is left to EACH picker — the tile img carries its own height (the picker's
    'small' height, applied by image-picker.js as an attribute), so every module controls its own
    swatch size in every context. (There is deliberately NO global height override here: one shared

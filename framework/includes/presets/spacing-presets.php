@@ -20,6 +20,9 @@ if ( ! function_exists( 'unysonplus_default_spacing_scale' ) ) :
 			array( 'name' => '7', 'size' => '4rem' ),
 			array( 'name' => '8', 'size' => '4.5rem' ),
 			array( 'name' => '9', 'size' => '5rem' ),
+			array( 'name' => '10', 'size' => '6rem' ),
+			array( 'name' => '11', 'size' => '7rem' ),
+			array( 'name' => '12', 'size' => '8rem' ),
 		) );
 	}
 endif;

@@ -2,10 +2,21 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.61';
+$manifest['version'] = '2.15.63';
 
 /**
  * Changelog
+ * 2.15.62 - Icon-pack uploader now imports an IcoMoon selection.json natively. The custom-pack
+ *           upload (Theme Settings -> Icons -> Upload) previously accepted only our own
+ *           { name => svg } / { title, svg_open, icons } shapes; an IcoMoon export fell through
+ *           as a flat map, every value was an array (not markup), and the user got a baffling
+ *           "No valid SVG icons found." fw_icon_pack_install_from_json() now detects an IcoMoon
+ *           file (its `icons` LIST of { icon:{ paths, width }, properties:{ name } } entries plus
+ *           the `IcoMoonType` marker) and converts it up front: paths become inner <path> markup
+ *           inside a viewBox sized from the project `height`, non-square glyphs get a centring
+ *           translate, names are slugged from properties.name, and the pack title falls back to
+ *           the file's own font-family. Since IcoMoon is the format users get when they buy or
+ *           build an icon set, "upload the set you purchased" now just works.
  * 2.15.59 - Date & time option types modernised onto Air Datepicker; new `time-picker` type.
  *           The `date-picker`, `datetime-picker` and `datetime-range` option types now run on
  *           Air Datepicker (vanilla, no jQuery / moment.js), replacing the legacy

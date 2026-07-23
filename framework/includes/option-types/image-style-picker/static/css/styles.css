@@ -1,0 +1,161 @@
+/* Border Style Picker option type — a popover-style dropdown whose trigger + rows
+   are real bordered-box previews. The .boxp-{slug} border-preset CSS (already
+   loaded in admin) paints the border / corners / shadow; here we only lay out the
+   dropdown and give every preview a uniform swatch size so borders compare cleanly. */
+
+.fw-option-type-image-style-picker {
+	position: relative;
+	display: inline-block;
+	font-size: 13px;
+	max-width: 100%;
+}
+
+/* ----- Trigger ----- */
+.fw-option-type-image-style-picker .isp__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 240px;
+	max-width: 340px;
+	padding: 5px 8px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	cursor: pointer;
+	user-select: none;
+	font: inherit;
+	line-height: 1.4;
+	text-align: left;
+}
+.fw-option-type-image-style-picker .isp__trigger:hover { border-color: #2271b1; }
+.fw-option-type-image-style-picker .isp__trigger:focus,
+.fw-option-type-image-style-picker .isp__trigger[aria-expanded="true"] {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.fw-option-type-image-style-picker .isp__trigger-placeholder {
+	flex: 1 1 auto;
+	color: #646970;
+}
+.fw-option-type-image-style-picker .isp__caret {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 10px;
+	color: #646970;
+}
+
+/* ----- Panel ----- */
+.fw-option-type-image-style-picker .isp__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 1000;
+	width: 320px;
+	max-width: 90vw;
+	max-height: 360px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 6px;
+	background: #f6f7f7;   /* light backdrop so white swatches + soft shadows pop */
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fw-option-type-image-style-picker .isp__panel[hidden] { display: none; }
+
+/* ----- Option rows ----- */
+.fw-option-type-image-style-picker .isp__option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 6px;
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	text-align: left;
+	cursor: pointer;
+	font: inherit;
+	line-height: 1.4;
+}
+.fw-option-type-image-style-picker .isp__option:hover,
+.fw-option-type-image-style-picker .isp__option:focus {
+	background: #e9eaed;
+	outline: none;
+}
+.fw-option-type-image-style-picker .isp__option.is-selected {
+	background: #e0eaf5;
+	box-shadow: inset 0 0 0 1px #2271b1;
+}
+.fw-option-type-image-style-picker .isp__option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.fw-option-type-image-style-picker .isp__option--empty .isp__option-label {
+	color: #646970;
+	font-style: italic;
+	padding: 4px 4px;
+}
+
+/* ----- The live image-treatment preview (trigger + rows) -----
+   A fixed-size sample "photo" (the gradient stand-in) wrapped in `.imgs-wrap {slug}`,
+   so the real Image-Style CSS (already enqueued in admin) crops / masks / filters /
+   scrims it. Beside it, the style name. Pointer-inert so the row handles the click. */
+.fw-option-type-image-style-picker .isp__preview {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	flex: 1 1 auto;
+	min-width: 0;
+	pointer-events: none;
+}
+.fw-option-type-image-style-picker .isp__swatch {
+	flex: 0 0 auto;
+	display: grid;
+	place-items: center; /* center the aspect-shaped image; checker fills the letter/pillar-box */
+	width: 68px;
+	height: 48px;
+	/* white base + a subtle transparency checker, shown where a mask/clip cuts the
+	   (opaque) photo away OR beside a non-4:3 aspect — so masked AND aspect styles read. */
+	background-color: #fff;
+	background-image:
+		linear-gradient(45deg, #e9ebef 25%, transparent 25%),
+		linear-gradient(-45deg, #e9ebef 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #e9ebef 75%),
+		linear-gradient(-45deg, transparent 75%, #e9ebef 75%);
+	background-size: 8px 8px;
+	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+	/* fixed rounded-rect swatch FRAME; the preset's own radius / mask goes on the <img>. */
+	border-radius: 4px !important;
+	overflow: hidden !important;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
+	/* base rule adds isolation; kill any hover motion in the preview */
+	transition: none !important;
+	transform: none !important;
+	animation: none !important;
+}
+.fw-option-type-image-style-picker .isp__swatch img {
+	/* Keep the PRESET's aspect (via the base rule's aspect-ratio) at a fixed height, so
+	   Portrait (3:4) reads narrow (checker at the sides), Cinematic (16:9) reads wide
+	   (overflows + clips), Square/Circle read square, and auto-ratio fills ~4:3. That
+	   aspect difference is exactly what tells Rounded and Portrait Card apart. */
+	width: auto !important;
+	height: 100% !important;
+	max-width: none !important;
+}
+.fw-option-type-image-style-picker .isp__name {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

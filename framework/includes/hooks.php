@@ -39,6 +39,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Unit_Input' );
 		FW_Option_Type::register( 'FW_Option_Type_Button_Style_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Border_Style_Picker' );
+		FW_Option_Type::register( 'FW_Option_Type_Image_Style_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Table_Presets' );
 		FW_Option_Type::register( 'FW_Option_Type_Table_Style_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Button_Hover_Animation' );

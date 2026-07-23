@@ -10,10 +10,10 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 | Component | Version |
 | --- | --- |
-| Framework | **2.13.77** |
-| Shortcodes extension | **1.8.56** |
-| Page Builder extension | **1.6.66** |
-| Unyson+ Theme | **2.2.37** |
+| Framework | **2.12.83** |
+| Shortcodes extension | **1.8.22** |
+| Page Builder extension | **1.6.55** |
+| Unyson+ Theme | **2.2.32** |
 | Requires WordPress | **5.8+** (tested up to 6.7) |
 | Requires PHP | **7.4+** |
 

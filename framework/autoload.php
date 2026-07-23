@@ -285,6 +285,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Border_Style_Picker':
 				require_once __DIR__ . '/includes/option-types/border-style-picker/class-fw-option-type-border-style-picker.php';
 				break;
+			case 'FW_Option_Type_Image_Style_Picker':
+				require_once __DIR__ . '/includes/option-types/image-style-picker/class-fw-option-type-image-style-picker.php';
+				break;
 			case 'FW_Option_Type_Table_Presets':
 				require_once __DIR__ . '/includes/option-types/table-presets/class-fw-option-type-table-presets.php';
 				break;

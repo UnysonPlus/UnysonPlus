@@ -138,7 +138,8 @@ the tile's hover title.
 **Scroll** (progress tied to the scrollbar)
 - **Scroll Motion** (GSAP) · **Scroll Reveal** (clip reveals) · **Scroll Text Highlight** (scrub
   highlight) · **Parallax** · **Motion Path** · **Scroll Loop** · **Scroll Color Shift** ·
-  **Scrollytelling** · **Sticky Stack** · **Horizontal Scroll** · **Scroll Progress**.
+  **Scrollytelling** · **Card Stack** (was Sticky Stack — deck-of-cards on a Section's columns;
+  Section-only, needs cards stacked vertically) · **Horizontal Scroll** · **Scroll Progress**.
 
 **Interaction** (responds to the pointer / keyboard)
 - **Hover** — 43 hover effects (lift, tilt, glow, ripple, blob, spotlight, sheen, etc.); fires on
@@ -150,7 +151,11 @@ the tile's hover title.
 
 **Ambient** (always running)
 - **Marquee** — infinite scrolling ticker.
-- **Confetti** — 6 burst styles (confetti, stars, fireworks, streamers, hearts, snow).
+- **Confetti** — 26 burst styles in 4 groups: Classic/flat (confetti, stars, fireworks, streamers,
+  hearts, snow), Realistic & Foil (3D tumbling paper with sheen + shadow — realistic, gold/silver/rose
+  foil, holographic, triangles, hexagons, money, serpentine — sits on photo backgrounds), Nature
+  (sakura, autumn leaves, realistic snow, rain) and Glow (glitter, bokeh, fairy dust, fireflies,
+  embers, champagne, bubbles). One shared canvas + one on-demand script for all styles.
 - **Backgrounds** — 35 animated backgrounds (aurora, conic, …).
 
 **Site-wide**
@@ -159,6 +164,14 @@ the tile's hover title.
 
 ### Animation Engine shortcodes (standalone animated elements)
 `animation-engine/shortcodes/`
+- **3D Gallery** (`gallery_3d`) — an animated 3D image showcase with a **popover Design picker**; each
+  design has its own controls. Designs: **Carousel Ring** (rotating ring — motion auto/drag/scroll/
+  static, loop speed, direction, tilt, ring size, spacing, perspective, back-fade) and **Panorama Wall**
+  (curved scrolling multi-row wall — rows, curvature concave↔convex, tilt, gap, edge-fade, direction incl.
+  alternate rows). Shared: per-card Box Style + shadow, captions, shared lightbox, stage height/background,
+  corner radius/padding, card ratio. Pure CSS 3D + one rAF driver, no library; reduced-motion aware;
+  self-contained (reuses only the Gallery lightbox). More designs — Card Sphere, Card Tunnel, Iso Cascade …
+  — slot into the same element.
 - **SVG Draw** — self-drawing SVG (presets/code/upload); trigger view/scrub/load/hover; scroll-scrub.
 - **SVG Morph** — morph between SVG shapes.
 - **Image Sequence** — canvas frame-sequence scrubbed by scroll (Apple-style).

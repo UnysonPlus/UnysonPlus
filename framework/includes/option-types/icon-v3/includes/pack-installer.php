@@ -329,6 +329,16 @@ if ( ! function_exists( 'fw_icon_pack_install_from_json' ) ) :
 			return new WP_Error( 'bad_json', __( 'That file was not valid JSON.', 'fw' ) );
 		}
 
+		// IcoMoon selection.json auto-convert. IcoMoon exports (the format users get
+		// when they buy/build an icon set) are self-identifying — `IcoMoonType` plus an
+		// `icons` LIST of { icon:{ paths, width }, properties:{ name } } objects, unlike
+		// our own name => markup MAP. Detect and rewrite it into our self-describing
+		// { title, svg_open, icons } shape so the normal path below installs it. Without
+		// this, an IcoMoon file falls through as a flat map, every value is an array
+		// (not markup), and the user gets a bewildering "No valid SVG icons found."
+		$icomoon = fw_icon_pack__from_icomoon( $decoded );
+		if ( is_array( $icomoon ) ) { $decoded = $icomoon; }
+
 		// Self-describing bundle vs flat name => markup map.
 		$provided_open = '';
 		if ( isset( $decoded['icons'] ) && is_array( $decoded['icons'] ) ) {
@@ -400,6 +410,77 @@ if ( ! function_exists( 'fw_icon_pack_install_from_json' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'fw_icon_pack__from_icomoon' ) ) :
+	/**
+	 * If $decoded is an IcoMoon selection.json export, convert it to our
+	 * self-describing { title, svg_open, icons:{ name => inner-markup } } shape;
+	 * otherwise return null (so the caller treats it as one of our native formats).
+	 *
+	 * IcoMoon signature: an `icons` LIST (numeric keys) whose entries carry
+	 * `icon.paths`, optionally alongside an `IcoMoonType` marker. Paths live in the
+	 * project's coordinate space (`height`, default 1024), standard SVG top-left
+	 * origin. Per-icon `width` may differ (non-square glyphs) — those get a centring
+	 * translate so they sit correctly inside the square viewBox the pack declares.
+	 *
+	 * @param array $decoded
+	 * @return array|null
+	 */
+	function fw_icon_pack__from_icomoon( $decoded ) {
+		$list = isset( $decoded['icons'] ) && is_array( $decoded['icons'] ) ? $decoded['icons'] : null;
+		if ( ! $list ) { return null; }
+		// A LIST (not our name => markup map): sequential integer keys, and the first
+		// entry looks like an IcoMoon glyph (has icon.paths).
+		$first = reset( $list );
+		$is_icomoon = array_keys( $list ) === range( 0, count( $list ) - 1 )
+			&& is_array( $first ) && isset( $first['icon']['paths'] );
+		if ( ! $is_icomoon && ! isset( $decoded['IcoMoonType'] ) ) { return null; }
+
+		$h     = isset( $decoded['height'] ) ? (int) $decoded['height'] : 1024;
+		if ( $h <= 0 ) { $h = 1024; }
+		$icons = array();
+		$seen  = array();
+
+		foreach ( $list as $it ) {
+			if ( ! is_array( $it ) || empty( $it['icon']['paths'] ) || ! is_array( $it['icon']['paths'] ) ) { continue; }
+			$name = isset( $it['properties']['name'] ) ? (string) $it['properties']['name']
+				: ( isset( $it['icon']['tags'][0] ) ? (string) $it['icon']['tags'][0] : '' );
+			// IcoMoon names can be comma-lists ("home, house"); take the first, slug it.
+			$name = strtolower( trim( preg_replace( '/[,].*$/', '', $name ) ) );
+			$name = trim( preg_replace( '/[^a-z0-9]+/', '-', $name ), '-' );
+			if ( $name === '' || isset( $seen[ $name ] ) ) { continue; }
+
+			$inner = '';
+			foreach ( $it['icon']['paths'] as $p ) {
+				if ( is_string( $p ) && $p !== '' ) { $inner .= '<path d="' . $p . '"></path>'; }
+			}
+			if ( $inner === '' ) { continue; }
+
+			$w = isset( $it['icon']['width'] ) ? (int) $it['icon']['width'] : $h;
+			if ( $w > 0 && $w !== $h ) {
+				$dx    = (int) floor( ( $h - $w ) / 2 );
+				$inner = '<g transform="translate(' . $dx . ',0)">' . $inner . '</g>';
+			}
+
+			$icons[ $name ] = $inner;
+			$seen[ $name ]  = true;
+		}
+
+		if ( empty( $icons ) ) { return null; }
+
+		$title = '';
+		if ( ! empty( $decoded['metadata']['name'] ) ) { $title = (string) $decoded['metadata']['name']; }
+		elseif ( ! empty( $decoded['preferences']['fontPref']['metadata']['fontFamily'] ) ) {
+			$title = (string) $decoded['preferences']['fontPref']['metadata']['fontFamily'];
+		}
+
+		return array(
+			'title'    => $title,
+			'svg_open' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $h . ' ' . $h . '" fill="currentColor">',
+			'icons'    => $icons,
+		);
+	}
+endif;
+
 if ( ! function_exists( 'fw_icon_pack__keywords' ) ) :
 	/** Search keywords for an icon name: the name plus its tokens, deduped. */
 	function fw_icon_pack__keywords( $name ) {
@@ -417,7 +498,7 @@ if ( ! function_exists( 'fw_icon_pack__normalize_open' ) ) :
 	function fw_icon_pack__normalize_open( $open ) {
 		$open = trim( (string) $open );
 		if ( $open === '' || stripos( $open, '<svg' ) === false ) {
-			return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">';
+			return '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">';
 		}
 		if ( preg_match( '/<svg[^>]*>/i', $open, $m ) ) { $open = $m[0]; }
 
@@ -434,6 +515,15 @@ if ( ! function_exists( 'fw_icon_pack__normalize_open' ) ) :
 		);
 		if ( stripos( $open, 'xmlns' ) === false ) {
 			$open = preg_replace( '/^<svg/i', '<svg xmlns="http://www.w3.org/2000/svg"', $open );
+		}
+		// Ensure a font-relative intrinsic size. The strip above removed any width/
+		// height, and WITHOUT one an inline pack SVG collapses to zero wherever a
+		// consumer doesn't size it — e.g. a Special Heading title icon, or the icon
+		// picker's own selected-icon preview (both render the markup inline with no
+		// width). 1em makes the glyph track the surrounding font-size, exactly like a
+		// font icon; bundled packs (Lucide/Tabler) carry width/height for this reason.
+		if ( ! preg_match( '/\swidth=/i', $open ) ) {
+			$open = preg_replace( '/^<svg/i', '<svg width="1em" height="1em"', $open );
 		}
 		return $open;
 	}
@@ -742,7 +832,7 @@ if ( ! function_exists( 'fw_icon_pack_installer_payload' ) ) :
 				'toggleHint'         => __( 'Disabling a library only hides it when picking NEW icons — icons already on your pages keep rendering.', 'fw' ),
 				'genericError'       => __( 'Something went wrong. Please try again.', 'fw' ),
 				'uploadTitle'        => __( 'Upload your own pack', 'fw' ),
-				'uploadDesc'         => __( 'Upload a .json file of SVG icons — either { "name": "<svg>…" } or { "title", "svg_open", "icons" }. Markup is sanitized and recolored to match your theme.', 'fw' ),
+				'uploadDesc'         => __( 'Upload a .json file of SVG icons — an IcoMoon selection.json, or our own { "name": "<svg>…" } / { "title", "svg_open", "icons" }. Markup is sanitized and recolored to match your theme.', 'fw' ),
 				'uploadNameLabel'    => __( 'Pack name', 'fw' ),
 				'uploadNamePlaceholder' => __( 'My Icons', 'fw' ),
 				'uploadFileLabel'    => __( 'JSON file', 'fw' ),
