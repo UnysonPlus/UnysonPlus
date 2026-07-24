@@ -14,7 +14,7 @@ if ( ! function_exists( 'unysonplus_default_color_presets' ) ) :
 			array( 'name' => 'Primary',     'color' => '#0d6efd' ),
 			array( 'name' => 'Secondary',   'color' => '#6c757d' ),
 			array( 'name' => 'Accent',      'color' => '#fd7e14' ),
-			array( 'name' => 'Muted',       'color' => '#adb5bd' ),
+			array( 'name' => 'Muted',       'color' => '#5f6773' ), // AA on white (5.7:1) — #adb5bd was 2.07:1 and failed every meta/byline consuming it
 			array( 'name' => 'Black',       'color' => '#000'    ),
 			array( 'name' => 'White',       'color' => '#fff'    ),
 			array( 'name' => 'Gray',        'color' => '#636c72' ),

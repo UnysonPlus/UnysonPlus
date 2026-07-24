@@ -32,7 +32,7 @@ if ( ! function_exists( 'fw_icon_pack_catalog_url' ) ) :
 	function fw_icon_pack_catalog_url() {
 		return apply_filters(
 			'fw_icon_pack_catalog_url',
-			'https://raw.githubusercontent.com/UnysonPlus/UnysonPlus-Icon-Packs/master/catalog.json'
+			'https://raw.githubusercontent.com/UnysonPlus/UnysonPlus-Library/master/icon-packs/catalog.json'
 		);
 	}
 endif;
