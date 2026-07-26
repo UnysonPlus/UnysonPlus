@@ -5,7 +5,7 @@
 		// `typography-v2` (the framework stamps `.fw-option-type-{schema type}` on the
 		// wrapper, so both class names occur depending on how a schema declares the type).
 		var optionTypeClass = '.fw-option-type-typography, .fw-option-type-typography-v2',
-			googleFonts = fw_typography_v2_fonts['google'],
+			googleFonts = { items: [] }, // populated by the lazy fetch below
 			/**
 			 * [ {'value': 'Font Family', 'text': 'Font Family'} ]
 			 */
@@ -86,11 +86,23 @@
 
 		var loadedFonts = (typeof Set !== 'undefined') ? new Set() : null;
 		var googleFontNames = (typeof Set !== 'undefined') ? new Set() : null;
-		if (googleFontNames && googleFonts && googleFonts['items']) {
-			_.each(googleFonts['items'], function (item) {
-				googleFontNames.add(item['family']);
-			});
-		}
+
+		// Fetch the large Google-fonts catalog as a SEPARATE, browser-cached
+		// request instead of inlining ~1.85 MB into every admin page. The
+		// wp_localize_script payload now carries only the standard fonts + this
+		// URL; the typography init below waits on this promise.
+		var googleFontsReady = $.ajax({
+			url: fw_typography_v2_fonts['googleUrl'],
+			dataType: 'json',
+			cache: true
+		}).done(function (data) {
+			googleFonts = (data && data['items']) ? data : { items: [] };
+			if (googleFontNames) {
+				_.each(googleFonts['items'], function (item) {
+					googleFontNames.add(item['family']);
+				});
+			}
+		});
 
 		function loadGoogleFont(family) {
 			if (!loadedFonts || !googleFontNames) return;
@@ -114,6 +126,7 @@
 		}, { rootMargin: '50px' }) : null;
 
 		fwEvents.on('fw:options:init', function (data) {
+		  googleFontsReady.always(function () {
 			data.$elements.find('.fw-option-type-typography:not(.initialized), .fw-option-type-typography-v2:not(.initialized)').each(function(){
 				var $option = $(this);
 
@@ -263,6 +276,7 @@
 						});
 				}
 			}).addClass('initialized');
+		  });
 		});
 	});
 }(jQuery));

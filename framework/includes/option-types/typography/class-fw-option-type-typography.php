@@ -54,10 +54,21 @@ class FW_Option_Type_Typography extends FW_Option_Type {
 			fw()->manifest->get_version()
 		);
 
+		// Send only the small "standard" font list inline; the large Google-fonts
+		// catalog (~1.85 MB) is fetched lazily by scripts.js from a SEPARATE,
+		// browser-cached URL instead of being inlined into every admin page.
+		$fonts = $this->get_fonts();
 		wp_localize_script(
 			'fw-option-' . self::ASSET_BASE,
 			'fw_typography_v2_fonts',
-			$this->get_fonts()
+			array(
+				'standard'  => $fonts['standard'],
+				'googleUrl' => add_query_arg(
+					'ver',
+					fw()->manifest->get_version(),
+					fw_get_framework_directory_uri( '/includes/option-types/typography-v2/google-fonts.json' )
+				),
+			)
 		);
 	}
 
