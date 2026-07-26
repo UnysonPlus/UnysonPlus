@@ -28,6 +28,11 @@
 				'input .fw-icon-v3-lottie-speed': 'onLottieChange',
 				'click .fw-icon-v3-lottie-upload': 'onLottieUploadClick',
 				'change .fw-icon-v3-lottie-file': 'onLottieFile',
+				'input .fw-icon-v3-rive-url': 'onRiveChange',
+				'change .fw-icon-v3-rive-trigger': 'onRiveChange',
+				'click .fw-icon-v3-rive-upload': 'onRiveUploadClick',
+				'change .fw-icon-v3-rive-file': 'onRiveFile',
+				'change .fw-icon-v3-anim-tech': 'onAnimTechChange',
 				'click .fw-icon-v3-lucide-icon': 'onLucideSelect',
 				submit: 'onSubmit',
 			},
@@ -401,6 +406,89 @@
 					})
 					.fail(function() { $msg.addClass('fw-icon-v3-error').text('Upload failed.') })
 				input.value = ''
+			},
+
+			// --- Rive (.riv) -----------------------------------------------------
+			onRiveChange: function(event) {
+				this.syncRive($(event.currentTarget).closest('.fw-icon-v3-rive-tab'))
+			},
+
+			// Read the Rive panel's inputs into the picked value + (re)play preview.
+			syncRive: function($tab) {
+				var src     = $.trim($tab.find('.fw-icon-v3-rive-url').val() || '')
+				var trigger = $tab.find('.fw-icon-v3-rive-trigger').val() || 'loop'
+
+				this.model.result = src
+					? { type: 'rive', src: src, trigger: trigger }
+					: { type: 'none' }
+
+				var $live = $tab.find('.fw-icon-v3-rive-live')
+				if ($live[0] && $live[0].__upwRive) { try { $live[0].__upwRive.cleanup() } catch (e) {} $live[0].__upwRive = null }
+				$live.empty()
+				if (src && window.rive) {
+					try {
+						if (window.upwRiveWasm) { window.rive.RuntimeLoader.setWasmUrl(window.upwRiveWasm) }
+						var canvas = document.createElement('canvas')
+						canvas.className = 'upw-rive-canvas'
+						$live[0].appendChild(canvas)
+						var inst = new window.rive.Rive({
+							src: src, canvas: canvas, autoplay: true,
+							layout: new window.rive.Layout({ fit: window.rive.Fit.Contain, alignment: window.rive.Alignment.Center }),
+							onLoad: function() { try { inst.resizeDrawingSurfaceToCanvas() } catch (e) {} }
+						})
+						$live[0].__upwRive = inst
+					} catch (e) {}
+				}
+			},
+
+			onRiveUploadClick: function(event) {
+				event.preventDefault()
+				$(event.currentTarget).closest('.fw-icon-v3-rive-tab').find('.fw-icon-v3-rive-file').trigger('click')
+			},
+
+			// Upload the chosen .riv to the server; on success drop the URL in + sync.
+			onRiveFile: function(event) {
+				var input = event.currentTarget
+				var file  = input.files && input.files[0]
+				if (!file) { return }
+
+				var view = this
+				var $tab = $(input).closest('.fw-icon-v3-rive-tab')
+				var $msg = $tab.find('.fw-icon-v3-rive-msg').removeClass('fw-icon-v3-error').text(
+					(window.fwIconV3 && fwIconV3.i18n && fwIconV3.i18n.uploading) || 'Uploading…')
+
+				var fd = new FormData()
+				fd.append('action', 'fw_icon_rive_upload')
+				fd.append('nonce', (window.fwIconV3 && fwIconV3.riveNonce) || '')
+				fd.append('rive_file', file)
+
+				$.ajax({ url: (window.ajaxurl || (window.fwIconV3 && fwIconV3.ajaxUrl)), method: 'POST', data: fd, processData: false, contentType: false })
+					.done(function(res) {
+						if (res && res.success && res.data && res.data.url) {
+							$tab.find('.fw-icon-v3-rive-url').val(res.data.url)
+							$msg.text('')
+							view.syncRive($tab)
+						} else {
+							$msg.addClass('fw-icon-v3-error').text((res && res.data && res.data.message) || 'Upload failed.')
+						}
+					})
+					.fail(function() { $msg.addClass('fw-icon-v3-error').text('Upload failed.') })
+				input.value = ''
+			},
+
+			// Animated-tab technology selector (only present when BOTH Lottie and
+			// Rive are enabled): show the chosen panel + re-sync the value to it.
+			onAnimTechChange: function(event) {
+				var tech  = $(event.currentTarget).val()
+				var $root = this.model.frame.$el
+				$root.find('.fw-icon-v3-anim-panel').each(function() {
+					$(this).toggle($(this).attr('data-anim-tech') === tech)
+				})
+				if (tech === 'rive') {
+					this.syncRive($root.find('.fw-icon-v3-rive-tab'))
+				} else {
+					this.syncLottie($root.find('.fw-icon-v3-lottie-tab'))
+				}
 			},
 
 			// Lucide tab: search-as-you-type (debounced) against the bundled set.
@@ -890,6 +978,7 @@
 				'emoji': '.fw-icon-v3-emoji-tab',
 				'svg': '.fw-icon-v3-svg-tab',
 				'lottie': '.fw-icon-v3-lottie-tab',
+				'rive': '.fw-icon-v3-rive-tab',
 				'icon-font': '.fw-icon-v3-icons-library',
 			}
 
@@ -929,6 +1018,22 @@
 				$ltab.find('.fw-icon-v3-lottie-trigger').val(state.trigger || 'loop')
 				$ltab.find('.fw-icon-v3-lottie-speed').val(state.speed || 1)
 				if (modal.content && modal.content.syncLottie) { modal.content.syncLottie($ltab) }
+			}
+			if (state.type === 'rive') {
+				var $rroot = modal.frame.$el
+				// If the tech selector is present (Lottie + Rive both on), switch it
+				// to Rive so the right panel is visible.
+				var $riveRadio = $rroot.find('.fw-icon-v3-anim-tech[value="rive"]')
+				if ($riveRadio.length) {
+					$riveRadio.prop('checked', true)
+					$rroot.find('.fw-icon-v3-anim-panel').each(function() {
+						$(this).toggle($(this).attr('data-anim-tech') === 'rive')
+					})
+				}
+				var $rtab = $rroot.find('.fw-icon-v3-rive-tab')
+				$rtab.find('.fw-icon-v3-rive-url').val(state.src || '')
+				$rtab.find('.fw-icon-v3-rive-trigger').val(state.trigger || 'loop')
+				if (modal.content && modal.content.syncRive) { modal.content.syncRive($rtab) }
 			}
 
 			// The stored icon-font value's pack is already pre-selected above via

@@ -147,10 +147,10 @@ if ( ! function_exists( 'unysonplus_ensure_page_css_file' ) ) :
 		}
 
 		$hash = substr( md5( $css ), 0, 12 );
-		$dir  = trailingslashit( $upload['basedir'] ) . 'unysonplus';
+		$dir  = trailingslashit( $upload['basedir'] ) . 'unysonplus/css';
 		$file = 'page-' . (int) $post_id . '-' . $hash . '.css';
 		$path = $dir . '/' . $file;
-		$url  = trailingslashit( $upload['baseurl'] ) . 'unysonplus/' . $file;
+		$url  = trailingslashit( $upload['baseurl'] ) . 'unysonplus/css/' . $file;
 
 		if ( file_exists( $path ) ) {
 			return array( 'url' => $url, 'path' => $path, 'hash' => $hash );

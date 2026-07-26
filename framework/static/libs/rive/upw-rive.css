@@ -1,0 +1,13 @@
+/* Rive icon host — scales with font-size like a glyph; the canvas fills it. */
+.upw-rive {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	line-height: 0;
+	vertical-align: middle;
+}
+.upw-rive .upw-rive-canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}

@@ -1358,10 +1358,10 @@ if ( ! function_exists( 'unysonplus_ensure_preset_css_file' ) ) :
 		}
 
 		$hash = unysonplus_preset_css_hash();
-		$dir  = trailingslashit( $upload['basedir'] ) . 'unysonplus';
+		$dir  = trailingslashit( $upload['basedir'] ) . 'unysonplus/css';
 		$file = 'presets-' . $hash . '.css';
 		$path = $dir . '/' . $file;
-		$url  = trailingslashit( $upload['baseurl'] ) . 'unysonplus/' . $file;
+		$url  = trailingslashit( $upload['baseurl'] ) . 'unysonplus/css/' . $file;
 
 		if ( file_exists( $path ) ) {
 			return array( 'url' => $url, 'path' => $path, 'hash' => $hash );

@@ -147,6 +147,18 @@
 			.find('.fw-icon-v3-preview-wrapper')
 			.attr('data-icon-type', data['type']);
 
+		// Tear down any previous Lottie preview animation before resetting the
+		// <i> — empty() removes the SVG but leaves the player's rAF loop running.
+		var prevGlyph = $root.find('i')[0];
+		if (prevGlyph && prevGlyph.__upwPreviewLottie) {
+			try { prevGlyph.__upwPreviewLottie.destroy(); } catch (e) {}
+			prevGlyph.__upwPreviewLottie = null;
+		}
+		if (prevGlyph && prevGlyph.__upwPreviewRive) {
+			try { prevGlyph.__upwPreviewRive.cleanup(); } catch (e) {}
+			prevGlyph.__upwPreviewRive = null;
+		}
+
 		// Reset the preview glyph before re-rendering it for the current kind.
 		$root.find('i').attr('class', '').attr('style', '').empty();
 
@@ -182,9 +194,75 @@
 			}
 		}
 
+		if (data.type === 'lottie') {
+			// The Animated kind previews as a small looping animation, using the
+			// bundled lottie-web player enqueued alongside the picker.
+			playLottiePreview($root, $root.find('i').addClass('fw-icon-v3-preview-lottie'), data['src']);
+		}
+
+		if (data.type === 'rive') {
+			// Rive previews on a <canvas> via the bundled Rive runtime (only
+			// enqueued when Rive is enabled).
+			playRivePreview($root, $root.find('i').addClass('fw-icon-v3-preview-rive'), data['src']);
+		}
+
 		function hasIcon(data) {
 			return data.type !== 'none';
 		}
+	}
+
+	// Draw a Rive .riv into the option-swatch <i> on a <canvas>. Guarded so it is
+	// inert when the Rive runtime isn't present (Rive not enabled).
+	function playRivePreview($root, $i, src) {
+		if (!src || !$i[0] || !window.rive) { return; }
+		if (window.upwRiveWasm) { try { window.rive.RuntimeLoader.setWasmUrl(window.upwRiveWasm); } catch (e) {} }
+		try {
+			var canvas = document.createElement('canvas');
+			canvas.className = 'upw-rive-canvas';
+			$i[0].appendChild(canvas);
+			var inst = new window.rive.Rive({
+				src: src, canvas: canvas, autoplay: true,
+				layout: new window.rive.Layout({ fit: window.rive.Fit.Contain, alignment: window.rive.Alignment.Center }),
+				onLoad: function () { try { inst.resizeDrawingSurfaceToCanvas(); } catch (e) {} }
+			});
+			$i[0].__upwPreviewRive = inst;
+		} catch (e) {}
+	}
+
+	// Load a looping Lottie animation into the option-swatch <i>. lottie-web is
+	// enqueued in the footer, so on the very first paint window.lottie may not be
+	// parsed yet — retry briefly, and bail if the value changed to another kind
+	// while we waited (so a late load can't inject into a now-stale swatch).
+	function playLottiePreview($root, $i, src) {
+		if (!src || !$i[0]) {
+			return;
+		}
+
+		var start = function () {
+			if (getDataForRoot($root).type !== 'lottie' || $i[0].__upwPreviewLottie) {
+				return;
+			}
+			try {
+				$i[0].__upwPreviewLottie = window.lottie.loadAnimation({
+					container: $i[0],
+					renderer: 'svg',
+					loop: true,
+					autoplay: true,
+					path: src
+				});
+			} catch (e) {}
+		};
+
+		if (window.lottie) {
+			start();
+			return;
+		}
+
+		var tries = 0;
+		var iv = setInterval(function () {
+			if (window.lottie) { clearInterval(iv); start(); }
+			else if (++tries > 40) { clearInterval(iv); } // ~4s cap
+		}, 100);
 	}
 
 	function getDataForRoot($root) {

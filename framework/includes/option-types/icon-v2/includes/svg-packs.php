@@ -46,8 +46,7 @@ if ( ! function_exists( 'fw_icon_svg_pack_install_dir' ) ) :
 	 * wp-content/uploads so it survives plugin updates and never bloats the plugin.
 	 */
 	function fw_icon_svg_pack_install_dir() {
-		$up  = wp_upload_dir();
-		$dir = trailingslashit( $up['basedir'] ) . 'unysonplus-icon-packs';
+		$dir = fw_upw_uploads_dir( 'icon-packs' )['path'];
 		return apply_filters( 'fw_icon_svg_pack_install_dir', $dir );
 	}
 endif;

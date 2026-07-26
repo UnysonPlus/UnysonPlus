@@ -55,6 +55,10 @@ if (defined('FW')) {
             require $dir . '/core/Fw.php';
             fw();
 
+            // Shared uploads-dir helper (uploads/unysonplus/<subdir>/) + the
+            // one-time consolidation migration. Loaded early so every dir helper
+            // below can route through fw_upw_uploads_dir().
+            require $dir . '/includes/uploads-dir.php';
             require $dir . '/includes/hooks.php';
             require $dir . '/includes/presets.php';
             require $dir . '/includes/css-tokens.php';

@@ -97,27 +97,47 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
             ]
         );
 
-        // Lottie player (bundled) + hydrator, so the Animated tab can preview the
-        // animation in the modal. Enqueued with the picker; on the frontend
-        // sc_icon_render() loads them lazily only when a lottie icon is output.
-        $lottie_uri = fw_get_framework_directory_uri('/static/libs/lottie');
-        wp_enqueue_style('upw-lottie', $lottie_uri . '/upw-lottie.css', [], fw()->manifest->get_version());
-        wp_enqueue_script('lottie-web', $lottie_uri . '/lottie.min.js', [], fw()->manifest->get_version(), true);
-        wp_enqueue_script('upw-lottie', $lottie_uri . '/upw-lottie.js', ['lottie-web'], fw()->manifest->get_version(), true);
+        // Animated-tab player runtimes, per enabled technology — so the modal can
+        // PREVIEW the animation. Each is loaded only when the opt-in Animated
+        // Icons extension has enabled that technology (the Animated tab + its
+        // panels are gated the same way in views/templates.php). On the frontend
+        // sc_icon_render() still lazily loads these when an animated icon is output.
+        $ver    = fw()->manifest->get_version();
+        $lottie = function_exists( 'fw_icon_lottie_enabled' ) && fw_icon_lottie_enabled();
+        $rive   = function_exists( 'fw_icon_rive_enabled' ) && fw_icon_rive_enabled();
 
-        // Data the picker's Lottie upload handler needs (ajax URL + nonce + i18n).
-        wp_localize_script(
-            'fw-option-type-icon-v3-backend-picker-v2',
-            'fwIconV3',
-            [
-                'ajaxUrl'     => admin_url('admin-ajax.php'),
-                'lottieNonce' => wp_create_nonce('fw_icon_lottie_upload'),
-                'i18n'        => [
-                    'uploading'    => __('Uploading…', 'fw'),
-                    'uploadFailed' => __('Upload failed.', 'fw'),
-                ],
-            ]
-        );
+        if ( $lottie ) {
+            $lottie_uri = fw_get_framework_directory_uri('/static/libs/lottie');
+            wp_enqueue_style('upw-lottie', $lottie_uri . '/upw-lottie.css', [], $ver);
+            wp_enqueue_script('lottie-web', $lottie_uri . '/lottie.min.js', [], $ver, true);
+            wp_enqueue_script('upw-lottie', $lottie_uri . '/upw-lottie.js', ['lottie-web'], $ver, true);
+        }
+
+        if ( $rive ) {
+            // Heavy (~2 MB WASM); only loaded when Rive is explicitly enabled.
+            $rive_uri = fw_get_framework_directory_uri('/static/libs/rive');
+            wp_enqueue_style('upw-rive', $rive_uri . '/upw-rive.css', [], $ver);
+            wp_enqueue_script('rive-canvas', $rive_uri . '/rive.js', [], $ver, true);
+            wp_enqueue_script('upw-rive', $rive_uri . '/upw-rive.js', ['rive-canvas'], $ver, true);
+            wp_add_inline_script('upw-rive', 'window.upwRiveWasm=' . wp_json_encode($rive_uri . '/rive.wasm') . ';', 'before');
+        }
+
+        if ( $lottie || $rive ) {
+            // Data the picker's upload handlers need (ajax URL + per-tech nonces + i18n).
+            wp_localize_script(
+                'fw-option-type-icon-v3-backend-picker-v2',
+                'fwIconV3',
+                [
+                    'ajaxUrl'     => admin_url('admin-ajax.php'),
+                    'lottieNonce' => wp_create_nonce('fw_icon_lottie_upload'),
+                    'riveNonce'   => wp_create_nonce('fw_icon_rive_upload'),
+                    'i18n'        => [
+                        'uploading'    => __('Uploading…', 'fw'),
+                        'uploadFailed' => __('Upload failed.', 'fw'),
+                    ],
+                ]
+            );
+        }
     }
 
     public function load_templates(): void
@@ -255,11 +275,21 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
         }
 
         if ($input['type'] === 'lottie') {
-            $result['src'] = isset($input['src']) ? esc_url_raw((string) $input['src']) : '';
+            $result['src'] = isset($input['src'])
+                ? esc_url_raw( function_exists('fw_upw_normalize_legacy_upload_url') ? fw_upw_normalize_legacy_upload_url((string) $input['src']) : (string) $input['src'] )
+                : '';
             $trigger = isset($input['trigger']) ? preg_replace('/[^a-z]/', '', (string) $input['trigger']) : 'loop';
             $result['trigger'] = in_array($trigger, ['loop', 'once', 'hover', 'click'], true) ? $trigger : 'loop';
             $speed = isset($input['speed']) ? (float) $input['speed'] : 1;
             $result['speed'] = ($speed > 0 && $speed <= 8) ? $speed : 1;
+        }
+
+        if ($input['type'] === 'rive') {
+            $result['src'] = isset($input['src'])
+                ? esc_url_raw( function_exists('fw_upw_normalize_legacy_upload_url') ? fw_upw_normalize_legacy_upload_url((string) $input['src']) : (string) $input['src'] )
+                : '';
+            $trigger = isset($input['trigger']) ? preg_replace('/[^a-z]/', '', (string) $input['trigger']) : 'loop';
+            $result['trigger'] = in_array($trigger, ['loop', 'once', 'hover', 'click'], true) ? $trigger : 'loop';
         }
 
         return $result;
@@ -304,6 +334,20 @@ class FW_Option_Type_Icon_v3 extends FW_Option_Type
                 $mk = fw_icon_lucide_markup($result['svg-id']);
                 if ($mk) { $result['markup'] = $mk; }
             }
+        }
+
+        // Seed the Animated tab's player kinds so reopening the picker on a
+        // stored value pre-fills its URL / trigger (without this the tab opens
+        // empty on an existing item).
+        if ($data['value']['type'] === 'lottie') {
+            $result['src']     = isset($data['value']['src']) ? (string) $data['value']['src'] : '';
+            $result['trigger'] = isset($data['value']['trigger']) ? (string) $data['value']['trigger'] : 'loop';
+            $result['speed']   = isset($data['value']['speed']) ? (float) $data['value']['speed'] : 1;
+        }
+
+        if ($data['value']['type'] === 'rive') {
+            $result['src']     = isset($data['value']['src']) ? (string) $data['value']['src'] : '';
+            $result['trigger'] = isset($data['value']['trigger']) ? (string) $data['value']['trigger'] : 'loop';
         }
 
         return json_encode($result);

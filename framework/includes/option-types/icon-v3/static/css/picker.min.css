@@ -601,7 +601,8 @@
  * <i> for data-icon-type="icon-font"; do the same for emoji + svg so their glyph
  * fills and centers in the swatch instead of collapsing to the top-left. */
 .fw-icon-v3-preview-wrapper[data-icon-type="emoji"] .fw-icon-v3-preview i,
-.fw-icon-v3-preview-wrapper[data-icon-type="svg"] .fw-icon-v3-preview i {
+.fw-icon-v3-preview-wrapper[data-icon-type="svg"] .fw-icon-v3-preview i,
+.fw-icon-v3-preview-wrapper[data-icon-type="lottie"] .fw-icon-v3-preview i {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -609,6 +610,11 @@
 	height: 100%;
 	line-height: 1;
 	font-style: normal;
+}
+/* Lottie animation fills most of the swatch (its SVG is authored square). */
+.fw-icon-v3-preview-lottie svg {
+	width: 88%;
+	height: 88%;
 }
 /* Emoji glyph scales with the swatch (small 26 / medium ~34 / large larger). */
 .fw-icon-v3-preview-emoji {
@@ -705,4 +711,88 @@
 }
 .fw-icon-v3-lottie-msg.fw-icon-v3-error {
 	color: #b32d2e;
+}
+
+/* --- Animated tab: technology selector (shown when Lottie + Rive both on) --- */
+.fw-icon-v3-anim-tech-select {
+	display: flex;
+	gap: 18px;
+	align-items: center;
+	padding: 10px 20px 0;
+	margin-bottom: 4px;
+}
+.fw-icon-v3-anim-tech-select label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+	cursor: pointer;
+}
+
+/* --- Animated (Rive) panel: mirrors the Lottie panel ---------------------- */
+.fw-icon-v3-rive-tab {
+	padding: 8px 20px 16px;
+	height: calc(100% - 75px);
+	overflow-y: auto;
+}
+.fw-icon-v3-rive-tab .fw-icon-v3-rive-url {
+	width: 100%;
+	margin: 0;
+}
+.fw-icon-v3-rive-controls {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+	flex-wrap: wrap;
+	margin: 14px 0 0;
+}
+.fw-icon-v3-rive-controls label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: #50575e;
+}
+.fw-icon-v3-rive-controls select {
+	margin: 0;
+}
+.fw-icon-v3-rive-live {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 160px;
+	margin-top: 16px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	background: #f6f7f7;
+}
+.fw-icon-v3-rive-live .upw-rive-canvas {
+	width: 140px;
+	height: 140px;
+}
+.fw-icon-v3-rive-msg {
+	margin: 10px 0 0;
+	font-size: 12px;
+	color: #646970;
+}
+.fw-icon-v3-rive-msg:empty {
+	margin: 0;
+}
+.fw-icon-v3-rive-msg.fw-icon-v3-error {
+	color: #b32d2e;
+}
+
+/* Option-swatch Rive preview: the canvas fills the swatch. */
+.fw-icon-v3-preview-wrapper[data-icon-type="rive"] .fw-icon-v3-preview i {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+.fw-icon-v3-preview-rive .upw-rive-canvas {
+	width: 100%;
+	height: 100%;
 }

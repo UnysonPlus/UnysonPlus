@@ -2,10 +2,65 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.65';
+$manifest['version'] = '2.15.72';
 
 /**
  * Changelog
+ * 2.15.72 - Uploads consolidated under one folder. Everything the plugin (and the parent theme)
+ *           writes to wp-content/uploads now lives under a single uploads/unysonplus/<subdir>/
+ *           parent — icon-packs, lottie, rive, templates, designs, shortcodes, asset-optimizer, css
+ *           (preset/page + header-footer generated CSS) and presets (theme Preset Library) — instead
+ *           of a dozen scattered uploads/unysonplus-* siblings. New shared helper
+ *           fw_upw_uploads_dir($subdir) (framework/includes/uploads-dir.php) is the one place that
+ *           builds these paths; every dir helper now routes through it. A one-time migration
+ *           (fw_upw_migrate_uploads(), on admin_init, guarded by option
+ *           unysonplus_uploads_consolidated_v1) renames the legacy sibling folders + loose
+ *           uploads/unysonplus/*.css into the new layout. Almost all of these URLs are recomputed per
+ *           request (regenerable caches / re-downloadable content), so the move is transparent; the
+ *           only DB-stored URLs — Lottie/Rive `src` — are rewritten on read by
+ *           fw_upw_normalize_legacy_upload_url(), so values saved before the move still resolve.
+ *
+ * 2.15.71 - Animated Icons: Rive (.riv) support. Adds Rive as a fourth animation technology in the
+ *           Animated Icons extension — interactive, vector, state-machine-capable animations played
+ *           with the bundled @rive-app/canvas runtime (MIT; rive.js + rive.wasm under
+ *           framework/static/libs/rive, loaded only when a Rive icon is present). New value type
+ *           { type:'rive', src, trigger }; frontend renders a <span class="upw-rive"> hydrated onto a
+ *           <canvas> by the new upw-rive.js (which pins the WASM to the bundled copy — no CDN). The
+ *           Animated tab now hosts BOTH Lottie and Rive: when both are enabled it shows a small
+ *           technology selector to switch panels; each is gated by its own toggle via new
+ *           fw_icon_lottie_enabled() / fw_icon_rive_enabled() helpers (fw_icon_animated_enabled() is
+ *           now derived as "either on"). Rive is OFF by default even when the extension is active,
+ *           because its runtime is heavy (~2 MB WASM). New .riv upload endpoint
+ *           (wp_ajax_fw_icon_rive_upload) validates the "RIVE" file fingerprint, capability + nonce
+ *           gated, stored under uploads/unysonplus-rive/. Also fixed: the picker seed now round-trips
+ *           lottie/rive src+trigger so reopening a stored animated value pre-fills its panel.
+ *
+ * 2.15.70 - Animated Icons: two more technologies. The extension's Settings page now toggles
+ *           three animation technologies instead of one: Lottie (as before), plus new "Animated
+ *           SVG (SMIL)" and "Animated raster (GIF/APNG/WebP)". Animated SVG is gated by a new
+ *           `fw_icon_svg_animation_enabled` filter: when on, the shared SVG sanitizer keeps SMIL
+ *           tags (<animate>, <animateTransform>, <animateMotion>, <set>, <mpath>) and restores
+ *           their camelCase attribute names (attributeName / repeatCount / keyTimes / …) that
+ *           wp_kses lowercases, so a pasted/uploaded animated SVG plays — while scripts, event
+ *           handlers, <foreignObject> and external refs stay stripped exactly as before. When off,
+ *           animation tags are removed (the SVG still renders, static). SMIL only for now; CSS
+ *           <style> keyframes are not preserved. Animated raster already worked via the image
+ *           upload (the browser animates the <img>); a `fw_icon_raster_enabled` filter now surfaces
+ *           a Custom-tab hint pointing authors at it. Both new kinds reuse the existing svg /
+ *           custom-upload value shapes and render paths — no picker or frontend changes needed.
+ *
+ * 2.15.69 - New "Animated Icons" extension — animated icons are now opt-in. The Animated (Lottie)
+ *           tab in the icon picker, its ~168 KB player runtime, and the Lottie upload endpoint are
+ *           gated behind a new `fw_icon_animated_enabled` filter that defaults OFF, so a site that
+ *           doesn't use animated icons keeps a lean picker (Icons / Emoji / Custom / Favorites) with
+ *           no animation runtime loaded in admin. Activating the bundled, inactive-by-default
+ *           "Animated Icons" extension (framework/extensions/animated-icons) flips the gate on and
+ *           adds a Settings page for choosing which animation technologies are enabled (Lottie today;
+ *           Rive / animated-SVG can plug in as future toggles). Core still ships the tab markup, JS
+ *           handlers and bundled player — only their activation moved — and the FRONT-END render of
+ *           already-saved animated icons is deliberately NOT gated, so activating or deactivating the
+ *           extension never breaks pages that already use one. New public gate: fw_icon_animated_enabled().
+ *
  * 2.15.62 - Icon-pack uploader now imports an IcoMoon selection.json natively. The custom-pack
  *           upload (Theme Settings -> Icons -> Upload) previously accepted only our own
  *           { name => svg } / { title, svg_open, icons } shapes; an IcoMoon export fell through

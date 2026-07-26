@@ -876,18 +876,83 @@ add_action( 'admin_enqueue_scripts', function ( $hook_suffix = '' ) {
  * of a Bodymovin/Lottie export ("v" + "layers"). Capability + nonce gated.
  * -------------------------------------------------------------------------- */
 
+if ( ! function_exists( 'fw_icon_lottie_enabled' ) ) :
+	/**
+	 * Whether the Lottie technology is enabled (its Animated-tab panel, admin
+	 * player runtime and .json upload endpoint). Default OFF; the Animated Icons
+	 * extension flips it on from its "Lottie" toggle.
+	 */
+	function fw_icon_lottie_enabled() {
+		return (bool) apply_filters( 'fw_icon_lottie_enabled', false );
+	}
+endif;
+
+if ( ! function_exists( 'fw_icon_rive_enabled' ) ) :
+	/**
+	 * Whether the Rive technology is enabled (its Animated-tab panel, admin canvas
+	 * runtime and .riv upload endpoint). Default OFF; the Animated Icons extension
+	 * flips it on from its "Rive" toggle.
+	 */
+	function fw_icon_rive_enabled() {
+		return (bool) apply_filters( 'fw_icon_rive_enabled', false );
+	}
+endif;
+
+if ( ! function_exists( 'fw_icon_animated_enabled' ) ) :
+	/**
+	 * Whether the "Animated" tab shows at all — i.e. at least one player-based
+	 * technology (Lottie or Rive) is enabled. Derived from the per-technology
+	 * gates, so the tab appears when either is on and hides when both are off.
+	 * Core ships the tab, JS handlers and bundled players but keeps them OFF by
+	 * default; the opt-in Animated Icons extension flips the per-technology gates.
+	 * The FRONTEND render of already-saved animated values is intentionally NOT
+	 * gated, so toggling the extension never breaks pages that already use one.
+	 */
+	function fw_icon_animated_enabled() {
+		return fw_icon_lottie_enabled() || fw_icon_rive_enabled();
+	}
+endif;
+
+if ( ! function_exists( 'fw_icon_svg_animation_enabled' ) ) :
+	/**
+	 * Whether SVG icons may keep their SMIL animation (`<animate>`,
+	 * `<animateTransform>`, …). Default OFF — the SVG sanitizer strips animation
+	 * tags, so an animated SVG still renders but static. The Animated Icons
+	 * extension flips this on from its "Animated SVG" toggle. SMIL is declarative
+	 * (it cannot run JavaScript), and the XSS surface — scripts, event handlers,
+	 * <foreignObject>, external refs — stays excluded either way.
+	 */
+	function fw_icon_svg_animation_enabled() {
+		return (bool) apply_filters( 'fw_icon_svg_animation_enabled', false );
+	}
+endif;
+
+if ( ! function_exists( 'fw_icon_raster_enabled' ) ) :
+	/**
+	 * Whether animated raster icons (GIF / APNG / WebP) are surfaced as a
+	 * supported technology. These already upload + render through the normal
+	 * image path (an <img> the browser animates natively), so this flag does NOT
+	 * gate functionality — it only controls the picker hint that points authors
+	 * at the capability. Default OFF; the Animated Icons extension turns it on
+	 * from its "Animated raster" toggle.
+	 */
+	function fw_icon_raster_enabled() {
+		return (bool) apply_filters( 'fw_icon_raster_enabled', false );
+	}
+endif;
+
 if ( ! function_exists( 'fw_icon_lottie_dir' ) ) :
-	/** { path, url } of the Lottie upload dir under wp-content/uploads. */
+	/** { path, url } of the Lottie upload dir (uploads/unysonplus/lottie). */
 	function fw_icon_lottie_dir() {
-		$up = wp_upload_dir();
-		return array(
-			'path' => trailingslashit( $up['basedir'] ) . 'unysonplus-lottie',
-			'url'  => trailingslashit( $up['baseurl'] ) . 'unysonplus-lottie',
-		);
+		return fw_upw_uploads_dir( 'lottie' );
 	}
 endif;
 
 add_action( 'wp_ajax_fw_icon_lottie_upload', function () {
+	// Only when the opt-in Animated Icons extension has enabled Lottie.
+	if ( ! fw_icon_lottie_enabled() ) {
+		wp_send_json_error( array( 'message' => __( 'Lottie icons are not enabled.', 'fw' ) ), 403 );
+	}
 	if ( ! current_user_can( 'edit_posts' ) ) {
 		wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'fw' ) ), 403 );
 	}
@@ -914,6 +979,57 @@ add_action( 'wp_ajax_fw_icon_lottie_upload', function () {
 	// Content-hashed filename → identical animations de-dupe, and the URL is stable.
 	$name = 'lottie-' . substr( md5( $raw ), 0, 16 ) . '.json';
 	if ( false === file_put_contents( trailingslashit( $dir['path'] ) . $name, wp_json_encode( $decoded ) ) ) {
+		wp_send_json_error( array( 'message' => __( 'Could not save the file.', 'fw' ) ) );
+	}
+
+	wp_send_json_success( array( 'url' => trailingslashit( $dir['url'] ) . $name ) );
+} );
+
+/* -----------------------------------------------------------------------------
+ * Rive animation upload (icon-v3 "Animated" tab → Rive)
+ *
+ * Stores a user-uploaded .riv under uploads/unysonplus-rive/ and returns its URL
+ * (kept as the icon value's `src`). Validated by the Rive binary fingerprint —
+ * every .riv begins with the ASCII bytes "RIVE". Capability + nonce gated, and
+ * only when the Animated Icons extension has enabled Rive.
+ * -------------------------------------------------------------------------- */
+if ( ! function_exists( 'fw_icon_rive_dir' ) ) :
+	/** { path, url } of the Rive upload dir (uploads/unysonplus/rive). */
+	function fw_icon_rive_dir() {
+		return fw_upw_uploads_dir( 'rive' );
+	}
+endif;
+
+add_action( 'wp_ajax_fw_icon_rive_upload', function () {
+	if ( ! fw_icon_rive_enabled() ) {
+		wp_send_json_error( array( 'message' => __( 'Rive icons are not enabled.', 'fw' ) ), 403 );
+	}
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'fw' ) ), 403 );
+	}
+	check_ajax_referer( 'fw_icon_rive_upload', 'nonce' );
+
+	if ( empty( $_FILES['rive_file'] ) || ! is_uploaded_file( $_FILES['rive_file']['tmp_name'] ) ) {
+		wp_send_json_error( array( 'message' => __( 'No file was uploaded.', 'fw' ) ) );
+	}
+	if ( (int) $_FILES['rive_file']['size'] <= 0 || (int) $_FILES['rive_file']['size'] > 8 * MB_IN_BYTES ) {
+		wp_send_json_error( array( 'message' => __( 'File is empty or larger than 8 MB.', 'fw' ) ) );
+	}
+
+	$raw = file_get_contents( $_FILES['rive_file']['tmp_name'] );
+	// Every .riv starts with the ASCII fingerprint "RIVE".
+	if ( ! is_string( $raw ) || substr( $raw, 0, 4 ) !== 'RIVE' ) {
+		wp_send_json_error( array( 'message' => __( 'That file is not a valid Rive (.riv) file.', 'fw' ) ) );
+	}
+
+	$dir = fw_icon_rive_dir();
+	if ( ! wp_mkdir_p( $dir['path'] ) ) {
+		wp_send_json_error( array( 'message' => __( 'Could not create the upload folder.', 'fw' ) ) );
+	}
+
+	// Content-hashed filename → identical files de-dupe, and the URL is stable.
+	$name = 'rive-' . substr( md5( $raw ), 0, 16 ) . '.riv';
+	if ( false === file_put_contents( trailingslashit( $dir['path'] ) . $name, $raw ) ) {
 		wp_send_json_error( array( 'message' => __( 'Could not save the file.', 'fw' ) ) );
 	}
 

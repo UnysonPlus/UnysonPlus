@@ -75,6 +75,78 @@ $icons_tab_html =
 		. '</div>'
 	. '</div>';
 
+// --- Animated tab inner HTML, built per enabled player technology ------------
+// Lottie and/or Rive each contribute a panel; a small technology selector shows
+// only when BOTH are enabled. Each is gated by its own extension toggle (via the
+// core fw_icon_lottie_enabled() / fw_icon_rive_enabled() helpers). The whole tab
+// is unset below when neither is on (fw_icon_animated_enabled()).
+$anim_lottie = function_exists( 'fw_icon_lottie_enabled' ) && fw_icon_lottie_enabled();
+$anim_rive   = function_exists( 'fw_icon_rive_enabled' ) && fw_icon_rive_enabled();
+$anim_both   = $anim_lottie && $anim_rive;
+
+// .fw-icon-v3-lottie-tab stays the JS marker for the Lottie panel; the added
+// .fw-icon-v3-anim-panel + data-anim-tech drive the selector show/hide.
+$lottie_panel_html =
+	'<div class="fw-icon-v3-lottie-tab fw-icon-v3-anim-panel" data-anim-tech="lottie">'
+	. '<div class="fw-icon-v3-custom-head">'
+	. '<h4 class="fw-icon-v3-section-label">' . esc_html__( 'Lottie animation', 'fw' ) . '</h4>'
+	. '<button type="button" class="fw-icon-v3-lottie-upload button button-secondary">' . esc_html__( 'Upload .json', 'fw' ) . '</button>'
+	. '<input type="file" class="fw-icon-v3-lottie-file" accept=".json,application/json" style="display:none" />'
+	. '</div>'
+	. '<p class="fw-icon-v3-hint">' . esc_html__( 'Paste a LottieFiles or Lordicon animation URL (.json), or upload a Lottie .json file.', 'fw' ) . '</p>'
+	. '<input type="url" class="fw-icon-v3-lottie-url fw-option fw-option-type-text" placeholder="https://…/animation.json" autocomplete="off" spellcheck="false" />'
+	. '<div class="fw-icon-v3-lottie-controls">'
+	. '<label>' . esc_html__( 'Play', 'fw' ) . ' '
+	. '<select class="fw-icon-v3-lottie-trigger">'
+	. '<option value="loop">' . esc_html__( 'Loop', 'fw' ) . '</option>'
+	. '<option value="once">' . esc_html__( 'Once', 'fw' ) . '</option>'
+	. '<option value="hover">' . esc_html__( 'On hover', 'fw' ) . '</option>'
+	. '<option value="click">' . esc_html__( 'On click', 'fw' ) . '</option>'
+	. '</select></label>'
+	. '<label>' . esc_html__( 'Speed', 'fw' ) . ' '
+	. '<input type="number" class="fw-icon-v3-lottie-speed" value="1" min="0.1" max="4" step="0.1" /></label>'
+	. '</div>'
+	. '<div class="fw-icon-v3-lottie-live" aria-hidden="true"></div>'
+	. '<p class="fw-icon-v3-lottie-msg" aria-live="polite"></p>'
+	. '</div>';
+
+$rive_panel_html =
+	'<div class="fw-icon-v3-rive-tab fw-icon-v3-anim-panel" data-anim-tech="rive"' . ( $anim_both ? ' style="display:none"' : '' ) . '>'
+	. '<div class="fw-icon-v3-custom-head">'
+	. '<h4 class="fw-icon-v3-section-label">' . esc_html__( 'Rive animation', 'fw' ) . '</h4>'
+	. '<button type="button" class="fw-icon-v3-rive-upload button button-secondary">' . esc_html__( 'Upload .riv', 'fw' ) . '</button>'
+	. '<input type="file" class="fw-icon-v3-rive-file" accept=".riv" style="display:none" />'
+	. '</div>'
+	. '<p class="fw-icon-v3-hint">' . esc_html__( 'Paste a Rive animation URL (.riv), or upload a .riv file exported from Rive.', 'fw' ) . '</p>'
+	. '<input type="url" class="fw-icon-v3-rive-url fw-option fw-option-type-text" placeholder="https://…/animation.riv" autocomplete="off" spellcheck="false" />'
+	. '<div class="fw-icon-v3-rive-controls">'
+	. '<label>' . esc_html__( 'Play', 'fw' ) . ' '
+	. '<select class="fw-icon-v3-rive-trigger">'
+	. '<option value="loop">' . esc_html__( 'Loop', 'fw' ) . '</option>'
+	. '<option value="once">' . esc_html__( 'Once', 'fw' ) . '</option>'
+	. '<option value="hover">' . esc_html__( 'On hover', 'fw' ) . '</option>'
+	. '<option value="click">' . esc_html__( 'On click', 'fw' ) . '</option>'
+	. '</select></label>'
+	. '</div>'
+	. '<div class="fw-icon-v3-rive-live" aria-hidden="true"></div>'
+	. '<p class="fw-icon-v3-rive-msg" aria-live="polite"></p>'
+	. '</div>';
+
+$anim_selector_html = $anim_both
+	? '<div class="fw-icon-v3-anim-tech-select">'
+		. '<label><input type="radio" name="fw-icon-v3-anim-tech" class="fw-icon-v3-anim-tech" value="lottie" checked /> ' . esc_html__( 'Lottie', 'fw' ) . '</label>'
+		. '<label><input type="radio" name="fw-icon-v3-anim-tech" class="fw-icon-v3-anim-tech" value="rive" /> ' . esc_html__( 'Rive', 'fw' ) . '</label>'
+		. '</div>'
+	: '';
+
+$animated_html =
+	'<div class="fw-icon-v3-toolbar"><h3>' . esc_html__( 'Animated', 'fw' ) . '</h3></div>'
+	. '<div class="fw-icon-v3-animated-tab">'
+	. $anim_selector_html
+	. ( $anim_lottie ? $lottie_panel_html : '' )
+	. ( $anim_rive ? $rive_panel_html : '' )
+	. '</div>';
+
 $tab_config = array(
 		'icons' => array(
 			'type' => 'tab',
@@ -144,10 +216,25 @@ $tab_config = array(
 						. '<p class="fw-icon-v3-hint">'
 						. esc_html__( 'Paste inline <svg>…</svg> markup, or upload an .svg file. Scripts, event handlers and external references are stripped for safety. Use fill="currentColor" to inherit the element colour.', 'fw' )
 						. '</p>'
+						// Animated SVG (SMIL) note — only when the Animated Icons
+						// extension enables it, so authors know animation is kept.
+						. ( ( function_exists( 'fw_icon_svg_animation_enabled' ) && fw_icon_svg_animation_enabled() )
+							? '<p class="fw-icon-v3-hint fw-icon-v3-svg-anim-hint">'
+								. esc_html__( 'Animated SVG is enabled: SMIL tags (<animate>, <animateTransform>…) are kept, so an animated SVG plays. CSS <style> keyframes are not preserved.', 'fw' )
+								. '</p>'
+							: '' )
 						. '<textarea class="fw-icon-v3-svg-input" rows="6" spellcheck="false" placeholder="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;…&lt;/svg&gt;"></textarea>'
 						. '<div class="fw-icon-v3-svg-live" aria-hidden="true"></div>'
 						. '</div>'
 						// --- Image section: WP media upload (its own preview grid) ---
+						// Animated-raster tip (GIF/APNG/WebP) — a sibling BEFORE the
+						// upload-section div, because the JS replaces that div's
+						// innerHTML on re-render and would wipe a hint placed inside.
+						. ( ( function_exists( 'fw_icon_raster_enabled' ) && fw_icon_raster_enabled() )
+							? '<p class="fw-icon-v3-hint fw-icon-v3-raster-hint">'
+								. esc_html__( 'Tip: animated GIF, APNG and WebP images work as icons too — upload one and it plays automatically.', 'fw' )
+								. '</p>'
+							: '' )
 						// Keep the data-fw-option-id marker the JS relies on to (a)
 						// tag a clicked tile as a custom-upload and (b) open this tab
 						// for a stored upload value.
@@ -172,32 +259,7 @@ $tab_config = array(
 				'animated-picker' => array(
 					'type' => 'html-full',
 					'label' => false,
-					'html' =>
-						'<div class="fw-icon-v3-toolbar"><h3>' . esc_html__( 'Animated (Lottie)', 'fw' ) . '</h3></div>'
-						. '<div class="fw-icon-v3-lottie-tab">'
-						. '<div class="fw-icon-v3-custom-head">'
-						. '<h4 class="fw-icon-v3-section-label">' . esc_html__( 'Lottie animation', 'fw' ) . '</h4>'
-						. '<button type="button" class="fw-icon-v3-lottie-upload button button-secondary">' . esc_html__( 'Upload .json', 'fw' ) . '</button>'
-						. '<input type="file" class="fw-icon-v3-lottie-file" accept=".json,application/json" style="display:none" />'
-						. '</div>'
-						. '<p class="fw-icon-v3-hint">'
-						. esc_html__( 'Paste a LottieFiles or Lordicon animation URL (.json), or upload a Lottie .json file.', 'fw' )
-						. '</p>'
-						. '<input type="url" class="fw-icon-v3-lottie-url fw-option fw-option-type-text" placeholder="https://…/animation.json" autocomplete="off" spellcheck="false" />'
-						. '<div class="fw-icon-v3-lottie-controls">'
-						. '<label>' . esc_html__( 'Play', 'fw' ) . ' '
-						. '<select class="fw-icon-v3-lottie-trigger">'
-						. '<option value="loop">' . esc_html__( 'Loop', 'fw' ) . '</option>'
-						. '<option value="once">' . esc_html__( 'Once', 'fw' ) . '</option>'
-						. '<option value="hover">' . esc_html__( 'On hover', 'fw' ) . '</option>'
-						. '<option value="click">' . esc_html__( 'On click', 'fw' ) . '</option>'
-						. '</select></label>'
-						. '<label>' . esc_html__( 'Speed', 'fw' ) . ' '
-						. '<input type="number" class="fw-icon-v3-lottie-speed" value="1" min="0.1" max="4" step="0.1" /></label>'
-						. '</div>'
-						. '<div class="fw-icon-v3-lottie-live" aria-hidden="true"></div>'
-						. '<p class="fw-icon-v3-lottie-msg" aria-live="polite"></p>'
-						. '</div>'
+					'html' => $animated_html
 				)
 			)
 		),
@@ -224,6 +286,17 @@ $tab_config = array(
 // (function_exists guards keep this safe if it's absent).
 if ( empty( $font_packs ) && empty( $svg_packs ) ) {
 	unset( $tab_config['icons'] );
+}
+
+// Gate the Animated (Lottie) tab behind the opt-in "Animated Icons" extension.
+// Core still ships the tab markup + JS + player, but the tab only appears when
+// something flips this filter on — the animated-icons extension does so while
+// active (and with Lottie enabled in its settings). Default false = hidden, so a
+// site that hasn't activated the extension sees the plain picker with no Animated
+// tab and no Lottie runtime loaded. Already-saved lottie values still render on
+// the front end (that path is intentionally NOT gated).
+if ( ! ( function_exists( 'fw_icon_animated_enabled' ) && fw_icon_animated_enabled() ) ) {
+	unset( $tab_config['animated'] );
 }
 
 $tabs = fw()->backend->render_options(
