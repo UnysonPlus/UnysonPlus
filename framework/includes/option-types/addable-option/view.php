@@ -15,6 +15,16 @@ if ($option['sortable']) {
 	$attr['class'] .= ' is-sortable';
 }
 
+// Cross-list drag-and-drop group (opt-in): a generic hook class + a scoped one
+// so connectWith can target only same-group lists. See scripts.js.
+if ( ! empty( $option['connect_group'] ) ) {
+	$group = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $option['connect_group'] );
+	if ( $group !== '' ) {
+		$attr['class'] .= ' fw-ap-connect fw-ap-connect-' . $group;
+		$attr['data-connect-group'] = $group;
+	}
+}
+
 ?>
 <div <?php echo fw_attr_to_html($attr) ?>>
 	<table class="fw-option-type-addable-option-options" width="100%" cellpadding="0" cellspacing="0" border="0">

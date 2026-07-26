@@ -20,7 +20,7 @@ if ( ! function_exists( 'unysonplus_font_icon_pack_ids' ) ) :
 	function unysonplus_font_icon_pack_ids() {
 		$ids = array();
 		if ( function_exists( 'fw' ) ) {
-			$ot = fw()->backend->option_type( 'icon-v2' );
+			$ot = fw()->backend->option_type( 'icon' );
 			if ( $ot && isset( $ot->packs_loader ) ) {
 				$ids = array_keys( $ot->packs_loader->get_packs_unfiltered() );
 			}
@@ -52,7 +52,7 @@ if ( ! function_exists( 'unysonplus_icon_pack_choices' ) ) :
 	function unysonplus_icon_pack_choices() {
 		$choices = array();
 		if ( function_exists( 'fw' ) ) {
-			$ot = fw()->backend->option_type( 'icon-v2' );
+			$ot = fw()->backend->option_type( 'icon' );
 			if ( $ot && isset( $ot->packs_loader ) ) {
 				foreach ( $ot->packs_loader->get_packs_unfiltered() as $id => $pack ) {
 					$choices[ $id ] = isset( $pack['title'] ) ? $pack['title'] : ucfirst( $id );

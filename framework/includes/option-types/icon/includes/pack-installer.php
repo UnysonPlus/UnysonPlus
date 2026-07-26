@@ -158,7 +158,7 @@ if ( ! function_exists( 'fw_icon_pack_counts' ) ) :
 
 		// Webfont packs — load each pack's icon list once, then count.
 		if ( function_exists( 'fw' ) ) {
-			$ot = fw()->backend->option_type( 'icon-v2' );
+			$ot = fw()->backend->option_type( 'icon' );
 			if ( $ot && isset( $ot->packs_loader ) && method_exists( $ot->packs_loader, 'get_packs' ) ) {
 				$ot->packs_loader->get_packs( true ); // populates icon_packs[*]['icons']
 				if ( isset( $ot->packs_loader->icon_packs ) && is_array( $ot->packs_loader->icon_packs ) ) {
@@ -735,7 +735,7 @@ if ( ! function_exists( 'fw_icon_pack_installer_packs' ) ) :
 		// Font-pack titles (webfonts; always present, toggle-only).
 		$font_titles = array();
 		if ( function_exists( 'fw' ) ) {
-			$ot = fw()->backend->option_type( 'icon-v2' );
+			$ot = fw()->backend->option_type( 'icon' );
 			if ( $ot && isset( $ot->packs_loader ) ) {
 				foreach ( $ot->packs_loader->get_packs_unfiltered() as $id => $pack ) {
 					$font_titles[ $id ] = isset( $pack['title'] ) ? $pack['title'] : ucfirst( $id );
@@ -860,7 +860,7 @@ add_action( 'admin_enqueue_scripts', function ( $hook_suffix = '' ) {
 		|| ( is_string( $hook_suffix ) && $hook_suffix !== '' && strpos( $hook_suffix, $slug ) !== false );
 	if ( ! $is_settings ) { return; }
 
-	$base = fw_get_framework_directory_uri( '/includes/option-types/icon-v3/static/installer' );
+	$base = fw_get_framework_directory_uri( '/includes/option-types/icon/static/installer' );
 	$ver  = fw()->manifest->get_version();
 
 	wp_enqueue_style( 'upw-icon-pack-installer', $base . '/installer.css', array(), $ver );

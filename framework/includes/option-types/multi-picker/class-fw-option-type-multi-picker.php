@@ -152,7 +152,7 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 					 * Extract the string value that is used as array key
 					 */
 					switch ($picker_type) {
-						case 'icon-v2':
+						case 'icon':
 							$picker_value = fw_akg('type', $picker_value, 'icon-font');
 							break;
 						default:
@@ -294,7 +294,7 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 			case 'image-picker':
 				$picker_choices = array_intersect_key($option['choices'], $picker['choices']);
 				break;
-			case 'icon-v2':
+			case 'icon':
 				$picker_choices = array_intersect_key(
 					$option['choices'],
 					array(

@@ -54,12 +54,11 @@
 		FW_Option_Type::register( 'FW_Option_Type_Datetime_Range' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient' );
 		FW_Option_Type::register( 'FW_Option_Type_Gradient_V2' );
-		// `icon` — the original Unyson font-icon id, now RECLAIMED to run the
-		// canonical modern engine. FW_Option_Type_Icon subclasses
-		// FW_Option_Type_Icon_v3 (overriding only get_type()), so divider, the
-		// post-types CPT menu icon, and the theme demos get the modern picker
-		// (Icons/Emoji/Custom/Animated/Favorites) automatically. Legacy scalar
-		// values are bridged to the array shape by the engine's normalize_value().
+		// `icon` — THE (one and only) icon option type. Its whole engine lives in
+		// includes/option-types/icon/ (the old icon-v2 / icon-v3 folders + ids are
+		// retired). This single registration IS the picker (Icons / Emoji / Custom /
+		// Animated / Favorites). Legacy scalar values are bridged to the array shape
+		// by the engine's normalize_value().
 		FW_Option_Type::register( 'FW_Option_Type_Icon' );
 		FW_Option_Type::register( 'FW_Option_Type_Image_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Map' );
@@ -86,29 +85,11 @@
 		FW_Option_Type::register( 'FW_Option_Type_Wp_Editor' );
 
 		{
-			// icon-v2 — the production icon type (~23 shortcodes + megamenu). It
-			// now RUNS the canonical modern engine: FW_Option_Type_Icon_v2
-			// subclasses FW_Option_Type_Icon_v3 (only get_type() differs). The
-			// v2 favorites manager AJAX is kept attached for back-compat but the
-			// promoted engine uses the v3 favorites/packs loaders.
-			$favorites = new FW_Icon_V2_Favorites_Manager();
-			$favorites->attach_ajax_actions();
-
-			FW_Option_Type::register( 'FW_Option_Type_Icon_v2' );
-		}
-
-		{
-			// icon-v3 — the canonical modern engine itself (merged Icons + Custom
-			// tabs, Emoji, Animated/Lottie, favorites, SVG upload). It is the base
-			// class that `icon` and `icon-v2` subclass, and is also registered
-			// under its own id (used by the icon-v3-test shortcode). Its favorites
-			// AJAX + packs loader back every promoted id; the engine loads its
-			// assets from the fixed icon-v3 folder under shared handles, so all
-			// three ids share ONE picker instance with no clash.
-			$favorites_v3 = new FW_Icon_V3_Favorites_Manager();
-			$favorites_v3->attach_ajax_actions();
-
-			FW_Option_Type::register( 'FW_Option_Type_Icon_v3' );
+			// The icon picker's favorites/recents AJAX (used by the single `icon`
+			// engine). Attached always so the picker's Favorites tab + recent
+			// uploads work.
+			$icon_favorites = new FW_Icon_Favorites_Manager();
+			$icon_favorites->attach_ajax_actions();
 		}
 
 		{

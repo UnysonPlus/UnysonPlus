@@ -55,3 +55,28 @@
 .fw-option-type-addable-popup:not(.is-sortable) .item .content {
 	padding-left: 15px;
 }
+
+/* Cross-list connect mode (opt-in via connect_group): keep an EMPTY column a
+   visible drop target with a dashed "drop here" affordance, and hint that items
+   are draggable out to other columns. */
+.fw-option-type-addable-popup.fw-ap-connect .items-wrapper {
+	min-height: 44px;
+}
+.fw-option-type-addable-popup.fw-ap-connect .items-wrapper:empty {
+	border-style: dashed;
+	border-color: #c3c4c7;
+	background: #fafafa;
+}
+.fw-option-type-addable-popup.fw-ap-connect .items-wrapper:empty::after {
+	content: "Drag an item here";
+	display: block;
+	padding: 13px 15px;
+	color: #8c8f94;
+	font-style: italic;
+	font-size: 12px;
+}
+/* The dragged item's helper as it crosses columns. */
+.fw-option-type-addable-popup.fw-ap-connect .ui-sortable-helper {
+	box-shadow: 0 2px 8px rgba(0,0,0,.14);
+	border: 1px solid #e1e1e1;
+}

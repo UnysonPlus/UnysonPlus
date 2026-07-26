@@ -89,7 +89,7 @@
 		function chooseGroupForOptionDescriptor (optionDescriptor) {
 			fw.options.getValueForEl(pickerDescriptor.el).then(function (value) {
 				// TODO: implement interfaces for multiple compound option types
-				if (pickerDescriptor.type === 'icon-v2') {
+				if (pickerDescriptor.type === 'icon') {
 					chooseGroup(
 						value.value.type === 'none' ? '' : value.value.type
 					);
@@ -198,7 +198,7 @@
 					chooseGroup(this.value);
 				}).trigger('change');
 			},
-			'icon-v2': function () {
+			'icon': function () {
 				var iconV2Selector = '.fw-option-type-icon-v2 > input';
 
 				elements.$pickerGroup.find(iconV2Selector).on('change', function() {

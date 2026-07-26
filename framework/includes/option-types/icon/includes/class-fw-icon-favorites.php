@@ -2,7 +2,7 @@
 
 if (! defined('FW')) { die('Forbidden'); }
 
-class FW_Icon_V3_Favorites_Manager
+class FW_Icon_Favorites_Manager
 {
 	private $key = 'fw-icon-v3-favorites';
 
@@ -33,11 +33,44 @@ class FW_Icon_V3_Favorites_Manager
 			'wp_ajax_fw_icon_v3_lucide_search',
 			array($this, 'svg_search_action')
 		);
+
+		// Resolve stored SVG-id favorites ('<pack>/<name>') back to their inline
+		// markup. Favorites are persisted as a flat list of id strings, so an SVG
+		// favorite can't render from the id alone — the Favorites tab fetches the
+		// markup for its SVG favorites through this on open.
+		add_action(
+			'wp_ajax_fw_icon_v3_resolve_svg',
+			array($this, 'resolve_svg_action')
+		);
+	}
+
+	/**
+	 * Given a list of SVG-pack ids ('<pack>/<name>'), return a { id => markup }
+	 * map so the picker's Favorites tab can render icons it only has ids for.
+	 */
+	public function resolve_svg_action() {
+		$ids = json_decode( FW_Request::POST( 'ids', '[]' ), true );
+		$out = array();
+
+		if ( is_array( $ids ) && function_exists( 'fw_icon_svg_pack_markup' ) ) {
+			foreach ( $ids as $id ) {
+				$id = (string) $id;
+				if ( strpos( $id, '/' ) === false ) {
+					continue;
+				}
+				$markup = fw_icon_svg_pack_markup( $id );
+				if ( $markup ) {
+					$out[ $id ] = $markup;
+				}
+			}
+		}
+
+		wp_send_json_success( $out );
 	}
 
 	public function get_icon_packs() {
 		wp_send_json_success(
-			fw()->backend->option_type('icon-v3')->packs_loader->get_packs(true)
+			fw()->backend->option_type( 'icon' )->packs_loader->get_packs(true)
 		);
 	}
 

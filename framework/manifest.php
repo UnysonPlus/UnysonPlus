@@ -2,10 +2,32 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.72';
+$manifest['version'] = '2.15.75';
 
 /**
  * Changelog
+ * 2.15.74 - Consolidated the icon option type into ONE folder. The `icon-v2` and `icon-v3` folders
+ *           are gone; everything now lives under `includes/option-types/icon/` — the engine class
+ *           (FW_Option_Type_Icon, merged from the old FW_Option_Type_Icon_v3), the support classes
+ *           (renamed FW_Icon_Favorites_Manager / FW_Icon_Packs_Loader), the shared SVG-pack engine +
+ *           bundled icon data (Lucide/Tabler/FA), the FA4→FA6 migration, the pack installer, and the
+ *           picker assets/views. Autoload, bootstrap requires, hooks, and the picker's asset path were
+ *           rewired accordingly; the dead old stock `icon` assets (backend.js/css) were removed. Purely
+ *           structural — no behavior or value-shape change. (The internal `fw-icon-v3-*` CSS/JS/template
+ *           names are kept as-is; they're an internal prefix, also referenced by the live editor.)
+ *
+ * 2.15.73 - Retired the icon-v2 and icon-v3 option-type IDS. There is now ONE icon option type —
+ *           `icon`. Every shortcode, the megamenu, the site converter, the multi-picker/multi-inline
+ *           option types, and the theme now declare `'type' => 'icon'` (previously `icon-v2`); the
+ *           dev-only icon-v3-test shortcode is removed. `icon-v2`/`icon-v3` are no longer registered
+ *           (they resolve to FW_Option_Type_Undefined — graceful, not fatal). The modern engine class
+ *           physically stays in the icon-v3 folder (FW_Option_Type_Icon subclasses it), so this is an
+ *           id/wiring change, not an engine move. Fully data-safe: `icon`/`icon-v2`/`icon-v3` already
+ *           shared one value shape + engine, so no saved value needs migration and every stored icon
+ *           renders identically. All runtime option_type('icon-v2'/'icon-v3') calls (shortcode views,
+ *           pack counts, the favorites AJAX, the picker templates, theme header/logo helpers) were
+ *           repointed to `icon`.
+ *
  * 2.15.72 - Uploads consolidated under one folder. Everything the plugin (and the parent theme)
  *           writes to wp-content/uploads now lives under a single uploads/unysonplus/<subdir>/
  *           parent — icon-packs, lottie, rive, templates, designs, shortcodes, asset-optimizer, css

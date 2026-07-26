@@ -69,19 +69,17 @@ class FW_Option_Type_Map extends FW_Option_Type {
 	protected function _enqueue_osm_picker() {
 		$leaflet_version = '1.9.4';
 
-		wp_enqueue_style(
-			'leaflet',
-			'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/leaflet.css',
-			array(),
-			$leaflet_version
+		// Self-hosted Leaflet (was loaded from the unpkg CDN, which is a
+		// third-party dependency and whose marker images 404'd). The tiles
+		// still come from OpenStreetMap and geocoding from Nominatim — those
+		// are inherent to a free, key-less map — but the library + its marker
+		// icons now ship with the plugin.
+		$vendor = fw_get_framework_directory_uri(
+			'/includes/option-types/' . $this->get_type() . '/static/vendor/leaflet'
 		);
-		wp_enqueue_script(
-			'leaflet',
-			'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/leaflet.js',
-			array(),
-			$leaflet_version,
-			true
-		);
+
+		wp_enqueue_style( 'leaflet', $vendor . '/leaflet.css', array(), $leaflet_version );
+		wp_enqueue_script( 'leaflet', $vendor . '/leaflet.js', array(), $leaflet_version, true );
 
 		wp_enqueue_script(
 			$this->get_type() . '-scripts-osm',
@@ -98,7 +96,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 				'nominatim_search'  => 'https://nominatim.openstreetmap.org/search',
 				'nominatim_reverse' => 'https://nominatim.openstreetmap.org/reverse',
 				'language'          => substr( get_locale(), 0, 2 ),
-				'leaflet_images'    => 'https://unpkg.com/leaflet@' . $leaflet_version . '/dist/images/',
+				'leaflet_images'    => $vendor . '/images/',
 			)
 		);
 	}

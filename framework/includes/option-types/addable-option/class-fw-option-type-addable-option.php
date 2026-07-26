@@ -25,6 +25,13 @@ class FW_Option_Type_Addable_Option extends FW_Option_Type
 			 * to not confuse the user that if changing the order will affect something.
 			 */
 			'sortable' => true,
+			/**
+			 * Cross-list drag-and-drop (opt-in). Two or more addable-options that
+			 * share the SAME non-empty connect_group let their rows be dragged
+			 * between them (jQuery-UI connectWith). Empty (default) = self-contained.
+			 * Scope the id per logical group so unrelated lists don't interlink.
+			 */
+			'connect_group' => '',
 		);
 	}
 

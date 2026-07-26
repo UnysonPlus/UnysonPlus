@@ -76,3 +76,23 @@ body.rtl .fw-option-type-addable-option tr.fw-option-type-addable-option-option.
 .fw-backend-option-input-type-addable-option .fw-option-help-in-input {
 	top: 4px !important;
 }
+
+/* Cross-list connect mode (opt-in via connect_group): keep an EMPTY list a
+   visible drop target so a dragged row has somewhere to land. Only the :empty
+   table is switched to block (it has no rows to lay out, so no layout break);
+   a populated table keeps its normal table rendering. */
+.fw-option-type-addable-option.fw-ap-connect table.fw-option-type-addable-option-options:empty {
+	display: block;
+	min-height: 40px;
+	border: 1px dashed #c3c4c7;
+	background: #fafafa;
+	border-radius: 4px;
+}
+.fw-option-type-addable-option.fw-ap-connect table.fw-option-type-addable-option-options:empty::after {
+	content: "Drag an item here";
+	display: block;
+	padding: 12px 14px;
+	color: #8c8f94;
+	font-style: italic;
+	font-size: 12px;
+}

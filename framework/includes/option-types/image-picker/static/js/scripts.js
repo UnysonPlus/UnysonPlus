@@ -59,16 +59,25 @@
 				if (c && cats.indexOf(c) < 0) { cats.push(c); }
 			});
 			if (!cats.length) { return; }
+			// Default active tab = the category that CONTAINS the currently-selected tile, so a saved
+			// value living in a non-first category opens on ITS OWN tab. Without this the picker always
+			// opened on the first category, so a selection elsewhere (e.g. a gallery_3d design in the
+			// "Stack & Scatter" tab) read as "nothing selected" — the selected tile was on a hidden tab.
+			var activeCat = cats[0];
+			var $selOpt = $wrap.find('select option:selected').first();
+			if ($selOpt.length) {
+				var gl = ($selOpt.closest('optgroup').attr('label') || '').replace(/\s+/g, ' ').replace(/^ | $/g, '');
+				if (gl && cats.indexOf(gl) > -1) { activeCat = gl; }
+			}
 			var $bar = $('<div class="fw-image-picker-tabs"></div>');
-			// First category is the default active tab (not "All").
-			cats.forEach(function (c, i) {
-				$bar.append($('<button type="button" class="fw-ip-tab' + (i === 0 ? ' is-active' : '') + '"></button>').attr('data-cat', c).text(c));
+			cats.forEach(function (c) {
+				$bar.append($('<button type="button" class="fw-ip-tab' + (c === activeCat ? ' is-active' : '') + '"></button>').attr('data-cat', c).text(c));
 			});
 			// "All" always sits at the end.
 			$bar.append($('<button type="button" class="fw-ip-tab" data-cat="__all__"></button>').text('All'));
 			var $anchor = $wrap.find('.fw-image-picker-search');
 			if ($anchor.length) { $anchor.after($bar); } else { $sel.before($bar); }
-			$wrap.attr('data-active-cat', cats[0]);
+			$wrap.attr('data-active-cat', activeCat);
 			$bar.on('click', '.fw-ip-tab', function () {
 				$bar.find('.fw-ip-tab').removeClass('is-active');
 				$(this).addClass('is-active');

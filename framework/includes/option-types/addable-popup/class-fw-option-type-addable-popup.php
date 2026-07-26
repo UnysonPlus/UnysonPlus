@@ -78,7 +78,14 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 				'options' => $this->transform_options($option['popup-options']),
 				'template' => $option['template'],
 				'size' => $option['size'],
-				'limit' => $option['limit']
+				'limit' => $option['limit'],
+				// Opt-in cross-list drag-and-drop: items can be dragged between any
+				// addable-popup that shares this (non-empty) group id. Sanitized to a
+				// CSS-class-safe token; see view.php (emits .fw-ap-connect-<group>) and
+				// scripts.js (wires jQuery-UI connectWith to it).
+				'connect_group' => empty($option['connect_group'])
+					? ''
+					: preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $option['connect_group'])
 			))
 		));
 
@@ -185,6 +192,14 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 			'limit' => 0,
 			'size' => 'small', // small, medium, large
 			'add-button-text' => __('Add', 'fw'),
+			/**
+			 * Cross-list drag-and-drop (opt-in). When two or more addable-popups
+			 * share the SAME non-empty connect_group, their items can be dragged
+			 * between them (jQuery-UI connectWith). Empty (default) = self-contained,
+			 * vertical-only sorting as before. Scope the id per logical group (e.g.
+			 * one footer row's columns) so unrelated addable-popups don't interlink.
+			 */
+			'connect_group' => '',
 			/**
 			 * Makes the items sortable
 			 *

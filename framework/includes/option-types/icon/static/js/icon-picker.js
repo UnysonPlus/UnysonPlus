@@ -1,5 +1,19 @@
 ;(function($) {
 
+	// "Add to Favorites" star markup for the SVG/Lucide grid tiles. Mirrors the
+	// star the font-icon collection template renders, so SVG icons are favoritable
+	// too (the click is caught by the `.fw-icon-v3-library-icon a` handler).
+	function fwIconV3FavoriteStar() {
+		var label =
+			(window.fw_icon_v3_data && fw_icon_v3_data.add_to_favorites) ||
+			'Add to Favorites'
+		return (
+			'<a title="' +
+			_.escape(label) +
+			'" class="fw-icon-v3-favorite dashicons dashicons-star-filled"></a>'
+		)
+	}
+
 	window.fwOptionTypeIconV2Picker = fw.Modal.extend({
 		defaults: _.extend({}, fw.Modal.prototype.defaults, {
 			title: 'Icon V2',
@@ -191,9 +205,23 @@
 				e.preventDefault()
 				e.stopPropagation()
 
-				var icon = $(e.currentTarget)
-					.closest('.fw-icon-v3-library-icon')
-					.attr('data-fw-icon-v3')
+				var $li = $(e.currentTarget).closest('.fw-icon-v3-library-icon')
+				var icon = $li.attr('data-fw-icon-v3')
+
+				if (!icon) {
+					// SVG/Lucide tile: favorite it by its svg-id. Remember its
+					// markup (from the grid's lucideResults) so the Favorites tab
+					// can render it — a stored id can't render on its own.
+					var svgId = $li.attr('data-svg-id')
+					if (!svgId) {
+						return
+					}
+					icon = svgId
+					var cached = this.lucideResults && this.lucideResults[svgId]
+					if (cached && cached.markup) {
+						this.model.rememberFavoriteSvgMarkup(svgId, cached.markup)
+					}
+				}
 
 				this.model.markAsFavorite(icon)
 
@@ -214,9 +242,14 @@
 						return
 					}
 
-					$('[data-fw-icon-v3="' + favorite + '"]').addClass(
-						'fw-icon-v3-favorite'
-					)
+					// SVG favorites are keyed by data-svg-id ('<pack>/<name>');
+					// font favorites by data-fw-icon-v3 (the class string).
+					var selector =
+						String(favorite).indexOf('/') !== -1
+							? '[data-svg-id="' + favorite + '"]'
+							: '[data-fw-icon-v3="' + favorite + '"]'
+
+					$(selector).addClass('fw-icon-v3-favorite')
 				})
 			},
 
@@ -633,7 +666,8 @@
 						'" data-svg-id="' + _.escape(item.id) +
 						'" data-name="' + _.escape(item.name) +
 						'" title="' + _.escape(item.name) +
-						'"><div class="fw-icon-inner">' + item.markup + '</div></li>'
+						'"><div class="fw-icon-inner">' + item.markup +
+						fwIconV3FavoriteStar() + '</div></li>'
 				})
 				$ul.find('.fw-ghost-item').remove()
 				$ul.append(html)
@@ -727,6 +761,7 @@
 							_.escape(item.name) +
 							'"><div class="fw-icon-inner">' +
 							item.markup +
+							fwIconV3FavoriteStar() +
 							'</div></li>'
 					})
 					// Ghost fillers keep the last row LEFT-aligned (matching the
@@ -741,7 +776,18 @@
 				event.preventDefault()
 
 				var $el = $(event.currentTarget)
-				var item = this.lucideResults[$el.attr('data-svg-id')]
+				var id = $el.attr('data-svg-id')
+				var item = this.lucideResults[id]
+
+				// Favorites-tab SVG tiles aren't in the grid's lucideResults —
+				// fall back to the markup resolved for the user's favorites.
+				if (
+					!item &&
+					this.model.favoritesSvgMarkup &&
+					this.model.favoritesSvgMarkup[id]
+				) {
+					item = {id: id, markup: this.model.favoritesSvgMarkup[id]}
+				}
 
 				if (!item) {
 					return
@@ -1155,6 +1201,7 @@
 			}
 
 			modal.favoritesPromise = $.Deferred()
+			modal.favoritesSvgMarkup = modal.favoritesSvgMarkup || {}
 
 			var ajaxPromise = $.post(ajaxurl, {
 				action: 'fw_icon_v3_get_favorites',
@@ -1165,40 +1212,74 @@
 					modal.currentFavorites = _.uniq(ajaxPromise.responseJSON)
 				}
 
+				// SVG-id favorites ('<pack>/<name>') can't render from the id
+				// alone — resolve their inline markup server-side so the
+				// Favorites tab can show them.
+				var svgFavorites = _.filter(
+					modal.currentFavorites || [],
+					function(f) {
+						return (
+							typeof f === 'string' && f.indexOf('/') !== -1
+						)
+					}
+				)
+
+				var svgPromise = svgFavorites.length
+					? $.post(ajaxurl, {
+							action: 'fw_icon_v3_resolve_svg',
+							ids: JSON.stringify(svgFavorites),
+					  }).then(function(resp) {
+							if (resp && resp.success && resp.data) {
+								modal.favoritesSvgMarkup = _.extend(
+									modal.favoritesSvgMarkup,
+									resp.data
+								)
+							}
+					  })
+					: null
+
 				var recent_uploads = _.filter(
 					ajaxPromise.responseJSON,
 					_.compose(_.negate(_.isNaN), _.partial(parseInt, _, 10))
 				)
 
-				if (recent_uploads.length === 0) {
-					modal.favoritesPromise.resolve()
-					return
-				}
+				var mediaPromise = null
 
-				wp.media
-					.query({post__in: recent_uploads, perPage: 200})
-					.more()
-					.then(function() {
-						var oldLength = modal.currentFavorites.length
+				if (recent_uploads.length !== 0) {
+					mediaPromise = wp.media
+						.query({post__in: recent_uploads, perPage: 200})
+						.more()
+						.then(function() {
+							var oldLength = modal.currentFavorites.length
 
-						recent_uploads.map(function(id) {
-							if (!wp.media.attachment(id).get('url')) {
-								modal.currentFavorites = _.without(
-									modal.currentFavorites,
-									id
-								)
+							recent_uploads.map(function(id) {
+								if (!wp.media.attachment(id).get('url')) {
+									modal.currentFavorites = _.without(
+										modal.currentFavorites,
+										id
+									)
+								}
+							})
+
+							if (oldLength !== modal.currentFavorites.length) {
+								modal.syncFavoritesToServer()
 							}
 						})
+				}
 
-						if (oldLength !== modal.currentFavorites.length) {
-							modal.syncFavoritesToServer()
-						}
-
-						modal.favoritesPromise.resolve()
-					})
+				$.when(svgPromise, mediaPromise).always(function() {
+					modal.favoritesPromise.resolve()
+				})
 			})
 
 			return modal.favoritesPromise
+		},
+
+		rememberFavoriteSvgMarkup: function(id, markup) {
+			if (!this.favoritesSvgMarkup) {
+				this.favoritesSvgMarkup = {}
+			}
+			this.favoritesSvgMarkup[id] = markup
 		},
 
 		syncFavoritesToServer: function() {
@@ -1274,6 +1355,7 @@
 			return wp.template('fw-icon-v3-favorites')({
 				favorites: this.currentFavorites || [],
 				current_state: this.result,
+				svg_markup: this.favoritesSvgMarkup || {},
 			})
 		},
 

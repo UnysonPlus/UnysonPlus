@@ -8,13 +8,14 @@ jQuery(document).ready(function ($) {
 			// happens when sortable was not initialized before
 		}
 
-		if (! $options.first().closest(optionClass).hasClass('is-sortable')) {
+		var $opt = $options.first().closest(optionClass);
+		if (! $opt.hasClass('is-sortable')) {
 			return false;
 		}
 
 		var isMobile = $(document.body).hasClass('mobile');
 
-		$options.sortable({
+		var sortableOpts = {
 			items: '> tbody > tr',
 			handle: 'td:first',
 			cursor: 'move',
@@ -36,7 +37,46 @@ jQuery(document).ready(function ($) {
 				$(this).closest(optionClass).trigger('change'); // for customizer
 				fw.options.trigger.changeForEl($(this).closest(optionClass));
 			}
-		});
+		};
+
+		// Cross-list mode: link every list in the same connect_group so rows can be
+		// dragged between them. Drop the y-axis lock, and on receive re-key the moved
+		// row's input name to THIS list (names are indexed fw_options[id][n], and the
+		// form saves by native serialize(), so a moved row must adopt this list's
+		// prefix + a fresh non-colliding index or it reverts on save).
+		var group = $opt.attr('data-connect-group');
+		if (group) {
+			delete sortableOpts.axis;
+			sortableOpts.connectWith = '.fw-ap-connect-' + group + ' table.fw-option-type-addable-option-options';
+			sortableOpts.receive = function (e, ui) {
+				var $inputs = ui.item.find('input, select, textarea');
+				if ($inputs.length) {
+					var $btn  = $opt.find('.fw-option-type-addable-option-add').first();
+					var idx   = parseInt($btn.attr('data-increment'), 10) || 1;
+					$btn.attr('data-increment', idx + 1);
+					var ph    = $btn.attr('data-increment-placeholder');
+					// Target name prefix (fw_options[thisId][n]) from THIS list's template.
+					var tplName = $('<div>').html(
+						$opt.find('.default-addable-option-template').first().attr('data-template') || ''
+					).find('input, select, textarea').first().attr('name') || '';
+					var pm = tplName.match(/^([^\]]*\][^\]]*\])/);
+					var oldName = $inputs.first().attr('name') || '';
+					var om = oldName.match(/^([^\]]*\][^\]]*\])/);
+					if (pm && om) {
+						var newPrefix = pm[1].split(ph).join(String(idx)); // fw_options[thisId][idx]
+						var oldPrefix = om[1];
+						$inputs.each(function () {
+							var n = $(this).attr('name');
+							if (n) { $(this).attr('name', n.replace(oldPrefix, newPrefix)); }
+						});
+					}
+				}
+				$opt.trigger('change');
+				fw.options.trigger.changeForEl($opt);
+			};
+		}
+
+		$options.sortable(sortableOpts);
 	}
 
 	var methods = {
@@ -123,7 +163,11 @@ jQuery(document).ready(function ($) {
 		});
 
 		$elements.each(function(){
-			initSortable($elements.find(optionClass +'-options:first'));
+			// Scope to THIS addable-option's own table (was $elements.find(':first'),
+			// which only ever initialized the first list on a page with several — and
+			// read the wrong element's connect_group). Per-element init is required for
+			// cross-list connect mode to wire connectWith on every participating list.
+			initSortable($(this).find(optionClass +'-options:first'));
 		});
 
 		$elements.addClass('fw-option-initialized');

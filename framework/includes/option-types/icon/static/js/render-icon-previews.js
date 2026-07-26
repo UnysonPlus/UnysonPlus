@@ -1,20 +1,20 @@
 (function($) {
 	// Bind via a stable hook class rendered by the shared view.php, so the
-	// picker works for every id this engine is registered under — 'icon-v2'
-	// and the reclaimed 'icon'. (Previously '.fw-option-type-icon-v2', which
-	// only matched the 'icon-v2' id.)
-	var $rootClass = '.fw-icon-picker';
+	// picker works for every id this engine is registered under — 'icon-v3'
+	// and the reclaimed 'icon'. (Previously '.fw-option-type-icon-v3', which
+	// only matched the 'icon-v3' id.)
+	var $rootClass = '.fw-icon-v3-picker';
 
 	/**
 	 * We'll have this HTML structure
 	 *
-	 * <div class="fw-icon-v2-preview-wrapper>
-	 *   <div class="fw-icon-v2-preview">
+	 * <div class="fw-icon-v3-preview-wrapper>
+	 *   <div class="fw-icon-v3-preview">
 	 *     <i></i>
-	 *     <button class="fw-icon-v2-remove-icon"></button>
+	 *     <button class="fw-icon-v3-remove-icon"></button>
 	 *   </div>
 	 *
-	 *   <button class="fw-icon-v2-trigger-modal">Add Icon</div>
+	 *   <button class="fw-icon-v3-trigger-modal">Add Icon</div>
 	 * </div>
 	 */
 
@@ -22,9 +22,9 @@
 		data.$elements.find($rootClass).toArray().map(renderSinglePreview);
 	});
 
-	$(document).on('click', $rootClass + ' .fw-icon-v2-remove-icon', removeIcon);
-	$(document).on('click', $rootClass + ' .fw-icon-v2-trigger-modal', getNewIcon);
-	$(document).on('click', $rootClass + ' .fw-icon-v2-preview', getNewIcon);
+	$(document).on('click', $rootClass + ' .fw-icon-v3-remove-icon', removeIcon);
+	$(document).on('click', $rootClass + ' .fw-icon-v3-trigger-modal', getNewIcon);
+	$(document).on('click', $rootClass + ' .fw-icon-v3-preview', getNewIcon);
 
 	/**
 	 * For debugging purposes
@@ -85,26 +85,26 @@
 		$root.addClass('fw-activated');
 
 		var $wrapper = $('<div>', {
-			class: 'fw-icon-v2-preview-wrapper',
+			class: 'fw-icon-v3-preview-wrapper',
 			'data-icon-type': getDataForRoot($root)['type'],
 		});
 
 		var $preview = $('<div>', {
-			class: 'fw-icon-v2-preview',
+			class: 'fw-icon-v3-preview',
 		})
 			.append($('<i>'))
 			.append(
 				$('<a>', {
-					class: 'fw-icon-v2-remove-icon dashicons fw-x',
+					class: 'fw-icon-v3-remove-icon dashicons fw-x',
 					html: '',
 				})
 			);
 
 		$wrapper.append($preview).append(
 			$('<button>', {
-				class: 'fw-icon-v2-trigger-modal button-secondary button-large',
+				class: 'fw-icon-v3-trigger-modal button-secondary button-large',
 				type: 'button',
-				html: fw_icon_v2_data.add_icon_label,
+				html: fw_icon_v3_data.add_icon_label,
 			})
 		);
 
@@ -131,21 +131,33 @@
 		var data = getDataForRoot($root);
 
 		$root
-			.find('.fw-icon-v2-trigger-modal')
+			.find('.fw-icon-v3-trigger-modal')
 			.text(
-				fw_icon_v2_data[
+				fw_icon_v3_data[
 					hasIcon(data) ? 'edit_icon_label' : 'add_icon_label'
 				]
 			);
 
 		$root
-			.find('.fw-icon-v2-preview-wrapper')
+			.find('.fw-icon-v3-preview-wrapper')
 			.removeClass('fw-has-icon')
 			.addClass(hasIcon(data) ? 'fw-has-icon' : '');
 
 		$root
-			.find('.fw-icon-v2-preview-wrapper')
+			.find('.fw-icon-v3-preview-wrapper')
 			.attr('data-icon-type', data['type']);
+
+		// Tear down any previous Lottie preview animation before resetting the
+		// <i> — empty() removes the SVG but leaves the player's rAF loop running.
+		var prevGlyph = $root.find('i')[0];
+		if (prevGlyph && prevGlyph.__upwPreviewLottie) {
+			try { prevGlyph.__upwPreviewLottie.destroy(); } catch (e) {}
+			prevGlyph.__upwPreviewLottie = null;
+		}
+		if (prevGlyph && prevGlyph.__upwPreviewRive) {
+			try { prevGlyph.__upwPreviewRive.cleanup(); } catch (e) {}
+			prevGlyph.__upwPreviewRive = null;
+		}
 
 		// Reset the preview glyph before re-rendering it for the current kind.
 		$root.find('i').attr('class', '').attr('style', '').empty();
@@ -155,12 +167,12 @@
 		}
 
 		if (data.type === 'emoji') {
-			$root.find('i').addClass('fw-icon-v2-preview-emoji').text(data['char'] || '');
+			$root.find('i').addClass('fw-icon-v3-preview-emoji').text(data['char'] || '');
 		}
 
 		if (data.type === 'svg') {
 			// markup is what the picker stored; server sanitises on save/render.
-			$root.find('i').addClass('fw-icon-v2-preview-svg').html(data['markup'] || '');
+			$root.find('i').addClass('fw-icon-v3-preview-svg').html(data['markup'] || '');
 		}
 
 		if (data.type === 'custom-upload') {
@@ -182,9 +194,75 @@
 			}
 		}
 
+		if (data.type === 'lottie') {
+			// The Animated kind previews as a small looping animation, using the
+			// bundled lottie-web player enqueued alongside the picker.
+			playLottiePreview($root, $root.find('i').addClass('fw-icon-v3-preview-lottie'), data['src']);
+		}
+
+		if (data.type === 'rive') {
+			// Rive previews on a <canvas> via the bundled Rive runtime (only
+			// enqueued when Rive is enabled).
+			playRivePreview($root, $root.find('i').addClass('fw-icon-v3-preview-rive'), data['src']);
+		}
+
 		function hasIcon(data) {
 			return data.type !== 'none';
 		}
+	}
+
+	// Draw a Rive .riv into the option-swatch <i> on a <canvas>. Guarded so it is
+	// inert when the Rive runtime isn't present (Rive not enabled).
+	function playRivePreview($root, $i, src) {
+		if (!src || !$i[0] || !window.rive) { return; }
+		if (window.upwRiveWasm) { try { window.rive.RuntimeLoader.setWasmUrl(window.upwRiveWasm); } catch (e) {} }
+		try {
+			var canvas = document.createElement('canvas');
+			canvas.className = 'upw-rive-canvas';
+			$i[0].appendChild(canvas);
+			var inst = new window.rive.Rive({
+				src: src, canvas: canvas, autoplay: true,
+				layout: new window.rive.Layout({ fit: window.rive.Fit.Contain, alignment: window.rive.Alignment.Center }),
+				onLoad: function () { try { inst.resizeDrawingSurfaceToCanvas(); } catch (e) {} }
+			});
+			$i[0].__upwPreviewRive = inst;
+		} catch (e) {}
+	}
+
+	// Load a looping Lottie animation into the option-swatch <i>. lottie-web is
+	// enqueued in the footer, so on the very first paint window.lottie may not be
+	// parsed yet — retry briefly, and bail if the value changed to another kind
+	// while we waited (so a late load can't inject into a now-stale swatch).
+	function playLottiePreview($root, $i, src) {
+		if (!src || !$i[0]) {
+			return;
+		}
+
+		var start = function () {
+			if (getDataForRoot($root).type !== 'lottie' || $i[0].__upwPreviewLottie) {
+				return;
+			}
+			try {
+				$i[0].__upwPreviewLottie = window.lottie.loadAnimation({
+					container: $i[0],
+					renderer: 'svg',
+					loop: true,
+					autoplay: true,
+					path: src
+				});
+			} catch (e) {}
+		};
+
+		if (window.lottie) {
+			start();
+			return;
+		}
+
+		var tries = 0;
+		var iv = setInterval(function () {
+			if (window.lottie) { clearInterval(iv); start(); }
+			else if (++tries > 40) { clearInterval(iv); } // ~4s cap
+		}, 100);
 	}
 
 	function getDataForRoot($root) {
@@ -254,9 +332,16 @@
 		},
 	};
 
-	// Register ONLY this type's own id. The stock `icon` type is no longer
-	// reclaimed by this engine (it ships its own backend.js), so registering
-	// 'icon' here is stale — and both icon-v2 AND icon-v3 doing it collided
-	// ("Can't re-register an option type again").
-	fw.options.register('icon-v2', iconOptionHandler);
+	// This one engine now backs several option-type ids: the reclaimed 'icon'
+	// (divider, post-types CPT menu icon, theme demos), 'icon-v2' (the production
+	// type used by ~23 shortcodes + megamenu), and 'icon-v3' (the test type).
+	// FW_Option_Type_Icon and FW_Option_Type_Icon_v2 subclass this engine and no
+	// longer enqueue their own picker JS, so the stock backend.js that used to
+	// register 'icon' is retired — registering it here is now the sole
+	// registration. Register the SAME handler under each id. The script is
+	// enqueued once (shared handle), so each id is registered exactly once (no
+	// "Can't re-register an option type again").
+	['icon'].forEach(function(typeId) {
+		fw.options.register(typeId, iconOptionHandler);
+	});
 })(jQuery);

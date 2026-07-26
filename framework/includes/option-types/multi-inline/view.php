@@ -133,12 +133,12 @@ if ( ! empty( $option['groupname'] ) ) {
 
 			// icon-v2 (icon picker button — opens a modal to choose a
 			// font / SVG / emoji / uploaded icon). The value + enqueue paths
-			// are already generic (child_type passes 'icon-v2' through), so
+			// are already generic (child_type passes 'icon' through), so
 			// this render branch is all that was missing for icon rows.
-			elseif ( $type === 'icon-v2' || $type === 'icon' ) {
+			elseif ( $type === 'icon' || $type === 'icon' ) {
 				$holder_class = 'fw-multi-holding-icon';
-				$field = fw()->backend->option_type( 'icon-v2' )->render( $key, array(
-					'type'  => 'icon-v2',
+				$field = fw()->backend->option_type( 'icon' )->render( $key, array(
+					'type'  => 'icon',
 					'value' => fw_akg( $key, $option['value'] ),
 					'attr'  => $mp_attr,
 				), $data_for_child );

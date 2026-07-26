@@ -2,7 +2,7 @@
 
 if (! defined('FW')) { die('Forbidden'); }
 
-class FW_Icon_V3_Packs_Loader
+class FW_Icon_Packs_Loader
 {
 	public $icon_packs = array();
 

@@ -111,7 +111,7 @@ deep-dive before using · *(alias)* = thin wrapper over another type.
 | `responsive` ⚠ | Wraps ONE inner control per breakpoint | `{ base, md, lg }` |
 | `popover` | Inline-expanding container (no own value) | — (container) |
 | `popup` | Modal-hosted set of options | hash keyed by `popup-options` ids |
-| `addable-box` / `addable-option` / `addable-popup` | Repeatable rows (popup = edited in a modal; used by header/footer columns) | array of row hashes |
+| `addable-box` / `addable-option` / `addable-popup` 📖 | Repeatable rows (popup = edited in a modal; used by header/footer columns). `addable-popup` **and `addable-option`** support opt-in **cross-list drag-and-drop** via `connect_group` (`addable-box` does not yet). | array of row hashes |
 
 ## Date & time
 

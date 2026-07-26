@@ -2,6 +2,11 @@
 	var addablePopup = function () {
 		var $this = $(this),
 			$defaultItem = $this.find('.default-item:first'),
+			// This column's item input-name template (e.g. fw_options[...][col_2][]).
+			// Captured from the default item BEFORE it's removed, so it's known even
+			// for an empty column. In connect mode a received item is re-keyed to this
+			// so it serializes under THIS column (the form saves via $el.serialize()).
+			itemName = ($defaultItem.find('input').attr('name') || ''),
 			nodes = {
 				$optionWrapper: $this,
 				$addButton: $this.find('.add-new-item'),
@@ -37,6 +42,13 @@
 				},
 
 				toogleItemsWrapper: function () {
+
+					// In connect mode an empty column must stay visible so it remains a
+					// drop target (a display:none list can't receive a dragged item).
+					if (data.connect_group) {
+						nodes.$itemsWrapper.show();
+						return;
+					}
 
 					if (utils.countItems() === 0) {
 						nodes.$itemsWrapper.hide();
@@ -74,7 +86,7 @@
 						return false;
 					}
 
-					nodes.$itemsWrapper.sortable({
+					var sortableOpts = {
 						items: '> .item',
 						cursor: 'move',
 						distance: 2,
@@ -92,7 +104,32 @@
 								ui.placeholder.height(height);
 							}
 						}
-					});
+					};
+
+					// Cross-list mode: link every list in the same connect_group so items
+					// can be dragged between columns. Drop the y-axis lock (movement is now
+					// sideways too), and on receive/remove re-sync toggles + fire change on
+					// BOTH the giving and receiving lists so each re-collects by DOM order.
+					if (data.connect_group) {
+						delete sortableOpts.axis;
+						sortableOpts.connectWith = '.fw-ap-connect-' + data.connect_group + ' .items-wrapper';
+						sortableOpts.receive = function (e, ui) {
+							// Re-key the received item's input NAME to THIS column so the
+							// native form serialize() saves it here, not its origin column.
+							// Without this the item visually moves but reverts on save.
+							if (itemName) {
+								ui.item.find('input').attr('name', itemName);
+							}
+							utils.toogleNodes();
+							nodes.$optionWrapper.trigger('change');
+							fw.options.trigger.changeForEl(nodes.$optionWrapper);
+						};
+						sortableOpts.remove = function () {
+							utils.toogleNodes();
+						};
+					}
+
+					nodes.$itemsWrapper.sortable(sortableOpts);
 				},
 
 				initItemsTemplates: function () {

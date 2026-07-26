@@ -13,13 +13,13 @@
  */
 (function($, _, fwe, localized) {
 
-	// Point Leaflet's default marker icon at the CDN images (otherwise broken).
+	// Point Leaflet's default marker icons at our self-hosted images. Set the
+	// imagePath (which Leaflet PREPENDS to its default filenames) rather than
+	// overriding the *Url options: overriding them with absolute URLs makes
+	// Leaflet concatenate imagePath + the full URL, producing a doubled,
+	// 404-ing path.
 	if (typeof L !== 'undefined' && localized && localized.leaflet_images) {
-		L.Icon.Default.mergeOptions({
-			iconRetinaUrl: localized.leaflet_images + 'marker-icon-2x.png',
-			iconUrl: localized.leaflet_images + 'marker-icon.png',
-			shadowUrl: localized.leaflet_images + 'marker-shadow.png'
-		});
+		L.Icon.Default.imagePath = localized.leaflet_images;
 	}
 
 	function nominatim(endpoint, params, done) {

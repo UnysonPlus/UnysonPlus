@@ -9,7 +9,7 @@
 // switches mode by the option's data-type. Emoji stays its own tab.
 $font_packs = array();
 if ( function_exists( 'unysonplus_font_icon_pack_ids' ) && function_exists( 'fw' ) ) {
-	$icon_ot      = fw()->backend->option_type( 'icon-v3' );
+	$icon_ot      = fw()->backend->option_type( 'icon' );
 	$loader_packs = ( $icon_ot && isset( $icon_ot->packs_loader ) ) ? $icon_ot->packs_loader->get_packs_unfiltered() : array();
 	foreach ( unysonplus_font_icon_pack_ids() as $font_pid ) {
 		if ( function_exists( 'unysonplus_icon_pack_enabled' ) && ! unysonplus_icon_pack_enabled( $font_pid ) ) {
@@ -380,8 +380,12 @@ $tabs = fw()->backend->render_options(
 
 <div class="fw-icon-v3-library-pack-wrapper fw-favorite-icons-wrapper">
 	<# var favorites = _.filter(data.favorites, _.compose(_.isNaN, _.partial(parseInt, _, 10))) #>
+	<# var fontFavorites = _.filter(favorites, function (f) { return String(f).indexOf('/') === -1 }) #>
+	<# var svgFavorites  = _.filter(favorites, function (f) { return String(f).indexOf('/') !== -1 }) #>
+	<# var svgMarkup = data.svg_markup || {} #>
+	<# var currentSvgId = (data.current_state && data.current_state['svg-id']) || '' #>
 
-	<# if (favorites.length === 0) { #>
+	<# if (fontFavorites.length === 0 && svgFavorites.length === 0) { #>
 
 		<div class="fw-icon-v3-note">
 			<!-- <i class="fw-icon-v3-info dashicons dashicons-star-filled"></i> -->
@@ -398,11 +402,46 @@ $tabs = fw()->backend->render_options(
 
 	<# } else { #>
 
-		{{{
-			wp.template('fw-icon-v3-icons-collection')(
-				_.extend({}, {icons: favorites, current_state: data.current_state})
-			)
-		}}}
+		<# if (fontFavorites.length) { #>
+			{{{
+				wp.template('fw-icon-v3-icons-collection')(
+					_.extend({}, {icons: fontFavorites, current_state: data.current_state})
+				)
+			}}}
+		<# } #>
+
+		<# if (svgFavorites.length) { #>
+			<ul class="fw-icon-v3-library-pack">
+				<# _.each(svgFavorites, function (id) { #>
+					<# var markup = svgMarkup[id]; if (!markup) { return } #>
+					<li
+						data-svg-id="{{id}}"
+						data-name="{{id}}"
+						title="{{id}}"
+						class="fw-icon-v3-library-icon fw-icon-v3-lucide-icon fw-icon-v3-favorite <# if (currentSvgId === id) { #>selected<# } #>">
+						<div class="fw-icon-inner">
+							{{{ markup }}}
+							<a
+								title="<?php echo esc_attr__('Add to Favorites', 'fw') ?>"
+								class="fw-icon-v3-favorite dashicons dashicons-star-filled">
+							</a>
+						</div>
+					</li>
+				<# }) #>
+
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+				<li class="fw-ghost-item"></li>
+			</ul>
+		<# } #>
 
 	<# } #>
 </div>
