@@ -2,10 +2,31 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.80';
+$manifest['version'] = '2.15.81';
 
 /**
  * Changelog
+ * 2.15.81 - Post Types and Custom Fields: a large batch across both extensions.
+ *          Post Types gains a Blueprints tab (eleven one-click content-type packs
+ *          that install the post type, its taxonomies and a matching field group
+ *          together), a Tools tab (JSON export/import that also reads Custom Post
+ *          Type UI exports, a "Get PHP code" generator, and a key-rename migration
+ *          that moves existing content with the key), save-time validation that
+ *          reports why a row will not register instead of failing silently, an
+ *          Enabled toggle plus a restore path so removing a row is recoverable, and
+ *          the previously-missing register_post_type()/register_taxonomy() arguments
+ *          (URL slug, with_front, archive slug, built-in taxonomy attachment, label
+ *          overrides, a single-select taxonomy term box, and more). The deferred
+ *          rewrite flush moved from `init` priority 20 to `wp_loaded`: flushing
+ *          mid-`init` regenerated the rules from whatever had registered so far and
+ *          silently dropped the rewrite rules of any plugin registering later.
+ *          Custom Fields gains eighteen field types, most of them exposing option
+ *          types the framework already shipped - notably Related posts, Taxonomy
+ *          terms and Users, which drive multi-select in its posts/taxonomy/users
+ *          population modes to give AJAX-searched relationship pickers. A new shared
+ *          helper fw_upw_post_type_choices() (framework/includes/post-type-choices.php)
+ *          replaces the post-type chooser that was duplicated in both extensions.
+ *
  * 2.15.79 - Animation Engine: three new capabilities. A new Text Effects effect `spotlight_text`
  *           renders a radial gradient clipped to a heading's glyphs that tracks the live pointer (the
  *           "spotlight text" look), falling back to a static centered gradient under reduced motion. A

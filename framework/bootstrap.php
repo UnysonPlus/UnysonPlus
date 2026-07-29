@@ -59,6 +59,9 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // Shared post-type choice list (fw_upw_post_type_choices()) used by the
+            // Post Types + Custom Fields extensions.
+            require $dir . '/includes/post-type-choices.php';
             require $dir . '/includes/hooks.php';
             require $dir . '/includes/presets.php';
             require $dir . '/includes/css-tokens.php';
