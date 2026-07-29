@@ -2,10 +2,19 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.78';
+$manifest['version'] = '2.15.79';
 
 /**
  * Changelog
+ * 2.15.79 - Animation Engine: three new capabilities. A new Text Effects effect `spotlight_text`
+ *           renders a radial gradient clipped to a heading's glyphs that tracks the live pointer (the
+ *           "spotlight text" look), falling back to a static centered gradient under reduced motion. A
+ *           new site-wide Viewport Units module publishes stable `--vh`/`--vw` custom properties on the
+ *           root element (jump-free full-height on mobile plus a `--vw` for fluid sizing in custom CSS;
+ *           opt-in toggle). A new per-element Scroll Variable module publishes an element's in-view
+ *           progress (0 to 1) to a CSS custom property you name, for driving bespoke scroll-bound CSS.
+ *           All three are opt-in / additive - no existing page changes unless a builder enables them.
+ *
  * 2.15.74 - Consolidated the icon option type into ONE folder. The `icon-v2` and `icon-v3` folders
  *           are gone; everything now lives under `includes/option-types/icon/` — the engine class
  *           (FW_Option_Type_Icon, merged from the old FW_Option_Type_Icon_v3), the support classes
