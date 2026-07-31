@@ -124,15 +124,18 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		// hex→slug migration window. Hover fields fall back to the normal value
 		// when empty.
 		//
-		// CASCADE: button preset rules carry NO `!important`. They win purely on
-		// SOURCE ORDER — the preset CSS (handle `unysonplus-presets`) is enqueued
-		// AFTER the button extension's base `.btn-*` stylesheet (so a preset beats
-		// the stock `.btn-primary` skin) and BEFORE the theme/child stylesheets
-		// (so a theme or child theme can override a preset with a plain
-		// `.btn-primary { … }` rule, with no `!important` arms race). Using
-		// `!important` here used to make presets un-overridable by child themes —
-		// which defeats the point of a parent/child setup. Bootstrap's own button
-		// CSS is not loaded, so there is nothing higher-specificity to fight.
+		// CASCADE: button preset rules carry NO `!important` and use a plain
+		// `.btn-primary` selector (specificity 0,1,0). They win by SPECIFICITY,
+		// not load order: the button extension's stock `.btn-*` colour skins are
+		// wrapped in `:where()` (specificity 0) in its base stylesheet, so a
+		// preset — and equally a child theme's own plain `.btn-primary { … }` —
+		// always beats them regardless of which file the browser loads first.
+		// This is deliberately order-independent: when the Asset Optimizer isn't
+		// combining CSS, the raw enqueue order can put the presets file BEFORE the
+		// button base, and a plain (non-:where) stock skin would then revert
+		// buttons to Bootstrap blue/grey. `:where()` removes that hazard with no
+		// `!important` arms race (which would otherwise make presets
+		// un-overridable by child themes, defeating a parent/child setup).
 		$button_presets = function_exists( 'unysonplus_get_button_color_presets' )
 			? unysonplus_get_button_color_presets()
 			: array();

@@ -69,9 +69,20 @@ if (defined('FW')) {
             require $dir . '/includes/dynamic-css.php';
             require $dir . '/includes/dynamic-content/class-fw-dynamic-content.php';
             require $dir . '/includes/dynamic-content/classic-editor.php';
-            require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
+            // NOTE: the next few files live in the shortcodes EXTENSION but are CORE dependencies
+            // (required here at framework init). They're guarded with file_exists() so a release that
+            // ever bundles a core ahead of an older shortcodes extension (or a partial download / a
+            // hand-edited install) DEGRADES a feature instead of fataling the whole site with a
+            // "Failed to open stream" error before WP can even render an admin notice. A green
+            // release is still guaranteed by build-release's completeness check (check-release.php);
+            // this guard is the last-resort safety net.
+            if ( file_exists( $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php' ) ) {
+                require $dir . '/extensions/shortcodes/includes/shortcode-styling-helper.php';
+            }
             // Shared image-mask shape library (Image Style preset + Image Box shortcode).
-            require $dir . '/extensions/shortcodes/includes/image-mask-library.php';
+            if ( file_exists( $dir . '/extensions/shortcodes/includes/image-mask-library.php' ) ) {
+                require $dir . '/extensions/shortcodes/includes/image-mask-library.php';
+            }
             // Multi-pack inline-SVG engine (fw_icon_svg_pack_* + the Lucide
             // back-compat wrappers fw_icon_lucide_markup / _all / _search) for
             // the icon type's SVG kind. Each pack ships two JSON files in data/;
@@ -135,7 +146,9 @@ if (defined('FW')) {
             // -> Theme Settings -> Components by the Shortcodes extension
             // (includes/theme-settings-presets.php) and stored THEME-SCOPED in
             // fw_theme_settings_options:{theme-id}.
-            require $dir . '/extensions/shortcodes/includes/components-options.php';
+            if ( file_exists( $dir . '/extensions/shortcodes/includes/components-options.php' ) ) {
+                require $dir . '/extensions/shortcodes/includes/components-options.php';
+            }
 
             /**
              * Init components
