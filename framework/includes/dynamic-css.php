@@ -103,17 +103,23 @@ if ( ! function_exists( 'unysonplus_build_page_css_string' ) ) :
 		$parts   = array();
 
 		// 1. Per-element Custom CSS from the builder JSON.
+		$arb_css = '';
 		if ( $post_id && function_exists( 'fw_get_db_post_option' ) ) {
 			$builder = fw_get_db_post_option( $post_id, 'page-builder' );
 			if ( is_array( $builder ) && ! empty( $builder['builder_active'] ) && ! empty( $builder['json'] ) ) {
 				$items = json_decode( $builder['json'], true );
 				if ( is_array( $items ) ) {
 					unysonplus_collect_element_css( $items, $parts );
+					// 1b. Tailwind-style ARBITRARY spacing values (pt-[40px], mb-md-[24px]) —
+					// exact off-scale spacing the fixed scale can't express. Emits an escaped,
+					// per-page rule for each, so the value is lossless without touching the scale.
+					$arb_css = unysonplus_build_arbitrary_spacing_css( $items );
 				}
 			}
 		}
 
 		$css = implode( $glue, $parts );
+		if ( $arb_css !== '' ) { $css .= ( $css !== '' ? $glue : '' ) . $arb_css; }
 
 		// 2. Page-level CSS contributed by the theme (page bg + page_custom_css).
 		$page_extra = trim( (string) apply_filters( 'unysonplus_page_css', '', $post_id ) );
@@ -225,4 +231,96 @@ if ( ! function_exists( 'unysonplus_inline_page_css_fallback' ) ) :
 endif;
 
 add_action( 'wp_enqueue_scripts', 'unysonplus_enqueue_page_css', 36 );
+
+/* -----------------------------------------------------------------------------
+ * Arbitrary-value spacing utilities (Tailwind-style `pt-[40px]`, `mb-md-[24px]`).
+ *
+ * The fixed spacing scale can't express every value (e.g. a source's 40px falls
+ * between the 24px and 48px steps). Rather than renumber the scale (breaking) we
+ * let a spacing option hold an ARBITRARY token, and emit a matching escaped rule
+ * per page here. Non-breaking: the scale, containers, gutters, and every existing
+ * `pt-N` are untouched; this only ADDS rules for the exact tokens a page uses.
+ * -------------------------------------------------------------------------- */
+
+if ( ! function_exists( 'unysonplus_css_escape_selector' ) ) :
+	/** Escape a class name for a CSS selector (Tailwind escapes [ ] . % / : # ( ) ! ,). */
+	function unysonplus_css_escape_selector( $cls ) {
+		return preg_replace( '/([:\/\[\]\.%#\(\)!,])/', '\\\\$1', $cls );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_arbitrary_spacing_rule' ) ) :
+	/**
+	 * Turn one arbitrary spacing class (base `pt-[40px]` or infixed `pt-md-[40px]`)
+	 * into a CSS rule, wrapping md/lg/… in the matching min-width media query.
+	 * Returns '' for anything that isn't a recognised arbitrary spacing token.
+	 */
+	function unysonplus_arbitrary_spacing_rule( $cls ) {
+		static $props = array(
+			'p' => array( 'padding' ), 'pt' => array( 'padding-top' ), 'pb' => array( 'padding-bottom' ),
+			'pl' => array( 'padding-left' ), 'pr' => array( 'padding-right' ),
+			'px' => array( 'padding-left', 'padding-right' ), 'py' => array( 'padding-top', 'padding-bottom' ),
+			'ps' => array( 'padding-inline-start' ), 'pe' => array( 'padding-inline-end' ),
+			'm' => array( 'margin' ), 'mt' => array( 'margin-top' ), 'mb' => array( 'margin-bottom' ),
+			'ml' => array( 'margin-left' ), 'mr' => array( 'margin-right' ),
+			'mx' => array( 'margin-left', 'margin-right' ), 'my' => array( 'margin-top', 'margin-bottom' ),
+			'ms' => array( 'margin-inline-start' ), 'me' => array( 'margin-inline-end' ),
+		);
+		static $bpmin = array( 'sm' => 576, 'md' => 768, 'lg' => 992, 'xl' => 1200, 'xxl' => 1400 );
+		if ( ! preg_match( '/^((?:m|p)(?:x|y|t|b|s|e|l|r)?)(?:-(sm|md|lg|xl|xxl))?-\[([0-9.]+(?:px|rem|em|%|vw|vh))\]$/', $cls, $m ) ) {
+			return '';
+		}
+		$prefix = $m[1];
+		$bp     = $m[2];
+		$value  = $m[3];
+		if ( empty( $props[ $prefix ] ) ) { return ''; }
+		$decl = '';
+		foreach ( $props[ $prefix ] as $p ) { $decl .= $p . ':' . $value . ' !important;'; }
+		$rule = '.' . unysonplus_css_escape_selector( $cls ) . '{' . $decl . '}';
+		if ( $bp !== '' && isset( $bpmin[ $bp ] ) ) {
+			$rule = '@media (min-width:' . $bpmin[ $bp ] . 'px){' . $rule . '}';
+		}
+		return $rule;
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_build_arbitrary_spacing_css' ) ) :
+	/**
+	 * Walk a page's builder JSON and emit one rule per DISTINCT arbitrary spacing
+	 * token used. Responsive spacing options ({base,md,lg} under a padding- or margin-
+	 * key) are handled breakpoint-aware (the layer key supplies the infix, mirroring
+	 * sc_apply_styling_classes); every other arbitrary token found on a leaf is a
+	 * base-level rule (covers composite `spacing` + raw css_class tokens).
+	 */
+	function unysonplus_build_arbitrary_spacing_css( $items ) {
+		static $spacing_keys = array( 'padding', 'padding_top', 'padding_bottom', 'padding_start', 'padding_end', 'margin', 'margin_top', 'margin_bottom', 'margin_start', 'margin_end' );
+		$arb_base = '/^(?:m|p)(?:x|y|t|b|s|e|l|r)?-\[[0-9.]+(?:px|rem|em|%|vw|vh)\]$/';
+		$classes  = array();
+
+		$walk = function ( $node ) use ( &$walk, &$classes, $spacing_keys, $arb_base ) {
+			if ( ! is_array( $node ) ) {
+				if ( is_string( $node ) && preg_match( $arb_base, $node ) ) { $classes[ $node ] = true; }
+				return;
+			}
+			foreach ( $node as $k => $v ) {
+				if ( is_string( $k ) && in_array( $k, $spacing_keys, true ) && is_array( $v )
+					&& ( isset( $v['base'] ) || isset( $v['md'] ) || isset( $v['lg'] ) ) ) {
+					foreach ( array( 'base' => '', 'md' => 'md', 'lg' => 'lg' ) as $layer => $bp ) {
+						$raw = isset( $v[ $layer ] ) ? (string) $v[ $layer ] : '';
+						if ( $raw === '' || ! preg_match( $arb_base, $raw ) ) { continue; }
+						$cls = ( $bp === '' ) ? $raw : preg_replace( '/^((?:m|p)(?:x|y|t|b|s|e|l|r)?)-/', '${1}-' . $bp . '-', $raw, 1 );
+						$classes[ $cls ] = true;
+					}
+					continue; // handled — don't re-scan the md/lg leaves as base rules
+				}
+				$walk( $v );
+			}
+		};
+		$walk( $items );
+
+		$out = '';
+		foreach ( array_keys( $classes ) as $cls ) { $out .= unysonplus_arbitrary_spacing_rule( $cls ); }
+		return $out;
+	}
+endif;
 add_action( 'wp_head',           'unysonplus_inline_page_css_fallback', 100 );

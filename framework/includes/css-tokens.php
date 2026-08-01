@@ -938,7 +938,13 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			// Shared base rule (once). Class on the image WRAPPER; the <img> inside reads the
 			// inherited custom props; ::before = duotone tint, ::after = scrim; isolation
 			// contains the blend so it can't leak to siblings.
-			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:hidden;border-radius:var(--imgs-radius,0)}"
+			// overflow LEVER, default VISIBLE: the wrapper no longer clips by default, so a box-shadow /
+			// glow on the image renders instead of being cut at the wrapper box. This is safe because the
+			// <img> carries its own border-radius (stays rounded without the clip) and no built-in image
+			// style relies on the wrapper clip (crop = object-fit, masks shape the <img>). The ONE case
+			// that still needs clipping is a hover-ZOOM crop (`:hover img{transform:scale(...)}`) — set
+			// `--imgs-overflow:hidden` on that image so the zoom stays inside the frame.
+			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:var(--imgs-overflow,visible);border-radius:var(--imgs-radius,0)}"
 				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;aspect-ratio:var(--imgs-aspect,auto);object-fit:cover;border-radius:var(--imgs-radius,0);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
 				. "\n.imgs-wrap::before{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-duo,transparent);mix-blend-mode:color;pointer-events:none}"
 				. "\n.imgs-wrap::after{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-scrim,transparent);pointer-events:none}";
@@ -1067,6 +1073,12 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				foreach ( $spacing_scale as $entry ) {
 					if ( ! is_array( $entry ) ) { continue; }
 					if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
+					// Arbitrary-value scale entries (name like `[40px]`) render via the per-page
+					// dynamic-CSS arbitrary-spacing handler, not this global utility gen — a
+					// `--spacer-[40px]` custom-property name is invalid, and the class must stay
+					// escaped as `.pt-\[40px\]`. Skipping here keeps ONE class + one render path
+					// (the same `pt-[40px]` the Site Converter emits).
+					if ( strpos( (string) $entry['name'], '[' ) !== false ) { continue; }
 					if ( ! isset( $entry['size'] ) || $entry['size'] === '' ) { continue; }
 
 					$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $entry['name'] );

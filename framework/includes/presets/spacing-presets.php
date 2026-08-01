@@ -161,3 +161,40 @@ if ( ! function_exists( 'unysonplus_get_default_gap_y' ) ) :
 		return '';
 	}
 endif;
+
+if ( ! function_exists( 'unysonplus_register_arbitrary_spacing_scale' ) ) :
+	/**
+	 * Register the Tailwind-style ARBITRARY spacing values found in a page-builder JSON string
+	 * (e.g. `pt-[40px]`, `mb-[3.5rem]`) as NAMED entries in the site's Spacing Scale. This surfaces
+	 * them in Theme Settings → Components → Spacing AND makes each section's spacing dropdown show the
+	 * value as a selected option (durable on a manual builder re-save). The tokens already RENDER via
+	 * the per-page dynamic CSS regardless — this only registers the preset. Idempotent (skips values
+	 * already present). Used by the Site Converter's page import and the demo importers.
+	 *
+	 * @param string $json Page-builder JSON (or any string) to scan for arbitrary spacing tokens.
+	 * @return int Number of new scale entries added.
+	 */
+	function unysonplus_register_arbitrary_spacing_scale( $json ) {
+		if ( ! is_string( $json ) || $json === '' ) { return 0; }
+		if ( ! function_exists( 'unysonplus_get_spacing_scale' ) || ! function_exists( 'fw_set_db_settings_option' ) ) { return 0; }
+		if ( ! preg_match_all( '/(?:^|["\s-])(?:m|p)(?:x|y|t|b|s|e|l|r)?(?:-(?:sm|md|lg|xl|xxl))?-\[([0-9.]+(?:px|rem|em|%|vw|vh))\]/', $json, $mm ) ) {
+			return 0;
+		}
+		$scale = unysonplus_get_spacing_scale();
+		if ( ! is_array( $scale ) ) { $scale = array(); }
+		$have = array();
+		foreach ( $scale as $e ) { if ( is_array( $e ) && isset( $e['name'] ) ) { $have[ $e['name'] ] = true; } }
+
+		$added = 0;
+		foreach ( array_unique( $mm[1] ) as $len ) {
+			$name = '[' . $len . ']';
+			if ( ! isset( $have[ $name ] ) ) {
+				$scale[]        = array( 'name' => $name, 'size' => $len );
+				$have[ $name ]  = true;
+				$added++;
+			}
+		}
+		if ( $added ) { fw_set_db_settings_option( 'spacing_scale', $scale ); }
+		return $added;
+	}
+endif;
