@@ -24,7 +24,7 @@ if ( ! empty( $option['groupname'] ) ) {
 }
 ?>
 <div <?php echo fw_attr_to_html( $div_attr ) ?>>
-	<div class="fw-multi-inline-group">
+	<div class="fw-multi-inline-group<?php echo ! empty( $option['equal'] ) ? ' fw-multi-inline-group--equal' : ''; ?>">
 		<?php foreach ( $option['value'] as $key => $options_group ) {
 
 			$cfg   = $option['fw_multi_options'][ $key ];

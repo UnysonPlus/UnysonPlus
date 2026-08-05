@@ -160,6 +160,8 @@ return array(
 	'/includes/option-types/background-pro/static/js/scripts.js',
 	'/includes/option-types/border-presets/static/css/border-presets.css',
 	'/includes/option-types/border-presets/static/js/border-presets.js',
+	'/includes/option-types/icon-badge-presets/static/css/icon-badge-presets.css',
+	'/includes/option-types/icon-badge-presets/static/js/icon-badge-presets.js',
 	'/includes/option-types/border-style-picker/static/css/styles.css',
 	'/includes/option-types/border-style-picker/static/js/scripts.js',
 	'/includes/option-types/box-shadow/static/css/styles.css',

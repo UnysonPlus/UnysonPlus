@@ -46,6 +46,12 @@ class FW_Option_Type_Border_Style_Picker extends FW_Option_Type {
 			'preview_text' => __( 'Border', 'fw' ),
 			'placeholder'  => __( '— Select —', 'fw' ),
 			'allow_none'   => true,
+			// Optional "badge" preview mode: draw a real inline-styled mini tile per
+			// choice (name beside it) instead of the class-driven box outline. When
+			// 'preview_kind' === 'badge', 'previews' maps choice-value => array(
+			// 'tile_style' => inline CSS, 'icon_style' => inline CSS ).
+			'preview_kind' => '',
+			'previews'     => array(),
 		);
 	}
 

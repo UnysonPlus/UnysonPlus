@@ -273,6 +273,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Border_Presets':
 				require_once __DIR__ . '/includes/option-types/border-presets/class-fw-option-type-border-presets.php';
 				break;
+			case 'FW_Option_Type_Icon_Badge_Presets':
+				require_once __DIR__ . '/includes/option-types/icon-badge-presets/class-fw-option-type-icon-badge-presets.php';
+				break;
 			case 'FW_Option_Type_Box_Shadow':
 				require_once __DIR__ . '/includes/option-types/box-shadow/class-fw-option-type-box-shadow.php';
 				break;

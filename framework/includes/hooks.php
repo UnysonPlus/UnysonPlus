@@ -35,6 +35,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Addable_Box' );
 		FW_Option_Type::register( 'FW_Option_Type_Button_Presets' );
 		FW_Option_Type::register( 'FW_Option_Type_Border_Presets' );
+		FW_Option_Type::register( 'FW_Option_Type_Icon_Badge_Presets' );
 		FW_Option_Type::register( 'FW_Option_Type_Box_Shadow' );
 		FW_Option_Type::register( 'FW_Option_Type_Unit_Input' );
 		FW_Option_Type::register( 'FW_Option_Type_Button_Style_Picker' );

@@ -61,9 +61,15 @@ class FW_Option_Type_Multi_Inline extends FW_Option_Type
 	{
 		$uri = fw_get_framework_directory_uri( '/includes/option-types/' . $this->get_type() . '/static' );
 
+		// Version the stylesheet by its file mtime so edits to the modal CSS actually cache-bust in
+		// the browser (with no version the admin caches it hard and changes never show).
+		$css_path = fw_get_framework_directory( '/includes/option-types/' . $this->get_type() . '/static/css/styles.css' );
+		$css_ver  = ( is_string( $css_path ) && file_exists( $css_path ) ) ? filemtime( $css_path ) : null;
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
-			$uri . '/css/styles.css'
+			$uri . '/css/styles.css',
+			array(),
+			$css_ver
 		);
 
 		// Enqueue each child control's OWN static (JS/CSS). Without this the nested
@@ -164,6 +170,10 @@ class FW_Option_Type_Multi_Inline extends FW_Option_Type
 				),
 			),
 			'groupname' => '',
+			// When true, the child controls flex to EQUAL widths and fill the row (each ~100%/N)
+			// instead of their natural content width — e.g. a Monthly | Yearly price pair that splits
+			// the row 50/50. Default false keeps the natural-width layout.
+			'equal' => false,
 		);
 	}
 }

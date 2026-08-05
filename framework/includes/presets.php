@@ -22,6 +22,7 @@ require_once $fw_presets_dir . 'font-size-presets.php';
 require_once $fw_presets_dir . 'spacing-presets.php';  // spacing scale + gap scale + default-gap getters
 require_once $fw_presets_dir . 'button-presets.php';   // colors + sizes + hover animations + migration
 require_once $fw_presets_dir . 'border-presets.php';
+require_once $fw_presets_dir . 'icon-badge-presets.php'; // .iconb-{slug} icon badge tiles
 require_once $fw_presets_dir . 'table-presets.php';
 require_once $fw_presets_dir . 'section-style-presets.php'; // .section--{slug} skins
 require_once $fw_presets_dir . 'pattern-presets.php';       // .pattern-{slug} background patterns

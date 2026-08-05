@@ -53,3 +53,31 @@ if ( ! function_exists( 'unysonplus_preset_store_get' ) ) :
 		return $default_value;
 	}
 endif;
+
+if ( ! function_exists( 'unysonplus_preset_store_set' ) ) :
+	/**
+	 * Write a preset value to the SAME store unysonplus_preset_store_get() reads —
+	 * the theme-scoped Theme Settings store once the one-time migration has run,
+	 * else the legacy theme-independent extension store (so a pre-migration site is
+	 * still consistent). This is the write-seam the Site Converter's preset importer
+	 * must use: writing straight to the extension store leaves imported presets
+	 * invisible on any already-migrated site (the getter no longer looks there).
+	 *
+	 * @param string $key   Option key (e.g. 'button_colors', 'section_style_presets').
+	 * @param mixed  $value Plain data (scalars / arrays).
+	 * @return bool True on write attempt, false when storage is unavailable.
+	 */
+	function unysonplus_preset_store_set( $key, $value ) {
+		if ( ! class_exists( 'FW_WP_Option' ) ) {
+			return false;
+		}
+		if ( get_option( 'upw_presets_theme_migrated' ) ) {
+			$theme_id = function_exists( 'fw' ) ? fw()->theme->manifest->get_id() : 'default';
+			FW_WP_Option::set( 'fw_theme_settings_options:' . $theme_id, $key, $value );
+			return true;
+		}
+		$ext = apply_filters( 'unysonplus_preset_store_extension', 'shortcodes' );
+		FW_WP_Option::set( 'fw_ext_settings_options:' . $ext, $key, $value );
+		return true;
+	}
+endif;

@@ -47,3 +47,36 @@
 		width:100%;
 	}
 }
+
+/* `equal` layout: child controls flex to equal widths and FILL THE ROW (e.g. a
+   Monthly | Yearly pair split 50/50) instead of their natural content width.
+
+   The field cell is `width-type-auto` (per-type; can't be changed per-instance without
+   affecting every multi-inline), so its `.fw-inner` is `display:inline-block` = content-
+   sized. Widen that inner to the full column ONLY when it actually contains an --equal
+   group, via :has() — so this can never touch a non-`equal` multi-inline (border row,
+   icon row, …). Scoped to the two option design wrappers the modal uses. */
+.fw-backend-option-design-default > .fw-backend-option-input.width-type-auto:has(.fw-multi-inline-group--equal) > .fw-inner,
+.fw-backend-option-design-customizer > .fw-backend-option-input.width-type-auto:has(.fw-multi-inline-group--equal) > .fw-inner{
+	display:block;
+	width:100%;
+	max-width:100%;
+}
+.fw-backend-option-type-multi-inline:has(.fw-multi-inline-group--equal){
+	width:100%;
+}
+
+.fw-backend-option-type-multi-inline .fw-multi-inline-group--equal .fw-multi-inline-holder{
+	flex:1 1 0;
+	min-width:0;
+}
+/* `width:100% !important` is REQUIRED: short-text inputs carry `.fw-option-width-short`
+   which is `width:100px !important` (option-types.css) — a plain width can't beat it. */
+.fw-backend-option-type-multi-inline .fw-multi-inline-group--equal .fw-multi-inline-holder input[type="text"],
+.fw-backend-option-type-multi-inline .fw-multi-inline-group--equal .fw-multi-inline-holder input[type="number"],
+.fw-backend-option-type-multi-inline .fw-multi-inline-group--equal .fw-multi-inline-holder select,
+.fw-backend-option-type-multi-inline .fw-multi-inline-group--equal .fw-multi-inline-holder .fw-option-width-short{
+	width:100% !important;
+	max-width:100% !important;
+	box-sizing:border-box;
+}

@@ -137,3 +137,51 @@
 	min-width: 0;
 	max-width: 260px;
 }
+
+
+/* ----- Badge preview mode: a real mini tile + the name beside it (icon-badge presets) ----- */
+.fw-option-type-border-style-picker .bsp__preview--badge {
+	min-width: 0;
+	max-width: 260px;
+	min-height: 0;
+	padding: 0;
+	background: none;
+	gap: 10px;
+	overflow: visible;
+	text-align: left;
+	justify-content: flex-start;
+}
+.fw-option-type-border-style-picker .bsp__badge {
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	background: #eef1f6;
+	color: #50575e;
+	border-radius: 50%;
+}
+.fw-option-type-border-style-picker .bsp__badge-glyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: inherit;
+	line-height: 0;
+}
+.fw-option-type-border-style-picker .bsp__badge-glyph svg {
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+	display: block;
+}
+.fw-option-type-border-style-picker .bsp__badge-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: #2c3338;
+	font-size: 13px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

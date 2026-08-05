@@ -594,6 +594,132 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			}
 		}
 
+			// --- Icon Badge presets -> .iconb-{slug} + .iconb-{slug}:hover rules ---
+			// Each saved preset is a reusable icon "badge": a fixed-size shaped tile
+			// (circle / rounded / square / hexagon) with a centered glyph. Reuses the
+			// box-preset resolvers above — $border_state_decls (all sides), $bg_pro_decls
+			// (tile fill) and $resolve_btn_color (icon color, palette-linked). The tile is
+			// laid out with inline-flex so the glyph centers; badge_size sets width/height,
+			// icon_size sizes the glyph (font-icon + inline SVG). The hover state carries
+			// only the diffs (fill / icon color / border / shadow).
+			$icon_badges         = function_exists( 'unysonplus_get_icon_badge_presets' )      ? unysonplus_get_icon_badge_presets()      : array();
+			$icon_badge_slug_map = function_exists( 'unysonplus_icon_badge_preset_slug_map' )  ? unysonplus_icon_badge_preset_slug_map()  : array();
+
+			$ib_unit_str = function ( $v ) {
+				if ( is_array( $v ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) { return FW_Option_Type_Unit_Input::to_string( $v ); }
+				return is_array( $v ) ? '' : (string) $v;
+			};
+			// shape -> border-radius / clip-path base decl (with !important so it shapes
+			// the icon wrapper reliably over the icon element's own radius).
+			$ib_shape_decl = function ( $shape, $corner ) {
+				switch ( $shape ) {
+					case 'hexagon': return 'clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)';
+					case 'square':  return 'border-radius:' . ( $corner !== '' ? $corner : '0' ) . ' !important';
+					case 'rounded': return 'border-radius:' . ( $corner !== '' ? $corner : '25%' ) . ' !important';
+					default:        return 'border-radius:50% !important'; // circle
+				}
+			};
+
+			if ( is_array( $icon_badges ) ) {
+				foreach ( $icon_badges as $bp ) {
+					if ( ! is_array( $bp ) || empty( $bp['id'] ) ) { continue; }
+					$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $bp['id'] );
+					if ( $id === '' ) { continue; }
+					$slug = isset( $icon_badge_slug_map[ $id ] ) ? $icon_badge_slug_map[ $id ] : $id;
+					$sel  = ".iconb-{$slug}";
+
+					$states = isset( $bp['states'] ) && is_array( $bp['states'] ) ? $bp['states'] : array();
+					$def    = isset( $states['default'] ) && is_array( $states['default'] ) ? $states['default'] : array();
+					$hover  = isset( $states['hover'] )   && is_array( $states['hover'] )   ? $states['hover']   : array();
+
+					$shape      = isset( $bp['badge_shape'] ) ? (string) $bp['badge_shape'] : 'circle';
+					$transition = isset( $bp['transition'] ) ? trim( (string) $bp['transition'] ) : '';
+					$size       = $len( $ib_unit_str( isset( $bp['badge_size'] ) ? $bp['badge_size'] : '' ) );
+					$corner     = $len( $ib_unit_str( isset( $bp['border_radius'] ) ? $bp['border_radius'] : '' ) );
+
+					/* ---- base: .iconb-{slug} (layout + shape + default state) ---- */
+					$base = array(
+						'display:inline-flex !important', 'align-items:center', 'justify-content:center',
+						'box-sizing:border-box', 'flex:0 0 auto',
+					);
+					if ( $size !== '' ) { $base[] = "width:{$size} !important"; $base[] = "height:{$size} !important"; }
+					$base[] = $ib_shape_decl( $shape, $corner );
+					if ( $transition !== '' ) {
+						$tv     = preg_match( '/^[0-9.]+$/', $transition ) ? $transition . 'ms' : $transition;
+						$base[] = "transition:all {$tv} ease";
+					}
+					$base = array_merge( $base, $border_state_decls( $def, 'all' ) );
+					if ( isset( $def['background'] ) ) {
+						$bg_decls = rtrim( $bg_pro_decls( $def['background'] ), ';' );
+						if ( $bg_decls !== '' ) { $base[] = $bg_decls; }
+					}
+					$dcolor = $resolve_btn_color( isset( $def['icon_color'] ) ? $def['icon_color'] : '' );
+					if ( $dcolor !== '' ) { $base[] = "color:{$dcolor} !important"; }
+
+					if ( $base ) { $utility_rules[ $sel ] = implode( ';', $base ) . ';'; }
+
+					/* ---- icon sizing (font glyph + inline SVG) ---- */
+					$icon = $len( $ib_unit_str( isset( $bp['icon_size'] ) ? $bp['icon_size'] : '' ) );
+					if ( $icon !== '' ) {
+						$button_extra_css .= "\n{$sel} svg{width:{$icon} !important;height:{$icon} !important;fill:currentColor}";
+						$button_extra_css .= "\n{$sel} i,{$sel} [class*=\"fa-\"]{font-size:{$icon} !important;line-height:1}";
+					}
+
+					/* ---- hover diffs (border + fill + icon color) ---- */
+					$hov = $border_state_decls( $hover, 'all' );
+					if ( isset( $hover['background'] ) ) {
+						$bg_decls = rtrim( $bg_pro_decls( $hover['background'] ), ';' );
+						if ( $bg_decls !== '' ) { $hov[] = $bg_decls; }
+					}
+					$hcolor = $resolve_btn_color( isset( $hover['icon_color'] ) ? $hover['icon_color'] : '' );
+					if ( $hcolor !== '' ) { $hov[] = "color:{$hcolor} !important"; }
+					if ( $hov ) { $utility_rules[ "{$sel}:hover" ] = implode( ';', $hov ) . ';'; }
+
+					/* ---- structured hover effects (Lift · Pop · Glow · Shine) ---- */
+					$fx = isset( $bp['hover_fx'] ) ? $bp['hover_fx'] : array();
+					if ( is_string( $fx ) ) { $fx = ( $fx === '' ) ? array() : array( $fx ); }
+					if ( ! is_array( $fx ) ) { $fx = array(); }
+					$fx = array_values( array_filter( array_map( 'strval', $fx ) ) );
+					if ( $fx ) {
+						$block = '';
+						if ( in_array( 'shine', $fx, true ) ) { $block .= "{$sel}{position:relative;overflow:hidden;}"; }
+
+						$tf = array();
+						if ( in_array( 'lift', $fx, true ) ) { $tf[] = 'translateY(-4px)'; }
+						if ( in_array( 'pop', $fx, true ) )  { $tf[] = 'scale(1.12)'; }
+						if ( $tf ) { $block .= "{$sel}:hover{transform:" . implode( ' ', $tf ) . ' !important;}'; }
+
+						if ( in_array( 'glow', $fx, true ) ) {
+							$shadow_css = '';
+							if ( class_exists( 'FW_Option_Type_Box_Shadow' ) ) {
+								if ( isset( $hover['box_shadow'] ) ) { $shadow_css = FW_Option_Type_Box_Shadow::to_css( $hover['box_shadow'] ); }
+								if ( $shadow_css === '' && isset( $def['box_shadow'] ) ) { $shadow_css = FW_Option_Type_Box_Shadow::to_css( $def['box_shadow'] ); }
+							}
+							$glow_color = $hcolor !== '' ? $hcolor : ( $dcolor !== '' ? $dcolor : 'rgba(47,116,230,0.45)' );
+							$glow       = '0 0 20px ' . $glow_color;
+							$combined   = ( $shadow_css !== '' ) ? ( $shadow_css . ', ' . $glow ) : $glow;
+							$block     .= "{$sel}:hover{box-shadow:{$combined} !important;}";
+						}
+
+						if ( in_array( 'shine', $fx, true ) ) {
+							$block .= "{$sel}::before{content:'';position:absolute;top:0;left:-75%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.4),transparent);transform:skewX(-20deg);pointer-events:none;transition:left .6s ease;z-index:2;}";
+							$block .= "{$sel}:hover::before{left:125%;}";
+						}
+
+						$block .= "@media (prefers-reduced-motion:reduce){{$sel},{$sel}:hover{transition:none !important;transform:none !important;}{$sel}::before{display:none !important;}}";
+						$button_extra_css .= "\n" . $block;
+					}
+
+					/* ---- freeform custom CSS ---- */
+					$custom_css = isset( $bp['custom_css'] ) ? (string) $bp['custom_css'] : '';
+					if ( trim( $custom_css ) !== '' ) {
+						$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
+						$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
+						$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $sel, $custom_css );
+					}
+				}
+			}
+
 			// --- Section Style presets -> .section--{slug} rules (a reusable section
 			// "skin", Theme Settings → Components → Section Styles). Background is a
 			// background-pro value ($bg_pro_decls); text/heading/link/border colors are
