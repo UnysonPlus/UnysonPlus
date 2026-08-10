@@ -1,0 +1,120 @@
+/**
+ * Consistent control heights in the Unyson+ backend.
+ *
+ * WordPress 7.0 raised `select` and `.button` to a 40px minimum height (a
+ * touch-target change) while text inputs stayed at 30px. Any row that mixes
+ * them — a text field beside a dropdown, a select beside a submit button —
+ * therefore renders ragged, which is what this file corrects.
+ *
+ * Measured on WP 7.0.3 before the fix: input 30px (1px border + 28px
+ * line-height), select and .button 40px (min-height:40px + 38px line-height).
+ *
+ * SCOPE: deliberately limited to Unyson+ admin surfaces — our own screens, the
+ * Extensions manager, and anything rendered by the options framework
+ * (option rows, the builder, the options modal), which also appears on post,
+ * term and theme screens. Core WordPress screens and other plugins keep
+ * WordPress's own sizing, because overriding an accessibility decision
+ * site-wide is not ours to make. To apply it everywhere, replace the
+ * :is(...) prefix with nothing.
+ *
+ * Exemptions are intentional:
+ *  - select[multiple] / select[size] are list boxes, not dropdowns.
+ *  - .button-large / .button-hero are meant to be bigger.
+ *  - textarea is untouched; it is sized by rows.
+ */
+
+:is(
+	.wrap[class*="fw-"],
+	.wrap.upw-tpl,
+	#fw-extensions-list-wrapper,
+	#fw-extension-page,
+	.fw-backend-option,
+	.fw-option-type-builder,
+	.fw-modal,
+	.fw-options-modal
+) select:not([multiple]):not([size]) {
+	min-height: 30px;
+	height: 30px;
+	line-height: 28px;
+	padding-top: 0;
+	padding-bottom: 0;
+	vertical-align: middle;
+}
+
+:is(
+	.wrap[class*="fw-"],
+	.wrap.upw-tpl,
+	#fw-extensions-list-wrapper,
+	#fw-extension-page,
+	.fw-backend-option,
+	.fw-option-type-builder,
+	.fw-modal,
+	.fw-options-modal
+) :is(.button, button.button, input[type="submit"].button):not(.button-large):not(.button-hero) {
+	min-height: 30px;
+	height: 30px;
+	line-height: 28px;
+	padding-top: 0;
+	padding-bottom: 0;
+	vertical-align: middle;
+}
+
+/* Inputs are already 30px on WP 7, but pin them so a future core change cannot
+ * reintroduce the mismatch from the other direction. */
+:is(
+	.wrap[class*="fw-"],
+	.wrap.upw-tpl,
+	#fw-extensions-list-wrapper,
+	#fw-extension-page,
+	.fw-backend-option,
+	.fw-option-type-builder,
+	.fw-modal,
+	.fw-options-modal
+) input:is(
+	[type="text"],
+	[type="search"],
+	[type="email"],
+	[type="url"],
+	[type="number"],
+	[type="password"],
+	[type="date"],
+	[type="datetime-local"],
+	[type="time"]
+) {
+	min-height: 30px;
+	height: 30px;
+	line-height: 28px;
+	vertical-align: middle;
+}
+
+/**
+ * Nav tabs — rounded top corners.
+ *
+ * Several extensions had each declared this for themselves, all with the same
+ * value: asset-optimizer (inline <style>), shortcodes' component-presets
+ * stylesheet, and site-converter (inline <style>). Declaring it centrally means
+ * every Unyson+ screen gets the same tab shape without each new screen having to
+ * remember, and there is one place to change it.
+ *
+ * The three local copies are now redundant. They are harmless — identical value,
+ * just duplicated — so they are left in place rather than editing three
+ * extensions for a cosmetic no-op; remove them next time each is touched.
+ *
+ * `[class*="fw-ext-"]` is included as a scope root because a few extensions
+ * (sidebars, for one) put their marker class on an inner wrapper rather than on
+ * `.wrap` itself. `.nav-tab` is a core WordPress class, so this stays scoped —
+ * core screens keep their own tabs.
+ */
+
+:is(
+	.wrap[class*="fw-"],
+	.wrap.upw-tpl,
+	[class*="fw-ext-"],
+	[class*="fw-component-"],
+	#fw-extensions-list-wrapper,
+	#fw-extension-page,
+	.fw-backend-option,
+	.fw-option-type-builder
+) .nav-tab {
+	border-radius: .25rem .25rem 0 0;
+}

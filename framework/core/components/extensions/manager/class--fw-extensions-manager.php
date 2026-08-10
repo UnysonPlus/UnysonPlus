@@ -278,7 +278,12 @@ final class _FW_Extensions_Manager
 					unset( $available['backups'] );
 				}
 
-				foreach ( array( 'backup', 'styling', 'learning' ) as $obsolete_extension ) {
+				// Upstream Unyson retired these. `learning` is NOT retired here — it is
+				// actively maintained as UnysonPlus/UnysonPlus-Learning-Extension and is
+				// bundled with the plugin, so leaving it on this list hid it from the
+				// Extensions manager entirely (it is unset unless already installed or
+				// declared in the theme's supported_extensions).
+				foreach ( array( 'backup', 'styling' ) as $obsolete_extension ) {
 					if (
 						! isset( $supported_extensions[ $obsolete_extension ] )
 						&&

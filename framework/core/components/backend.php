@@ -1115,6 +1115,23 @@ final class _FW_Component_Backend {
 	public function _action_admin_enqueue_scripts(): void
 	{
 		/**
+		 * Consistent control heights across the Unyson+ backend.
+		 *
+		 * WordPress 7.0 raised select and .button to a 40px minimum height while
+		 * text inputs stayed at 30px, so any row mixing them renders ragged. The
+		 * stylesheet corrects that, scoped to our own admin surfaces — see the
+		 * file header. Enqueued on every admin page because option-framework
+		 * controls appear on post, term and theme screens too, not only on the
+		 * Unyson+ pages.
+		 */
+		wp_enqueue_style(
+			'fw-admin-controls',
+			fw_get_framework_asset_uri('/static/css/admin-controls.css'),
+			[],
+			fw()->manifest->get_version()
+		);
+
+		/**
 		 * Enqueue settings options static in <head>
 		 * @see FW_Settings_Form_Theme::_action_admin_enqueue_scripts()
 		 */
