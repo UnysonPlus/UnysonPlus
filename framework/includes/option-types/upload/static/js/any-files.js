@@ -1,5 +1,41 @@
 (function($, fwe) {
 
+	// --- Diagnostic mode -------------------------------------------------------------------------
+	// Enable by adding ?fw_media_debug=1 to the admin URL, or `window.FW_MEDIA_DEBUG = true` before a
+	// click. Logs every media-frame lifecycle step to the console with an [fw-upload] prefix.
+	var FW_MEDIA_DEBUG = /[?&]fw_media_debug=1/.test(String(location.search || '')) || !!window.FW_MEDIA_DEBUG;
+	function fwLog() {
+		if (FW_MEDIA_DEBUG && window.console) {
+			try { console.log.apply(console, ['[fw-upload]'].concat([].slice.call(arguments))); } catch (e) {}
+		}
+	}
+
+	// A callable page-wide diagnostic: run `fwUploadDiag()` in the browser console to see whether the WP
+	// media library is loaded and what every "any-files" upload field (incl. background-pro video/webm)
+	// is configured with. Share its output if a picker still misbehaves.
+	window.fwUploadDiag = function () {
+		var report = {
+			wp_media_available: !!(window.wp && wp.media),
+			wp_media_settings:  !!(window.wp && wp.media && wp.media.view && wp.media.view.settings),
+			wp_enqueue_media_l10n: !!window._wpMediaViewsL10n,
+			underscore: typeof window._,
+			fields: []
+		};
+		$('.fw-option-type-upload.any-files').each(function () {
+			var $c = $(this);
+			var details = $c.attr('data-files-details');
+			report.fields.push({
+				name: ($c.find('input[type="hidden"]').attr('name') || ''),
+				initialized: $c.hasClass('fw-option-initialized'),
+				buttons: $c.find('button').length,
+				files_details: details ? JSON.parse(details) : null,
+				value: $c.find('input[type="hidden"]').val()
+			});
+		});
+		if (window.console) { console.log('[fw-upload] DIAGNOSTIC', report); }
+		return report;
+	};
+
 	var init = function() {
 		var $this = $(this),
 			elements = {
@@ -16,80 +52,88 @@
 			frame;
 
 		var haveFilesDetails = elements.$container.attr('data-files-details') !== undefined;
-
+		var parsedFilesDetails = null;
 		if (haveFilesDetails) {
-			var parsedFilesDetails = JSON.parse(elements.$container.attr('data-files-details'));
+			try { parsedFilesDetails = JSON.parse(elements.$container.attr('data-files-details')); }
+			catch (e) { parsedFilesDetails = null; fwLog('bad data-files-details JSON', e); }
 		}
 
-		var createFrame = function() {
-			var frameOpts = haveFilesDetails ?
-			{
-				library: {
-					type: parsedFilesDetails.mime_types
-				}
-			} : {};
-
-			frame = wp.media(frameOpts);
-
-			if (haveFilesDetails) {
-				frame.on('content:render', function () {
-					var $view = this.first().frame.views.get('.media-frame-uploader')[0];
-
-					if (parsedFilesDetails.extra_mime_types.length > 0  && _.isArray(parsedFilesDetails.extra_mime_types)) {
-						_.each(parsedFilesDetails.extra_mime_types, function(mime_type){
-							mOxie.Mime.addMimeType(mime_type);
-						});
-					}
-
-					$view.options.uploader.plupload = {
-						filters: {
-							mime_types: [
-								{
-									title: 'Files : '+parsedFilesDetails.ext_files.join(','),
-									extensions: parsedFilesDetails.ext_files.join(',')
-								}
-							]
-						}
-					};
-				});
+		// The allowed library filter for this field: the field's declared mime types (e.g. ['video/mp4']
+		// for a background video), or null = show everything. WP's `library.type` accepts full mime types
+		// or a top-level bucket ('image'/'video'/'audio'). An empty/absent filter must NOT be passed as an
+		// empty array — that yields an impossible query and an empty grid — so we omit it entirely.
+		function libraryType() {
+			if (parsedFilesDetails && Array.isArray(parsedFilesDetails.mime_types) && parsedFilesDetails.mime_types.length) {
+				return parsedFilesDetails.mime_types;
 			}
+			return null;
+		}
 
-				frame.on('ready', function() {
-					frame.modal.$el.addClass('fw-option-type-upload');
-				});
-
-				// opens the modal with the correct attachment already selected
-				frame.on('open', function() {
-					var selection = frame.state().get('selection'),
-						attatchmentId = elements.$input.val(),
-						attachment = wp.media.attachment(attatchmentId);
-
-					frame.reset();
-
-					if (attachment.id) {
-						selection.add(attachment);
-					}
-				});
-
-				frame.on('select', function() {
-					var attachment = frame.state().get('selection').first();
-
-					elements.$input
-						.val(attachment.id)
-						.trigger('change'); // trigger Customizer update
-
-					performSelection(attachment);
-				});
+		// Build the frame with the STANDARD wp.media() call — a MediaFrame.Select that auto-creates its
+		// Library (browse) + Upload states. The previous implementation hand-built a states controller,
+		// tweaked plupload on `content:render`, and called `frame.reset()` on every open — any of which
+		// could throw or wipe the content region, leaving a BLANK modal (and, because the throw happened
+		// mid-createFrame, a half-built frame that only opened on the SECOND click). None of that is
+		// needed: WP already allows video/mp4·webm·mov uploads, and the standard frame just works.
+		var createFrame = function() {
+			var type = libraryType();
+			var opts = {
+				title:    l10n.buttonAdd || undefined,
+				button:   { text: (window._wpMediaViewsL10n && _wpMediaViewsL10n.select) || 'Select' },
+				multiple: false,
+				library:  type ? { type: type } : {},
+				// Give the browse view an explicit filterable Library state — exactly like the image picker
+				// (images-only.js). WITHOUT it the media toolbar's filter dropdown isn't rendered, leaving a
+				// blank slot next to "Filter by date". This is the ONLY hand-built bit kept from the old code;
+				// the modal-blanking culprits (frame.reset() + the content:render plupload poke) stay removed.
+				states: new wp.media.controller.Library({
+					library:    wp.media.query( type ? { type: type } : {} ),
+					multiple:   false,
+					title:      l10n.buttonAdd || undefined,
+					filterable: 'uploaded',
+					priority:   20
+				})
 			};
+
+			fwLog('createFrame', opts);
+			frame = wp.media(opts);
+
+			frame.on('ready', function() {
+				if (frame.modal) { frame.modal.$el.addClass('fw-option-type-upload'); }
+				fwLog('frame ready');
+			});
+
+			// Preselect the currently-saved attachment so re-opening highlights it (no frame.reset()).
+			frame.on('open', function() {
+				var id = String(elements.$input.val() || '');
+				if (id && id !== '0') {
+					var att = wp.media.attachment(id);
+					att.fetch();
+					frame.state().get('selection').add([ att ]);
+				}
+				fwLog('frame open, preselect', id);
+			});
+
+			frame.on('select', function() {
+				var attachment = frame.state().get('selection').first();
+				if (!attachment) { return; }
+				elements.$input.val(attachment.id).trigger('change'); // trigger Customizer update
+				performSelection(attachment);
+				fwLog('selected', attachment.id);
+			});
+		};
 
 		elements.$uploadButton.on('click', function(e) {
 			e.preventDefault();
-
-			if (! frame) {
-				createFrame();
+			try {
+				if (!frame) { createFrame(); }
+				frame.open();
+				fwLog('frame.open()');
+			} catch (err) {
+				if (window.console) { console.error('[fw-upload] media frame failed to open:', err); }
+				if (FW_MEDIA_DEBUG) { window.alert('[fw-upload] media error: ' + (err && err.message ? err.message : err)); }
+				frame = null; // let the next click rebuild cleanly instead of reusing a half-built frame
 			}
-
-			frame.open();
 		});
 
 		elements.$deleteButton.on('click', function(e) {

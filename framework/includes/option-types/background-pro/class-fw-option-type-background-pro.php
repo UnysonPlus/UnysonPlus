@@ -663,6 +663,16 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 				$out['video'][ $k ] = $input_value['video'][ $k ] === 'yes' ? 'yes' : 'no';
 			}
 		}
+		// Keep `enabled` HONEST: there is no UI enable toggle any more — the video layer is "on" whenever a
+		// playable source is set (sc_bg_pro_video_attr() + _layer_has_value() key off the source, NOT this
+		// flag). So a saved value used to read `enabled:"no"` right next to a real video, which looks broken
+		// in exports / the Site Converter. Derive the flag from the resolved sources so the stored model
+		// reflects reality. Purely cosmetic — rendering already ignores it — but no more confusing state.
+		$out['video']['enabled'] = (
+			! empty( $out['video']['external_url'] )
+			|| ( is_array( $out['video']['source_mp4'] )  && ! empty( $out['video']['source_mp4']['url'] ) )
+			|| ( is_array( $out['video']['source_webm'] ) && ! empty( $out['video']['source_webm']['url'] ) )
+		) ? 'yes' : 'no';
 
 		// Overlay — an rgba colour + a gradient-v2, both parsed through their child types.
 		if ( isset( $input_value['overlay']['color'] ) ) {
