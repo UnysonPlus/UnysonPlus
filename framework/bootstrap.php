@@ -63,6 +63,10 @@ if (defined('FW')) {
             // Post Types + Custom Fields extensions.
             require $dir . '/includes/post-type-choices.php';
             require $dir . '/includes/hooks.php';
+            // Admin-only: confirm dialog before a manual plugin update (back-up reminder).
+            if ( is_admin() ) {
+                require $dir . '/includes/update-guard/update-guard.php';
+            }
             require $dir . '/includes/presets.php';
             require $dir . '/includes/css-tokens.php';
             require $dir . '/includes/device-tabs.php';

@@ -2,10 +2,18 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.91';
+$manifest['version'] = '2.15.92';
 
 /**
  * Changelog
+ * 2.15.92 - Update guard. A confirmation dialog now appears before a MANUAL update of
+ *          the plugin from wp-admin — the Plugins page "update now" link and bulk
+ *          "Update" action, plus the Dashboard -> Updates screen — reminding the user
+ *          to back up their files and database first, with Proceed / Cancel buttons. It
+ *          works by wrapping wp.updates.updatePlugin() and intercepting the update-core
+ *          form submit; background auto-updates run headless and are intentionally not
+ *          intercepted. The title/message are filterable via fw_update_guard_title and
+ *          fw_update_guard_message. Lives in framework/includes/update-guard/ (admin-only).
  * 2.15.81 - Post Types and Custom Fields: a large batch across both extensions.
  *          Post Types gains a Blueprints tab (eleven one-click content-type packs
  *          that install the post type, its taxonomies and a matching field group
