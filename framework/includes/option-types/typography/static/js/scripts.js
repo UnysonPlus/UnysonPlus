@@ -161,7 +161,7 @@
 
 					$fontFamilySelect
 						.html(getFontsOptionHTML($fontFamilySelect.attr('data-value')))
-						.selectize({
+						.fwSelect({
 							render: {
 								option: function (item, escape) {
 									return '<div data-value="' + escape(item.value) + '" data-selectable="" class="option" style="font-family: \'' + escape(item.value) + '\', sans-serif;">' + escape(item.text) + '</div>';
@@ -242,36 +242,36 @@
 
 								$fontFamilySelect.removeAttr('data-value');
 
-								$fontFamilySelect.trigger('selectizeLoaded', [$fontFamilySelect[0].selectize]);
+								$fontFamilySelect.trigger('fwSelectLoaded', [$fontFamilySelect[0].fwSelect]);
 
 							},
 							onFocus: function() {
-								var selectize = $fontFamilySelect[0].selectize;
-								var selectedValue = selectize.getValue();
-								selectize.removeOption(selectedValue, true);
+								var control = $fontFamilySelect[0].fwSelect;
+								var selectedValue = control.getValue();
+								control.removeOption(selectedValue, true);
 
 								_.each(getFontsOptions(), function(option){
-									selectize.addOption({
+									control.addOption({
 										value: option.value,
 										text: option.text
 									});
 								});
 
-								selectize.setValue(selectedValue, true);
-								selectize.refreshOptions(true);
+								control.setValue(selectedValue, true);
+								control.refreshOptions(true);
 
 							},
 							onBlur: function() {
-								var selectize = $fontFamilySelect[0].selectize,
-									value = selectize.getValue();
+								var control = $fontFamilySelect[0].fwSelect,
+									value = control.getValue();
 
 								_.each(getFontsOptions(), function(option){
 									if (value !== option.value) {
-										selectize.removeOption(option.value);
+										control.removeOption(option.value);
 									}
 								});
 
-								selectize.refreshOptions(false);
+								control.refreshOptions(false);
 							}
 						});
 				}

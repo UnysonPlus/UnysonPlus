@@ -28,6 +28,7 @@ require_once $fw_presets_dir . 'section-style-presets.php'; // .section--{slug} 
 require_once $fw_presets_dir . 'container-width-presets.php'; // named section content-band widths (narrow/medium/wide + converter-gathered)
 require_once $fw_presets_dir . 'pattern-presets.php';       // .pattern-{slug} background patterns
 require_once $fw_presets_dir . 'pattern-scope.php';         // pattern cleanup/scope transform
+require_once $fw_presets_dir . 'shape-divider-presets.php'; // section Top/Bottom shape-divider SVG library
 require_once $fw_presets_dir . 'image-style-presets.php';   // .imgs-{slug} image treatments (radius/mask/filter/scrim)
 
 unset( $fw_presets_dir );

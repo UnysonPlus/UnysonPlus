@@ -6,14 +6,6 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 ---
 
-## ⬇️ Installing? Download the plugin — not the source
-
-**[Download the latest plugin ZIP → `unysonplus.zip`](https://github.com/UnysonPlus/UnysonPlus/releases/latest/download/unysonplus.zip)**, then in WordPress go to **Plugins → Add New → Upload Plugin**.
-
-> ⚠️ **Do not use the green “Code → Download ZIP” button, or a release’s “Source code (zip/tar.gz)”.** This repository is **core-only** — the bundled extensions (page builder, shortcodes, live editor, WooCommerce, animation engine, …) each live in their own repos and are packaged **only** into the `unysonplus.zip` release asset above. A source-code download installs an incomplete, non-functional shell in a mis-named folder (`UnysonPlus-master/`). Always install `unysonplus.zip` from **[Releases](https://github.com/UnysonPlus/UnysonPlus/releases/latest)**; the built-in auto-updater keeps it current from there.
-
----
-
 ## 🔹 Current Version
 
 | Component | Version |

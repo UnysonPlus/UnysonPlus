@@ -59,12 +59,12 @@ class FW_Option_Type_Icon extends FW_Option_Type
             '/includes/option-types/icon/static/'
         );
 
-        wp_enqueue_style('fw-selectize');
+        wp_enqueue_style('fw-select');
 
         wp_enqueue_script(
             'fw-option-type-icon-v3-backend-previews',
             $static_URI . 'js/render-icon-previews.js',
-            ['jquery', 'fw', 'fw-events', 'fw-selectize'],
+            ['jquery', 'fw', 'fw-events', 'fw-select'],
             fw()->manifest->get_version()
         );
 

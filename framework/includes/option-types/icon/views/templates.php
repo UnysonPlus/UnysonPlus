@@ -320,7 +320,7 @@ $tabs = fw()->backend->render_options(
 
 <div class="fw-icon-v3-toolbar">
 	<# if (data.packs.length > 1) { #>
-		<select class="fw-selectize">
+		<select class="fw-select-enhance">
 			<# _.each(data.packs, function (pack, index) { #>
 				<option {{ index === 0 ? 'selected' : '' }} value="{{pack.name}}">
 					{{pack.title}}

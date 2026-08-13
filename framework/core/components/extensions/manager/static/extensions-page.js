@@ -1,5 +1,5 @@
 jQuery(function ($) {
-	fw.qtip( $('.fw-extensions-list .fw-extensions-list-item .fw-extension-tip') );
+	fw.tooltip( $('.fw-extensions-list .fw-extensions-list-item .fw-extension-tip') );
 });
 
 /**

@@ -2,8 +2,8 @@
 Contributors: unyson
 Tags: page builder, widgets, sidebar, backup, seo
 Requires at least: 5.8
-Tested up to: 6.7
-Stable tag: 2.7.44
+Tested up to: 7.0
+Stable tag: 2.15.99
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

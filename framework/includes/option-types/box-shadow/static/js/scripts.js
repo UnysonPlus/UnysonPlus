@@ -29,19 +29,21 @@
 		this.render();
 	}
 
+	/**
+	 * The colour field is a shared Coloris input (see the color-picker option type's
+	 * scripts.js, which binds a document-level listener to
+	 * `input.fw-option-type-rgba-color-picker[data-coloris]`). So there is nothing to
+	 * initialise here — just read the value back off the native input/change events
+	 * Coloris fires, the same way every other consumer does.
+	 */
 	BoxShadow.prototype.initColorPicker = function () {
 		var self = this;
 		if (this.$colorInput.data('bsh-picker')) { return; }
 		this.$colorInput.data('bsh-picker', true);
-		this.$colorInput.wpColorPicker({
-			change: function (e, ui) {
-				self.state.color = ui.color ? ui.color.toString() : '';
-				self.render();
-			},
-			clear: function () {
-				self.state.color = '';
-				self.render();
-			}
+
+		this.$colorInput.on('input change', function () {
+			self.state.color = ($(this).val() || '').trim();
+			self.render();
 		});
 	};
 

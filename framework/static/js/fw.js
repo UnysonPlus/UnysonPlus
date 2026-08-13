@@ -2099,7 +2099,7 @@ fw.getValuesFromServer = function (data) {
 }(jQuery));
 
 /**
- * fw.qtip($elements)
+ * fw.tooltip($elements)
  */
 (function($){
 	/**
@@ -2107,7 +2107,7 @@ fw.getValuesFromServer = function (data) {
 	 * @param $i
 	 */
 	function initHide($i) {
-		var api = $i.qtip('api');
+		var api = $i.fwTooltip('api');
 
 		var hideTimeout = 0;
 		var hideDelay = 200;
@@ -2116,7 +2116,7 @@ fw.getValuesFromServer = function (data) {
 			clearTimeout(hideTimeout);
 
 			hideTimeout = setTimeout(function(){
-				$i.trigger('fw-qtip:hide');
+				$i.trigger('fw-tooltip:hide');
 			}, hideDelay);
 		};
 
@@ -2145,11 +2145,11 @@ fw.getValuesFromServer = function (data) {
 		$helps.each(function(){
 			var $i = $(this);
 
-			var id = 'fw-qtip-'+ idIncrement++;
+			var id = 'fw-tooltip-'+ idIncrement++;
 
 			var hideInitialized = false;
 
-			$i.qtip({
+			$i.fwTooltip({
 				id: id,
 				position: {
 					viewport: $(document.body),
@@ -2161,8 +2161,8 @@ fw.getValuesFromServer = function (data) {
 				},
 				style: {
 					classes: $i.hasClass('dashicons-info')
-						? 'qtip-fw fw-tip-info'
-						: 'qtip-fw',
+						? 'fw-tooltip-default fw-tip-info'
+						: 'fw-tooltip-default',
 					tip: {
 						width: 12,
 						height: 5
@@ -2189,7 +2189,7 @@ fw.getValuesFromServer = function (data) {
 					}
 				},
 				hide: {
-					event: 'fw-qtip:hide',
+					event: 'fw-tooltip:hide',
 					effect: function(offset) {
 						$(this).fadeOut(300, function(){
 							/**
@@ -2206,11 +2206,11 @@ fw.getValuesFromServer = function (data) {
 				api.hide();
 			});
 
-			var api = $i.qtip('api');
+			var api = $i.fwTooltip('api');
 		});
 	};
 
-	fw.qtip = initHelps;
+	fw.tooltip = initHelps;
 })(jQuery);
 
 /**

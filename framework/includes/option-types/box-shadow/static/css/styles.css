@@ -63,12 +63,32 @@
 }
 .fw-option-type-box-shadow .bsh-color-field { flex: 1; min-width: 160px; }
 .fw-option-type-box-shadow .bsh-color-field .wp-picker-container { display: inline-block; }
+/**
+ * The colour field is a column — its label sits above its input — so centring the
+ * row would centre the checkbox against label+input and float it ~13px above the
+ * input's centre line. Bottom-align the row instead, and give the checkbox the
+ * input's height so the two centre lines coincide.
+ */
+.fw-option-type-box-shadow .bsh-row-2 {
+	align-items: flex-end;
+}
+
 .fw-option-type-box-shadow .bsh-inset {
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
 	font-size: 12px;
 	color: #50575e;
+
+	/* Matches the colour input's height so the checkbox centres against it. */
+	min-height: 30px;
+}
+
+/* WP admin gives checkboxes a negative top margin, which knocks the box a
+   couple of pixels off the centre line flex just established. */
+.fw-option-type-box-shadow .bsh-inset-cb {
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
 .fw-option-type-box-shadow .bsh-output-row {

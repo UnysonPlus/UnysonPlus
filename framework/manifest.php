@@ -2,7 +2,7 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.15.96';
+$manifest['version'] = '2.16.7';
 
 /**
  * Changelog
@@ -3318,7 +3318,7 @@ $manifest['version'] = '2.15.96';
  *          unaffected (start returns early for them so no data is stashed).
  *
  * 2.7.80 - Page Builder gains a "Sort Sections" dropdown in the builder header,
- *          left of the Templates button. Opens a qtip2 list of every root
+ *          left of the Templates button. Opens a tooltip list of every root
  *          section with a drag handle, collapse toggle, and click-to-scroll —
  *          so reordering a section out of a 20+ section page no longer requires
  *          holding the mouse while the canvas auto-scrolls. Drag inside the

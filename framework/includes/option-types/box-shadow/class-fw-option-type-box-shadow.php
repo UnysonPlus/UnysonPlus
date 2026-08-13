@@ -68,7 +68,9 @@ class FW_Option_Type_Box_Shadow extends FW_Option_Type {
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-			array( 'jquery', 'fw-events', 'wp-color-picker' ),
+			// No wp-color-picker: the colour field is a shared Coloris input now,
+			// enqueued above via the rgba-color-picker stack.
+			array( 'jquery', 'fw-events' ),
 			fw()->manifest->get_version(),
 			true
 		);

@@ -1,0 +1,116 @@
+/**
+ * fw-tooltip — styles for the framework tooltip ($.fn.fwTooltip).
+ *
+ * Consolidates the tooltip rules that previously lived in fw.css and in a
+ * vendored third-party stylesheet. Only the rules the framework actually relies
+ * on are kept; the unused titlebar, close-button and bundled colour themes that
+ * came with the old library are gone.
+ *
+ * Positioning is written by JavaScript (Floating UI) onto `top`/`left`, so the
+ * offscreen defaults below only apply for the pre-measure frame.
+ */
+
+.fw-tooltip {
+	position: absolute;
+	left: -28000px;
+	top: -28000px;
+	display: none;
+
+	max-width: 280px;
+	min-width: 50px;
+
+	font-size: 10.5px;
+	line-height: 12px;
+
+	direction: ltr;
+	box-shadow: none;
+	padding: 0;
+}
+
+.fw-tooltip-content {
+	position: relative;
+	padding: 5px 9px;
+	overflow: hidden;
+	text-align: left;
+	word-wrap: break-word;
+}
+
+/**
+ * The arrow is a CSS triangle. Its border widths and colour are written inline by
+ * the positioner, because both depend on the placement Floating UI resolves to
+ * (which may be flipped from the requested one).
+ */
+.fw-tooltip-arrow {
+	position: absolute;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-color: transparent;
+	z-index: 10;
+}
+
+/**
+ * Default skin — selected by `style.classes: 'fw-tooltip-default'`.
+ * Values carried over verbatim from the previous skin so nothing shifts visually.
+ */
+
+.fw-tooltip.fw-tooltip-default {
+	border-radius: .5rem;
+	border: 5px solid #333333;
+	background-color: #333333;
+	max-width: none;
+	z-index: 100000000 !important;
+}
+
+.fw-tooltip.fw-tooltip-default .fw-tooltip-content {
+	border: none;
+	margin: 0px;
+	padding: 0px;
+	color: #EEEEEE;
+	font-family: "Open Sans",sans-serif;
+	font-size: 13px;
+	line-height: 1.4em;
+	font-style: italic;
+}
+
+.fw-tooltip-default .fw-tooltip-content a {
+	color: #5fc5ee;
+	text-decoration: underline;
+}
+
+.fw-tooltip-default .fw-tooltip-content a.button.button-primary {
+	color: #ffffff;
+}
+
+.fw-tooltip.fw-tooltip-default .fw-tooltip-content a:hover {
+	text-decoration: none;
+}
+
+.fw-tooltip.fw-tooltip-default .fw-tooltip-content iframe {
+	display: block; /* fix: creates extra bottom padding (like image is not set as display:block) */
+}
+
+.fw-tooltip.fw-tooltip-default.fw-tip-info {
+	max-width: 320px;
+}
+
+.fw-tooltip.fw-tooltip-default.fw-tip-info .fw-tooltip-content {
+	padding: 15px;
+}
+
+/* (x) close affordance used inside some tooltip content. */
+
+.fw-tooltip.fw-tooltip-default .fw-x.dashicons:before {
+	content: "\f158";
+}
+
+.fw-tooltip.fw-tooltip-default .fw-x.dashicons {
+	font-size: 13px;
+	line-height: 13px;
+	height: 13px;
+	width: 13px;
+	cursor: pointer;
+	color: #fff;
+	background-color: #CC0000;
+	border-radius: 100%;
+}

@@ -162,7 +162,11 @@ if ( ! function_exists( 'unysonplus_pattern_imagepicker_choices' ) ) :
 	 *
 	 * @return array
 	 */
-	function unysonplus_pattern_imagepicker_choices() {
+	function unysonplus_pattern_imagepicker_choices( $thumb_h = null ) {
+		// Per-option tile height: pass an int to size THIS picker's tiles independently (the Section
+		// pattern picker sets its own without touching the Container / Site pickers). Defaults stock.
+		$sh = ( $thumb_h !== null ) ? (int) $thumb_h : 66;
+		$lh = ( $thumb_h !== null ) ? (int) $thumb_h : 132;
 		$none = 'data:image/svg+xml,' . rawurlencode(
 			'<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120">'
 			. '<rect width="200" height="120" fill="#f8fafc"/>'
@@ -171,8 +175,8 @@ if ( ! function_exists( 'unysonplus_pattern_imagepicker_choices' ) ) :
 		);
 		$choices = array(
 			'none' => array(
-				'small' => array( 'src' => $none, 'height' => 66 ),
-				'large' => array( 'src' => $none, 'height' => 132 ),
+				'small' => array( 'src' => $none, 'height' => $sh ),
+				'large' => array( 'src' => $none, 'height' => $lh ),
 				'label' => __( 'None', 'fw' ),
 			),
 		);
@@ -186,8 +190,8 @@ if ( ! function_exists( 'unysonplus_pattern_imagepicker_choices' ) ) :
 				isset( $p['css'] )  ? (string) $p['css']  : ''
 			);
 			$choices[ $id ] = array(
-				'small' => array( 'src' => $uri, 'height' => 66 ),
-				'large' => array( 'src' => $uri, 'height' => 132 ),
+				'small' => array( 'src' => $uri, 'height' => $sh ),
+				'large' => array( 'src' => $uri, 'height' => $lh ),
 				'label' => $name,
 			);
 		}

@@ -840,6 +840,24 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 			}
 
+			// --- Container Width presets -> .section--cw-{slug} rules on the section's inner
+			// .fw-container (Theme Settings → Components → Section Styles → Container Widths). A named
+			// library width is REUSABLE, so it's generated ONCE here (shared + cached in presets-{hash}.css)
+			// instead of being duplicated as a per-section rule in every page-{id}.css. The section view
+			// adds `.section--cw-{slug}` for a preset; only a Custom (arbitrary) width still routes to the
+			// per-page file (sc_section_dynamic_css). The child combinator (0,2,0) out-specificities the
+			// grid's `body .fw-container` (0,1,1). Content-width model: the value IS the content width with
+			// the gutter added outside (matches the global Container Width decision + the Custom path).
+			if ( function_exists( 'unysonplus_container_width_map' ) ) {
+				foreach ( unysonplus_container_width_map() as $cw_slug => $cw_px ) {
+					$cw_slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $cw_slug );
+					$cw_px   = trim( (string) $cw_px );
+					if ( $cw_slug === '' || ! preg_match( '/^\d*\.?\d+(px|rem|em|%|vw)$/', $cw_px ) ) { continue; }
+					$utility_rules[ ".section--cw-{$cw_slug} > .fw-container" ] =
+						'max-width:calc(' . $cw_px . ' + 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem)));margin-left:auto;margin-right:auto;';
+				}
+			}
+
 		// --- Table presets -> .tbl-{slug} rules (applied to the table wrapper) ---
 		// Each saved preset is a reusable table look (Theme Settings → Components →
 		// Tables). Colors are compact-picker values resolved via $resolve_btn_color;
@@ -1461,7 +1479,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 21, // bumped: added Image Styles (.imgs-{slug} token bundles + base rule)
+			'schema'    => 22, // bumped: Container Width presets → reusable .section--cw-{slug} classes
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),
@@ -1469,6 +1487,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 			'btn_color' => function_exists( 'unysonplus_get_button_color_presets' ) ? unysonplus_get_button_color_presets() : array(),
 			'border'    => function_exists( 'unysonplus_get_border_presets' )       ? unysonplus_get_border_presets()       : array(),
 			'table'     => function_exists( 'unysonplus_get_table_presets' )        ? unysonplus_get_table_presets()        : array(),
+			'cwidths'   => function_exists( 'unysonplus_get_container_width_presets' ) ? unysonplus_get_container_width_presets() : array(),
 			'btn_size'  => function_exists( 'unysonplus_get_button_size_presets' )  ? unysonplus_get_button_size_presets()  : array(),
 			'btn_anim'  => function_exists( 'unysonplus_get_custom_hover_animations' ) ? unysonplus_get_custom_hover_animations() : array(),
 			'spacing'   => function_exists( 'unysonplus_get_spacing_scale' )        ? unysonplus_get_spacing_scale()        : array(),

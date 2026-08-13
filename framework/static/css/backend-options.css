@@ -24,6 +24,7 @@ Included on pages where backend options are rendered
 
 	--fw-border:        #dcdcde;
 	--fw-border-strong: #c3c4c7;
+	--fw-border-faint:  #f7f7f7;
 
 	--fw-surface:     #fff;
 	--fw-surface-alt: #f6f7f7;
@@ -1333,24 +1334,24 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 
 /* end: modal fix */
 
-/* Add Selectize support for all selects with fw-selectize class */
+/* Enhanced-select support for all selects with the fw-select class */
 
-.fw-selectize.selectize-control.single .selectize-input:before {
+.fw-select.fw-select.single .fw-select-control:before {
 	height: 0;
 	background: none;
 }
 
-.fw-selectize.selectize-control.single .selectize-input:after,
-.fw-selectize.selectize-control.single .selectize-input.dropdown-active:after {
+.fw-select.fw-select.single .fw-select-control:after,
+.fw-select.fw-select.single .fw-select-control.dropdown-active:after {
 	right: 8px;
 	margin-top: -2px;
 	border-width: 6px 3px 0 3px;
 	border-color: var(--fw-text) transparent transparent transparent;
 }
 
-.fw-selectize.selectize-control>.selectize-input,
-.fw-selectize.selectize-control>.selectize-input.has-items,
-.fw-selectize.selectize-control>.selectize-input.input-active {
+.fw-select.fw-select>.fw-select-control,
+.fw-select.fw-select>.fw-select-control.has-items,
+.fw-select.fw-select>.fw-select-control.input-active {
 	display: block !important;
 	padding: 0;
 	margin: 1px;
@@ -1361,63 +1362,97 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
 }
 
-.fw-selectize.selectize-control>.selectize-input>input {
+.fw-select.fw-select>.fw-select-control>input {
 	padding: 2px 5px !important;
 	height: auto;
 	font-size: 14px;
 	vertical-align: middle;
 }
 
-.fw-modal .media-frame .fw-selectize.selectize-control>.selectize-input>input {
+.fw-modal .media-frame .fw-select.fw-select>.fw-select-control>input {
 	height: 26px;
 }
 
-.fw-selectize.selectize-control .selectize-input>div {
+.fw-select.fw-select .fw-select-control>div {
 	vertical-align: middle;
 }
 
-.fw-selectize.selectize-control.single .selectize-input>div {
+.fw-select.fw-select.single .fw-select-control>div {
 	padding: 2px 5px;
 	font-size: 14px;
 }
 
-.fw-modal .media-frame .fw-selectize.selectize-control.single .selectize-input>div {
+.fw-modal .media-frame .fw-select.fw-select.single .fw-select-control>div {
 	padding: 4px 5px;
 }
 
-.fw-selectize.selectize-control.multi .selectize-input>div {
+.fw-select.fw-select.multi .fw-select-control>div {
 	margin: 2px;
 	padding: 0 3px;
 }
 
-.fw-modal .media-frame .fw-selectize.selectize-control.multi .selectize-input>div {
+.fw-modal .media-frame .fw-select.fw-select.multi .fw-select-control>div {
 	padding: 2px 5px;
 }
 
-.fw-selectize.selectize-control .selectize-dropdown {
+.fw-select.fw-select .fw-select-dropdown {
 	margin: 0 1px;
 	border: none;
 	top: 33px;
 }
 
-.fw-selectize.selectize-control .selectize-dropdown .selectize-dropdown-content {
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content {
 	border: 1px solid var(--fw-border);
-	max-height: 204px;
+	/* ~9 rows. Group headings consume rows too, so a grouped list (the icon pack
+	   chooser) needs more room than a flat one before it starts scrolling. */
+	max-height: 280px;
 }
 
-.fw-selectize.selectize-control .selectize-dropdown .selectize-dropdown-content div {
+/**
+ * Target the rows themselves, not every div in the dropdown. When the control
+ * has optgroups, each group is wrapped in an `.optgroup` element — a bare `div`
+ * selector clamps that wrapper to a single row's height and collapses the whole
+ * group to a sliver.
+ */
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .option,
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .optgroup-header,
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .no-results {
 	height: 30px;
+	box-sizing: border-box;
 	background-color: #fff;
 	cursor: pointer;
-	border-bottom: 1px solid var(--fw-border);
-	line-height: 30px;
+
+	/* Barely-there separator: enough to keep rows from running together,
+	   not enough to read as a ruled list. */
+	border-bottom: 1px solid var(--fw-border-faint);
+
+	/* Centre with flex rather than a matching line-height. The row is a 30px
+	   border-box that also carries 6px vertical padding, so a 30px line-height
+	   overflows the content area and the text can never sit centred. */
+	display: flex;
+	align-items: center;
+	line-height: normal;
 }
 
-.fw-selectize.selectize-control .selectize-dropdown .selectize-dropdown-content div:hover {
+/* The last row has nothing to separate it from. */
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .option:last-child,
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .optgroup:last-child .option:last-child {
+	border-bottom: 0;
+}
+
+/* Group headings are labels, not choices. */
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .optgroup-header {
+	cursor: default;
+	background-color: var(--fw-surface-alt);
+	font-weight: 600;
+}
+
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .option:hover,
+.fw-select.fw-select .fw-select-dropdown .fw-select-dropdown-content .option.active {
 	background-color: var(--fw-surface-alt);
 }
 
-/* end: Selectize */
+/* end: enhanced select */
 
 /* -----------------------------------------------------------------------------
  * Help icon — progressive disclosure.
@@ -1425,7 +1460,7 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
  * Hide each option's (i) help icon until its row is hovered or keyboard-focused,
  * to declutter every options screen. Targets only the desktop (-in-input)
  * variant; the mobile (-in-label, .fw-visible-xs-block) one stays visible since
- * touch has no hover. opacity / pointer-events (never display:none) so the qtip
+ * touch has no hover. opacity / pointer-events (never display:none) so the tooltip
  * tooltip still binds on fw:options:init.
  * -------------------------------------------------------------------------- */
 .fw-backend-option .fw-option-help-in-input {

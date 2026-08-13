@@ -200,8 +200,8 @@
 	margin-right: 15px;
 }
 
-.fw-icon-v3-toolbar > div > .selectize-input,
-.fw-icon-v3-toolbar > div > .selectize-dropdown {
+.fw-icon-v3-toolbar > div > .fw-select-control,
+.fw-icon-v3-toolbar > div > .fw-select-dropdown {
 	margin: 0 !important;
 }
 
@@ -221,38 +221,41 @@
 	margin: 0;
 }
 
-/* Make the selectize pack dropdown the same height as the search input (28px)
-   so the two toolbar controls line up. */
-.fw-icon-v3-toolbar .selectize-control,
-.fw-icon-v3-toolbar .selectize-control.single .selectize-input {
+/* Match the pack control to the search input's height (28px) so the two toolbar
+   controls line up.
+
+   Constrain the CONTROL only, never the wrapper: the dropdown is rendered as a
+   child of the wrapper, so a height on the wrapper collapses the open dropdown
+   to a sliver instead of just sizing the closed control. */
+.fw-icon-v3-toolbar .fw-select.single .fw-select-control {
 	height: 28px !important;
 	min-height: 28px !important;
 }
-.fw-icon-v3-toolbar .selectize-control.single .selectize-input {
+.fw-icon-v3-toolbar .fw-select.single .fw-select-control {
 	display: flex !important;
 	align-items: center;
 	padding: 0 24px 0 10px !important;
 	line-height: 1 !important;
 	box-sizing: border-box !important;
 }
-.fw-icon-v3-toolbar .selectize-control.single .selectize-input:after {
+.fw-icon-v3-toolbar .fw-select.single .fw-select-control:after {
 	margin-top: 0 !important;
 	top: 50% !important;
 	transform: translateY(-25%);
 }
-.fw-icon-v3-toolbar .selectize-control.single .selectize-input input {
+.fw-icon-v3-toolbar .fw-select.single .fw-select-control input {
 	height: auto !important;
 	line-height: 1 !important;
 }
 
 /* Pack dropdown: make the "Icon Fonts" / "SVG Icons" group headers stand out
    and indent their items beneath them so the two families read as nested. */
-.fw-icon-v3-toolbar .selectize-dropdown .optgroup-header {
+.fw-icon-v3-toolbar .fw-select-dropdown .optgroup-header {
 	font-weight: 600;
 	color: #1d2327;
 	padding-left: 10px;
 }
-.fw-icon-v3-toolbar .selectize-dropdown .optgroup .option {
+.fw-icon-v3-toolbar .fw-select-dropdown .optgroup .option {
 	padding-left: 26px;
 }
 

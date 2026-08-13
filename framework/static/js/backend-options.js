@@ -252,7 +252,7 @@ jQuery(document).ready(function($){
 		fwEvents.on('fw:options:init', function (data) {
 			var $helps = data.$elements.find('.fw-option-help:not(.initialized)');
 
-			fw.qtip($helps);
+			fw.tooltip($helps);
 
 			$helps.addClass('initialized');
 		});

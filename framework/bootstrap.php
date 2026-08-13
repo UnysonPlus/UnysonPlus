@@ -126,6 +126,11 @@ if (defined('FW')) {
             // Call sites are being migrated fw-multi-inline -> multi-inline
             // one-by-one; both coexist during the transition.
             require $dir . '/includes/option-types/multi-inline/class-fw-option-type-multi-inline.php';
+            // button-set — segmented control covering single (radio semantics) and
+            // multi (checkbox semantics) selection. Plugin-only, class_exists
+            // guard inside the file; eager-required so its FW_Option_Type::register()
+            // fires before any options.php uses type 'button-set'.
+            require $dir . '/includes/option-types/button-set/class-fw-option-type-button-set.php';
             // background-pro lives only in the plugin — load unconditionally.
             // The class itself is wrapped in a class_exists guard, so a stale
             // theme-side copy on a partially-upgraded deploy won't fatal.

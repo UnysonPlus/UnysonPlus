@@ -3312,73 +3312,7 @@ body > .fw-sole-modal .fw-sole-modal-content p {
 }
 /* End Fixed: https://github.com/ThemeFuse/Unyson/issues/2888 */
 
-/* qtip custom style */
-
-.qtip.qtip-fw {
-	border-radius: .5rem;
-	border: 5px solid #333333;
-	background-color: #333333;
-	max-width: none;
-	z-index: 100000000 !important;
-}
-
-.qtip.qtip-fw .qtip-content {
-	border: none;
-	margin: 0px;
-	padding: 0px;
-	color: #EEEEEE;
-	font-family: "Open Sans",sans-serif;
-	font-size: 13px;
-	line-height: 1.4em;
-	font-style: italic;
-}
-
-.qtip-fw .qtip-content a {
-	color: #5fc5ee;
-	text-decoration: underline;
-}
-
-.qtip-fw .qtip-content a.button.button-primary {
-	color: #ffffff;
-}
-
-.qtip.qtip-fw .qtip-content a:hover {
-	text-decoration: none;
-}
-
-.qtip.qtip-fw .qtip-content iframe {
-	display: block; /* fix: creates extra bottom padding (like image is not set as display:block) */
-}
-
-.qtip.qtip-fw.fw-tip-info {
-	max-width: 320px;
-}
-
-.qtip.qtip-fw.fw-tip-info .qtip-content {
-	padding: 15px;
-}
-
-/* end: qtip custom style */
-
-
-/* qtip-fw (x) button */
-
-.qtip.qtip-fw .fw-x.dashicons:before {
-	content: "\f158";
-}
-
-.qtip.qtip-fw .fw-x.dashicons {
-	font-size: 13px;
-	line-height: 13px;
-	height: 13px;
-	width: 13px;
-	cursor: pointer;
-	color: #fff;
-	background-color: #CC0000;
-	border-radius: 100%;
-}
-
-/* end: qtip-fw (x) button */
+/* Tooltip styles now live in static/css/fw-tooltip.css (see $.fn.fwTooltip). */
 
 
 /* fw.loading */

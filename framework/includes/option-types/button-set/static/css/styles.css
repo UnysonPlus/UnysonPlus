@@ -1,0 +1,134 @@
+/**
+ * Button Set option type.
+ *
+ * Native radio/checkbox inputs, visually hidden, with the <label> styled as the
+ * button. Colors come from the framework's --fw-accent token, which resolves to
+ * --wp-admin-theme-color, so the control follows the admin color scheme the user
+ * picked rather than a hardcoded brand color.
+ */
+
+.fw-option-type-button-set {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	max-width: 100%;
+	border-radius: var(--fw-radius, 4px);
+}
+
+/* Visually hidden, but still focusable and still announced. Not display:none —
+   that would remove it from the tab order and from the accessibility tree. */
+.fw-option-type-button-set .fw-button-set-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.fw-option-type-button-set .fw-button-set-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	margin: 0;
+	padding: 5px 13px;
+	min-height: 30px;
+	background: var(--fw-surface, #fff);
+	color: var(--fw-accent, #2271b1);
+	border: 1px solid var(--fw-border-strong, #c3c4c7);
+	border-right-width: 0;
+	font-size: 13px;
+	line-height: 1.4;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color var(--fw-transition, 0.15s ease),
+		color var(--fw-transition, 0.15s ease),
+		border-color var(--fw-transition, 0.15s ease);
+}
+
+.fw-option-type-button-set .fw-button-set-button:first-of-type {
+	border-top-left-radius: var(--fw-radius, 4px);
+	border-bottom-left-radius: var(--fw-radius, 4px);
+}
+
+.fw-option-type-button-set .fw-button-set-button:last-of-type {
+	border-right-width: 1px;
+	border-top-right-radius: var(--fw-radius, 4px);
+	border-bottom-right-radius: var(--fw-radius, 4px);
+}
+
+.fw-option-type-button-set .fw-button-set-button:hover {
+	background: var(--fw-surface-alt, #f6f7f7);
+	color: var(--fw-accent-hover, #135e96);
+}
+
+/* Checked state. The input immediately precedes its label in the markup, so the
+   adjacent-sibling selector is all this needs — no JS class toggling. */
+.fw-option-type-button-set .fw-button-set-input:checked + .fw-button-set-button {
+	background: var(--fw-accent, #2271b1);
+	border-color: var(--fw-accent, #2271b1);
+	color: var(--fw-accent-contrast, #fff);
+}
+
+/* Keep the checked button's right border visible against the next button. */
+.fw-option-type-button-set .fw-button-set-input:checked + .fw-button-set-button:not(:last-of-type) {
+	border-right-width: 1px;
+	margin-right: -1px;
+}
+
+.fw-option-type-button-set .fw-button-set-input:focus-visible + .fw-button-set-button {
+	box-shadow: var(--fw-focus-ring, 0 0 0 1px #2271b1);
+	outline: 2px solid transparent; /* visible in Windows high-contrast mode */
+	outline-offset: 0;
+	position: relative;
+	z-index: 1;
+}
+
+/* Older engines without :focus-visible support. */
+.fw-option-type-button-set .fw-button-set-input:focus + .fw-button-set-button {
+	position: relative;
+	z-index: 1;
+}
+
+.fw-option-type-button-set .fw-button-set-button i {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	line-height: 17px;
+}
+
+/* stretch: buttons share the row evenly instead of sizing to content. */
+.fw-option-type-button-set.fw-button-set-stretch {
+	display: flex;
+	width: 100%;
+}
+
+.fw-option-type-button-set.fw-button-set-stretch .fw-button-set-button {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+/* icon-only: square-ish buttons, label kept as aria-label + tooltip. */
+.fw-option-type-button-set.fw-button-set-icon-only .fw-button-set-button {
+	padding: 5px 10px;
+}
+
+/* Disabled parent option (fw-backend-option disabled states). */
+.fw-option-type-button-set .fw-button-set-input:disabled + .fw-button-set-button {
+	opacity: 0.55;
+	cursor: default;
+}
+
+/* Narrow panels: wrap to full-width rows rather than squeezing to nothing. */
+@media screen and (max-width: 782px) {
+	.fw-option-type-button-set:not(.fw-button-set-stretch) .fw-button-set-button {
+		flex: 1 1 auto;
+	}
+}

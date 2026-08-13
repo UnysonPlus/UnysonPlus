@@ -345,6 +345,9 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 							'custom' => array(
 								'type'  => 'short-text',
 								'title' => false,
+								// A background-size value ("400px", "100% 50%") — no place for a
+								// {{dynamic content}} token, so hide the picker icon.
+								'dynamic_content' => false,
 							),
 						),
 					), $id_prefix, $name_prefix );

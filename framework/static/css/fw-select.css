@@ -1,0 +1,99 @@
+/**
+ * fw-select — framework skin for the enhanced select control ($.fn.fwSelect).
+ *
+ * Structural styles come from the engine's own stylesheet, registered as the
+ * `fw-select-base` dependency of this handle. This file holds only the framework's
+ * adjustments on top of it, so the control matches the rest of the admin UI.
+ *
+ * The control is configured to emit the framework's class vocabulary directly
+ * (see static/js/fw-select.js), so everything here targets fw-select-* names.
+ */
+
+/* Match the admin's input metrics rather than the engine's defaults. */
+.fw-select .fw-select-control {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	background: #fff;
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
+	font-size: 13px;
+	line-height: 1.4;
+	padding: 5px 8px;
+	min-height: 30px;
+	color: #32373c;
+}
+
+.fw-select.focus .fw-select-control,
+.fw-select .fw-select-control:focus-within {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.fw-select.disabled .fw-select-control,
+.fw-select.disabled .fw-select-control * {
+	cursor: default !important;
+	background: #f6f7f7;
+	color: #a7aaad;
+}
+
+/* Selected items in a multi-value control. */
+.fw-select.multi .fw-select-control > .item {
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	color: #2c3338;
+	padding: 1px 6px;
+	margin: 0 3px 3px 0;
+}
+
+.fw-select.multi .fw-select-control > .item.active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+/* Dropdown. */
+.fw-select-dropdown {
+	border: 1px solid #c3c4c7;
+	border-radius: 0 0 3px 3px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+	background: #fff;
+	font-size: 13px;
+	z-index: 100000;
+}
+
+.fw-select-dropdown .option {
+	padding: 6px 8px;
+	cursor: pointer;
+}
+
+.fw-select-dropdown .active {
+	background: #f0f6fc;
+	color: #2271b1;
+}
+
+.fw-select-dropdown .optgroup-header {
+	padding: 6px 8px;
+	font-weight: 600;
+	color: #646970;
+	background: #f6f7f7;
+}
+
+.fw-select-dropdown .no-results {
+	padding: 6px 8px;
+	color: #646970;
+	font-style: italic;
+}
+
+/**
+ * A control with no editable text field (controlInput: null) should read as a
+ * button, not a text box — the icon picker's pack chooser relies on this.
+ */
+.fw-select.fw-select-no-input .fw-select-control {
+	cursor: pointer;
+}
+
+/* Drag-and-drop reordering, used by the multi-select option type. */
+.fw-select .fw-select-dragging {
+	opacity: .5;
+}

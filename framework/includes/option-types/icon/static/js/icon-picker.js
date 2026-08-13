@@ -898,14 +898,13 @@
 			// Unified Icons-tab dropdown (Icon Fonts + SVG Icons optgroups). A
 			// pack-id → type map lets the JS switch between the client-side font
 			// filter and the SVG AJAX search when the selection changes.
-			// Selectize the unified dropdown ONCE (openIcon may call
-			// prepareForPick twice). selectize does NOT read DOM <optgroup>s on
-			// its own, so pass the options + optgroups explicitly, or the dropdown
-			// comes up empty.
+			// Enhance the unified dropdown ONCE (openIcon may call prepareForPick
+			// twice). The control does NOT read DOM <optgroup>s on its own, so pass
+			// the options + optgroups explicitly, or the dropdown comes up empty.
 			var $packSelect = modal.frame.$el.find('.fw-icon-v3-pack-select')
 			var packSelectEl = $packSelect[0]
 
-			if (packSelectEl && !packSelectEl.selectize) {
+			if (packSelectEl && !packSelectEl.fwSelect) {
 				var packTypes = {}
 				var packTitles = {}
 				var szOptions = []
@@ -930,8 +929,8 @@
 				modal.content.packTypes = packTypes
 				modal.content.packTitles = packTitles
 
-				$packSelect.selectize({
-					plugins: ['hidden_textfield'],
+				$packSelect.fwSelect({
+					controlInput: null,   // non-editable control (was the hidden_textfield plugin)
 					options: szOptions,
 					optgroups: szGroups,
 					optgroupField: 'group',
@@ -950,8 +949,8 @@
 			// so re-opening lands on the right library; else the server default
 			// (Font Awesome). Render silently now so the grid is ready on open.
 			var initPack = modal.content.packForState(modal.get('current_state'))
-			if (initPack && packSelectEl && packSelectEl.selectize) {
-				packSelectEl.selectize.setValue(initPack, true)
+			if (initPack && packSelectEl && packSelectEl.fwSelect) {
+				packSelectEl.fwSelect.setValue(initPack, true)
 			}
 			modal.content.renderIconsTab()
 
@@ -1382,26 +1381,4 @@
 		fwOptionTypeIconV2Instance = new fwOptionTypeIconV2Picker()
 	})
 
-	Selectize.define('hidden_textfield', function(options) {
-		var self = this
-
-		this.showInput = function() {
-			this.$control.css({cursor: 'pointer'})
-
-			this.$control_input.css({
-				opacity: 0,
-				position: 'relative',
-				left: self.rtl ? 10000 : -10000,
-			})
-
-			this.isInputHidden = false
-		}
-
-		this.setup_original = this.setup
-
-		this.setup = function() {
-			self.setup_original()
-			this.$control_input.prop('disabled', 'disabled')
-		}
-	})
 })(jQuery)

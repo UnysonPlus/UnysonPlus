@@ -93,7 +93,7 @@
 	display: none !important;
 }
 
-.qtip .qtip-content img.fw-option-type-image-picker-large-image {
+.fw-tooltip .fw-tooltip-content img.fw-option-type-image-picker-large-image {
 	display: block;
 }
 /* Searchable image-picker (opt-in via the `search` option): a filter box on top and category

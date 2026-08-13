@@ -79,6 +79,18 @@ if ( ! function_exists( 'unysonplus_collect_element_css' ) ) :
 				}
 			}
 
+			// Section per-instance sizing (Min Height / Container Width) → a scoped `.u{hash}` rule in
+			// THIS page CSS file, instead of an inline style="…" on the markup. sc_section_dynamic_css()
+			// returns '' for any element that sets neither (i.e. everything that isn't a sized section),
+			// so this is a no-op elsewhere. Keeps the HTML clean; the value stays editable via the option.
+			if ( ! empty( $vals['unique_id'] ) && function_exists( 'sc_section_dynamic_css' ) ) {
+				$scope = sc_element_scope_class( $vals );
+				if ( $scope !== '' ) {
+					$sec_css = sc_section_dynamic_css( $vals, $scope );
+					if ( $sec_css !== '' ) { $parts[] = $sec_css; }
+				}
+			}
+
 			if ( ! empty( $node['_items'] ) && is_array( $node['_items'] ) ) {
 				unysonplus_collect_element_css( $node['_items'], $parts );
 			}

@@ -1,8 +1,8 @@
 (function ($) {
 	var xhr,
 		optionsCache = {},
-		ajaxAutocompleteCallback = _.throttle(function(selectize, value, population, source, show_type, hash){
-			selectize.load(function(callback){
+		ajaxAutocompleteCallback = _.throttle(function(control, value, population, source, show_type, hash){
+			control.load(function(callback){
 				xhr && xhr.abort();
 
 				xhr = $.post(
@@ -27,7 +27,7 @@
 						callback(response.data);
 
             optionsCache[hash] = [] // transform object to array
-            $.each(selectize.options, function (i, o) {
+            $.each(control.options, function (i, o) {
               optionsCache[hash].push(o)
             })
 					}
@@ -49,7 +49,7 @@
 						: optionsCache[hash]
 				);
 
-			$this.selectize({
+			$this.fwSelect({
 				maxItems: ( limit > 0 ) ? limit : null,
 				plugins: ['remove_button','drag_drop'],
 				delimiter: '/*/',
@@ -80,11 +80,11 @@
 			});
 
 			$this.next()
-				.addClass('fw-selectize')
-				.find('> .selectize-input > input').css('width', '11px'); // more than padding left+right to make the cursor visible
+				.addClass('fw-select-enhance')
+				.find('> .fw-select-control > input').css('width', '11px'); // more than padding left+right to make the cursor visible
 
 			$this.on('remove', function () {
-				$this.get(0).selectize.destroy();
+				$this.get(0).fwSelect.destroy();
 			});
 		});
 
@@ -93,7 +93,7 @@
 		} else {
 			$this.one('focus', function(){
 				$this.trigger('fw:option-type:multi-select:init');
-				$this.get(0).selectize.focus();
+				$this.get(0).fwSelect.focus();
 			});
 		}
 	};

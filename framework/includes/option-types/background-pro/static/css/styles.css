@@ -180,3 +180,40 @@
 		font-size: 11px;
 	}
 }
+
+/* ----- Size field: <select> + Custom Value input on ONE row ----- */
+/* The Size dropdown shrinks to fill the remaining width, and the Custom Value text input
+   sits INLINE to its right. Scoped to `.bg-pro__row--image-size` — the class bg-pro's
+   _render_sub() actually puts on this row. (An earlier attempt scoped to
+   `.fw-backend-option-type-fw-multi-inline`, which this control never renders, so it did
+   nothing.) `.fw-multi-inline-group` is display:block by default → the holders stacked. */
+.bg-pro__row--image-size .fw-multi-inline-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.bg-pro__row--image-size .fw-multi-inline-holder {
+	float: none;
+	margin: 0;
+}
+.bg-pro__row--image-size .fw-multi-holding-select {
+	flex: 1 1 auto;   /* the dropdown takes the remaining width (≈ 100% − input) */
+	min-width: 0;
+}
+.bg-pro__row--image-size .fw-multi-holding-select select {
+	width: 100%;
+}
+.bg-pro__row--image-size .fw-multi-holding-text {
+	flex: 0 0 auto;   /* the Custom Value input stays a compact fixed width, inline */
+}
+.bg-pro__row--image-size .fw-multi-holding-text input[type="text"],
+.bg-pro__row--image-size .fw-multi-holding-text .fw-option-width-short {
+	width: 110px !important;
+	max-width: 110px !important;
+	margin: 0;
+	box-sizing: border-box;
+}
+/* Remove the dynamic-content picker icon on the size value (a size has no {{token}} use). */
+.bg-pro__row--image-size .fw-dynamic-content-trigger {
+	display: none;
+}

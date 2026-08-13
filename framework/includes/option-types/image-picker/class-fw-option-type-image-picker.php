@@ -78,14 +78,14 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 		wp_enqueue_style(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/css/styles.css'),
-			array('qtip'),
+			array('fw-tooltip'),
 			fw()->manifest->get_version()
 		);
 
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
-			array('fw-events', 'qtip'),
+			array('fw-events', 'fw-tooltip'),
 			fw()->manifest->get_version(),
 			true
 		);

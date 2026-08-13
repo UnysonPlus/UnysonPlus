@@ -328,15 +328,42 @@ final class _FW_Component_Backend {
 
 		{
 			wp_register_style(
-				'qtip',
-				fw_get_framework_directory_uri('/static/libs/qtip/css/jquery.qtip.min.css'),
+				'fw-tooltip',
+				fw_get_framework_asset_uri('/static/css/fw-tooltip.css'),
+				[],
+				fw()->manifest->get_version()
+			);
+
+			/**
+			 * Floating UI — the positioning engine behind fw-tooltip.
+			 * Two files by necessity: the UMD `dom` build reads window.FloatingUICore,
+			 * so `core` has to be registered as its dependency rather than merged.
+			 */
+			wp_register_script(
+				'fw-floating-ui-core',
+				fw_get_framework_directory_uri('/static/libs/floating-ui/floating-ui.core.umd.min.js'),
 				[],
 				fw()->manifest->get_version()
 			);
 			wp_register_script(
-				'qtip',
-				fw_get_framework_directory_uri('/static/libs/qtip/jquery.qtip.min.js'),
-				['jquery'],
+				'fw-floating-ui',
+				fw_get_framework_directory_uri('/static/libs/floating-ui/floating-ui.dom.umd.min.js'),
+				['fw-floating-ui-core'],
+				fw()->manifest->get_version()
+			);
+
+			/**
+			 * The framework tooltip: $.fn.fwTooltip, in static/js/fw-tooltip.js.
+			 *
+			 * Named for what it does rather than for the library underneath — the
+			 * previous implementation put its vendor in the handle, the class names
+			 * and the plugin method, so when that vendor stopped being maintained the
+			 * naming advertised it. Floating UI is an implementation detail here.
+			 */
+			wp_register_script(
+				'fw-tooltip',
+				fw_get_framework_asset_uri('/static/js/fw-tooltip.js'),
+				['jquery', 'fw-floating-ui'],
 				fw()->manifest->get_version()
 			);
 		}
@@ -350,7 +377,7 @@ final class _FW_Component_Backend {
 			wp_register_style(
 				'fw',
 				fw_get_framework_asset_uri('/static/css/fw.css'),
-				['qtip'],
+				['fw-tooltip'],
 				fw()->manifest->get_version()
 			);
 
@@ -395,7 +422,7 @@ final class _FW_Component_Backend {
 				// opens un-centered, un-draggable, with no backdrop. Declaring it here
 				// guarantees it wherever fw.js loads. (WP registers the handle on the
 				// front end too, so this only prints it when fw.js is actually enqueued.)
-				['jquery', 'jquery-ui-draggable', 'fw-events', 'backbone', 'qtip'],
+				['jquery', 'jquery-ui-draggable', 'fw-events', 'backbone', 'fw-tooltip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);
@@ -450,42 +477,39 @@ final class _FW_Component_Backend {
 		}
 
 		{
+			/**
+			 * Structural styles ship with the engine; the framework's own appearance
+			 * lives in the option-type stylesheets that depend on this handle.
+			 */
 			wp_register_style(
-				'fw-selectize',
-				fw_get_framework_directory_uri('/static/libs/selectize/selectize.css'),
+				'fw-select-base',
+				fw_get_framework_directory_uri('/static/libs/tom-select/tom-select.base.css'),
 				[],
 				fw()->manifest->get_version()
 			);
-			wp_register_script(
-				'fw-selectize',
-				fw_get_framework_directory_uri('/static/libs/selectize/selectize.min.js'),
-				['jquery'],
-				fw()->manifest->get_version(),
-				true
-			);
-		}
-
-		{
-			wp_register_script(
-				'fw-mousewheel',
-				fw_get_framework_directory_uri('/static/libs/mousewheel/jquery.mousewheel.min.js'),
-				['jquery'],
-				fw()->manifest->get_version(),
-				true
-			);
-		}
-
-		{
 			wp_register_style(
-				'fw-jscrollpane',
-				fw_get_framework_directory_uri('/static/libs/jscrollpane/jquery.jscrollpane.css'),
-				[],
+				'fw-select',
+				fw_get_framework_asset_uri('/static/css/fw-select.css'),
+				['fw-select-base'],
 				fw()->manifest->get_version()
 			);
+
+			/**
+			 * The engine, then the framework adapter. As with fw-tooltip, the handle
+			 * is named for the control rather than the library behind it — see
+			 * static/js/fw-select.js.
+			 */
 			wp_register_script(
-				'fw-jscrollpane',
-				fw_get_framework_directory_uri('/static/libs/jscrollpane/jquery.jscrollpane.min.js'),
-				['jquery', 'fw-mousewheel'],
+				'fw-select-engine',
+				fw_get_framework_directory_uri('/static/libs/tom-select/tom-select.complete.min.js'),
+				[],
+				fw()->manifest->get_version(),
+				true
+			);
+			wp_register_script(
+				'fw-select',
+				fw_get_framework_asset_uri('/static/js/fw-select.js'),
+				['jquery', 'fw-select-engine'],
 				fw()->manifest->get_version(),
 				true
 			);
@@ -510,26 +534,6 @@ final class _FW_Component_Backend {
 			'backbone-relational',
 			fw_get_framework_directory_uri('/static/libs/backbone-relational/backbone-relational.js'),
 			['backbone'],
-			fw()->manifest->get_version(),
-			true
-		);
-
-		wp_register_script(
-			'fw-uri',
-			fw_get_framework_directory_uri('/static/libs/uri/URI.js'),
-			[],
-			fw()->manifest->get_version(),
-			true
-		);
-
-		wp_register_script(
-			'fw-moment',
-			/**
-			 * IMPORTANT: At the end of the script is added this line:
-			 * moment.locale(document.documentElement.lang.slice(0, 2)); // fixes https://github.com/ThemeFuse/Unyson/issues/1767
-			 */
-			fw_get_framework_directory_uri('/static/libs/moment/moment-with-locales.min.js'),
-			[],
 			fw()->manifest->get_version(),
 			true
 		);

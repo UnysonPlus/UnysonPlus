@@ -47,7 +47,21 @@ $css_preview     = FW_Option_Type_Box_Shadow::to_css( $value );
 
 	<div class="bsh-row bsh-row-2">
 		<label class="bsh-field bsh-color-field"><span><?php echo esc_html__( 'Color', 'fw' ); ?></span>
-			<input type="text" class="bsh-color" value="<?php echo esc_attr( $value['color'] ); ?>" data-alpha="true" /></label>
+			<?php
+			/**
+			 * Carries the rgba-color-picker class + data-coloris so the shared Coloris
+			 * init picks it up as an rgb+alpha picker, matching every other colour
+			 * field in the framework. Previously this ran wpColorPicker (Iris), which
+			 * rendered its own "Select Color"/"Clear" chrome and looked nothing like
+			 * the rest of the options UI.
+			 */
+			?>
+			<input
+				type="text"
+				class="bsh-color fw-option-type-rgba-color-picker"
+				value="<?php echo esc_attr( $value['color'] ); ?>"
+				data-coloris
+			/></label>
 		<label class="bsh-inset"><input type="checkbox" class="bsh-inset-cb" <?php checked( ! empty( $value['inset'] ) ); ?> /> <?php echo esc_html__( 'Inset', 'fw' ); ?></label>
 	</div>
 

@@ -247,7 +247,7 @@
 					var largeImageAttr = $this.data('large-img-attr');
 
 					if (largeImageAttr) {
-						$this.qtip({
+						$this.fwTooltip({
 							content: $('<div></div>').append(
 								$('<img/>').attr(largeImageAttr).addClass(optionTypeClass +'-large-image')
 							).html(),
@@ -260,7 +260,7 @@
 								}
 							},
 							style: {
-								classes: 'qtip-fw',
+								classes: 'fw-tooltip-default',
 								tip: {
 									width: 12,
 									height: 5

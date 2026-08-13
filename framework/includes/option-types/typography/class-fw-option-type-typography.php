@@ -39,7 +39,7 @@ class FW_Option_Type_Typography extends FW_Option_Type {
 		wp_enqueue_style(
 			'fw-option-' . self::ASSET_BASE,
 			fw_get_framework_asset_uri( '/includes/option-types/' . self::ASSET_BASE . '/static/css/styles.css' ),
-			array( 'fw-selectize' ),
+			array( 'fw-select' ),
 			fw()->manifest->get_version()
 		);
 
@@ -50,7 +50,7 @@ class FW_Option_Type_Typography extends FW_Option_Type {
 		wp_enqueue_script(
 			'fw-option-' . self::ASSET_BASE,
 			fw_get_framework_asset_uri( '/includes/option-types/' . self::ASSET_BASE . '/static/js/scripts.js' ),
-			array( 'jquery', 'underscore', 'fw', 'fw-selectize' ),
+			array( 'jquery', 'underscore', 'fw', 'fw-select' ),
 			fw()->manifest->get_version()
 		);
 

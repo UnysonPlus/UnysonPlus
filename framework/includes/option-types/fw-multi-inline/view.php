@@ -37,6 +37,12 @@ if ( ! empty( $option['groupname'] ) ) {
 					array(
 						'type'  => 'short-text',
 						'value' => fw_akg( $key, $option['value'] ),
+						// Forward an explicit `dynamic_content` flag when the child config sets one
+						// (short-text defaults it to true → the {{dynamic content}} picker icon). This
+						// lets a multi-inline row opt OUT (e.g. a numeric size value) — additive, so
+						// rows that don't set it keep the default.
+						'dynamic_content' => isset( $option['fw_multi_options'][ $key ]['dynamic_content'] )
+							? $option['fw_multi_options'][ $key ]['dynamic_content'] : true,
 						'attr'  => array(
 							'data-fwmultioptions' => $group_name,
 						),

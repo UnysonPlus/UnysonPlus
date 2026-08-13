@@ -1,9 +1,9 @@
-.fw-option-type-multi-select .selectize-input {
+.fw-option-type-multi-select .fw-select-control {
 	padding: 4px 6px;
 }
 
-.fw-option-type-multi-select .selectize-input.focus.input-active.dropdown-active:before,
-.fw-option-type-multi-select .selectize-input.focus.input-active.dropdown-active:before {
+.fw-option-type-multi-select .fw-select-control.focus.input-active.dropdown-active:before,
+.fw-option-type-multi-select .fw-select-control.focus.input-active.dropdown-active:before {
 	display: none;
 }
 
@@ -11,20 +11,20 @@
 	top: 4px !important;
 }
 
-.fw-backend-option-type-multi-select .selectize-control .selectize-dropdown .selectize-dropdown-content div > .type:before,
-.fw-backend-option-type-multi-select .selectize-control .selectize-input > div > .type:before {
+.fw-backend-option-type-multi-select .fw-select .fw-select-dropdown .fw-select-dropdown-content div > .type:before,
+.fw-backend-option-type-multi-select .fw-select .fw-select-control > div > .type:before {
 	content: "(";
 	margin-right: 1px;
 }
 
-.fw-backend-option-type-multi-select .selectize-control .selectize-dropdown .selectize-dropdown-content div > .type:after,
-.fw-backend-option-type-multi-select .selectize-control .selectize-input > div > .type:after {
+.fw-backend-option-type-multi-select .fw-select .fw-select-dropdown .fw-select-dropdown-content div > .type:after,
+.fw-backend-option-type-multi-select .fw-select .fw-select-control > div > .type:after {
 	content: ")";
 	margin-left: 1px;
 }
 
-.fw-backend-option-type-multi-select .selectize-control .selectize-dropdown .selectize-dropdown-content div > .type,
-.fw-backend-option-type-multi-select .selectize-control .selectize-input > div > .type {
+.fw-backend-option-type-multi-select .fw-select .fw-select-dropdown .fw-select-dropdown-content div > .type,
+.fw-backend-option-type-multi-select .fw-select .fw-select-control > div > .type {
 	opacity: .5;
 	font-size: 80%;
 	margin-left: 5px;
