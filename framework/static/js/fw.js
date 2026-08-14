@@ -1,14 +1,35 @@
 var fw;
 
-if (typeof Object['create'] != 'undefined') {
-	/**
-	 * create clean object
-	 * autocomplete in console to show only defined methods, without other unnecesary methods from Object prototype
-	 */
-	fw = Object.create(null);
-} else {
-	fw = {};
-}
+/**
+ * Build the `fw` namespace, PRESERVING anything already on it.
+ *
+ * fw-oo.js and fw-modal-frame.js load before this file and put fw.Class,
+ * fw.View, fw.Events, fw.ModalFrame and fw.ModalToolbar on the namespace —
+ * fw.Modal is defined below as `fw.Class.extend(...)`, at load time, so they
+ * must survive. Reassigning `fw` to a fresh object here (as this did) silently
+ * erased them and left fw.Class undefined at the moment it was needed.
+ */
+(function () {
+	var existing = (typeof fw !== 'undefined' && fw) ? fw : null;
+
+	if (typeof Object['create'] != 'undefined') {
+		/**
+		 * create clean object
+		 * autocomplete in console to show only defined methods, without other unnecesary methods from Object prototype
+		 */
+		fw = Object.create(null);
+	} else {
+		fw = {};
+	}
+
+	if (existing) {
+		for (var key in existing) {
+			if (Object.prototype.hasOwnProperty.call(existing, key)) {
+				fw[key] = existing[key];
+			}
+		}
+	}
+})();
 
 /**
  * URI to framework directory
@@ -926,7 +947,53 @@ fw.getQueryString = function(name) {
 	 *
 	 * modal.on('open|render|closing|close', function(){});
 	 */
-	fw.Modal = Backbone.Model.extend({
+	/**
+	 * Create the modal's frame.
+	 *
+	 * Returns fw.ModalFrame — a plain-JavaScript reimplementation of the slice of
+	 * wp.media.view.MediaFrame the framework used, with the same DOM and the same
+	 * public API (see fw-modal-frame.js).
+	 *
+	 * KILL SWITCH: set `window.FW_LEGACY_MEDIA_MODAL = true` before this script
+	 * runs (or add `?fw-legacy-modal=1` to the URL) to fall back to the original
+	 * wp.media frame. Every options modal in wp-admin goes through here, so an
+	 * instant, no-deploy escape hatch is worth the handful of lines. Remove it once
+	 * the replacement has been exercised in the wild.
+	 *
+	 * @param {Object} settings
+	 * @return {Object} Frame instance.
+	 */
+	fw.createModalFrame = function (settings) {
+		var legacy = false;
+
+		try {
+			legacy = !!window.FW_LEGACY_MEDIA_MODAL
+				|| /[?&]fw-legacy-modal=1/.test(String(location.search));
+		} catch (e) {}
+
+		if (legacy && window.wp && wp.media && wp.media.view && wp.media.view.MediaFrame) {
+			return new wp.media.view.MediaFrame(settings);
+		}
+
+		return new fw.ModalFrame(settings);
+	};
+
+	/**
+	 * Toolbar view for the modal's buttons — fw.ModalToolbar, or wp.media's when
+	 * the legacy frame is in use (the two are not interchangeable).
+	 *
+	 * @param {Object} options
+	 * @return {Object} Toolbar view.
+	 */
+	fw.createModalToolbar = function (options) {
+		if (options.controller instanceof fw.ModalFrame) {
+			return new fw.ModalToolbar(options);
+		}
+
+		return new wp.media.view.Toolbar(options);
+	};
+
+	fw.Modal = fw.Class.extend({
 		defaults: {
 			/* Modal title */
 			title: 'Edit Options',
@@ -941,7 +1008,7 @@ fw.getQueryString = function(name) {
 			disableLazyTabs: false,
 			size: 'small' // small, medium, large
 		},
-		ContentView: Backbone.View.extend({
+		ContentView: fw.View.extend({
 			tagName: 'form',
 			attributes: {
 				'onsubmit': 'return false;'
@@ -1015,35 +1082,32 @@ fw.getQueryString = function(name) {
 
 			var modal = this;
 
-			var ControllerMainState = wp.media.controller.State.extend({
-				defaults: {
-					id: 'main',
-					content: 'main',
-					menu: 'default',
-					title: this.get('title'),
-					headerElements: this.get('headerElements')
-				},
-				initialize: function() {
-					this.listenTo(modal, 'change:title', function(){
-						this.set('title', modal.get('title'));
-					});
-				},
-				activate: function () {
-					this.frame.once('ready', _.bind(function(){
-						this.frame.views.get('.media-frame-title')[0].$el
-							.text(this.get('title'))
-							.append(this.get('headerElements') || '');
-					}, this));
-				}
-			});
-
-			this.frame = new wp.media.view.MediaFrame({
+			this.frame = fw.createModalFrame({
 				state: 'main',
-				states: [ new ControllerMainState ],
 				uploader: false
 			});
 
-			var modal = this;
+			/**
+			 * Render the modal title.
+			 *
+			 * This used to be a wp.media.controller.State that did
+			 * `listenTo(modal, 'change:title')` — a Backbone object subscribing to
+			 * ours, which forced fw.Modal to stay Backbone-compatible even after
+			 * everything else moved off it. The direction is inverted: the modal now
+			 * PUSHES its title into the frame. Same behaviour, no Backbone contract.
+			 */
+			var renderTitle = function () {
+				var titleView = modal.frame.views.get('.media-frame-title')[0];
+
+				if (!titleView) { return; }
+
+				titleView.$el
+					.text(modal.get('title'))
+					.append(modal.get('headerElements') || '');
+			};
+
+			this.frame.once('ready', renderTitle);
+			this.on('change:title change:headerElements', renderTitle);
 
 			this.frame.once('ready', function(){
 				var $modalWrapper    = modal.frame.modal.$el,
@@ -1874,7 +1938,7 @@ fw.getValuesFromServer = function (data) {
 
 			this.frame.on('content:create:main', function () {
 				modal.frame.toolbar.set(
-					new wp.media.view.Toolbar({
+					fw.createModalToolbar({
 						controller: modal.frame,
 						items: buttons
 					})

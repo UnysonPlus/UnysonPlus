@@ -76,6 +76,8 @@ async function collectAssets(relDir, ext, skipDirs = []) {
  */
 const CSS_FILES = [
 	'framework/static/css/fw.css',
+	'framework/static/css/fw-tooltip.css',
+	'framework/static/css/fw-select.css',
 	'framework/static/css/backend-options.css',
 	'framework/static/css/option-types.css',
 	...(await collectAssets('framework/includes/option-types', '.css')),
@@ -93,7 +95,11 @@ const CSS_FILES = [
  */
 const JS_FILES = [
 	'framework/static/js/fw-events.js',
+	'framework/static/js/fw-oo.js',
+	'framework/static/js/fw-modal-frame.js',
 	'framework/static/js/fw.js',
+	'framework/static/js/fw-tooltip.js',
+	'framework/static/js/fw-select.js',
 	'framework/static/js/fw-reactive-options-registry.js',
 	'framework/static/js/fw-reactive-options-simple-options.js',
 	'framework/static/js/fw-reactive-options-undefined-option.js',

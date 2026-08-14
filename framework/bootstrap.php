@@ -159,6 +159,19 @@ if (defined('FW')) {
                 require $dir . '/extensions/shortcodes/includes/components-options.php';
             }
 
+            // React control layer (fw.controls) — the SECOND renderer for the
+            // option schema, for surfaces that cannot consume PHP-rendered HTML
+            // (Gutenberg block inspectors, new React admin screens). Registers
+            // the script handle only; nothing is enqueued until a consumer calls
+            // wp_enqueue_script('fw-controls'). The PHP _render() path is
+            // untouched and stays authoritative for the builder + options pages.
+            // Autoloaded via the PSR-4 registrar in framework/autoload.php.
+            add_action(
+                'admin_enqueue_scripts',
+                array( 'UnysonPlus\\Admin\\Controls\\Registry', 'register' ),
+                5
+            );
+
             /**
              * Init components
              */

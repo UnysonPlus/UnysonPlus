@@ -2,10 +2,29 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.16.7';
+$manifest['version'] = '2.16.11';
 
 /**
  * Changelog
+ * 2.16.11 - The framework core no longer depends on Backbone. fw.Modal was built on
+ *          Backbone.Model / Backbone.View and wp.media.view.MediaFrame, which made
+ *          Backbone a hard dependency of the most-used piece of admin UI. Two new
+ *          scripts replace it: fw-oo.js (fw.Events / fw.Class / fw.View — the
+ *          Backbone-shaped primitives the framework actually used, with the same
+ *          signatures, including the events hash and the event-map form of
+ *          on/once/off/listenTo) and fw-modal-frame.js (fw.ModalFrame + fw.ModalToolbar,
+ *          reproducing the media frame's DOM and the slice of its API the framework
+ *          consumes). The 'fw' script handle no longer declares 'backbone'. This is
+ *          intended to be invisible: the markup, CSS class names, public API and every
+ *          modal event are unchanged, so third-party option types and extensions keep
+ *          working. Code that treated a modal as a genuine Backbone.Model — an
+ *          instanceof check, or a Backbone-only method such as save()/fetch()/toJSON
+ *          semantics — is the one thing that will not carry over. Set
+ *          window.FW_LEGACY_MEDIA_MODAL = true (or append ?fw-legacy-modal=1 to an
+ *          admin URL) to fall back to the wp.media frame while adapting. Note that
+ *          Backbone still loads on pages that use the WordPress media library and for
+ *          the page-builder items, which are unchanged.
+ *
  * 2.15.92 - Update guard. A confirmation dialog now appears before a MANUAL update of
  *          the plugin from wp-admin — the Plugins page "update now" link and bulk
  *          "Update" action, plus the Dashboard -> Updates screen — reminding the user

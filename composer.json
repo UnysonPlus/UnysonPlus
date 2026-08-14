@@ -1,0 +1,21 @@
+{
+	"name": "unysonplus/unysonplus",
+	"description": "UnysonPlus — a drag & drop framework for WordPress. PSR-4 autoloading for first-party code under the UnysonPlus\\ namespace.",
+	"type": "wordpress-plugin",
+	"license": "GPL-3.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"UnysonPlus\\": "framework/src/"
+		}
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"sort-packages": true
+	},
+	"scripts": {
+		"lint": "find framework/src -name '*.php' -print0 | xargs -0 -n1 php -l"
+	}
+}

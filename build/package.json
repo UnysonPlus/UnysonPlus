@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Build pipeline for UnysonPlus: autoprefix + minify static CSS/JS assets. Outputs *.min.css / *.min.js siblings next to the source files; the plugin enqueues them via fw_get_framework_asset_uri().",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "build:controls": "node build-controls.mjs",
+    "build:all": "node build.mjs && node build-controls.mjs"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

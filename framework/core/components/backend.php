@@ -412,6 +412,32 @@ final class _FW_Component_Backend {
 				false
 			);
 
+			/**
+			 * fw-oo — the Backbone-free primitives fw.js is built on (fw.Events,
+			 * fw.Class, fw.View). Replaces the framework's use of Backbone.Model /
+			 * Backbone.View.
+			 */
+			wp_register_script(
+				'fw-oo',
+				fw_get_framework_asset_uri('/static/js/fw-oo.js'),
+				array(),
+				fw()->manifest->get_version(),
+				false
+			);
+
+			/**
+			 * fw-modal-frame — fw.ModalFrame, the plain-JavaScript replacement for
+			 * wp.media.view.MediaFrame that the options modal is built on. Depends on
+			 * fw-oo (fw.View) and jQuery only; notably NOT on backbone or wp.media.
+			 */
+			wp_register_script(
+				'fw-modal-frame',
+				fw_get_framework_asset_uri('/static/js/fw-modal-frame.js'),
+				array( 'jquery', 'fw-oo' ),
+				fw()->manifest->get_version(),
+				false
+			);
+
 			wp_register_script(
 				'fw',
 				fw_get_framework_asset_uri('/static/js/fw.js'),
@@ -422,7 +448,10 @@ final class _FW_Component_Backend {
 				// opens un-centered, un-draggable, with no backdrop. Declaring it here
 				// guarantees it wherever fw.js loads. (WP registers the handle on the
 				// front end too, so this only prints it when fw.js is actually enqueued.)
-				['jquery', 'jquery-ui-draggable', 'fw-events', 'backbone', 'fw-tooltip'],
+				// 'backbone' is deliberately NOT a dependency any more: fw.js builds on
+				// fw-oo (fw.Class / fw.View) and fw-modal-frame instead of
+				// Backbone.Model / Backbone.View / wp.media.view.MediaFrame.
+				['jquery', 'jquery-ui-draggable', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);

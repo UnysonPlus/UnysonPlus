@@ -6,6 +6,53 @@
  */
 
 /**
+ * PSR-4 autoloader for first-party code under the `UnysonPlus\` namespace
+ * (framework/src/).
+ *
+ * This is the modern half of the framework's loading story and it runs ALONGSIDE
+ * the convention/switch autoloaders below — it does not replace them. Legacy
+ * `FW_*` classes keep loading exactly as they always have; new code is written
+ * namespaced under `UnysonPlus\` and is found here.
+ *
+ * Deliberately dependency-free: the plugin is installed from a ZIP, so it must
+ * autoload with NO `composer install` step. `composer.json` at the plugin root
+ * declares the same PSR-4 mapping for IDEs, static analysis and future dev
+ * dependencies; when a `vendor/autoload.php` does exist (a developer ran
+ * Composer) it is used and this fallback registrar stands down, so the two can
+ * never both resolve the same class.
+ */
+if ( file_exists( dirname( __DIR__ ) . '/vendor/autoload.php' ) ) {
+	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+} elseif ( ! function_exists( '_fw_psr4_autoload' ) ) {
+	/**
+	 * Map `UnysonPlus\Sub\Name` to `framework/src/Sub/Name.php`.
+	 *
+	 * @param string $class Fully-qualified class name.
+	 */
+	function _fw_psr4_autoload( string $class ): void {
+		$prefix = 'UnysonPlus\\';
+
+		if ( 0 !== strncmp( $prefix, $class, strlen( $prefix ) ) ) {
+			return;
+		}
+
+		$relative = substr( $class, strlen( $prefix ) );
+		$file     = __DIR__ . '/src/' . str_replace( '\\', '/', $relative ) . '.php';
+
+		// Keep the resolved path inside src/ — a namespace can't traverse out.
+		if ( false !== strpos( $relative, '..' ) ) {
+			return;
+		}
+
+		if ( file_exists( $file ) ) {
+			require_once $file;
+		}
+	}
+
+	spl_autoload_register( '_fw_psr4_autoload' );
+}
+
+/**
  * Core manifest autoloader
  */
 if ( ! function_exists( '_fw_core_autoload' ) ) {
