@@ -1712,6 +1712,24 @@ fw.getValuesFromServer = function (data) {
 				fwEvents.trigger('fw:options:init:tabs', {$elements: view.$el});
 
 				/**
+				 * Wait for any `lazy_choices` multi-picker still rendering its
+				 * selected choice (see multi-picker.js). Serializing before those
+				 * inputs land would make the server derive their defaults — the
+				 * save would silently discard the choice's settings. Re-entry is
+				 * safe: the resubmit runs this handler again with nothing pending.
+				 */
+				if (fw.lazyChoices && fw.lazyChoices.isPending()) {
+					fw.loading.show(loadingId);
+
+					fw.lazyChoices.whenSettled(function () {
+						fw.loading.hide(loadingId);
+						view.onSubmit(e);
+					});
+
+					return;
+				}
+
+				/**
 				 * Phase 3: client-side inline validation gate. If any field with
 				 * HTML5 constraints is invalid, render inline errors and abort the
 				 * save (don't send known-bad input to the server).
@@ -2521,6 +2539,41 @@ fw.soleModal = (function(){
 			var $modal = this.$modal;
 			$modal.addClass('fw-modal-opening');
 
+			/**
+			 * height: 'auto' — size the box to its content.
+			 *
+			 * The default 200px is fine for a one-line message and clips anything
+			 * longer, which shows up as a scrollbar and cut-off buttons. The box
+			 * can't simply use CSS `height:auto`: it is centred by the classic
+			 * top/left/right/bottom + `margin:auto` trick, so an auto height makes
+			 * it stretch to the viewport instead of hugging its content. So measure
+			 * the natural height with `bottom` neutralised, then set that as an
+			 * explicit pixel height — centring keeps working, and the content fits.
+			 *
+			 * Clamped: never smaller than the original 200 (short messages keep the
+			 * familiar proportions), never taller than 85% of the viewport (a very
+			 * long message scrolls inside the modal rather than off-screen).
+			 */
+			if (height === 'auto') {
+				/**
+				 * Measure the CONTENT, not the box.
+				 *
+				 * WordPress styles .media-modal-content as `position:absolute` with
+				 * all four offsets, so it is taken out of flow — the outer box can
+				 * never size to it, and letting the outer go `height:auto` just
+				 * measures ~0. Its scrollHeight, however, is exactly the height the
+				 * content needs (and never less than the box's current height, so
+				 * the dialog grows to fit but never collapses).
+				 */
+				var $content = $size.find('> .media-modal-content');
+				var natural = $content.length ? $content[0].scrollHeight : 0;
+
+				height = Math.min(
+					Math.max(natural, 200),
+					Math.round(jQuery(window).height() * 0.85)
+				);
+			}
+
 			if (
 				$size.height() != height
 				||
@@ -2922,6 +2975,10 @@ fw.soleConfirm = (function ($) {
 		this._checkIsSet();
 
 		fw.soleModal.show(this.id, this._getHtml(), {
+			// Fit the dialog to the message — a confirm that explains its
+			// consequences runs to a few lines, and the fixed 200px default
+			// clipped the buttons behind a scrollbar.
+			height: 'auto',
 			wrapWithTable: false,
 			showCloseButton: false,
 			allowClose: false, // a confirm window can't be closed on click of it's backdrop

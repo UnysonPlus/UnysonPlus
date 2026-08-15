@@ -451,7 +451,15 @@ final class _FW_Component_Backend {
 				// 'backbone' is deliberately NOT a dependency any more: fw.js builds on
 				// fw-oo (fw.Class / fw.View) and fw-modal-frame instead of
 				// Backbone.Model / Backbone.View / wp.media.view.MediaFrame.
-				['jquery', 'jquery-ui-draggable', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
+				//
+				// 'underscore' IS still required and must stay listed explicitly. fw.js
+				// uses _.bind / _.extend / _.filter in ~25 places (soleModal, soleConfirm,
+				// fw.confirm …). It used to arrive transitively as a dependency OF
+				// backbone; dropping backbone silently dropped it too, and on pages where
+				// nothing else happened to enqueue Underscore, `_` was undefined — so
+				// fw.confirm() threw, which broke the Extensions manager's Remove button.
+				// Remove this only once fw.js is genuinely Underscore-free.
+				['jquery', 'jquery-ui-draggable', 'underscore', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);

@@ -172,7 +172,7 @@ if (!$installed_data && !$is_compatible) {
                                 <form action="<?php echo esc_attr($link ?? '#'); ?>&sub-page=delete&extension=<?php echo esc_attr($name ?? ''); ?>"
                                       method="post"
                                       class="fw-extension-ajax-form extension-delete-form"
-                                      data-confirm-message="<?php esc_attr_e('Are you sure you want to remove this extension?', 'fw'); ?>"
+                                      data-confirm-message="<?php esc_attr_e('Delete this site\'s copy? You can install it again anytime.', 'fw'); ?>"
                                       data-extension-name="<?php echo esc_attr($name ?? ''); ?>"
                                       data-extension-action="uninstall"
                                 >
@@ -181,8 +181,9 @@ if (!$installed_data && !$is_compatible) {
                                     <a href="#"
                                        onclick="jQuery(this).closest('form').submit(); return false;"
                                        data-remove-extension="<?php echo esc_attr($name ?? ''); ?>"
-                                       title="<?php esc_attr_e('Remove', 'fw'); ?>"
-                                    ><span class="btn-text fw-visible-xs-inline"><?php _e('Remove', 'fw'); ?></span><span class="btn-icon unycon unycon-trash fw-hidden-xs"></span></a>
+                                       title="<?php esc_attr_e('Delete from this site', 'fw'); ?>"
+                                       aria-label="<?php esc_attr_e('Delete from this site', 'fw'); ?>"
+                                    ><span class="btn-text fw-visible-xs-inline"><?php _e('Delete', 'fw'); ?></span><span class="btn-icon unycon unycon-trash fw-hidden-xs"></span></a>
                                 </form>
                             <?php endif; ?>
                         </div>

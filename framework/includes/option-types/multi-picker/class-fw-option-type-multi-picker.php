@@ -181,11 +181,56 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 					continue; // skip selected choice options
 				}
 
-				$options_array[$group_id]['attr']['data-options-template'] = fw()->backend->render_options(
-					$options_array[$group_id]['options'], $data['value'], array(
-					'id_prefix' => $data['id_prefix'] . $id . '-',
+				$group_data = array(
+					'id_prefix'   => $data['id_prefix'] . $id . '-',
 					'name_prefix' => $data['name_prefix'] . '[' . $id . ']',
-				));
+				);
+
+				/**
+				 * `lazy_choices` — ship the unselected choice's SCHEMA instead of its
+				 * rendered HTML, and render it on demand when the choice is picked.
+				 *
+				 * The `data-options-template` path below still renders every choice
+				 * server-side; it only moves the result into an attribute, which spares
+				 * the browser some DOM nodes but costs exactly the same render time and
+				 * transfers exactly the same bytes (slightly more, once escaped). On a
+				 * picker with many choices that dominates everything: the Animations tab
+				 * measured ~5 MB and ~840 ms per element modal, of which ~95% was markup
+				 * for choices the user had not selected and that the save path ignores.
+				 *
+				 * This is safe precisely because of that last point — see
+				 * _get_value_from_input(), which persists ONLY the selected choice's
+				 * sub-values. The picker itself is never deferred, so the picker's own
+				 * value is always in the form; and the selected choice's group is always
+				 * present, either from the initial render or after the JS fetches it on
+				 * change. An unselected choice's inputs could never have been saved
+				 * anyway, so nothing that mattered is being withheld.
+				 *
+				 * (An earlier attempt at deferring WHOLE FIELDS did lose data — a field
+				 * absent from the form derives its default, which reset newly-added
+				 * animations to "none". That failure mode cannot occur here, because
+				 * only never-read sub-options are deferred, never a picker.)
+				 *
+				 * Opt-in per option, so nothing changes for the many multi-pickers that
+				 * are small enough not to care.
+				 */
+				if ( ! empty( $option['lazy_choices'] ) ) {
+					$options_array[$group_id]['attr']['data-options-schema'] = json_encode( array(
+						'options' => $options_array[$group_id]['options'],
+						'values'  => is_array( $data['value'] ) ? $data['value'] : array(),
+						'data'    => $group_data,
+					) );
+
+					// Same as the eager path below: empty the group so the final
+					// render_options() does not emit these options after all.
+					$options_array[$group_id]['options'] = array();
+
+					continue;
+				}
+
+				$options_array[$group_id]['attr']['data-options-template'] = fw()->backend->render_options(
+					$options_array[$group_id]['options'], $data['value'], $group_data
+				);
 
 				$options_array[$group_id]['options'] = array();
 			}

@@ -1,5 +1,84 @@
 (function($, fwe) {
 
+	/**
+	 * Pending `lazy_choices` renders.
+	 *
+	 * Exposed on fw so the options modal can refuse to save while a choice's
+	 * options are still in flight — otherwise a fast Save after switching choice
+	 * would serialize a form that does not yet contain that choice's inputs, and
+	 * the server would derive their defaults.
+	 */
+	window.fw = window.fw || {};
+	fw.lazyChoices = fw.lazyChoices || {
+		pending: 0,
+		/** @return {boolean} true when a choice render is in flight. */
+		isPending: function () { return this.pending > 0; },
+		/** @param {Function} cb Called once nothing is in flight. */
+		whenSettled: function (cb) {
+			var self = this;
+			if (!self.pending) { return cb(); }
+			var timer = setInterval(function () {
+				if (!self.pending) { clearInterval(timer); cb(); }
+			}, 30);
+		}
+	};
+
+	/**
+	 * Render one choice group's options on the server and inject them.
+	 *
+	 * @param {jQuery} $group The .choice-group carrying data-options-schema.
+	 */
+	function fetchChoiceOptions($group) {
+		var raw = $group.attr('data-options-schema');
+
+		if (!raw) { return; }
+
+		// Claim it immediately: a second call while this one is in flight would
+		// otherwise render the same options twice into the same group.
+		$group.removeAttr('data-options-schema');
+
+		var schema;
+
+		try {
+			schema = JSON.parse(raw);
+		} catch (e) {
+			window.console && console.error('[multi-picker] bad lazy schema', e);
+			return;
+		}
+
+		fw.lazyChoices.pending++;
+
+		$group.addClass('is-loading');
+
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'fw_backend_options_render',
+				_nonce: (typeof _fw_backend_options_localized !== 'undefined'
+					? _fw_backend_options_localized.nonce : ''),
+				options: JSON.stringify(schema.options || {}),
+				values: JSON.stringify(schema.values || {}),
+				data: schema.data || {}
+			}
+		}).done(function (response) {
+			if (!response || !response.success) { return; }
+
+			$group.html(response.data.html);
+
+			fwe.trigger('fw:options:init', { $elements: $group });
+		}).fail(function (xhr, status, error) {
+			// Put the schema back so a later attempt can retry rather than
+			// silently leaving the choice with no inputs at all.
+			$group.attr('data-options-schema', raw);
+			window.console && console.error('[multi-picker] lazy choice render failed', status, error);
+		}).always(function () {
+			fw.lazyChoices.pending--;
+			$group.removeClass('is-loading');
+		});
+	}
+
 	// Popover display mode — toggle the collapsible panel (bound once at load).
 	$(document)
 		.on('click.fwMpPop', '.fw-mp-pop > .fw-mp-pop-trigger', function () {
@@ -155,6 +234,19 @@
 				fwEvents.trigger('fw:options:init', {
 					$elements: $choicesToReveal
 				});
+			} else if ($choicesToReveal.attr('data-options-schema')) {
+				/**
+				 * `lazy_choices`: this choice shipped as a SCHEMA rather than as
+				 * rendered HTML (see multi-picker::_render). Render it now, on the
+				 * server, and inject the result.
+				 *
+				 * Only ever the SELECTED choice is fetched, and the save path reads
+				 * only the selected choice's sub-values — so by the time a value can
+				 * be collected, its inputs are in the form. `fw.lazyChoices.pending`
+				 * gates the modal's Save against the race where someone picks a
+				 * choice and submits before this request lands.
+				 */
+				fetchChoiceOptions($choicesToReveal);
 			}
 
 			elements.$choicesGroups.removeClass('chosen');
