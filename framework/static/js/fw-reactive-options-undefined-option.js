@@ -106,7 +106,7 @@
 
 		listenToChangesForCurrentOptionAndPreserveScoping(
 			optionDescriptor.el,
-			_.throttle(function (e) {
+			fw.throttle(function (e) {
 				fw.options.trigger.changeForEl(e.target);
 			}, 300)
 		);

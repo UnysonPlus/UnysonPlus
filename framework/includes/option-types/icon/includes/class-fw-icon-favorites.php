@@ -6,6 +6,28 @@ class FW_Icon_Favorites_Manager
 {
 	private $key = 'fw-icon-v3-favorites';
 
+	/** Nonce action shared by every picker endpoint below. */
+	const NONCE = 'fw_icon_v3_picker';
+
+	/**
+	 * Guard for the picker's AJAX endpoints.
+	 *
+	 * These are admin-only editor endpoints, but wp_ajax_ fires for ANY logged-in
+	 * user regardless of role — so without this a Subscriber could read the icon
+	 * data, and (via set_favorites_action) overwrite the site-wide favorites
+	 * option. The missing nonce also made that write CSRF-able against an admin.
+	 *
+	 * `edit_posts` matches the capability the icon pack / Lottie / Rive upload
+	 * endpoints in this option type already require.
+	 */
+	private function guard() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'fw' ) ), 403 );
+		}
+
+		check_ajax_referer( self::NONCE, 'nonce' );
+	}
+
 	public function attach_ajax_actions()
 	{
 		add_action(
@@ -49,6 +71,8 @@ class FW_Icon_Favorites_Manager
 	 * map so the picker's Favorites tab can render icons it only has ids for.
 	 */
 	public function resolve_svg_action() {
+		$this->guard();
+
 		$ids = json_decode( FW_Request::POST( 'ids', '[]' ), true );
 		$out = array();
 
@@ -69,6 +93,8 @@ class FW_Icon_Favorites_Manager
 	}
 
 	public function get_icon_packs() {
+		$this->guard();
+
 		wp_send_json_success(
 			fw()->backend->option_type( 'icon' )->packs_loader->get_packs(true)
 		);
@@ -81,6 +107,8 @@ class FW_Icon_Favorites_Manager
 	 * → the first slice of the pack).
 	 */
 	public function svg_search_action() {
+		$this->guard();
+
 		if ( ! function_exists( 'fw_icon_svg_pack_search' ) ) {
 			wp_send_json_success( array() );
 		}
@@ -153,6 +181,8 @@ class FW_Icon_Favorites_Manager
 
 	public function set_favorites_action()
 	{
+		$this->guard();
+
 		$favorites = json_decode(FW_Request::POST( 'favorites' ), true);
 
 		$this->set_favorites($favorites);
@@ -162,6 +192,8 @@ class FW_Icon_Favorites_Manager
 
 	public function get_favorites_action()
 	{
+		$this->guard();
+
 		wp_send_json(
 			$this->get_favorites()
 		);
@@ -181,7 +213,45 @@ class FW_Icon_Favorites_Manager
 		FW_WP_Option::set(
 			$this->key,
 			null,
-			$favorites
+			$this->sanitize_favorites( $favorites )
 		);
+	}
+
+	/**
+	 * Favorites are a flat list of icon ids — either a font icon's class string
+	 * or an SVG id ('<pack>/<name>'). The value arrives as decoded JSON from the
+	 * request, so coerce it to that shape rather than storing whatever was sent.
+	 *
+	 * @param mixed $favorites
+	 * @return array
+	 */
+	private function sanitize_favorites( $favorites ) {
+		if ( ! is_array( $favorites ) ) {
+			return array();
+		}
+
+		$clean = array();
+
+		foreach ( $favorites as $id ) {
+			if ( ! is_scalar( $id ) ) {
+				continue;
+			}
+
+			$id = trim( (string) $id );
+
+			// Ids are class strings / '<pack>/<name>' / attachment ids — no markup,
+			// no whitespace runs, and bounded in length.
+			if ( $id === '' || strlen( $id ) > 200 ) {
+				continue;
+			}
+
+			if ( ! preg_match( '~^[A-Za-z0-9 _\-/\.:]+$~', $id ) ) {
+				continue;
+			}
+
+			$clean[] = $id;
+		}
+
+		return array_values( array_unique( $clean ) );
 	}
 }

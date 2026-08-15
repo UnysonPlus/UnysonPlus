@@ -99,19 +99,13 @@ fw.options = (function ($, currentFwOptions) {
 		return pathToTheTop.reduce(function (currentContext, path, index) {
 			if (! currentContext) return false;
 
-			var elOrDescriptorForPath = _.compose(
-				index === pathToTheTop.length - 1
-					? getOptionDescriptor
-					: _.identity,
+			var elForPath = maybeFindFirstLevelOptionInContext(currentContext, path);
 
-				_.partial(
-					maybeFindFirstLevelOptionInContext,
-					currentContext
-				)
-
-			);
-
-			return elOrDescriptorForPath(path);
+			// Only the last path segment is resolved to a descriptor; the
+			// intermediate ones stay elements, to be used as the next context.
+			return index === pathToTheTop.length - 1
+				? getOptionDescriptor(elForPath)
+				: elForPath;
 
 		}, context);
 

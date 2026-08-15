@@ -11,7 +11,7 @@
  * Nominatim usage policy: at most ~1 request/second. We therefore geocode only
  * on Enter (location field) and on blur (detail fields), never per keystroke.
  */
-(function($, _, fwe, localized) {
+(function($, fwe, localized) {
 
 	// Point Leaflet's default marker icons at our self-hosted images. Set the
 	// imagePath (which Leaflet PREPENDS to its default filenames) rather than
@@ -82,15 +82,14 @@
 		}
 
 		function getComputedLongAddress() {
-			return _.reduce(
-				[
-					option.fields.venue.val(),
-					option.fields.address.val(),
-					option.fields.city.val(),
-					option.fields.state.val(),
-					option.fields.country.val(),
-					option.fields.zipCode.val()
-				],
+			return [
+				option.fields.venue.val(),
+				option.fields.address.val(),
+				option.fields.city.val(),
+				option.fields.state.val(),
+				option.fields.country.val(),
+				option.fields.zipCode.val()
+			].reduce(
 				function(a, b) {
 					b = (b || '').trim();
 					return b ? (a ? a + ', ' + b : b) : a;
@@ -259,4 +258,4 @@
 		}
 	});
 
-})(jQuery, _, fwEvents, _fw_option_type_map_osm);
+})(jQuery, fwEvents, _fw_option_type_map_osm);

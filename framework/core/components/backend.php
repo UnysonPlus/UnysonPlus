@@ -452,14 +452,22 @@ final class _FW_Component_Backend {
 				// fw-oo (fw.Class / fw.View) and fw-modal-frame instead of
 				// Backbone.Model / Backbone.View / wp.media.view.MediaFrame.
 				//
-				// 'underscore' IS still required and must stay listed explicitly. fw.js
-				// uses _.bind / _.extend / _.filter in ~25 places (soleModal, soleConfirm,
-				// fw.confirm …). It used to arrive transitively as a dependency OF
-				// backbone; dropping backbone silently dropped it too, and on pages where
-				// nothing else happened to enqueue Underscore, `_` was undefined — so
-				// fw.confirm() threw, which broke the Extensions manager's Remove button.
-				// Remove this only once fw.js is genuinely Underscore-free.
-				['jquery', 'jquery-ui-draggable', 'underscore', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
+				// 'underscore' is GONE as of 2.16.13: fw.js is now genuinely
+				// Underscore-free (the ~25 _.bind / _.extend / _.filter calls are
+				// native bind/Object.assign/Array.prototype.filter), and it ships its
+				// own fw.template / fw.escapeHtml / fw.throttle / fw.debounce helpers.
+				//
+				// HISTORY — do not repeat it: Underscore originally arrived here
+				// transitively as a dependency OF backbone. Dropping backbone silently
+				// dropped Underscore too, and on pages where nothing else happened to
+				// enqueue it `_` was undefined — fw.confirm() threw and the Extensions
+				// manager's Remove button broke with no visible error.
+				//
+				// The lesson, now enforced: ANY script that uses `_` must declare
+				// 'underscore' in its OWN dependency array. Never rely on inheriting it
+				// through 'fw'. (The remaining Underscore users — the builder canvas,
+				// page-builder, forms, newsletter-crm, megamenu — each declare it.)
+				['jquery', 'jquery-ui-draggable', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454
 			);

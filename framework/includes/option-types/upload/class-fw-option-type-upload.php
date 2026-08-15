@@ -75,7 +75,7 @@ class FW_Option_Type_Upload extends FW_Option_Type
 			wp_enqueue_script(
 				'fw-option-type-'. $this->get_type() . '-images-only',
 				$this->js_uri . 'images-only.js',
-				array('jquery', 'fw-events', 'underscore'),
+				array('jquery', 'fw', 'fw-events'),
 				fw()->manifest->get_version(),
 				true
 			);

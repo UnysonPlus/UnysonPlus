@@ -183,12 +183,8 @@
 						'style',
 						'background-image: url("' +
 						// Insert the smallest possible image in the preview
-						(_.min(
-							_.values(wp.media.attachment(
-								data['attachment-id']
-							).get('sizes')),
-							function (size) {return size.width}
-						).url || wp.media.attachment(data['attachment-id']).get('url')) +
+						(smallestSizeUrl(data['attachment-id']) ||
+							wp.media.attachment(data['attachment-id']).get('url')) +
 						'");'
 					);
 			}
@@ -269,10 +265,27 @@
 		return JSON.parse($root.find('input').val());
 	}
 
+	/**
+	 * URL of the narrowest registered size of an attachment (undefined when the
+	 * attachment has no sizes yet), so the preview loads the lightest image.
+	 */
+	function smallestSizeUrl(attachmentId) {
+		var sizes = Object.values(
+			wp.media.attachment(attachmentId).get('sizes') || {}
+		);
+
+		var smallest = sizes.reduce(function (a, b) {
+			return (a && a.width <= b.width) ? a : b;
+		}, null);
+
+		return smallest ? smallest.url : undefined;
+	}
+
 	function setDataForRoot($root, data) {
 		var currentData = getDataForRoot($root);
 
-		var actualValue = _.omit(_.extend({}, currentData, data), 'attachment');
+		var actualValue = Object.assign({}, currentData, data);
+		delete actualValue.attachment;
 
 		if (actualValue.type === 'icon-font') {
 			if ((actualValue['icon-class'] || "").trim() === '') {

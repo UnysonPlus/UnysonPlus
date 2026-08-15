@@ -187,7 +187,7 @@ jQuery(document).ready(function ($) {
 			).then(function (valuesAsArray) {
 				promise.resolve({
 					value: valuesAsArray.map(function (singleContextValue) {
-						return _.values(singleContextValue.value)[0];
+						return Object.values(singleContextValue.value)[0];
 					}),
 
 					optionDescriptor: optionDescriptor

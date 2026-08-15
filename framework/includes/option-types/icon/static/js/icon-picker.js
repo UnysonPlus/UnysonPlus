@@ -1,5 +1,13 @@
 ;(function($) {
 
+	/**
+	 * _.uniq() stand-in. Tolerates a non-array (the favorites AJAX response can
+	 * be null/false) by returning [], exactly as _.uniq() did.
+	 */
+	function uniq(list) {
+		return Array.isArray(list) ? Array.from(new Set(list)) : []
+	}
+
 	// "Add to Favorites" star markup for the SVG/Lucide grid tiles. Mirrors the
 	// star the font-icon collection template renders, so SVG icons are favoritable
 	// too (the click is caught by the `.fw-icon-v3-library-icon a` handler).
@@ -9,13 +17,13 @@
 			'Add to Favorites'
 		return (
 			'<a title="' +
-			_.escape(label) +
+			fw.escapeHtml(label) +
 			'" class="fw-icon-v3-favorite dashicons dashicons-star-filled"></a>'
 		)
 	}
 
 	window.fwOptionTypeIconV2Picker = fw.Modal.extend({
-		defaults: _.extend({}, fw.Modal.prototype.defaults, {
+		defaults: Object.assign({}, fw.Modal.prototype.defaults, {
 			title: 'Icon V2',
 			size: 'small',
 			modalCustomClass: 'fw-icon-v3-picker-modal',
@@ -57,24 +65,24 @@
 				// keep track of current searches for better performance
 				this.previousSearch = ''
 
-				this.throttledApplyFilters = _.throttle(
-					_.bind(this.model.applyFilters, this.model),
+				this.throttledApplyFilters = fw.throttle(
+					this.model.applyFilters.bind(this.model),
 					200
 				)
 
 				// Lucide search: name → last-fetched item map, plus a debounced
 				// AJAX search so typing doesn't fire a request per keystroke.
 				this.lucideResults = {}
-				this.debouncedLucideSearch = _.debounce(
-					_.bind(this.doLucideSearch, this),
+				this.debouncedLucideSearch = fw.debounce(
+					this.doLucideSearch.bind(this),
 					250
 				)
 
 				// Merged search: query EVERY SVG pack at once (pack='all').
-				this.debouncedSvgAll = _.debounce(
-					_.bind(function(q) {
+				this.debouncedSvgAll = fw.debounce(
+					(q) => {
 						this.doLucideSearch(q, 'all')
-					}, this),
+					},
 					250
 				)
 			},
@@ -125,10 +133,9 @@
 
 					attachments.map(function(attachment) {
 						if (
-							!_.contains(
-								vm.model.currentFavorites,
+							vm.model.currentFavorites.indexOf(
 								attachment.id.toString()
-							)
+							) === -1
 						) {
 							vm.model.markAsFavorite(attachment.id.toString())
 						}
@@ -232,13 +239,10 @@
 			refreshFavorites: function() {
 				$('.fw-icon-v3-favorite').removeClass('fw-icon-v3-favorite')
 
-				_.map(this.model.currentFavorites, function(favorite) {
-					if (
-						_.compose(
-							_.negate(_.isNaN),
-							_.partial(parseInt, _, 10)
-						)(favorite)
-					) {
+				this.model.currentFavorites.forEach(function(favorite) {
+					// Numeric favorites are media-library attachment ids; they are
+					// rendered by the uploads grid, not by this icon-class pass.
+					if (! isNaN(parseInt(favorite, 10))) {
 						return
 					}
 
@@ -383,7 +387,7 @@
 
 			// Read the tab's inputs into the picked value + (re)play the preview.
 			syncLottie: function($tab) {
-				var src     = $.trim($tab.find('.fw-icon-v3-lottie-url').val() || '')
+				var src     = ( $tab.find('.fw-icon-v3-lottie-url').val() || '' ).trim()
 				var trigger = $tab.find('.fw-icon-v3-lottie-trigger').val() || 'loop'
 				var speed   = parseFloat($tab.find('.fw-icon-v3-lottie-speed').val()) || 1
 
@@ -448,7 +452,7 @@
 
 			// Read the Rive panel's inputs into the picked value + (re)play preview.
 			syncRive: function($tab) {
-				var src     = $.trim($tab.find('.fw-icon-v3-rive-url').val() || '')
+				var src     = ( $tab.find('.fw-icon-v3-rive-url').val() || '' ).trim()
 				var trigger = $tab.find('.fw-icon-v3-rive-trigger').val() || 'loop'
 
 				this.model.result = src
@@ -541,6 +545,7 @@
 
 				$.post(ajaxurl, {
 					action: 'fw_icon_v3_svg_search',
+					nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 					pack: pack,
 					q: query || '',
 				}).done(function(resp) {
@@ -609,6 +614,7 @@
 
 				$.post(ajaxurl, {
 					action: 'fw_icon_v3_svg_search',
+					nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 					pack: pack,
 					q: '',
 					offset: 0,
@@ -632,6 +638,7 @@
 
 				$.post(ajaxurl, {
 					action: 'fw_icon_v3_svg_search',
+					nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 					pack: s.pack,
 					q: '',
 					offset: s.offset,
@@ -658,14 +665,14 @@
 				if ( ! $ul.length ) { return }
 
 				var html = ''
-				_.each(items, function(item) {
+				items.forEach(function(item) {
 					view.lucideResults[item.id] = item
 					html +=
 						'<li class="fw-icon-v3-library-icon fw-icon-v3-lucide-icon ' +
 						(currentId === item.id ? 'selected' : '') +
-						'" data-svg-id="' + _.escape(item.id) +
-						'" data-name="' + _.escape(item.name) +
-						'" title="' + _.escape(item.name) +
+						'" data-svg-id="' + fw.escapeHtml(item.id) +
+						'" data-name="' + fw.escapeHtml(item.name) +
+						'" title="' + fw.escapeHtml(item.name) +
 						'"><div class="fw-icon-inner">' + item.markup +
 						fwIconV3FavoriteStar() + '</div></li>'
 				})
@@ -691,10 +698,13 @@
 				if (state.type === 'icon-font' && state['icon-class']) {
 					var first = String(state['icon-class']).trim().split(/\s+/)[0]
 					var found = null
-					_.each(this.model.getIconsData(), function(pk, id) {
+					// getIconsData() is a hash keyed by pack id, so iterate entries.
+					var iconsData = this.model.getIconsData()
+					Object.keys(iconsData).forEach(function(id) {
 						if (found) { return }
+						var pk = iconsData[id]
 						var prefixes = pk.match_prefixes || [pk.css_class_prefix]
-						if (_.contains(prefixes, first)) { found = id }
+						if (prefixes.indexOf(first) !== -1) { found = id }
 					})
 					if (found) { return found }
 				}
@@ -730,7 +740,7 @@
 				// different packs don't collide.
 				var order = []
 				var byPack = {}
-				_.each(items, function(item) {
+				items.forEach(function(item) {
 					var pk = item.pack || String(item.id).split('/')[0]
 					if (!byPack[pk]) {
 						byPack[pk] = []
@@ -742,23 +752,23 @@
 				var multi = order.length > 1
 
 				var html = ''
-				_.each(order, function(pk) {
+				order.forEach(function(pk) {
 					if (multi) {
 						var title =
 							(view.packTitles && view.packTitles[pk]) || pk
-						html += '<h2><span>' + _.escape(title) + '</span></h2>'
+						html += '<h2><span>' + fw.escapeHtml(title) + '</span></h2>'
 					}
 					html += '<ul class="fw-icon-v3-library-pack">'
-					_.each(byPack[pk], function(item) {
+					byPack[pk].forEach(function(item) {
 						html +=
 							'<li class="fw-icon-v3-library-icon fw-icon-v3-lucide-icon ' +
 							(currentId === item.id ? 'selected' : '') +
 							'" data-svg-id="' +
-							_.escape(item.id) +
+							fw.escapeHtml(item.id) +
 							'" data-name="' +
-							_.escape(item.name) +
+							fw.escapeHtml(item.name) +
 							'" title="' +
-							_.escape(item.name) +
+							fw.escapeHtml(item.name) +
 							'"><div class="fw-icon-inner">' +
 							item.markup +
 							fwIconV3FavoriteStar() +
@@ -819,19 +829,19 @@
 			this.result = {}
 
 			jQuery.when(this.loadIconsData()).then(
-				_.bind(function() {
+				() => {
 					this.set('html', this.getTabsHtml())
-				}, this)
+				}
 			)
 
 			jQuery.when(this.loadLatestFavorites()).then(
-				_.bind(function() {
+				() => {
 					this.content.renderFavoritesAndRecentUploads()
 					this.content.refreshFavorites()
-				}, this)
+				}
 			)
 
-			this.frame.on('close', _.bind(this.rejectResultAndResetIt, this))
+			this.frame.on('close', this.rejectResultAndResetIt.bind(this))
 		},
 
 		resolveResult: function() {
@@ -940,7 +950,7 @@
 					valueField: 'value',
 					searchField: ['text', 'value'],
 					items: defaultPack ? [defaultPack] : [],
-					onChange: _.bind(modal.content.renderIconsTab, modal.content),
+					onChange: modal.content.renderIconsTab.bind(modal.content),
 				})
 				packSelectEl = $packSelect[0]
 			}
@@ -960,7 +970,7 @@
 			modal.frame.$el
 				.find('.fw-icon-v3-results')
 				.off('scroll.fwiconv3svg')
-				.on('scroll.fwiconv3svg', _.throttle(function() {
+				.on('scroll.fwiconv3svg', fw.throttle(function() {
 					var el = this
 					if (el.scrollTop + el.clientHeight >= el.scrollHeight - 240) {
 						modal.content.loadMoreSvg()
@@ -1093,7 +1103,7 @@
 
 			var pack = packSelect
 				? packSelect.value
-				: _.keys(this.getIconsData())[0]
+				: Object.keys(this.getIconsData())[0]
 
 			var search = this.frame.$el
 				.find(
@@ -1126,7 +1136,7 @@
 		getFilteredPacks: function(filters) {
 			var self = this
 
-			filters = _.extend(
+			filters = Object.assign(
 				{},
 				{
 					search: '',
@@ -1139,7 +1149,7 @@
 
 			/*
 			if (filters.pack.trim() === '' || filters.pack === 'all') {
-				packs = [ _.first(_.values(this.getIconsData())) ];
+				packs = [ Object.values(this.getIconsData())[0] ];
 			} else {
 				packs = [this.getIconsData()[filters.pack]];
 			}
@@ -1148,21 +1158,21 @@
 			if (filters.search.trim() === '') {
 				packs = [this.getIconsData()[filters.pack]]
 			} else {
-				packs = _.values(this.getIconsData())
+				packs = Object.values(this.getIconsData())
 			}
 
-			packs = _.map(packs, function(pack) {
-				var newPack = _.extend({}, pack)
+			packs = packs.map(function(pack) {
+				var newPack = Object.assign({}, pack)
 
-				newPack.icons = _.filter(pack.icons, function(icon) {
+				newPack.icons = pack.icons.filter(function(icon) {
 					return self.fuzzyConsecutive(filters.search, icon)
 				})
 
 				return newPack
 			})
 
-			return _.reject(packs, function(pack) {
-				return _.isEmpty(pack.icons)
+			return packs.filter(function(pack) {
+				return pack.icons.length !== 0
 			})
 		},
 
@@ -1173,9 +1183,10 @@
 
 			this.iconsDataPromise = jQuery.post(ajaxurl, {
 				action: 'fw_icon_v3_get_icons',
+				nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 			})
 
-			this.iconsDataPromise.then(_.bind(this.preloadFonts, this))
+			this.iconsDataPromise.then(this.preloadFonts.bind(this))
 
 			return this.iconsDataPromise
 		},
@@ -1204,18 +1215,18 @@
 
 			var ajaxPromise = $.post(ajaxurl, {
 				action: 'fw_icon_v3_get_favorites',
+				nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 			})
 
 			ajaxPromise.then(function() {
 				if (ajaxPromise.state() === 'resolved') {
-					modal.currentFavorites = _.uniq(ajaxPromise.responseJSON)
+					modal.currentFavorites = uniq(ajaxPromise.responseJSON)
 				}
 
 				// SVG-id favorites ('<pack>/<name>') can't render from the id
 				// alone — resolve their inline markup server-side so the
 				// Favorites tab can show them.
-				var svgFavorites = _.filter(
-					modal.currentFavorites || [],
+				var svgFavorites = (modal.currentFavorites || []).filter(
 					function(f) {
 						return (
 							typeof f === 'string' && f.indexOf('/') !== -1
@@ -1226,10 +1237,11 @@
 				var svgPromise = svgFavorites.length
 					? $.post(ajaxurl, {
 							action: 'fw_icon_v3_resolve_svg',
+							nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 							ids: JSON.stringify(svgFavorites),
 					  }).then(function(resp) {
 							if (resp && resp.success && resp.data) {
-								modal.favoritesSvgMarkup = _.extend(
+								modal.favoritesSvgMarkup = Object.assign(
 									modal.favoritesSvgMarkup,
 									resp.data
 								)
@@ -1237,9 +1249,11 @@
 					  })
 					: null
 
-				var recent_uploads = _.filter(
-					ajaxPromise.responseJSON,
-					_.compose(_.negate(_.isNaN), _.partial(parseInt, _, 10))
+				// Numeric entries are media-library attachment ids.
+				var recent_uploads = (ajaxPromise.responseJSON || []).filter(
+					function(f) {
+						return ! isNaN(parseInt(f, 10))
+					}
 				)
 
 				var mediaPromise = null
@@ -1253,9 +1267,10 @@
 
 							recent_uploads.map(function(id) {
 								if (!wp.media.attachment(id).get('url')) {
-									modal.currentFavorites = _.without(
-										modal.currentFavorites,
-										id
+									modal.currentFavorites = modal.currentFavorites.filter(
+										function(favorite) {
+											return favorite !== id
+										}
 									)
 								}
 							})
@@ -1284,7 +1299,8 @@
 		syncFavoritesToServer: function() {
 			jQuery.post(ajaxurl, {
 				action: 'fw_icon_v3_update_favorites',
-				favorites: JSON.stringify(_.uniq(this.currentFavorites)),
+				nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
+				favorites: JSON.stringify(uniq(this.currentFavorites)),
 			})
 		},
 
@@ -1293,12 +1309,12 @@
 
 			var modal = this
 
-			var isFavorite = _.contains(modal.currentFavorites, icon)
+			var isFavorite = modal.currentFavorites.indexOf(icon) !== -1
 
 			if (isFavorite) {
-				modal.currentFavorites = _.uniq(
-					_.reject(modal.currentFavorites, function(favorite) {
-						return favorite == icon
+				modal.currentFavorites = uniq(
+					modal.currentFavorites.filter(function(favorite) {
+						return favorite != icon
 					})
 				)
 			} else {
@@ -1309,7 +1325,7 @@
 		},
 
 		preloadFonts: function() {
-			_.map(this.getIconsData(), preloadFont)
+			Object.values(this.getIconsData()).forEach(preloadFont)
 
 			function preloadFont(pack) {
 				var $el = jQuery(
@@ -1339,11 +1355,11 @@
 		},
 
 		getLibraryHtml: function() {
-			var packs = _.values(this.getIconsData())
-			var pack_to_select = [_.first(packs)]
+			var packs = Object.values(this.getIconsData())
+			var pack_to_select = [packs[0]]
 
 			return wp.template('fw-icon-v3-library')({
-				packs: _.values(this.getIconsData()),
+				packs: Object.values(this.getIconsData()),
 				pack_to_select: pack_to_select,
 				current_state: this.result,
 				favorites: this.currentFavorites,

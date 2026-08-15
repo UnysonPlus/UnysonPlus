@@ -1,7 +1,7 @@
 (function ($) {
 	var xhr,
 		optionsCache = {},
-		ajaxAutocompleteCallback = _.throttle(function(control, value, population, source, show_type, hash){
+		ajaxAutocompleteCallback = fw.throttle(function(control, value, population, source, show_type, hash){
 			control.load(function(callback){
 				xhr && xhr.abort();
 
@@ -60,13 +60,13 @@
 				create: false,
 				render: {
           option: function (item) {
-            var title = '<span class="title">' + _.escape(item.title) + '</span>'
-            var type = item.type !== undefined ? '<span class="type">' + _.escape(item.type) + '</span>' : ''
+            var title = '<span class="title">' + fw.escapeHtml(item.title) + '</span>'
+            var type = item.type !== undefined ? '<span class="type">' + fw.escapeHtml(item.type) + '</span>' : ''
             return '<div>' + title + type + '</div>'
           },
 					item: function (item) {
-            var title = '<span class="title">' + _.escape(item.title) + '</span>'
-            var type = item.type !== undefined ? '<span class="type">' + _.escape(item.type) + '</span>' : ''
+            var title = '<span class="title">' + fw.escapeHtml(item.title) + '</span>'
+            var type = item.type !== undefined ? '<span class="type">' + fw.escapeHtml(item.type) + '</span>' : ''
             return '<div>' + title + type + '</div>'
           }
 				},

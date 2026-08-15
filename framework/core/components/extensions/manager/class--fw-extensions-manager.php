@@ -28,6 +28,13 @@ final class _FW_Extensions_Manager
 	private $default_thumbnail = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2PUsHf9DwAC8AGtfm5YCAAAAABJRU5ErkJgggAA';
 
 	/**
+	 * Remembers the bundled extensions this install has ever seen, so deleting
+	 * one doesn't erase the manager's only record of it.
+	 * @see get_bundled_extensions_catalog()
+	 */
+	private static $bundled_catalog_option = 'fw_bundled_extensions_catalog';
+
+	/**
 	 * @var FW_Access_Key
 	 */
 	private static $access_key;
@@ -294,10 +301,98 @@ final class _FW_Extensions_Manager
 				}
 			}
 
+			/**
+			 * Bundled extensions that aren't in the curated catalog above are
+			 * added here, so deleting one never makes it disappear from the
+			 * Extensions manager (see get_bundled_extensions_catalog()).
+			 * The curated entries win — `+` keeps existing keys untouched.
+			 */
+			$available = $available + $this->get_bundled_extensions_catalog();
+
 			FW_Cache::set( $cache_key, $available );
 
 			return $available;
 		}
+	}
+
+	/**
+	 * Catalog entries for extensions bundled with the plugin.
+	 *
+	 * WHY THIS EXISTS
+	 * The manager renders two lists from two unrelated sources: *installed*
+	 * extensions (each extension's own manifest.php) and *available* ones (the
+	 * hand-maintained available-extensions.php). An extension can only be
+	 * re-installed after deletion if it appears in the second list — and
+	 * uninstall_extensions() recursively deletes the extension folder, taking
+	 * its manifest with it. So a bundled extension missing from the curated
+	 * catalog vanished from the UI permanently once deleted, recoverable only
+	 * by reinstalling the whole plugin.
+	 *
+	 * Rather than requiring every new bundled extension to be hand-added to the
+	 * catalog (which is exactly what was forgotten), we derive its entry from
+	 * its manifest and REMEMBER it in an option. The option is what survives
+	 * deletion — a disk scan alone cannot, because the folder is gone.
+	 *
+	 * Each manifest already declares $manifest['github_update'] = 'user/repo',
+	 * which is precisely the download source the manager needs, so nothing has
+	 * to be guessed from the folder name (several repos are irregular:
+	 * newsletter-crm -> UnysonPlus-Newsletter-CRM-Extension).
+	 *
+	 * @return array {name => data}
+	 *
+	 * @since 2.16.13
+	 */
+	private function get_bundled_extensions_catalog() {
+		$remembered = get_option( self::$bundled_catalog_option, array() );
+
+		if ( ! is_array( $remembered ) ) {
+			$remembered = array();
+		}
+
+		$found = array();
+
+		foreach ( (array) glob( fw_get_framework_directory( '/extensions' ) . '/*', GLOB_ONLYDIR ) as $path ) {
+			$manifest_file = $path . '/manifest.php';
+
+			if ( ! file_exists( $manifest_file ) ) {
+				continue;
+			}
+
+			$vars     = fw_get_variables_from_file( $manifest_file, array( 'manifest' => array() ) );
+			$manifest = $vars['manifest'];
+
+			// No github_update = no way to re-install it; don't offer it.
+			if ( empty( $manifest['github_update'] ) ) {
+				continue;
+			}
+
+			$found[ basename( $path ) ] = array(
+				'display'     => ! empty( $manifest['display'] ),
+				'parent'      => null,
+				'name'        => isset( $manifest['name'] ) ? $manifest['name'] : basename( $path ),
+				'description' => isset( $manifest['description'] ) ? $manifest['description'] : '',
+				/**
+				 * Deliberately no 'thumbnail': the manifest's thumbnail lives
+				 * inside the extension folder, so its URL 404s once deleted —
+				 * exactly when this entry matters. The manager falls back to
+				 * its default placeholder instead of a broken image.
+				 */
+				'download'    => array(
+					'source' => 'github',
+					'opts'   => array( 'user_repo' => $manifest['github_update'] ),
+				),
+			);
+		}
+
+		// Extensions present on disk refresh what we remember; ones that are
+		// gone keep their last known entry, which is the whole point.
+		$catalog = array_merge( $remembered, $found );
+
+		if ( $catalog !== $remembered ) {
+			update_option( self::$bundled_catalog_option, $catalog, false );
+		}
+
+		return $catalog;
 	}
 
 	/**

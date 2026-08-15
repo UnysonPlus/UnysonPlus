@@ -193,9 +193,15 @@ if (empty($display_active_extensions)): ?>
                 if (isset($lists['installed'][$name])) continue;
                 if (($data['display'] ?? false) !== true) continue;
 
-                if (in_array($name, ['styling', 'megamenu'], true)) {
-                    if (!isset($lists['supported'][$name]) && !(defined('WP_DEBUG') && WP_DEBUG)) continue;
-                }
+                /**
+                 * 'megamenu' used to be suppressed here (alongside 'styling')
+                 * unless the theme declared it in supported_extensions — an
+                 * upstream Unyson rule from when Mega Menu was theme-specific.
+                 * In UnysonPlus it is a bundled, user-facing extension, so the
+                 * guard only served to hide it permanently once deleted.
+                 * 'styling' is retired here anyway (get_available_extensions()
+                 * unsets it), so no replacement guard is needed.
+                 */
 
                 fw_render_view(
                     $extension_view_path,

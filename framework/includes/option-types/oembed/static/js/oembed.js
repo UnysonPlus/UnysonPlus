@@ -11,7 +11,7 @@
 		var $iframeWrapper = $wrapper.find('.fw-oembed-preview');
 
 		$input.on('input',
-		    _.debounce(function () {
+		    fw.debounce(function () {
 			if( $input.val() && is_url( $input.val() ) ) {
 			    wp.ajax.post(
 				'get_oembed_response',

@@ -168,7 +168,7 @@ $extensions = [
     ],
 
     'megamenu' => [
-        'display'     => false,
+        'display'     => true,
         'parent'      => null,
         'name'        => __('Mega Menu', 'fw'),
         'description' => __('The Mega Menu extension adds a user-friendly drop down menu that will let you easily create highly customized menu configurations.', 'fw'),
@@ -293,7 +293,7 @@ $extensions = [
     ],
 
     'forms' => [
-        'display'     => false,
+        'display'     => true,
         'parent'      => null,
         'name'        => __('Forms', 'fw'),
         'description' => __("This extension adds the possibility to create a contact form. Use the drag & drop form builder to create any contact form you'll ever want or need.", 'fw'),

@@ -119,22 +119,29 @@ class FW_Option_Type_Icon extends FW_Option_Type
             wp_add_inline_script('upw-rive', 'window.upwRiveWasm=' . wp_json_encode($rive_uri . '/rive.wasm') . ';', 'before');
         }
 
+        // Data the picker needs. `pickerNonce` is required by EVERY picker AJAX
+        // endpoint (favorites, pack list, SVG search, SVG resolve), so this must
+        // be localized unconditionally — the Lottie/Rive nonces below are the
+        // only part that depends on those technologies being enabled.
+        $icon_v3_data = [
+            'ajaxUrl'     => admin_url('admin-ajax.php'),
+            'pickerNonce' => wp_create_nonce(FW_Icon_Favorites_Manager::NONCE),
+            'i18n'        => [
+                'uploading'    => __('Uploading…', 'fw'),
+                'uploadFailed' => __('Upload failed.', 'fw'),
+            ],
+        ];
+
         if ( $lottie || $rive ) {
-            // Data the picker's upload handlers need (ajax URL + per-tech nonces + i18n).
-            wp_localize_script(
-                'fw-option-type-icon-v3-backend-picker-v2',
-                'fwIconV3',
-                [
-                    'ajaxUrl'     => admin_url('admin-ajax.php'),
-                    'lottieNonce' => wp_create_nonce('fw_icon_lottie_upload'),
-                    'riveNonce'   => wp_create_nonce('fw_icon_rive_upload'),
-                    'i18n'        => [
-                        'uploading'    => __('Uploading…', 'fw'),
-                        'uploadFailed' => __('Upload failed.', 'fw'),
-                    ],
-                ]
-            );
+            $icon_v3_data['lottieNonce'] = wp_create_nonce('fw_icon_lottie_upload');
+            $icon_v3_data['riveNonce']   = wp_create_nonce('fw_icon_rive_upload');
         }
+
+        wp_localize_script(
+            'fw-option-type-icon-v3-backend-picker-v2',
+            'fwIconV3',
+            $icon_v3_data
+        );
     }
 
     public function load_templates(): void

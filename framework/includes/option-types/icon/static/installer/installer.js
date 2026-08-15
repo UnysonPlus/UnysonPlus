@@ -193,7 +193,7 @@
 
 	function handleUpload( $btn ) {
 		var $wrap = $btn.closest( '.upw-ipk__upload' ),
-			name  = $.trim( $wrap.find( '.upw-ipk__upload-name' ).val() || '' ),
+			name  = ( $wrap.find( '.upw-ipk__upload-name' ).val() || '' ).trim(),
 			input = $wrap.find( '.upw-ipk__upload-file' )[ 0 ],
 			$msg  = $wrap.find( '.upw-ipk__upload-msg' ).removeClass( 'upw-ipk__error' ).text( '' );
 

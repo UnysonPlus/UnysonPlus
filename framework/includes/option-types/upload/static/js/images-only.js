@@ -46,8 +46,8 @@
 				frame.on('content:render', function () {
 					var $view = this.first().frame.views.get('.media-frame-uploader')[0];
 
-					if(parsedFilesDetails.extra_mime_types.length > 0  && _.isArray(parsedFilesDetails.extra_mime_types)){
-						_.each(parsedFilesDetails.extra_mime_types, function(mime_type){
+					if(parsedFilesDetails.extra_mime_types.length > 0  && Array.isArray(parsedFilesDetails.extra_mime_types)){
+						parsedFilesDetails.extra_mime_types.forEach(function(mime_type){
 							mOxie.Mime.addMimeType(mime_type);
 						});
 					}
@@ -171,9 +171,8 @@
 
 			filename = attachment.get('filename');
 
-			compiled = _.template(
+			compiled = fw.template(
 				templates.thumb.notEmpty,
-				undefined,
 				{variable: 'data'}
 			)({src: url, alt: filename});
 

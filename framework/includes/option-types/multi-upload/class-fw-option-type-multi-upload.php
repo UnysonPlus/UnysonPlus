@@ -72,7 +72,7 @@ class FW_Option_Type_Multi_Upload extends FW_Option_Type
 			wp_enqueue_script(
 				'fw-option-type-'. $this->get_type() . '-images-only',
 				$this->js_uri . 'images-only.js',
-				array('jquery', 'fw-events', 'underscore', 'jquery-ui-sortable'),
+				array('jquery', 'fw', 'fw-events', 'jquery-ui-sortable'),
 				fw()->manifest->get_version(),
 				true
 			);

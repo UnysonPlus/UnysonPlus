@@ -41,7 +41,7 @@ class FW_Option_Type_Addable_Popup extends FW_Option_Type
 			wp_enqueue_script(
 				'fw-option-' . $option_type,
 				fw_get_framework_asset_uri('/includes/option-types/' . $option_type . '/static/js/scripts.js'),
-				array('underscore', 'fw-events', 'jquery-ui-sortable', 'fw'),
+				array('fw-events', 'jquery-ui-sortable', 'fw'),
 				fw()->manifest->get_version(),
 				true
 			);

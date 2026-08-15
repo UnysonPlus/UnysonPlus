@@ -1,10 +1,30 @@
 'use strict';
 
-(function($, _, fwe, localized) {
+(function($, fwe, localized) {
+	/**
+	 * Faithful _.isEmpty() stand-in.
+	 *
+	 * Deliberately mirrors Underscore's semantics (own enumerable key count)
+	 * rather than a plain truthiness test: map.object.map / .marker start as
+	 * plain {} and are later replaced by google.maps objects, and the guards
+	 * below rely on exactly that "no own keys" distinction.
+	 */
+	function isEmpty(value) {
+		if (value === null || typeof value === 'undefined') {
+			return true;
+		}
+
+		if (Array.isArray(value) || typeof value === 'string') {
+			return value.length === 0;
+		}
+
+		return Object.keys(value).length === 0;
+	}
+
 	jQuery(document).ready(function() {
 		$.fn.pressEnter = function(fn) {
 			return this.each(function() {
-				$(this).bind('enterPress', fn);
+				$(this).on('enterPress', fn);
 
 				$(this).keyup(function(e) {
 					if (e.keyCode == 13) {
@@ -91,15 +111,14 @@
 						option.getFreshValue('country')
 					) {
 						//join array without empty fields
-						longAddress = _.reduce(
-							[
-								option.getFreshValue('venue'),
-								option.getFreshValue('address'),
-								option.getFreshValue('city'),
-								option.getFreshValue('state'),
-								option.getFreshValue('country'),
-								option.getFreshValue('zipCode'),
-							],
+						longAddress = [
+							option.getFreshValue('venue'),
+							option.getFreshValue('address'),
+							option.getFreshValue('city'),
+							option.getFreshValue('state'),
+							option.getFreshValue('country'),
+							option.getFreshValue('zipCode'),
+						].reduce(
 							function(a, b) {
 								return (b = b.trim()), b &&
 									(a = a ? a + ', ' + b : b), a;
@@ -128,14 +147,14 @@
 						streetViewControl: false,
 					};
 
-					if (_.isEmpty(this.map.object.map)) {
+					if (isEmpty(this.map.object.map)) {
 						this.map.object.map = new google.maps.Map(
 							option.map.container[0],
 							mapOptions
 						);
 					}
 
-					if (_.isEmpty(this.map.object.marker)) {
+					if (isEmpty(this.map.object.marker)) {
 						this.map.object.marker = new google.maps.Marker({
 							position: googleMapsPos,
 							map: option.map.object.map,
@@ -461,4 +480,4 @@
 			return promise;
 		}
 	})
-})(jQuery, _, fwEvents, _fw_option_type_map);
+})(jQuery, fwEvents, _fw_option_type_map);

@@ -184,7 +184,7 @@ fw.options = (function($, currentFwOptions) {
 
 		if (!settings) settings = {};
 
-		settings = _.extend({ name_prefix: 'fw_edit_options_modal' }, settings);
+		settings = Object.assign({ name_prefix: 'fw_edit_options_modal' }, settings);
 
 		var cacheId = fetchHtmlGetCacheId(options, values);
 

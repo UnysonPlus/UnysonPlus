@@ -90,7 +90,7 @@ class FW_Option_Type_Oembed extends FW_Option_Type {
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/' . $this->get_type() . '.js' ),
-			array( 'underscore', 'fw-events', 'fw', 'wp-util' ),
+			array( 'fw-events', 'fw', 'wp-util' ),
 			false,
 			true
 		);

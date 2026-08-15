@@ -283,7 +283,7 @@ fw.md5 = (function(){
 			return this.$el;
 		},
 		removeFromQueue: function(id) {
-			this.queue = _.filter(this.queue, function (item) {
+			this.queue = this.queue.filter(function (item) {
 				return item.id != id;
 			});
 		},
@@ -332,7 +332,7 @@ fw.md5 = (function(){
 			{
 				clearTimeout(this.timeoutId);
 
-				this.timeoutId = setTimeout(_.bind(function(){
+				this.timeoutId = setTimeout(() => {
 					if (
 						!this.current
 						||
@@ -348,16 +348,16 @@ fw.md5 = (function(){
 					if (this.current.autoClose) {
 						clearTimeout(this.timeoutId);
 
-						this.timeoutId = setTimeout(_.bind(function(){
+						this.timeoutId = setTimeout(() => {
 							this.hide();
-						}, this), this.current.autoClose);
+						}, this.current.autoClose);
 					}
 
 					if (this.pendingHide) {
 						this.pendingHide = false;
 						this.hide();
 					}
-				}, this), 300);
+				}, 300);
 			}
 
 			this.$getEl().removeClass('open closing closed').addClass('opening').show();
@@ -409,7 +409,7 @@ fw.md5 = (function(){
 			{
 				clearTimeout(this.timeoutId);
 
-				this.timeoutId = setTimeout(_.bind(function () {
+				this.timeoutId = setTimeout(() => {
 					if (
 						!this.current
 						||
@@ -433,13 +433,13 @@ fw.md5 = (function(){
 					this.current = null;
 
 					this.show();
-				}, this), 300);
+				}, 300);
 			}
 
 			if (forceClose) {
-				this.$getEl().fadeOut('fast', _.bind(function(){
+				this.$getEl().fadeOut('fast', () => {
 					this.$getEl().removeClass('force-closing').addClass('closed').removeAttr('style');
-				}, this));
+				});
 
 				this.$getEl().addClass('force-closing');
 			}
@@ -894,6 +894,193 @@ fw.randomMD5 = function() {
 };
 
 /**
+ * HTML-escape a value for safe interpolation into markup.
+ *
+ * Same character set Underscore's _.escape() covered (& < > " ' `), so
+ * templates that relied on it keep escaping identically. null/undefined
+ * render as '' rather than "null"/"undefined".
+ *
+ * @param {*} value
+ * @returns {String}
+ */
+fw.escapeHtml = function (value) {
+	if (value === null || typeof value === 'undefined') {
+		return '';
+	}
+
+	var entities = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#x27;',
+		'`': '&#x60;'
+	};
+
+	return String(value).replace(/[&<>"'`]/g, function (character) {
+		return entities[character];
+	});
+};
+
+/**
+ * Compile a template string into a render function.
+ *
+ * Drop-in replacement for _.template(), kept because two option types expose
+ * *user-authored* templates in the admin UI (the addable-box / addable-popup
+ * item-title templates, with {{= o.title }} / {{- … }} / {{ … }} delimiters).
+ * Those are saved in the DB, so the syntax has to keep working exactly as it
+ * did — hence a real compiler rather than template literals.
+ *
+ * Each delimiter regexp must expose EXACTLY ONE capture group (as Underscore's
+ * did); the compiler relies on that to tell the three kinds apart.
+ *
+ * @param {String} text
+ * @param {Object} [settings] { evaluate, interpolate, escape, variable }
+ * @returns {Function} render(data) -> String
+ */
+fw.template = function (text, settings) {
+	settings = Object.assign({
+		evaluate:    /<%([\s\S]+?)%>/g,
+		interpolate: /<%=([\s\S]+?)%>/g,
+		escape:      /<%-([\s\S]+?)%>/g,
+		variable:    null
+	}, settings || {});
+
+	// '|$' lets the final literal chunk after the last tag be captured too.
+	var matcher = new RegExp(
+		[settings.escape.source, settings.interpolate.source, settings.evaluate.source].join('|') + '|$',
+		'g'
+	);
+
+	var escapeChars = {
+		"'":      "\\'",
+		'\\':     '\\\\',
+		'\r':     '\\r',
+		'\n':     '\\n',
+		'\u2028': '\\u2028',
+		'\u2029': '\\u2029'
+	};
+
+	function escapeStringLiteral (str) {
+		return str.replace(/\\|'|\r|\n|\u2028|\u2029/g, function (character) {
+			return escapeChars[character];
+		});
+	}
+
+	var index = 0;
+	var source = "__p+='";
+
+	String(text).replace(matcher, function (match, escape, interpolate, evaluate, offset) {
+		source += escapeStringLiteral(String(text).slice(index, offset));
+		index = offset + match.length;
+
+		if (escape) {
+			source += "'+\n((__t=(" + escape + "))==null?'':fw.escapeHtml(__t))+\n'";
+		} else if (interpolate) {
+			source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+		} else if (evaluate) {
+			source += "';\n" + evaluate + "\n__p+='";
+		}
+
+		return match;
+	});
+
+	source += "';\n";
+
+	// Without an explicit `variable` name, expose the data object's keys as
+	// bare identifiers — exactly what _.template() did, and what existing
+	// saved templates ({{= title }}) depend on.
+	if (! settings.variable) {
+		source = 'with(obj||{}){\n' + source + '}\n';
+	}
+
+	// __j/print mirror Underscore's preamble, so evaluate blocks that call
+	// print('x') (a documented _.template feature) keep working.
+	source = "var __t,__p='',__j=Array.prototype.join," +
+		"print=function(){__p+=__j.call(arguments,'');};\n" + source + 'return __p;\n';
+
+	var render = new Function(settings.variable || 'obj', source);
+
+	return function (data) {
+		return render.call(this, data);
+	};
+};
+
+/**
+ * Rate-limit a function to at most one call per `wait` ms.
+ *
+ * Matches _.throttle()'s DEFAULT behaviour: leading edge AND trailing edge —
+ * it fires immediately, then at most once per interval, and always fires a
+ * final trailing call so the last event is never dropped (option/search inputs
+ * depend on that last call landing).
+ *
+ * @param {Function} fn
+ * @param {Number} wait milliseconds
+ * @returns {Function}
+ */
+fw.throttle = function (fn, wait) {
+	var timeoutId = null, lastRun = 0, lastArgs = null, lastThis = null;
+
+	return function () {
+		var now = Date.now(),
+			remaining = wait - (now - lastRun);
+
+		lastArgs = arguments;
+		lastThis = this;
+
+		if (remaining <= 0) {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+				timeoutId = null;
+			}
+
+			lastRun = now;
+			fn.apply(lastThis, lastArgs);
+		} else if (! timeoutId) {
+			timeoutId = setTimeout(function () {
+				timeoutId = null;
+				lastRun = Date.now();
+				fn.apply(lastThis, lastArgs);
+			}, remaining);
+		}
+	};
+};
+
+/**
+ * Delay a function until `wait` ms have passed without another call.
+ *
+ * Matches _.debounce()'s default (trailing edge only). Pass immediate=true for
+ * the leading-edge variant, as Underscore's third argument did.
+ *
+ * @param {Function} fn
+ * @param {Number} wait milliseconds
+ * @param {Boolean} [immediate]
+ * @returns {Function}
+ */
+fw.debounce = function (fn, wait, immediate) {
+	var timeoutId = null;
+
+	return function () {
+		var context = this, args = arguments;
+		var callNow = immediate && ! timeoutId;
+
+		clearTimeout(timeoutId);
+
+		timeoutId = setTimeout(function () {
+			timeoutId = null;
+
+			if (! immediate) {
+				fn.apply(context, args);
+			}
+		}, wait);
+
+		if (callNow) {
+			fn.apply(context, args);
+		}
+	};
+};
+
+/**
  * Return value from QueryString
  * @param name
  * @returns {string}
@@ -1036,7 +1223,7 @@ fw.getQueryString = function(name) {
 				var allSizes = ['large', 'medium', 'small'];
 
 				$modalWrapper.removeClass(
-					_.map(allSizes, formSizeClass).join(' ')
+					allSizes.map(formSizeClass).join(' ')
 				).addClass(formSizeClass(this.model.get('size')));
 
 				function formSizeClass (size) { return 'fw-modal-' + size; }
@@ -1124,7 +1311,7 @@ fw.getQueryString = function(name) {
 					$modalWrapper.addClass(modalCustomClass);
 				}
 
-				if (_.indexOf(['large', 'medium', 'small'], size) !== -1) {
+				if (['large', 'medium', 'small'].indexOf(size) !== -1) {
 					$modalWrapper.addClass('fw-modal-' + size);
 				} else {
 					$modalWrapper.addClass('fw-modal-' + modal.defaults.size);
@@ -1619,7 +1806,7 @@ fw.getQueryString = function(name) {
  *     });
  */
 fw.getValuesFromServer = function (data) {
-	var opts = _.extend({
+	var opts = Object.assign({
 		options: [],
 		actualValues: ""
 	}, data);
@@ -1689,7 +1876,7 @@ fw.getValuesFromServer = function (data) {
 			 * we can render styled inline errors next to each field instead of the
 			 * native popup bubble (see fw.validateOptionsForm).
 			 */
-			attributes: _.extend(
+			attributes: Object.assign(
 				{},
 				fw.Modal.prototype.ContentView.prototype.attributes,
 				{ novalidate: 'novalidate' }
@@ -1818,7 +2005,7 @@ fw.getValuesFromServer = function (data) {
 						'name_prefix=fw_edit_options_modal'
 					].join('&'),
 					dataType: 'json',
-					success: _.bind(function (response, status, xhr) {
+					success: (response, status, xhr) => {
 						fw.loading.hide(loadingId);
 
 						if (!response.success) {
@@ -1837,7 +2024,7 @@ fw.getValuesFromServer = function (data) {
 						});
 
 						this.model.open(response.data.values);
-					}, this),
+					},
 					error: function (xhr, status, error) {
 						fw.loading.hide(loadingId);
 
@@ -1851,7 +2038,7 @@ fw.getValuesFromServer = function (data) {
 				});
 			}
 		}),
-		defaults: _.extend(
+		defaults: Object.assign(
 			/**
 			 * Don't mutate original one!!!
 			 */
@@ -1963,10 +2150,10 @@ fw.getValuesFromServer = function (data) {
 				);
 			});
 
-			this.frame.once('ready', _.bind(function() {
+			this.frame.once('ready', () => {
 				this.frame.$el.removeClass('hide-toolbar');
 				this.frame.modal.$el.addClass('fw-options-modal');
-			}, this));
+			});
 
 			function triggerSubmit () {
 				/**
@@ -2033,7 +2220,20 @@ fw.getValuesFromServer = function (data) {
 			);
 
 			promise.then(function (html, response) {
-				if (response && _.isEmpty(modal.get('values'))) {
+				// _.isEmpty() equivalent: null/undefined, {} and [] all count as empty.
+				var currentValues = modal.get('values');
+
+				if (
+					response
+					&&
+					(
+						currentValues === null
+						||
+						typeof currentValues === 'undefined'
+						||
+						Object.keys(currentValues).length === 0
+					)
+				) {
 					// fixes https://github.com/ThemeFuse/Unyson/issues/1042#issuecomment-244364121
 					modal.set(
 						'values',
@@ -2440,14 +2640,14 @@ fw.soleModal = (function(){
 				'</div>'
 			);
 
-			( this.$getCloseButton().add(this.$getBackdrop()) ).on('click', _.bind(function(){
+			( this.$getCloseButton().add(this.$getBackdrop()) ).on('click', () => {
 				if (this.current && !this.current.allowClose) {
 					// manual close not is allowed
 					return;
 				}
 
 				this.hide();
-			}, this));
+			});
 
 			jQuery(document.body).append(this.$modal);
 
@@ -2602,7 +2802,7 @@ fw.soleModal = (function(){
 		show: function (id, html, opts) {
 			if (typeof id != 'undefined') {
 				// make sure to remove this id from queue (if was added previously)
-				this.queue = _.filter(this.queue, function (item) { return item.id != id; });
+				this.queue = this.queue.filter(function (item) { return item.id != id; });
 
 				{
 					opts = jQuery.extend({
@@ -2718,7 +2918,7 @@ fw.soleModal = (function(){
 			this.setSize(this.current.width, this.current.height);
 
 			this.current.afterOpenStart(this.$modal);
-			this.currentMethodTimeoutId = setTimeout(_.bind(function() {
+			this.currentMethodTimeoutId = setTimeout(() => {
 				this.current.afterOpen();
 
 				this.currentMethod = '';
@@ -2729,12 +2929,12 @@ fw.soleModal = (function(){
 
 				if (this.current.autoHide > 0) {
 					this.currentMethod = 'auto-hide';
-					this.currentMethodTimeoutId = setTimeout(_.bind(function () {
+					this.currentMethodTimeoutId = setTimeout(() => {
 						this.currentMethod = '';
 						this.hide();
-					}, this), this.current.autoHide);
+					}, this.current.autoHide);
 				}
-			}, this), this.animationTime * 2);
+			}, this.animationTime * 2);
 
 			return true;
 		},
@@ -2748,7 +2948,7 @@ fw.soleModal = (function(){
 					// this id is currently displayed, hide it
 				} else {
 					// remove id from queue
-					this.queue = _.filter(this.queue, function (item) {
+					this.queue = this.queue.filter(function (item) {
 						return item.id != id;
 					});
 					return true;
@@ -2778,7 +2978,7 @@ fw.soleModal = (function(){
 			if (this.queue.length && !this.queue[0].hidePrevious) {
 				// replace content
 				this.current.afterCloseStart(this.$modal);
-				this.$getContent().fadeOut('fast', _.bind(function(){
+				this.$getContent().fadeOut('fast', () => {
 					this.current.afterClose();
 
 					if (this.$modal && this.current.customClass !== null) {
@@ -2793,7 +2993,7 @@ fw.soleModal = (function(){
 					this.current = null;
 					this.show();
 					this.$getContent().fadeIn('fast');
-				}, this));
+				});
 
 				return true;
 			}
@@ -2801,7 +3001,7 @@ fw.soleModal = (function(){
 			this.$modal.addClass('fw-modal-closing');
 
 			this.current.afterCloseStart(this.$modal);
-			this.currentMethodTimeoutId = setTimeout(_.bind(function(){
+			this.currentMethodTimeoutId = setTimeout(() => {
 				this.current.afterClose();
 
 				this.currentMethod = '';
@@ -2824,7 +3024,7 @@ fw.soleModal = (function(){
 				this.current = null;
 
 				this.runPendingMethod();
-			}, this), this.animationTime);
+			}, this.animationTime);
 		}
 	};
 
@@ -2938,7 +3138,7 @@ fw.soleConfirm = (function ($) {
 		this.result = jQuery.Deferred();
 		this.id = fw.randomMD5();
 
-		this.opts = _.extend({
+		this.opts = Object.assign({
 			severity: 'info', // warning | info
 			message: null,
 			backdrop: null,
@@ -2986,8 +3186,8 @@ fw.soleConfirm = (function ($) {
 			customClass: 'fw-sole-confirm-modal fw-sole-confirm-' + this.opts.severity + ' ' + this.opts.customClass,
 			updateIfCurrent: true,
 
-			afterOpenStart: _.bind(this._fireEvents, this),
-			afterCloseStart: _.bind(this._teardownEvents, this),
+			afterOpenStart: this._fireEvents.bind(this),
+			afterCloseStart: this._teardownEvents.bind(this),
 
 			onFireEvents: jQuery.noop,
 			onTeardownEvents: jQuery.noop
@@ -3009,7 +3209,7 @@ fw.soleConfirm = (function ($) {
 			.add(
 				$modal.find('.media-modal-backdrop')
 			)
-			.on('click.fw-sole-confirm', _.bind(this._handleClose, this));
+			.on('click.fw-sole-confirm', this._handleClose.bind(this));
 
 		if (this.opts.onFireEvents) {
 			this.opts.onFireEvents(this, $modal[0]);
@@ -3069,7 +3269,7 @@ fw.soleConfirm = (function ($) {
 				}
 
 				// probably keep this syntax for another actions in future
-				_.contains(['resolve'], action) &&
+				['resolve'].indexOf(action) !== -1 &&
 					confirm.result[action]({
 						confirm: confirm,
 						modal_container: $el.closest('.fw-sole-modal')[0]

@@ -184,10 +184,7 @@
  * tinyMCEPreInit.mceInit and tinyMCEPreInit.qtInit for them.
  */
 function fwWpEditorRefreshIds(currentId, container) {
-	_.map(
-		jQuery(container).find('.fw-option-type-wp-editor').toArray(),
-		refreshEditor
-	);
+	jQuery(container).find('.fw-option-type-wp-editor').toArray().forEach(refreshEditor);
 
 	function refreshEditor (editor) {
 		var html = jQuery(editor).clone().wrap('<p>').parent().html();

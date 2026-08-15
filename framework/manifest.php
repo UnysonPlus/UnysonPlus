@@ -2,10 +2,41 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.16.12';
+$manifest['version'] = '2.16.14';
 
 /**
  * Changelog
+ * 2.16.14 - Extensions manager: deleting a bundled extension no longer removes it from
+ *          the list. The page renders installed extensions from each extension's own
+ *          manifest.php but available ones from a hand-maintained catalog, and
+ *          uninstalling recursively deletes the extension folder — so a bundled
+ *          extension missing from that catalog (eleven of them were, including Mega
+ *          Menu) vanished from the UI permanently once deleted, recoverable only by
+ *          reinstalling the plugin. Bundled extensions are now catalogued from their
+ *          manifests automatically and remembered in an option, which is what survives
+ *          the folder being deleted; the download source comes from each manifest's
+ *          existing github_update value. Mega Menu and Forms were additionally flagged
+ *          hidden in the catalog, and a hardcoded rule suppressed Mega Menu unless the
+ *          theme declared it — both inherited from upstream Unyson and both removed.
+ * 2.16.13 - The framework core no longer depends on Underscore, completing the
+ *          dependency removal begun in 2.16.11. The ~25 _.bind / _.extend / _.filter
+ *          calls in fw.js — plus every _.* call in fw-reactive-options*.js and the
+ *          twelve core option types that used them — are now native (Function.bind,
+ *          Object.assign, Array.prototype.filter/map/reduce/forEach). The 'fw' script
+ *          handle no longer declares 'underscore'. Four helpers replace the Underscore
+ *          functions that have no one-line native equivalent, and are available to
+ *          extension authors: fw.template() (an _.template()-compatible compiler,
+ *          including custom delimiters, the `variable` option, `with`-scoped bare
+ *          identifiers and print() — the addable-box / addable-popup item-title
+ *          templates are user-authored and stored in the database, so their syntax is
+ *          unchanged), fw.escapeHtml(), fw.throttle() and fw.debounce(). IMPORTANT for
+ *          extension authors: any script that uses `_` must now declare 'underscore' in
+ *          its OWN wp_enqueue_script dependency array — it is no longer inherited via
+ *          'fw'. The bundled extensions that needed it (megamenu, the shortcodes editor
+ *          integration, three page-builder scripts) were updated accordingly; the
+ *          builder canvas, forms and newsletter-crm already declared it and are
+ *          untouched. Underscore itself is still loaded by WordPress for the media
+ *          library and by those extensions, so nothing else changes.
  * 2.16.11 - The framework core no longer depends on Backbone. fw.Modal was built on
  *          Backbone.Model / Backbone.View and wp.media.view.MediaFrame, which made
  *          Backbone a hard dependency of the most-used piece of admin UI. Two new

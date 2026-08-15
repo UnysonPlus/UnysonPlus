@@ -173,7 +173,7 @@
 						value.value.type === 'none' ? '' : value.value.type
 					);
 				} else {
-					if (! _.isString(value.value)) {
+					if (typeof value.value !== 'string') {
 						throw "Your picker returned a non-string value. In order for it to work with multi-pickers it should yield string values";
 					}
 

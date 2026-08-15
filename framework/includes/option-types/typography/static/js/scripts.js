@@ -19,7 +19,7 @@
 					fontsOptions = [];
 					fontsOptionsHTML = {};
 
-					_.each(fw_typography_v2_fonts['standard'], function (item) {
+					(fw_typography_v2_fonts['standard'] || []).forEach(function (item) {
 						fontsOptionsHTML[item] = '<option value="' + item + '">' + item + '</option>';
 						fontsOptions.push({
 							value: item,
@@ -27,7 +27,7 @@
 						});
 					});
 
-					_.each(googleFonts['items'], function (item) {
+					(googleFonts['items'] || []).forEach(function (item) {
 						fontsOptionsHTML[item['family']] = '<option value="' + item['family'] + '">' + item['family'] + '</option>';
 						fontsOptions.push({
 							value: item['family'],
@@ -98,7 +98,7 @@
 		}).done(function (data) {
 			googleFonts = (data && data['items']) ? data : { items: [] };
 			if (googleFontNames) {
-				_.each(googleFonts['items'], function (item) {
+				(googleFonts['items'] || []).forEach(function (item) {
 					googleFontNames.add(item['family']);
 				});
 			}
@@ -185,10 +185,10 @@
 
 								if (results.length === 1) {
 									var variations = '', subsets = '';
-									_.each(results[0]['variants'], function (variation) {
+									(results[0]['variants'] || []).forEach(function (variation) {
 										variations += '<option value="' + variation + '">' + variation + '</option>';
 									});
-									_.each(results[0]['subsets'], function (subset) {
+									(results[0]['subsets'] || []).forEach(function (subset) {
 										subsets += '<option value="' + subset + '">' + subset + '</option>';
 									});
 
@@ -250,7 +250,7 @@
 								var selectedValue = control.getValue();
 								control.removeOption(selectedValue, true);
 
-								_.each(getFontsOptions(), function(option){
+								getFontsOptions().forEach(function(option){
 									control.addOption({
 										value: option.value,
 										text: option.text
@@ -265,7 +265,7 @@
 								var control = $fontFamilySelect[0].fwSelect,
 									value = control.getValue();
 
-								_.each(getFontsOptions(), function(option){
+								getFontsOptions().forEach(function(option){
 									if (value !== option.value) {
 										control.removeOption(option.value);
 									}

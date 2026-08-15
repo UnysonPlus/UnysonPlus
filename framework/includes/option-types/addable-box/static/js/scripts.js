@@ -249,9 +249,8 @@ jQuery(document).ready(function ($) {
 		isBusy: false,
 		template: function(template, vars) {
 			try {
-				return _.template(
-					$.trim(template),
-					undefined,
+				return fw.template(
+					( template || '' ).trim(),
 					{
 						evaluate: /\{\{([\s\S]+?)\}\}/g,
 						interpolate: /\{\{=([\s\S]+?)\}\}/g,
@@ -283,7 +282,7 @@ jQuery(document).ready(function ($) {
 				$box.closest(optionTypeClass).attr('data-for-js')
 			);
 
-			data.template = $.trim(data.template);
+			data.template = ( data.template || '' ).trim();
 
 			if (!data.template.length) {
 				delete data;
@@ -325,7 +324,7 @@ jQuery(document).ready(function ($) {
 					$box.find('> .inside > .fw-option-box-options').find('input, select, textarea').serialize()
 				].join('&'),
 				dataType: 'json'
-			}).done(_.bind(function (response, status, xhr) {
+			}).done((response, status, xhr) => {
 				this.isBusy = false;
 				$box.removeClass(titleUpdater.pendingClass);
 
@@ -342,7 +341,7 @@ jQuery(document).ready(function ($) {
 				delete data;
 
 				this.update();
-			}, this)).fail(_.bind(function (xhr, status, error) {
+			}).fail((xhr, status, error) => {
 				this.isBusy = false;
 				$box.removeClass(titleUpdater.pendingClass);
 
@@ -351,7 +350,7 @@ jQuery(document).ready(function ($) {
 				delete data;
 
 				this.update();
-			}, this));
+			});
 		}
 	};
 

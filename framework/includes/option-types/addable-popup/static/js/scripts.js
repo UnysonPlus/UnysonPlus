@@ -147,7 +147,7 @@
 						$clonedInput = $clonedItem.find('.input-wrapper');
 
 					var $inputTemplate = $(
-						$.trim($clonedInput.html())
+						( $clonedInput.html() || '' ).trim()
 							.split(
 								nodes.$addButton.attr('data-increment-placeholder')
 							)
@@ -167,9 +167,8 @@
 						 */
 						values._context = $clonedItem.find('.content');
 
-						template = _.template(
-							$.trim(data.template),
-							undefined,
+						template = fw.template(
+							( data.template || '' ).trim(),
 							{
 								evaluate: /\{\{([\s\S]+?)\}\}/g,
 								interpolate: /\{\{=([\s\S]+?)\}\}/g,
@@ -247,22 +246,22 @@
 			fw.options.trigger.changeForEl(nodes.$optionWrapper);
 		});
 
-		_.map(
-			[
-				'open',
-				'render',
-				'close'
-			],
+		[
+			'open',
+			'render',
+			'close'
+		].forEach(function (ev) {
+			// Plain wrapper rather than a bind(): triggerEvent reads `this`
+			// (the modal the event fired on), which bind() would replace.
+			utils.modal.on(ev, function (modal) {
+				triggerEvent.call(this, ev, modal);
+			});
 
-			function (ev) {
-				utils.modal.on(ev, _.partial(triggerEvent, ev));
-
-				function triggerEvent (eventName, modal) {
-					eventName = 'fw:option-type:addable-popup:options-modal:' + eventName;
-					fwEvents.trigger(eventName, { modal: this });
-				}
+			function triggerEvent (eventName, modal) {
+				eventName = 'fw:option-type:addable-popup:options-modal:' + eventName;
+				fwEvents.trigger(eventName, { modal: this });
 			}
-		);
+		});
 
 		$this.on('remove', function(){ // fixes https://github.com/ThemeFuse/Unyson/issues/2167
 			utils.modal.frame.$el.closest('.fw-modal').remove(); // remove modal from DOM
@@ -290,10 +289,13 @@
 				).toArray().map(fw.options.getContextValue)
 			).then(function (valuesAsArray) {
 				promise.resolve({
-					value: _.map(
-						valuesAsArray,
-						_.compose(JSON.parse, _.first, _.values, _.property('value'))
-					),
+					// Was _.compose(JSON.parse, _.first, _.values, _.property('value')):
+					// take the context's `value` hash, grab its first entry, parse it.
+					value: valuesAsArray.map(function (singleContextValue) {
+						return JSON.parse(
+							Object.values(singleContextValue.value)[0]
+						);
+					}),
 
 					optionDescriptor: optionDescriptor
 				})

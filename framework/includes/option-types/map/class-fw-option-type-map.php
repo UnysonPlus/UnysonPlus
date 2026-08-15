@@ -31,7 +31,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 		wp_enqueue_script(
 			$this->get_type() . '-scripts',
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-			array( 'jquery', 'jquery-ui-widget', 'fw-events', 'underscore', 'jquery-ui-autocomplete' ),
+			array( 'jquery', 'jquery-ui-widget', 'fw', 'fw-events', 'jquery-ui-autocomplete' ),
 			'1.0',
 			true
 		);
@@ -84,7 +84,7 @@ class FW_Option_Type_Map extends FW_Option_Type {
 		wp_enqueue_script(
 			$this->get_type() . '-scripts-osm',
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts-osm.js' ),
-			array( 'jquery', 'fw-events', 'underscore', 'leaflet' ),
+			array( 'jquery', 'fw', 'fw-events', 'leaflet' ),
 			'1.0',
 			true
 		);

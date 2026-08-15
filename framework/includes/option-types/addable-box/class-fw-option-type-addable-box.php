@@ -33,7 +33,7 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 			wp_enqueue_script(
 				'fw-option-'. $this->get_type(),
 				fw_get_framework_asset_uri('/includes/option-types/'. $this->get_type() .'/static/js/scripts.js'),
-				array('fw-events', 'jquery-ui-sortable'),
+				array('fw', 'fw-events', 'jquery-ui-sortable'),
 				fw()->manifest->get_version(),
 				true
 			);
