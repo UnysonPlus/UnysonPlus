@@ -99,6 +99,68 @@ Keep a `const ASSET_BASE = '<canonical>'` on the canonical class and use it (ins
 in `_enqueue_static`/`_render` so the alias reuses the same `static/` assets. Saved values load
 unchanged (type isn't stored). Examples: `typography-v2`→`typography`, `fw-multi-inline`→`multi-inline`.
 
+## Don't render what the save path won't read ⚠
+
+**The single most expensive mistake in this codebase.** A composite that shows one variant at a time
+— a picker with per-choice sub-options, a cell with per-row-type options, anything toggled by CSS —
+must not render *every* variant up front.
+
+Two real cases, both measured:
+
+| Where | Cost | Cause |
+| --- | --- | --- |
+| Animations tab (16 `multi-picker` cards) | **6,261 KB · 840 ms** per element modal | every choice's sub-options rendered eagerly |
+| `table` option type | **11 MB** | every row type's options rendered *per cell* |
+
+In both, ~95% of the markup was for variants the user hadn't selected — and which
+`_get_value_from_input()` **never reads**, because it only collects the *selected* variant. Pure waste,
+paid on every modal open.
+
+### The rule
+
+> If `_get_value_from_input()` reads only the active variant, then rendering the inactive ones is
+> waste — and deferring them is provably safe.
+
+The safety argument matters, because a previous attempt at deferring got this wrong and lost data:
+
+- ✅ **Safe to defer: an inactive variant's sub-options.** They can't be saved anyway. The active one
+  is always in the DOM (initially, or fetched when the user switches), so the save path always finds
+  what it reads.
+- ❌ **Never defer the selector itself, or a whole field.** A field absent from the form makes the
+  server derive its *default* — which is how deferring whole animation cards silently reset them to
+  `none` on save.
+
+### How to do it
+
+`multi-picker` implements this as an opt-in: set `'lazy_choices' => true` and unselected choices ship
+their **schema** (JSON) instead of rendered HTML, rendered on demand via the
+`fw_backend_options_render` AJAX action when the choice is picked. See
+`multi-picker/class-fw-option-type-multi-picker.php` and its `static/js/multi-picker.js`.
+
+If you build your own variant of this, mirror three things:
+
+1. **Claim the schema attribute before fetching** so a double-trigger can't render twice.
+2. **Restore it on failure**, so the choice can retry instead of ending up with no inputs.
+3. **Gate the save**: `fw.lazyChoices.pending` — the options modal waits for in-flight renders before
+   serializing, or the server derives defaults for inputs that haven't landed yet.
+
+### Measuring before you optimise
+
+Don't guess which option is heavy — measure. This prints the cost of any element's modal:
+
+```php
+$sc = fw_ext( 'shortcodes' )->get_shortcode( 'accordion' );
+$v  = fw_get_variables_from_file( $sc->locate_path( '/options.php' ), array( 'options' => array() ) );
+foreach ( $v['options'] as $key => $tab ) {
+    $t = microtime( true );
+    $html = fw()->backend->render_options( array( $key => $tab ), array() );
+    printf( "%-22s %7.1f ms %9.1f KB\n", $key, ( microtime( true ) - $t ) * 1000, strlen( $html ) / 1024 );
+}
+```
+
+Run it with `wp eval-file`. A healthy element modal is **~2 MB / ~130 ms**; anything far above that has
+an eager-rendering problem. (`table` is the known outlier still to be fixed.)
+
 ## Checklist for a NEW option type
 
 1. Folder `option-types/<type>/`, class extends `FW_Option_Type`, `get_type()` returns `<type>`.
@@ -110,6 +172,8 @@ unchanged (type isn't stored). Examples: `typography-v2`→`typography`, `fw-mul
    contract isn't obvious from the code.
 7. If it will hold sub-options of other types, delegate save/enqueue/render per child.
 8. Test save→reload→re-render: the value must round-trip and the modal must reopen without error.
+9. If it shows one variant at a time, **measure its render cost** and defer the inactive variants —
+   see "Don't render what the save path won't read".
 
 ## Gotchas recap
 
