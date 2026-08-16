@@ -56,7 +56,7 @@ jQuery(document).ready(function($){
 			$boxes.find('> .hndle > span').each(function(){
 				var $this = $(this);
 
-				if (!$.trim($this.html()).length) {
+				if (!( $this.html() || '' ).trim().length) {
 					$this.closest('.postbox').addClass('fw-postbox-without-name');
 				}
 			});

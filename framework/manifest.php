@@ -2,10 +2,31 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.16.16';
+$manifest['version'] = '2.16.19';
 
 /**
  * Changelog
+ * 2.16.19 - Backbone, backbone-relational and Underscore are now gone from the entire
+ *          framework — not just the core. The builder canvas (builder.js, helpers.js
+ *          and the flexbox page-builder item) was the last holdout; it now runs on
+ *          fw.Class / fw.View / fw.Collection from fw-oo.js, with the single
+ *          backbone-relational HasMany relation replaced by a declarative `nested`
+ *          option on fw.Class. Every builder.classes.* name and signature is preserved,
+ *          so the 23 files that extend them — 14 form-builder item types, 5
+ *          page-builder item types, the newsletter-crm email builder, the section-like
+ *          factory and the contact-form item — needed no changes. The vendored
+ *          backbone-relational library is deleted and its script handle unregistered,
+ *          and no script handle anywhere declares 'backbone' or 'underscore'. Three
+ *          further helpers join the four added in 2.16.13: fw.clone(), fw.isObject()
+ *          and fw.isEmpty(), matching Underscore's semantics (fw.isEmpty() checks
+ *          length for arrays/strings/arguments only, so fw.isEmpty({length: 0}) is
+ *          false). IMPORTANT for extension authors: a script using `_` or `Backbone`
+ *          must declare 'underscore' / 'backbone' in its OWN wp_enqueue_script
+ *          dependency array — neither is inherited via 'fw' any more. WordPress still
+ *          loads both for its media library, so wp_enqueue_media() pages are unaffected.
+ *          The page-builder persistence format is unchanged and was verified
+ *          byte-identical against the real backbone-relational across load, mutation
+ *          and round-trip. jquery-ui-sortable / draggable are deliberately untouched.
  * 2.16.14 - Extensions manager: deleting a bundled extension no longer removes it from
  *          the list. The page renders installed extensions from each extension's own
  *          manifest.php but available ones from a hand-maintained catalog, and

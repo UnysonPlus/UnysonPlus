@@ -50,7 +50,7 @@ class FW_Option_Type_Slider extends FW_Option_Type {
 			wp_register_script(
 				'fw-nouislider-adapter',
 				$base . '/js/scripts.js',
-				array( 'jquery', 'fw-events', 'underscore', 'fw-nouislider', 'fw-wnumb' ),
+				array( 'jquery', 'fw-events', 'fw-nouislider', 'fw-wnumb' ),
 				fw()->manifest->get_version(),
 				true
 			);

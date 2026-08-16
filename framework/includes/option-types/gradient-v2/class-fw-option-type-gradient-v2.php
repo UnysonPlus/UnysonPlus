@@ -116,7 +116,7 @@ class FW_Option_Type_Gradient_V2 extends FW_Option_Type {
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri( '/includes/option-types/' . $this->get_type() . '/static/js/scripts.js' ),
-			array( 'jquery', 'fw-events', 'wp-color-picker', 'underscore' ),
+			array( 'jquery', 'fw-events', 'wp-color-picker' ),
 			fw()->manifest->get_version(),
 			true
 		);

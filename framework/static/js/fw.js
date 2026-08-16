@@ -1081,6 +1081,75 @@ fw.debounce = function (fn, wait, immediate) {
 };
 
 /**
+ * Is this an object in Underscore's sense?
+ *
+ * Replaces _.isObject(). Note the definition is broader than most people
+ * expect: FUNCTIONS count as objects, and `null` does not. Getting this wrong
+ * silently changes branch behaviour, which is why it is a helper rather than
+ * an inline `typeof` at each call site.
+ *
+ * @param {*} value
+ * @returns {Boolean}
+ */
+fw.isObject = function (value) {
+	var type = typeof value;
+
+	return type === 'function' || (type === 'object' && !!value);
+};
+
+/**
+ * Shallow copy — the _.clone() replacement.
+ *
+ * Underscore's clone is SHALLOW and passes non-objects straight through:
+ * arrays are sliced, objects are copied one level deep, primitives are
+ * returned as-is. Nested values stay shared by reference.
+ *
+ * @param {*} value
+ * @returns {*}
+ */
+fw.clone = function (value) {
+	if (!fw.isObject(value)) {
+		return value;
+	}
+
+	return Array.isArray(value) ? value.slice() : Object.assign({}, value);
+};
+
+/**
+ * Emptiness test — the _.isEmpty() replacement.
+ *
+ * Covers what Underscore covered: null/undefined are empty; arrays, strings
+ * and array-likes go by length; anything else by its own enumerable keys.
+ *
+ * @param {*} value
+ * @returns {Boolean}
+ */
+fw.isEmpty = function (value) {
+	if (value == null) {
+		return true;
+	}
+
+	/**
+	 * The length shortcut applies ONLY to arrays, strings and `arguments` —
+	 * NOT to any object that happens to carry a `length` property. Underscore
+	 * gates it the same way, so `_.isEmpty({length: 0})` is FALSE (the object
+	 * has one own key, `length`). Widening this to all array-likes silently
+	 * flips that case.
+	 */
+	if (
+		Array.isArray(value)
+		||
+		typeof value === 'string'
+		||
+		Object.prototype.toString.call(value) === '[object Arguments]'
+	) {
+		return value.length === 0;
+	}
+
+	return Object.keys(value).length === 0;
+};
+
+/**
  * Return value from QueryString
  * @param name
  * @returns {string}

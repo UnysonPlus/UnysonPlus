@@ -70,7 +70,7 @@
 				option.destroy();
 			}
 			this.picker.remove();
-			this.select.unbind("change");
+			this.select.off("change");
 			this.select.removeData("picker");
 			return this.select.show();
 		};
@@ -220,7 +220,7 @@
 		}
 
 		ImagePickerOption.prototype.destroy = function() {
-			return this.node.find(".thumbnail").unbind();
+			return this.node.find(".thumbnail").off();
 		};
 
 		ImagePickerOption.prototype.has_image = function() {

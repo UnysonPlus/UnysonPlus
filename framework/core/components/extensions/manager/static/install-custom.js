@@ -71,7 +71,7 @@
 		// GitHub URL
 		$('#fw-ext-install-github').on('click', function () {
 			var $btn = $(this);
-			var url = $.trim($('#fw-ext-github').val() || '');
+			var url = ( $('#fw-ext-github').val() || '' ).trim();
 			if (!url) {
 				notice('error', l10n.no_url || 'Enter a GitHub repository URL.');
 				return;

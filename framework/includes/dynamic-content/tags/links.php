@@ -34,16 +34,40 @@ if ( ! function_exists( '_fw_dynamic_content_register_link_tags' ) ) :
 
 			// Only the picker (admin) needs the dropdown; the frontend never does.
 			if ( is_admin() ) {
-				$items = get_posts( array(
-					'post_type'        => $pt->name,
-					'post_status'      => 'publish',
-					'numberposts'      => $limit,
-					'orderby'          => 'title',
-					'order'            => 'ASC',
-					'suppress_filters' => false,
-				) );
+				global $wpdb;
 
-				foreach ( $items as $item ) {
+				/**
+				 * PERFORMANCE — select ID + title ONLY; never hydrate post objects here.
+				 *
+				 * This used to be get_posts( [ 'numberposts' => $limit ] ). The killer is not
+				 * the posts themselves: WP_Query primes the META cache for every row it
+				 * returns, and a page-builder site stores each page's builder tree in postmeta
+				 * (`fw:opt:ext:pb:page-builder:json`, plus `_fw_le_rev_*` live-editor
+				 * revisions). On the demos install that is ~155 MB of postmeta across ~112
+				 * published pages/posts — and this loop runs once per PUBLIC POST TYPE.
+				 *
+				 * Measured: ~170 MB retained and a ~430 MB transient spike, on every admin
+				 * screen that enqueues option-type statics (it is reached from
+				 * FW_Option_Type::enqueue_static()'s one-time block). That alone exhausted a
+				 * 512 MB memory_limit and fatalled admin-ajax.php.
+				 *
+				 * We only render value + label, so ask the database for exactly that — no post
+				 * objects, no meta priming. Same ordering, same limit, same result.
+				 */
+				$items = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT ID, post_title
+						   FROM {$wpdb->posts}
+						  WHERE post_type = %s
+						    AND post_status = 'publish'
+						  ORDER BY post_title ASC
+						  LIMIT %d",
+						$pt->name,
+						$limit
+					)
+				);
+
+				foreach ( (array) $items as $item ) {
 					$title = ( '' !== $item->post_title )
 						? $item->post_title
 						/* translators: %d: post ID. */

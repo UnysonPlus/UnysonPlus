@@ -575,13 +575,17 @@ final class _FW_Component_Backend {
 		 */
 		wp_register_style('fw-font-awesome', fw_get_framework_directory_uri('/static/libs/font-awesome/css/font-awesome.min.css'));
 
-		wp_register_script(
-			'backbone-relational',
-			fw_get_framework_directory_uri('/static/libs/backbone-relational/backbone-relational.js'),
-			['backbone'],
-			fw()->manifest->get_version(),
-			true
-		);
+		/**
+		 * The 'backbone-relational' handle and its vendored library were removed
+		 * in 2.16.17. Its only consumer was the builder's `_items` HasMany
+		 * relation, which is now fw.Class's `nested` declaration (builder 1.2.76),
+		 * leaving the script registered but never enqueued and the file dead
+		 * weight in every release ZIP.
+		 *
+		 * Note for anyone restoring it: the framework's code is Backbone-free as
+		 * of 2.16.16 — 'backbone' itself is still WordPress's own handle and is
+		 * untouched, it is simply no longer a dependency of anything here.
+		 */
 
 		wp_register_script(
 			'fw-form-helpers',
