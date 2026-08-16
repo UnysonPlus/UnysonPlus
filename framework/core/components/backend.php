@@ -1975,7 +1975,15 @@ final class _FW_Component_Backend {
 		wp_enqueue_script(
 			'fw-backend-customizer',
 			fw_get_framework_asset_uri('/static/js/backend-customizer.js'),
-			['jquery', 'fw-events', 'backbone', 'fw-backend-options'],
+			/**
+			 * 'backbone' was declared here but backend-customizer.js never used
+			 * it — no Backbone call, no Underscore call, no wp.customize usage.
+			 * It only forced Backbone onto the customizer screen. Removed in
+			 * 2.16.16; nothing depends on this handle, so nothing inherited it.
+			 * (The inverse of the 2.16.13 lesson: declare what you use, and
+			 * only what you use.)
+			 */
+			['jquery', 'fw-events', 'fw-backend-options'],
 			fw()->manifest->get_version(),
 			true
 		);
