@@ -2994,6 +2994,28 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
 }
 
 /**
+ * No scrollbar flash while the dialog grows into place.
+ *
+ * An auto-height sole modal animates its box from the 200px default up to the
+ * measured content height (fw.js setSize). For the whole ~300ms of that tween the
+ * box is SHORTER than its content, and core's media-views `.media-modal-content
+ * { overflow: auto }` duly paints a vertical scrollbar — which then vanishes the
+ * instant the animation lands. Measured: visible from 26ms to 235ms on a
+ * two-line confirm (box 200 -> 223, content 223 throughout).
+ *
+ * Suppressing overflow for the duration of the opening class is enough: the class
+ * is removed when the tween ends, restoring `auto` — so a genuinely oversized
+ * message (one that hits the 85%-of-viewport clamp) still scrolls normally once
+ * open. Scoped to the animating state only, never the resting state.
+ *
+ * Specificity score: 5 — matches the rule above so it beats core's single-class
+ * `.media-modal-content` without !important.
+ */
+.fw-modal.fw-sole-modal.fw-modal-opening > .media-modal > .media-modal-content {
+	overflow: hidden;
+}
+
+/**
  * Specificity score: 5
  */
 .fw-modal:not(.fw-sole-modal).fw-modal-open > .media-modal > .media-modal-content {
@@ -3075,6 +3097,29 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 
 .fw-sole-modal.fw-sole-confirm-modal {
 	text-align: center;
+}
+
+/**
+ * Breathing room INSIDE the measured box.
+ *
+ * fw.soleConfirm opens with height:'auto', which sizes the dialog from
+ * `.media-modal-content`'s scrollHeight (see fw.js setSize). That measurement is
+ * correct — but the content had `padding: 0`, so the natural height ended exactly
+ * at the bottom of the button row: the buttons sat flush against the dialog edge
+ * with a 0px gap, and the message ran to the full 350px width.
+ *
+ * With a one-line message the 200px minimum hid it (short content gets slack from
+ * the clamp). At two lines the natural height passes 200, the clamp stops applying,
+ * and the missing padding becomes visible.
+ *
+ * Padding is the right fix rather than adding pixels per line of text in JS:
+ * scrollHeight includes padding, so the existing auto-height keeps sizing the
+ * dialog correctly for ANY number of lines, at any font size, zoom level or
+ * translation — nothing needs to count lines.
+ */
+.fw-sole-modal.fw-sole-confirm-modal .fw-sole-modal-content {
+	padding: 0 22px 22px;
+	box-sizing: border-box;
 }
 
 .fw-sole-modal.fw-sole-confirm-modal .fw-sole-confirm-button:not(:last-child) {

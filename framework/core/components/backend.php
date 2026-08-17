@@ -374,10 +374,33 @@ final class _FW_Component_Backend {
 		 * otherwise fw.OptionsModal won't work
 		 */
 		{
+			/**
+			 * 'media-views' is a STYLE dependency, not an optional nicety.
+			 *
+			 * fw.css does not style the modal from scratch — fw.Modal / fw.soleModal /
+			 * fw.confirm render WordPress's own `.media-modal` markup, and fw.css only
+			 * layers overrides on top of it (`body > .fw-modal > .media-modal`, the
+			 * backdrop rules, the confirm variants). The rules that make a modal a
+			 * modal — position:fixed, the backdrop, the centering — come from core's
+			 * 'media-views' stylesheet.
+			 *
+			 * Without it the dialog still opens and is still in the DOM, but renders
+			 * as position:static content in normal document flow at the bottom of the
+			 * page. On an admin page that never calls wp_enqueue_media() that made
+			 * fw.confirm() unusable — the shortcodes settings page's Delete guard
+			 * appeared as stray unstyled text instead of a dialog, so the destructive
+			 * action could not be confirmed.
+			 *
+			 * Declaring it here fixes the whole class of page rather than one caller.
+			 * It is style-only (no media JS), and pages that already call
+			 * wp_enqueue_media() are unaffected — the handle is simply already enqueued.
+			 * The note below still stands for the SCRIPT side: fw.OptionsModal needs
+			 * the media JS, which only wp_enqueue_media() provides.
+			 */
 			wp_register_style(
 				'fw',
 				fw_get_framework_asset_uri('/static/css/fw.css'),
-				['fw-tooltip'],
+				['fw-tooltip', 'media-views'],
 				fw()->manifest->get_version()
 			);
 

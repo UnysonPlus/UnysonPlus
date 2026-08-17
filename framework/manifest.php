@@ -6,6 +6,25 @@ $manifest['version'] = '2.16.20';
 
 /**
  * Changelog
+ * 2.16.20 - Rate limiting for the framework's public AJAX endpoints. The six
+ *          wp_ajax_nopriv_* actions (newsletter signup, posts load-more and filter,
+ *          portfolio load, WooCommerce load-more and quick view) all verified a
+ *          nonce, but a nonce is printed into the page every visitor receives — it
+ *          proves a request came from a page we rendered, not that it is the first
+ *          of thousands. That mattered most for the newsletter handler, which sends
+ *          mail through wp_mail() on every successful call. Three new core helpers
+ *          in framework/includes/rate-limit.php are available to extension authors:
+ *          fw_rate_limit_exceeded( $action, $limit, $window ) counts a hit and
+ *          reports whether the caller is over budget, fw_rate_limit_ajax() is the
+ *          one-line guard that ends the request with a 429 and a JSON error, and
+ *          fw_rate_limit_id() returns the salted-hash identity a limit counts
+ *          against (the IP is never stored in cleartext). Two filters:
+ *          `fw_rate_limit` adjusts or disables a limit (return 0 to switch one off)
+ *          and `fw_rate_limit_client_ip` supplies the real address behind a proxy —
+ *          REMOTE_ADDR is used by default because X-Forwarded-For is caller-controlled.
+ *          Users who can edit_posts are exempt, and the limiter fails open, so a
+ *          misbehaving cache costs throttling rather than the front end.
+ *
  * 2.16.19 - Backbone, backbone-relational and Underscore are now gone from the entire
  *          framework — not just the core. The builder canvas (builder.js, helpers.js
  *          and the flexbox page-builder item) was the last holdout; it now runs on
