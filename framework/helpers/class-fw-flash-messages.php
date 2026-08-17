@@ -96,7 +96,7 @@ class FW_Flash_Messages
 	public static function add($id, $message, $type = 'info', array $removed_ids = array())
 	{
 		if (!isset(self::$available_types[$type])) {
-			trigger_error(sprintf(__('Invalid flash message type: %s', 'tfuse'), $type), E_USER_WARNING);
+			trigger_error(sprintf(__('Invalid flash message type: %s', 'fw'), $type), E_USER_WARNING);
 			$type = 'info';
 		}
 

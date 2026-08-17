@@ -121,7 +121,7 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 	 * Returns: [ '' => 'Default', '{prefix}{-bp}-{slug}' => '{name} ({size})', ... ]
 	 */
 	public function get_choices( $section, $slot, $bp = '' ) {
-		$out = array( '' => __( 'Default', 'unysonplus' ) );
+		$out = array( '' => __( 'Default', 'fw' ) );
 
 		foreach ( $this->get_scale() as $entry ) {
 			if ( ! is_array( $entry ) || empty( $entry['name'] ) ) { continue; }
@@ -270,10 +270,10 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 	 */
 	private function render_section_row( $section, $section_label, $section_value, $bp, $sec_id_prefix, $sec_name_prefix ) {
 		$slot_labels = array(
-			'top'    => __( 'Top',    'unysonplus' ),
-			'right'  => __( 'Right',  'unysonplus' ),
-			'bottom' => __( 'Bottom', 'unysonplus' ),
-			'left'   => __( 'Left',   'unysonplus' ),
+			'top'    => __( 'Top',    'fw' ),
+			'right'  => __( 'Right',  'fw' ),
+			'bottom' => __( 'Bottom', 'fw' ),
+			'left'   => __( 'Left',   'fw' ),
 		);
 
 		// Default to "linked" unless any per-side value is set — that's the
@@ -289,14 +289,14 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 		<div class="fw-sp-row fw-sp-row--<?php echo esc_attr( $section ); ?><?php echo $linked_class; ?>">
 			<div class="fw-sp-row-head">
 				<span class="fw-sp-row-title"><?php echo esc_html( $section_label ); ?></span>
-				<button type="button" class="fw-sp-link" title="<?php esc_attr_e( 'Link sides (apply one value to all)', 'unysonplus' ); ?>" aria-label="<?php esc_attr_e( 'Link sides', 'unysonplus' ); ?>">
+				<button type="button" class="fw-sp-link" title="<?php esc_attr_e( 'Link sides (apply one value to all)', 'fw' ); ?>" aria-label="<?php esc_attr_e( 'Link sides', 'fw' ); ?>">
 					<span class="dashicons dashicons-admin-links fw-sp-ico-linked"></span>
 					<span class="dashicons dashicons-editor-unlink fw-sp-ico-unlinked"></span>
 				</button>
 			</div>
 			<div class="fw-sp-fields">
 				<div class="fw-sp-all">
-					<span class="fw-sp-slot-label"><?php esc_html_e( 'All', 'unysonplus' ); ?></span>
+					<span class="fw-sp-slot-label"><?php esc_html_e( 'All', 'fw' ); ?></span>
 					<?php echo $this->render_slot( $section, 'all', isset( $section_value['all'] ) ? $section_value['all'] : '', $sec_id_prefix, $sec_name_prefix, $bp ); ?>
 				</div>
 				<div class="fw-sp-sides">
@@ -341,8 +341,8 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 		$name_prefix = $option['attr']['name'];
 
 		$sections = array(
-			'margin'  => __( 'Margin',  'unysonplus' ),
-			'padding' => __( 'Padding', 'unysonplus' ),
+			'margin'  => __( 'Margin',  'fw' ),
+			'padding' => __( 'Padding', 'fw' ),
 		);
 
 		ob_start();

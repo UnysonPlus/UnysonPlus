@@ -11,6 +11,42 @@ if (!defined('FW')) die('Forbidden');
  */
 
 /**
+ * ## What this file is, and how it diverges from WordPress core
+ *
+ * These functions are a FORK of WordPress's own metadata API (wp-includes/meta.php),
+ * copied wholesale — core's implementation, core's doc comments, core's hook names.
+ * Stating that plainly because a reader who does not know it will assume the code is
+ * ours and start "improving" it, or will mistake a difference from core for a bug.
+ *
+ * **The entire intended divergence is three commented-out lines.** Core calls
+ * wp_unslash() on $meta_key and $meta_value near the top of add/update/delete; here
+ * those calls are commented out (search for `expected_slashed`). Everything else is
+ * meant to track core exactly.
+ *
+ * That single change is the whole point. Core's unslashing makes it impossible to
+ * store a JSON payload or a literal "\'" in post meta — trac #21767, open since 2012 —
+ * and the framework stores builder JSON in post meta on every save. Verified against
+ * WordPress 7.0.4: core still unslashes at all three sites, so the reason this fork
+ * exists has not gone away.
+ *
+ * Load-bearing: ~29 call sites across the option-storage layer, the page-builder's
+ * post-meta storage type, backend.php and megamenu. Removing it is not a cleanup.
+ *
+ * **Drift is already present, and is not hypothetical.** Comparing fw_update_metadata()
+ * against WordPress 7.0.4's update_metadata() shows roughly nine further differing
+ * lines beyond the two intended ones — an older sanitize_meta() call signature, loose
+ * `== 1` comparisons core has since tightened, and similar. None is known to be
+ * harmful; all of it exists because this copy was taken from an older core and does
+ * not receive core's fixes.
+ *
+ * **If you touch this file:** diff it against the current wp-includes/meta.php first,
+ * and decide deliberately whether each difference is carried forward or re-forked.
+ * Treat "it differs from core" as a question, not as evidence of intent.
+ *
+ * @since 2.16.21 (this note; the fork itself long predates it)
+ */
+
+/**
  * Add metadata for the specified object.
  *
  * @uses $wpdb WordPress database object for queries.

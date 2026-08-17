@@ -20,6 +20,17 @@ import Text from './controls/text.jsx';
 import Switch from './controls/switch.jsx';
 import Select from './controls/select.jsx';
 import Upload from './controls/upload.jsx';
+import Textarea from './controls/textarea.jsx';
+import Radio from './controls/radio.jsx';
+import Checkbox from './controls/checkbox.jsx';
+import ColorPicker from './controls/color-picker.jsx';
+import Slider from './controls/slider.jsx';
+import UnitInput from './controls/unit-input.jsx';
+import MultiSelect from './controls/multi-select.jsx';
+import ImagePicker from './controls/image-picker.jsx';
+import Spacing from './controls/spacing.jsx';
+import Typography from './controls/typography.jsx';
+import Icon from './controls/icon.jsx';
 
 const { Notice } = wp.components;
 
@@ -28,6 +39,19 @@ register( 'switch', Switch );
 register( 'select', Select );
 register( 'short-select', Select );
 register( 'upload', Upload );
+register( 'textarea', Textarea );
+register( 'radio', Radio );
+register( 'checkbox', Checkbox );
+register( 'color-picker', ColorPicker );
+register( 'slider', Slider );
+register( 'short-slider', Slider );
+register( 'unit-input', UnitInput );
+register( 'multi-select', MultiSelect );
+register( 'image-picker', ImagePicker );
+register( 'spacing', Spacing );
+register( 'typography', Typography );
+register( 'typography-v2', Typography );
+register( 'icon', Icon );
 
 /**
  * Shown when an option type has no React renderer yet.

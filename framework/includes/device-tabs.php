@@ -35,9 +35,9 @@ if ( ! function_exists( 'fw_device_tabs_definition' ) ) :
 	 */
 	function fw_device_tabs_definition() {
 		return array(
-			array( 'key' => 'lg',   'device' => 'lg', 'icon' => 'desktop',    'label' => __( 'Desktop (≥ 992px)', 'unysonplus' ) ),
-			array( 'key' => 'md',   'device' => 'md', 'icon' => 'tablet',     'label' => __( 'Tablet (≥ 768px)',  'unysonplus' ) ),
-			array( 'key' => 'base', 'device' => 'sm', 'icon' => 'smartphone', 'label' => __( 'Phone (base — applies to all unless overridden)', 'unysonplus' ) ),
+			array( 'key' => 'lg',   'device' => 'lg', 'icon' => 'desktop',    'label' => __( 'Desktop (≥ 992px)', 'fw' ) ),
+			array( 'key' => 'md',   'device' => 'md', 'icon' => 'tablet',     'label' => __( 'Tablet (≥ 768px)',  'fw' ) ),
+			array( 'key' => 'base', 'device' => 'sm', 'icon' => 'smartphone', 'label' => __( 'Phone (base — applies to all unless overridden)', 'fw' ) ),
 		);
 	}
 endif;

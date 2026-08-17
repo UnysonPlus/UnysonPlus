@@ -14,10 +14,10 @@ $div_attr = $option['attr'];
 unset( $div_attr['value'], $div_attr['name'] );
 
 $labels = array(
-	'top'    => __( 'Top', 'unysonplus' ),
-	'right'  => __( 'Right', 'unysonplus' ),
-	'bottom' => __( 'Bottom', 'unysonplus' ),
-	'left'   => __( 'Left', 'unysonplus' ),
+	'top'    => __( 'Top', 'fw' ),
+	'right'  => __( 'Right', 'fw' ),
+	'bottom' => __( 'Bottom', 'fw' ),
+	'left'   => __( 'Left', 'fw' ),
 );
 ?>
 <div <?php echo fw_attr_to_html( $div_attr ); ?>>

@@ -206,11 +206,11 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 		$name_prefix  = $option['attr']['name'];
 
 		$tabs = array(
-			'color'    => __( 'Color',    'unysonplus' ),
-			'gradient' => __( 'Gradient', 'unysonplus' ),
-			'image'    => __( 'Image',    'unysonplus' ),
-			'overlay'  => __( 'Overlay',  'unysonplus' ),
-			'video'    => __( 'Video',    'unysonplus' ),
+			'color'    => __( 'Color',    'fw' ),
+			'gradient' => __( 'Gradient', 'fw' ),
+			'image'    => __( 'Image',    'fw' ),
+			'overlay'  => __( 'Overlay',  'fw' ),
+			'video'    => __( 'Video',    'fw' ),
 		);
 
 		// Hide any layers named in the option's `disable` ('video', or array('video','image')).
@@ -267,9 +267,9 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 
 					$this->_render_sub( 'color/value', array(
 						'type'   => 'predefined-colors-color-picker',
-						'label'  => __( 'Background Color', 'unysonplus' ),
-						'desc'   => __( 'Pick a preset or a custom color. Setting a custom color clears the preset selection (and vice versa). Sits underneath all other layers.', 'unysonplus' ),
-						'help'   => __( 'Manage your preset palette under Theme Settings → General → Colors.', 'unysonplus' ),
+						'label'  => __( 'Background Color', 'fw' ),
+						'desc'   => __( 'Pick a preset or a custom color. Setting a custom color clears the preset selection (and vice versa). Sits underneath all other layers.', 'fw' ),
+						'help'   => __( 'Manage your preset palette under Theme Settings → General → Colors.', 'fw' ),
 						'value'  => fw_akg( 'color/value', $value, array( 'predefined' => '', 'custom' => '' ) ),
 						'colors' => array(
 							'predefined' => array(
@@ -290,8 +290,8 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					<?php
 					$this->_render_sub( 'gradient/data', array(
 						'type'  => 'gradient-v2',
-						'label' => __( 'Gradient', 'unysonplus' ),
-						'desc'  => __( 'Linear or radial, unlimited color stops, RGBA, live preview. Leave blank for no gradient; setting one stacks it as a background-image above the solid color.', 'unysonplus' ),
+						'label' => __( 'Gradient', 'fw' ),
+						'desc'  => __( 'Linear or radial, unlimited color stops, RGBA, live preview. Leave blank for no gradient; setting one stacks it as a background-image above the solid color.', 'fw' ),
 						'value' => fw_akg( 'gradient/data', $value, array() ),
 					), $id_prefix, $name_prefix );
 					?>
@@ -302,44 +302,44 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					<?php
 					$this->_render_sub( 'image/src', array(
 						'type'        => 'upload',
-						'label'       => __( 'Background Image', 'unysonplus' ),
-						'desc'        => __( 'Stacks above gradient and color.', 'unysonplus' ),
+						'label'       => __( 'Background Image', 'fw' ),
+						'desc'        => __( 'Stacks above gradient and color.', 'fw' ),
 						'images_only' => true,
 						'value'       => fw_akg( 'image/src', $value, array() ),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'image/position', array(
 						'type'    => 'select',
-						'label'   => __( 'Position', 'unysonplus' ),
-						'desc'    => __( 'Where to anchor the image inside the container.', 'unysonplus' ),
+						'label'   => __( 'Position', 'fw' ),
+						'desc'    => __( 'Where to anchor the image inside the container.', 'fw' ),
 						'value'   => fw_akg( 'image/position', $value, 'center center' ),
 						'choices' => array(
-							'top left'      => __( 'Top Left',      'unysonplus' ),
-							'top center'    => __( 'Top Center',    'unysonplus' ),
-							'top right'     => __( 'Top Right',     'unysonplus' ),
-							'center left'   => __( 'Center Left',   'unysonplus' ),
-							'center center' => __( 'Center Center', 'unysonplus' ),
-							'center right'  => __( 'Center Right',  'unysonplus' ),
-							'bottom left'   => __( 'Bottom Left',   'unysonplus' ),
-							'bottom center' => __( 'Bottom Center', 'unysonplus' ),
-							'bottom right'  => __( 'Bottom Right',  'unysonplus' ),
+							'top left'      => __( 'Top Left',      'fw' ),
+							'top center'    => __( 'Top Center',    'fw' ),
+							'top right'     => __( 'Top Right',     'fw' ),
+							'center left'   => __( 'Center Left',   'fw' ),
+							'center center' => __( 'Center Center', 'fw' ),
+							'center right'  => __( 'Center Right',  'fw' ),
+							'bottom left'   => __( 'Bottom Left',   'fw' ),
+							'bottom center' => __( 'Bottom Center', 'fw' ),
+							'bottom right'  => __( 'Bottom Right',  'fw' ),
 						),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'image/size', array(
 						'type'  => 'fw-multi-inline',
-						'label' => __( 'Size', 'unysonplus' ),
-						'desc'  => __( 'Auto = natural size · Cover = fill, may crop · Contain = fit fully · Custom = e.g. "400px" or "100% 50%".', 'unysonplus' ),
+						'label' => __( 'Size', 'fw' ),
+						'desc'  => __( 'Auto = natural size · Cover = fill, may crop · Contain = fit fully · Custom = e.g. "400px" or "100% 50%".', 'fw' ),
 						'value' => fw_akg( 'image/size', $value, array( 'selected' => 'cover', 'custom' => '' ) ),
 						'fw_multi_options' => array(
 							'selected' => array(
 								'title'   => false,
 								'type'    => 'select',
 								'choices' => array(
-									'auto'    => __( 'Auto',         'unysonplus' ),
-									'cover'   => __( 'Cover',        'unysonplus' ),
-									'contain' => __( 'Contain',      'unysonplus' ),
-									'custom'  => __( 'Custom Value', 'unysonplus' ),
+									'auto'    => __( 'Auto',         'fw' ),
+									'cover'   => __( 'Cover',        'fw' ),
+									'contain' => __( 'Contain',      'fw' ),
+									'custom'  => __( 'Custom Value', 'fw' ),
 								),
 							),
 							'custom' => array(
@@ -354,28 +354,28 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 
 					$this->_render_sub( 'image/repeat', array(
 						'type'    => 'select',
-						'label'   => __( 'Repeat', 'unysonplus' ),
-						'desc'    => __( 'How the image tiles to fill space.', 'unysonplus' ),
+						'label'   => __( 'Repeat', 'fw' ),
+						'desc'    => __( 'How the image tiles to fill space.', 'fw' ),
 						'value'   => fw_akg( 'image/repeat', $value, 'no-repeat' ),
 						'choices' => array(
-							'no-repeat' => __( 'No Repeat',                       'unysonplus' ),
-							'repeat'    => __( 'Repeat (Tile)',                   'unysonplus' ),
-							'repeat-x'  => __( 'Repeat Horizontally',             'unysonplus' ),
-							'repeat-y'  => __( 'Repeat Vertically',               'unysonplus' ),
-							'space'     => __( 'Space (No Crop)',                 'unysonplus' ),
-							'round'     => __( 'Round (Stretch to Whole Tiles)',  'unysonplus' ),
+							'no-repeat' => __( 'No Repeat',                       'fw' ),
+							'repeat'    => __( 'Repeat (Tile)',                   'fw' ),
+							'repeat-x'  => __( 'Repeat Horizontally',             'fw' ),
+							'repeat-y'  => __( 'Repeat Vertically',               'fw' ),
+							'space'     => __( 'Space (No Crop)',                 'fw' ),
+							'round'     => __( 'Round (Stretch to Whole Tiles)',  'fw' ),
 						),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'image/attachment', array(
 						'type'    => 'select',
-						'label'   => __( 'Attachment', 'unysonplus' ),
-						'desc'    => __( 'Scroll = moves with page. Fixed = stays in place (parallax effect). Local = scrolls with the element\'s own scrollbar.', 'unysonplus' ),
+						'label'   => __( 'Attachment', 'fw' ),
+						'desc'    => __( 'Scroll = moves with page. Fixed = stays in place (parallax effect). Local = scrolls with the element\'s own scrollbar.', 'fw' ),
 						'value'   => fw_akg( 'image/attachment', $value, 'scroll' ),
 						'choices' => array(
-							'scroll' => __( 'Scroll', 'unysonplus' ),
-							'fixed'  => __( 'Fixed (Parallax)', 'unysonplus' ),
-							'local'  => __( 'Local', 'unysonplus' ),
+							'scroll' => __( 'Scroll', 'fw' ),
+							'fixed'  => __( 'Fixed (Parallax)', 'fw' ),
+							'local'  => __( 'Local', 'fw' ),
 						),
 					), $id_prefix, $name_prefix );
 					?>
@@ -386,15 +386,15 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					<?php
 					$this->_render_sub( 'overlay/color', array(
 						'type'  => 'rgba-color-picker',
-						'label' => __( 'Overlay Color', 'unysonplus' ),
-						'desc'  => __( 'A semi-transparent colour laid OVER the image (and gradient / color). Use the alpha slider for tint strength — e.g. black at ~40% for legible text on a hero image.', 'unysonplus' ),
+						'label' => __( 'Overlay Color', 'fw' ),
+						'desc'  => __( 'A semi-transparent colour laid OVER the image (and gradient / color). Use the alpha slider for tint strength — e.g. black at ~40% for legible text on a hero image.', 'fw' ),
 						'value' => fw_akg( 'overlay/color', $value, '' ),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'overlay/gradient', array(
 						'type'  => 'gradient-v2',
-						'label' => __( 'Overlay Gradient', 'unysonplus' ),
-						'desc'  => __( 'Optional gradient overlay (use RGBA stops for transparency) — e.g. transparent → dark, top to bottom. Stacks above the overlay colour.', 'unysonplus' ),
+						'label' => __( 'Overlay Gradient', 'fw' ),
+						'desc'  => __( 'Optional gradient overlay (use RGBA stops for transparency) — e.g. transparent → dark, top to bottom. Stacks above the overlay colour.', 'fw' ),
 						'value' => fw_akg( 'overlay/gradient', $value, array() ),
 					), $id_prefix, $name_prefix );
 					?>
@@ -409,17 +409,17 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					// while it buffers and the fallback covers browsers that can't autoplay.
 					$this->_render_sub( 'video/external_url', array(
 						'type'  => 'oembed',
-						'label' => __( 'External Video URL', 'unysonplus' ),
-						'desc'  => __( 'Paste a YouTube, Vimeo, or Dailymotion URL. When set, the external video is used and the self-hosted sources below are ignored — saving server bandwidth.', 'unysonplus' ),
-						'help'  => __( 'Any URL that WordPress oEmbed recognises will work (YouTube, Vimeo, Dailymotion, TED, etc.). External videos can\'t be muted/looped from the option panel — those flags only apply to self-hosted sources.', 'unysonplus' ),
+						'label' => __( 'External Video URL', 'fw' ),
+						'desc'  => __( 'Paste a YouTube, Vimeo, or Dailymotion URL. When set, the external video is used and the self-hosted sources below are ignored — saving server bandwidth.', 'fw' ),
+						'help'  => __( 'Any URL that WordPress oEmbed recognises will work (YouTube, Vimeo, Dailymotion, TED, etc.). External videos can\'t be muted/looped from the option panel — those flags only apply to self-hosted sources.', 'fw' ),
 						'value' => fw_akg( 'video/external_url', $value, '' ),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'video/source_mp4', array(
 						'type'             => 'upload',
-						'label'            => __( 'Video Source (MP4)', 'unysonplus' ),
-						'desc'             => __( 'Primary self-hosted video file. H.264 MP4 has the broadest browser support — recommended for the main source. Leave empty if using an External Video URL above.', 'unysonplus' ),
-						'help'             => __( 'Keep files small: aim for under 5 MB and 10-20 seconds for hero loops. Long or large videos slow page load and burn mobile data.', 'unysonplus' ),
+						'label'            => __( 'Video Source (MP4)', 'fw' ),
+						'desc'             => __( 'Primary self-hosted video file. H.264 MP4 has the broadest browser support — recommended for the main source. Leave empty if using an External Video URL above.', 'fw' ),
+						'help'             => __( 'Keep files small: aim for under 5 MB and 10-20 seconds for hero loops. Long or large videos slow page load and burn mobile data.', 'fw' ),
 						'images_only'      => false,
 						'files_ext'        => array( 'mp4', 'm4v' ),
 						'extra_mime_types' => array( 'video/mp4' ),
@@ -428,9 +428,9 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 
 					$this->_render_sub( 'video/source_webm', array(
 						'type'             => 'upload',
-						'label'            => __( 'Video Source (WebM)', 'unysonplus' ),
-						'desc'             => __( 'Optional secondary self-hosted source. Some browsers prefer WebM for smaller file size; if provided, it will be offered alongside the MP4.', 'unysonplus' ),
-						'help'             => __( 'Both sources should contain the same content. The browser picks whichever format it prefers — you don\'t need WebM, but providing it can reduce bandwidth.', 'unysonplus' ),
+						'label'            => __( 'Video Source (WebM)', 'fw' ),
+						'desc'             => __( 'Optional secondary self-hosted source. Some browsers prefer WebM for smaller file size; if provided, it will be offered alongside the MP4.', 'fw' ),
+						'help'             => __( 'Both sources should contain the same content. The browser picks whichever format it prefers — you don\'t need WebM, but providing it can reduce bandwidth.', 'fw' ),
 						'images_only'      => false,
 						'files_ext'        => array( 'webm' ),
 						'extra_mime_types' => array( 'video/webm' ),
@@ -439,18 +439,18 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 
 					$this->_render_sub( 'video/poster', array(
 						'type'        => 'upload',
-						'label'       => __( 'Poster Image', 'unysonplus' ),
-						'desc'        => __( 'Shown while the video is loading (and on mobile data savers).', 'unysonplus' ),
-						'help'        => __( 'Use a still frame from the video so the transition is seamless. Same aspect ratio as the video, ideally compressed under 200 KB.', 'unysonplus' ),
+						'label'       => __( 'Poster Image', 'fw' ),
+						'desc'        => __( 'Shown while the video is loading (and on mobile data savers).', 'fw' ),
+						'help'        => __( 'Use a still frame from the video so the transition is seamless. Same aspect ratio as the video, ideally compressed under 200 KB.', 'fw' ),
 						'images_only' => true,
 						'value'       => fw_akg( 'video/poster', $value, array() ),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'video/fallback', array(
 						'type'        => 'upload',
-						'label'       => __( 'Fallback Image', 'unysonplus' ),
-						'desc'        => __( 'Shown when the browser cannot play the video at all (e.g. very old browsers, or both sources fail).', 'unysonplus' ),
-						'help'        => __( 'Different from the Poster: the poster is a preview while loading; the fallback is permanent for users who never get the video.', 'unysonplus' ),
+						'label'       => __( 'Fallback Image', 'fw' ),
+						'desc'        => __( 'Shown when the browser cannot play the video at all (e.g. very old browsers, or both sources fail).', 'fw' ),
+						'help'        => __( 'Different from the Poster: the poster is a preview while loading; the fallback is permanent for users who never get the video.', 'fw' ),
 						'images_only' => true,
 						'value'       => fw_akg( 'video/fallback', $value, array() ),
 					), $id_prefix, $name_prefix );
@@ -463,20 +463,20 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					// are forced on at render time in sc_bg_pro_video_attr.)
 					$this->_render_sub( 'video/loop', array(
 						'type'  => 'switch',
-						'label' => __( 'Loop video', 'unysonplus' ),
-						'desc'  => __( 'Restart the video automatically when it reaches the end.', 'unysonplus' ),
+						'label' => __( 'Loop video', 'fw' ),
+						'desc'  => __( 'Restart the video automatically when it reaches the end.', 'fw' ),
 						'value' => fw_akg( 'video/loop', $value, 'yes' ),
-						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
-						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'fw' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 					), $id_prefix, $name_prefix );
 
 					$this->_render_sub( 'video/allow_interaction', array(
 						'type'  => 'switch',
-						'label' => __( 'Allow pause', 'unysonplus' ),
-						'desc'  => __( 'By default the video is decorative — it ignores clicks so no play/pause icon appears. Turn this on to let visitors click the video to pause and resume it.', 'unysonplus' ),
+						'label' => __( 'Allow pause', 'fw' ),
+						'desc'  => __( 'By default the video is decorative — it ignores clicks so no play/pause icon appears. Turn this on to let visitors click the video to pause and resume it.', 'fw' ),
 						'value' => fw_akg( 'video/allow_interaction', $value, 'no' ),
-						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'unysonplus' ) ),
-						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'unysonplus' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'fw' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 					), $id_prefix, $name_prefix );
 					?>
 				</div>
