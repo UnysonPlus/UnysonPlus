@@ -51,6 +51,42 @@ const ENTRIES = [
 		'framework/extensions/gutenberg/blocks/before-after/src/index.jsx',
 		'framework/extensions/gutenberg/blocks/before-after/build/index',
 	],
+	[
+		'framework/extensions/gutenberg/blocks/counter/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/counter/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/star-rating/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/star-rating/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/video-popup/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/video-popup/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/icon-box/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/icon-box/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/special-heading/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/special-heading/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/text-expander/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/text-expander/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/blockquote/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/blockquote/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/badge/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/badge/build/index',
+	],
+	[
+		'framework/extensions/gutenberg/blocks/tag-list/src/index.jsx',
+		'framework/extensions/gutenberg/blocks/tag-list/build/index',
+	],
 ];
 
 /** Shared options for every pass. */

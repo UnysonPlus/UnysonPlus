@@ -1414,6 +1414,52 @@ function fw_prepare_option_value( $value ) {
 }
 
 /**
+ * Whether the current request is an EDITING surface rather than a visitor page view.
+ *
+ * Shortcode views use this to show authoring guidance — "Add a poster image and a
+ * video URL", an empty-state hint, a placeholder — that a visitor must never see.
+ *
+ * The historic test was `is_admin() || DOING_AJAX`, and it has a blind spot that
+ * only appeared once elements became Gutenberg blocks: **ServerSideRender renders
+ * through the REST API**, which is neither. A view guarded the old way returns
+ * nothing in a block preview, so the block shows Gutenberg's bare "Block rendered
+ * as empty" instead of the element's own guidance.
+ *
+ * REST is deliberately narrowed to the block-renderer route rather than accepting
+ * every REST request: a public REST consumer fetching post content is a VISITOR,
+ * and must not receive editor-only markup.
+ *
+ * @since 2.16.23
+ *
+ * @return bool True when the caller is rendering for an editor.
+ */
+function fw_is_editor_context() {
+	if ( is_admin() ) {
+		return true;
+	}
+
+	if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		return true;
+	}
+
+	if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+		return false;
+	}
+
+	// wp/v2/block-renderer/... is the route ServerSideRender uses. Anything else
+	// over REST is treated as a visitor-facing read.
+	$route = isset( $GLOBALS['wp']->query_vars['rest_route'] )
+		? (string) $GLOBALS['wp']->query_vars['rest_route']
+		: '';
+
+	if ( '' === $route && isset( $_SERVER['REQUEST_URI'] ) ) {
+		$route = (string) $_SERVER['REQUEST_URI'];
+	}
+
+	return false !== strpos( $route, 'block-renderer' );
+}
+
+/**
  * This function is used in 'save_post' action
  *
  * Used to check if current post save is a regular "Save" button press

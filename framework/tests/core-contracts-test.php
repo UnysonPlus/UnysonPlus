@@ -510,6 +510,88 @@ ct( 'icon: switching to none drops icon-class', ! array_key_exists( 'icon-class'
 $icon_again = fw_get_options_values_from_input( $icon_schema, array( 'p' => $icon_font['p'] ) );
 ct_eq( 'icon: stored value survives a second save', $icon_font['p'], $icon_again['p'] ?? null );
 
+/**
+ * The compact predefined-colours picker is the SHARED colour field across the
+ * shortcode set — 73 shortcodes declare it through sc_color_field_compact(). Its
+ * value is a pair, and the server keeps BOTH halves: choosing a preset does not
+ * clear a custom colour, which is what makes switching between them
+ * non-destructive.
+ *
+ * Note it does NOT validate the custom value the way the plain `color-picker`
+ * option type does — it is cast to a string and stored verbatim, so `rgba()` is
+ * legitimate here and must not be normalised to hex.
+ */
+$pc_schema = array( 'p' => array(
+	'type'    => 'predefined-colors-color-picker-compact',
+	'choices' => array(
+		'text-red'  => array( 'label' => 'Red', 'color' => '#ff0000' ),
+		'text-blue' => array( 'label' => 'Blue', 'color' => '#0000ff' ),
+	),
+) );
+
+$pc_both = fw_get_options_values_from_input( $pc_schema, array( 'p' => array( 'predefined' => 'text-blue', 'custom' => '#123456' ) ) );
+ct_eq( 'compact colour: both halves are kept', array( 'predefined' => 'text-blue', 'custom' => '#123456' ), $pc_both['p'] ?? null );
+
+$pc_legacy = fw_get_options_values_from_input( $pc_schema, array( 'p' => 'text-red' ) );
+ct_eq( 'compact colour: legacy bare string becomes a pair', array( 'predefined' => 'text-red', 'custom' => '' ), $pc_legacy['p'] ?? null );
+
+$pc_rgba = fw_get_options_values_from_input(
+	array( 'p' => array( 'type' => 'predefined-colors-color-picker-compact', 'picker' => 'rgba-color-picker' ) ),
+	array( 'p' => array( 'predefined' => '', 'custom' => 'rgba(1,2,3,0.5)' ) )
+);
+ct_eq( 'compact colour: rgba custom stored verbatim (unlike color-picker)', 'rgba(1,2,3,0.5)', $pc_rgba['p']['custom'] ?? null );
+
+/**
+ * `wp-editor` is the only option type whose save TRANSFORMS the value: with
+ * `wpautop` on (the default) it wraps plain text in paragraphs and strips
+ * newlines. A transforming save is the shape most likely to corrupt content a
+ * little more on each edit, so idempotence is asserted explicitly — it is what
+ * makes editing the markup directly safe.
+ */
+$we_auto = array( 'p' => array( 'type' => 'wp-editor' ) );
+
+$we_plain = fw_get_options_values_from_input( $we_auto, array( 'p' => 'Hello' ) );
+ct_eq( 'wp-editor: wpautop wraps plain text', '<p>Hello</p>', $we_plain['p'] ?? null );
+
+$we_wrapped = fw_get_options_values_from_input( $we_auto, array( 'p' => '<p>Hi</p>' ) );
+ct_eq( 'wp-editor: already-wrapped html passes through', '<p>Hi</p>', $we_wrapped['p'] ?? null );
+
+$we_once  = fw_get_options_values_from_input( $we_auto, array( 'p' => "First\n\nSecond" ) );
+$we_twice = fw_get_options_values_from_input( $we_auto, array( 'p' => $we_once['p'] ) );
+ct_eq( 'wp-editor: the wpautop transform is idempotent', $we_once['p'] ?? null, $we_twice['p'] ?? null );
+
+$we_raw = fw_get_options_values_from_input(
+	array( 'p' => array( 'type' => 'wp-editor', 'wpautop' => false ) ),
+	array( 'p' => "a\n\nb" )
+);
+ct_eq( 'wp-editor: wpautop=false stores verbatim', "a\n\nb", $we_raw['p'] ?? null );
+
+/**
+ * `border-style-picker` stores a choice KEY and rejects anything outside the
+ * declared set — including the empty string when `allow_none` is off, which is
+ * why the control must not offer a blank entry in that case.
+ */
+$bsp = array( 'p' => array(
+	'type'    => 'border-style-picker',
+	'value'   => '',
+	'choices' => array( 'b-solid' => 'Solid', 'b-dashed' => 'Dashed' ),
+) );
+
+$bsp_ok = fw_get_options_values_from_input( $bsp, array( 'p' => 'b-dashed' ) );
+ct_eq( 'border picker: a declared choice is kept', 'b-dashed', $bsp_ok['p'] ?? null );
+
+$bsp_bad = fw_get_options_values_from_input( $bsp, array( 'p' => 'not-a-preset' ) );
+ct_eq( 'border picker: an unknown key falls back to the default', '', $bsp_bad['p'] ?? null );
+
+$bsp_req = fw_get_options_values_from_input(
+	array( 'p' => array(
+		'type' => 'border-style-picker', 'value' => 'b-solid', 'allow_none' => false,
+		'choices' => array( 'b-solid' => 'Solid' ),
+	) ),
+	array( 'p' => '' )
+);
+ct_eq( 'border picker: empty is rejected when allow_none is false', 'b-solid', $bsp_req['p'] ?? null );
+
 /* --------------------------------------------------------------------- *
  * 3. Page-builder JSON round trip
  * --------------------------------------------------------------------- */

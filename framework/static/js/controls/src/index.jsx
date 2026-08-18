@@ -31,6 +31,9 @@ import ImagePicker from './controls/image-picker.jsx';
 import Spacing from './controls/spacing.jsx';
 import Typography from './controls/typography.jsx';
 import Icon from './controls/icon.jsx';
+import PredefinedColorsCompact from './controls/predefined-colors-compact.jsx';
+import WpEditor from './controls/wp-editor.jsx';
+import BorderStylePicker from './controls/border-style-picker.jsx';
 
 const { Notice } = wp.components;
 
@@ -52,6 +55,9 @@ register( 'spacing', Spacing );
 register( 'typography', Typography );
 register( 'typography-v2', Typography );
 register( 'icon', Icon );
+register( 'predefined-colors-color-picker-compact', PredefinedColorsCompact );
+register( 'wp-editor', WpEditor );
+register( 'border-style-picker', BorderStylePicker );
 
 /**
  * Shown when an option type has no React renderer yet.

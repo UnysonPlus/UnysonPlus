@@ -836,6 +836,146 @@
     ) : /* @__PURE__ */ wp.element.createElement(Notice2, { status: "warning", isDismissible: false }, "The media picker is unavailable on this screen.")), current.url && /* @__PURE__ */ wp.element.createElement(FlexItem6, null, /* @__PURE__ */ wp.element.createElement(Button6, { variant: "tertiary", onClick: () => onChange({ type: "none" }) }, "Remove"))));
   }
 
+  // ../framework/static/js/controls/src/controls/predefined-colors-compact.jsx
+  var { BaseControl: BaseControl10, SelectControl: SelectControl6, ColorPicker: ColorPicker3, Button: Button7, Flex: Flex7, FlexItem: FlexItem7 } = wp.components;
+  var { useState: useState4 } = wp.element;
+  function normalize3(value) {
+    if ("string" === typeof value) {
+      return { predefined: value, custom: "" };
+    }
+    if (!value || "object" !== typeof value) {
+      return { predefined: "", custom: "" };
+    }
+    return {
+      predefined: "string" === typeof value.predefined ? value.predefined : "",
+      custom: "string" === typeof value.custom ? value.custom : ""
+    };
+  }
+  function PredefinedColorsCompact({ option = {}, value, onChange }) {
+    const [open, setOpen] = useState4(false);
+    const current = normalize3(value);
+    const choices = option.choices || {};
+    const alpha = "rgba-color-picker" === option.picker;
+    const presetOptions = [{ value: "", label: "\u2014 Select \u2014" }].concat(
+      Object.keys(choices).map((key) => ({
+        value: key,
+        label: choices[key] && choices[key].label || key
+      }))
+    );
+    const presetColor = current.predefined && choices[current.predefined] ? choices[current.predefined].color || "" : "";
+    const effective = presetColor || current.custom || "";
+    const emit = (next) => onChange(Object.assign({}, current, next));
+    return /* @__PURE__ */ wp.element.createElement(
+      BaseControl10,
+      {
+        label: option.label || "",
+        help: option.desc || void 0,
+        __nextHasNoMarginBottom: true
+      },
+      /* @__PURE__ */ wp.element.createElement(
+        SelectControl6,
+        {
+          label: "Preset",
+          value: current.predefined,
+          options: presetOptions,
+          onChange: (next) => emit({ predefined: next }),
+          __next40pxDefaultSize: true,
+          __nextHasNoMarginBottom: true
+        }
+      ),
+      /* @__PURE__ */ wp.element.createElement(Flex7, { justify: "flex-start", align: "center", gap: 2, style: { marginTop: 8 } }, /* @__PURE__ */ wp.element.createElement(FlexItem7, null, /* @__PURE__ */ wp.element.createElement(
+        Button7,
+        {
+          variant: "secondary",
+          onClick: () => setOpen(!open),
+          "aria-expanded": open,
+          style: {
+            background: effective || "transparent",
+            border: "1px solid #949494",
+            minWidth: 40,
+            height: 30
+          }
+        },
+        effective ? "" : "\u2014"
+      )), /* @__PURE__ */ wp.element.createElement(FlexItem7, null, /* @__PURE__ */ wp.element.createElement("code", null, current.custom || (presetColor ? `${current.predefined} (preset)` : "unset"))), current.custom && /* @__PURE__ */ wp.element.createElement(FlexItem7, null, /* @__PURE__ */ wp.element.createElement(Button7, { variant: "tertiary", onClick: () => emit({ custom: "" }) }, "Clear custom"))),
+      open && /* @__PURE__ */ wp.element.createElement(
+        ColorPicker3,
+        {
+          color: current.custom || void 0,
+          enableAlpha: alpha,
+          onChange: (next) => emit({ custom: String(next != null ? next : "") })
+        }
+      )
+    );
+  }
+
+  // ../framework/static/js/controls/src/controls/wp-editor.jsx
+  var { TextareaControl: TextareaControl2, BaseControl: BaseControl11 } = wp.components;
+  function WpEditor({ option = {}, value = "", onChange }) {
+    const autop = false !== option.wpautop;
+    const help = option.desc || (autop ? "HTML is allowed. Plain text is wrapped in paragraphs when saved." : "HTML is allowed and stored exactly as written.");
+    return /* @__PURE__ */ wp.element.createElement(BaseControl11, { __nextHasNoMarginBottom: true }, /* @__PURE__ */ wp.element.createElement(
+      TextareaControl2,
+      {
+        label: option.label || "",
+        help,
+        value: "string" === typeof value ? value : "",
+        rows: option.editor_height ? Math.max(4, Math.round(option.editor_height / 24)) : 6,
+        onChange,
+        __nextHasNoMarginBottom: true
+      }
+    ));
+  }
+
+  // ../framework/static/js/controls/src/controls/border-style-picker.jsx
+  var { SelectControl: SelectControl7, BaseControl: BaseControl12, Flex: Flex8, FlexItem: FlexItem8 } = wp.components;
+  function BorderStylePicker({ option = {}, value, onChange }) {
+    var _a;
+    const choices = option.choices || {};
+    const allowNone = false !== option.allow_none;
+    const options = (allowNone ? [{ value: "", label: option.placeholder || "\u2014 Select \u2014" }] : []).concat(
+      Object.keys(choices).map((key) => {
+        const choice = choices[key];
+        return {
+          value: key,
+          label: "string" === typeof choice ? choice : choice && (choice.label || choice.text) || key
+        };
+      })
+    );
+    const current = (_a = value != null ? value : option.value) != null ? _a : "";
+    const previews = "badge" === option.preview_kind && option.previews || {};
+    const swatch = previews[current] && previews[current].tile_style;
+    const select = /* @__PURE__ */ wp.element.createElement(
+      SelectControl7,
+      {
+        label: option.label || "",
+        help: option.desc || void 0,
+        value: String(current),
+        options,
+        onChange,
+        __next40pxDefaultSize: true,
+        __nextHasNoMarginBottom: true
+      }
+    );
+    if (!swatch) {
+      return select;
+    }
+    return /* @__PURE__ */ wp.element.createElement(BaseControl12, { __nextHasNoMarginBottom: true }, /* @__PURE__ */ wp.element.createElement(Flex8, { align: "flex-end", gap: 2 }, /* @__PURE__ */ wp.element.createElement(FlexItem8, { isBlock: true }, select), /* @__PURE__ */ wp.element.createElement(FlexItem8, null, /* @__PURE__ */ wp.element.createElement(
+      "div",
+      {
+        "aria-hidden": "true",
+        style: String(swatch).split(";").reduce((acc, decl) => {
+          const [prop, val] = decl.split(":");
+          if (!prop || !val) {
+            return acc;
+          }
+          const key = prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+          return Object.assign(acc, { [key]: val.trim() });
+        }, { width: 34, height: 26 })
+      }
+    ))));
+  }
+
   // ../framework/static/js/controls/src/index.jsx
   var { Notice: Notice3 } = wp.components;
   register("text", Text);
@@ -856,6 +996,9 @@
   register("typography", Typography);
   register("typography-v2", Typography);
   register("icon", Icon);
+  register("predefined-colors-color-picker-compact", PredefinedColorsCompact);
+  register("wp-editor", WpEditor);
+  register("border-style-picker", BorderStylePicker);
   function Undefined({ type }) {
     return /* @__PURE__ */ wp.element.createElement(Notice3, { status: "warning", isDismissible: false }, `No React control for option type "${type}" yet \u2014 edit this option in the page builder.`);
   }
