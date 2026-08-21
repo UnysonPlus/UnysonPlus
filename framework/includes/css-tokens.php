@@ -1392,17 +1392,19 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			}
 		}
 
-		// --- Mobile overrides for font-size tokens (tiered scaling) ---
-		$mobile_overrides = array();
-		if ( function_exists( 'unysonplus_mobile_font_size_scale' ) ) {
+		// --- Fluid typography for font-size preset tokens ---
+		// Rewrite each --font-size-* token to an accessibility-safe clamp() that
+		// scales from a mobile floor up to the authored size, replacing the old
+		// single-breakpoint (max-width:767.98px) step-down (which left tablets on
+		// desktop sizes). Non px/rem/em values are left untouched.
+		if ( function_exists( 'unysonplus_fluid_font_clamp' ) && function_exists( 'unysonplus_mobile_font_size_scale' ) ) {
 			foreach ( $tokens as $name => $value ) {
 				if ( strpos( $name, '--font-size-' ) !== 0 ) { continue; }
-				if ( ! preg_match( '/^(\d+(?:\.\d+)?)px$/', $value, $m ) ) { continue; }
-				$desktop_px = floatval( $m[1] );
-				$mobile_px  = unysonplus_mobile_font_size_scale( $desktop_px, 'font_size_preset' );
-				if ( $mobile_px != $desktop_px ) {
-					$mobile_overrides[ $name ] = $mobile_px . 'px';
-				}
+				$desktop_px = function_exists( 'unysonplus_font_size_to_px' ) ? unysonplus_font_size_to_px( $value ) : null;
+				if ( $desktop_px === null || $desktop_px <= 0 ) { continue; }
+				$mobile_px = unysonplus_mobile_font_size_scale( $desktop_px, 'font_size_preset' );
+				$clamp     = unysonplus_fluid_font_clamp( $desktop_px, $mobile_px );
+				if ( $clamp !== null ) { $tokens[ $name ] = $clamp; }
 			}
 		}
 
@@ -1432,11 +1434,6 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 			}
 			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ) . "\n"; }
-			if ( ! empty( $mobile_overrides ) ) {
-				$css .= "@media (max-width: 767.98px) {\n\t:root {\n";
-				foreach ( $mobile_overrides as $name => $value ) { $css .= "\t\t{$name}: {$value};\n"; }
-				$css .= "\t}\n}\n";
-			}
 		} else {
 			$css = '';
 			if ( ! empty( $tokens ) ) {
@@ -1455,11 +1452,6 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 			}
 			if ( ! empty( $button_extra_css ) ) { $css .= trim( $button_extra_css ); }
-			if ( ! empty( $mobile_overrides ) ) {
-				$css .= '@media (max-width:767.98px){:root{';
-				foreach ( $mobile_overrides as $name => $value ) { $css .= $name . ':' . $value . ';'; }
-				$css .= '}}';
-			}
 		}
 
 		// Append site-wide Custom CSS last so it can override any preset rule.
@@ -1479,7 +1471,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 22, // bumped: Container Width presets → reusable .section--cw-{slug} classes
+			'schema'    => 23, // bumped: fluid typography — font-size presets emit clamp() instead of a mobile step-down
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),

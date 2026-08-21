@@ -302,6 +302,113 @@ ct(
 	isset( $mode_out['p'] ) ? $mode_out['p']['padding'] : '__ABSENT__'
 );
 
+$checkboxes_schema = array(
+	'type'    => 'checkboxes',
+	'choices' => array( 'comments' => 'Comments', 'author' => 'Author', 'date' => 'Date' ),
+);
+$button_style_schema = array(
+	'type'    => 'button-style-picker',
+	'value'   => 'btn-primary',
+	'choices' => array( 'btn-primary' => 'Primary', 'btn-ghost' => 'Ghost' ),
+);
+$button_style_strict = array_merge( $button_style_schema, array( 'allow_none' => false ) );
+
+$table_schema = array( 'type' => 'table' );
+
+$responsive_schema = array(
+	'type'  => 'responsive',
+	'inner' => array( 'type' => 'short-select', 'choices' => array( 'left' => 'Left', 'right' => 'Right' ) ),
+);
+$responsive_blank = array(
+	'type'  => 'responsive',
+	'inner' => array( 'type' => 'short-select',
+		'choices' => array( '' => 'Inherit', 'left' => 'Left', 'right' => 'Right' ) ),
+);
+$grad_schema = array( 'type' => 'gradient-v2' );
+$rgba_schema = array( 'type' => 'rgba-color-picker', 'value' => '' );
+$bg_schema   = array( 'type' => 'background-pro' );
+
+$shadow_schema = array( 'type' => 'box-shadow' );
+
+$popover_one = array(
+	'type'          => 'popover',
+	'value'         => 'left',
+	'inner-options' => array( 'fx' => array(
+		'type'    => 'select',
+		'value'   => 'left',
+		'choices' => array( 'left' => 'Left', 'up' => 'Up' ),
+	) ),
+);
+$popover_many = array(
+	'type'          => 'popover',
+	'value'         => array(),
+	'inner-options' => array(
+		'a' => array( 'type' => 'text' ),
+		'b' => array( 'type' => 'text' ),
+	),
+);
+
+$split_schema = array( 'type' => 'split-slider', 'min_width' => 10 );
+
+$multi_upload_schema = array( 'type' => 'multi-upload' );
+$addable_box_schema  = array(
+	'type'        => 'addable-box',
+	'box-options' => array( 'label' => array( 'type' => 'text' ) ),
+);
+$date_schema      = array( 'type' => 'date-picker', 'value' => '' );
+$multi_inline_sch = array(
+	'type'             => 'multi-inline',
+	'value'            => array( 'monthly' => '29', 'yearly' => '' ),
+	'fw_multi_options' => array(
+		'monthly' => array( 'type' => 'text', 'title' => 'Monthly' ),
+		'yearly'  => array( 'type' => 'text', 'title' => 'Yearly' ),
+	),
+);
+
+$col_split_schema = array( 'type' => 'column-split', 'value' => '1/2' );
+$col_split_thirds = array( 'type' => 'column-split', 'value' => '1/2',
+	'fractions' => array( '1/3', '1/2', '2/3' ) );
+$code_schema     = array( 'type' => 'code-editor', 'mode' => 'htmlmixed' );
+$dt_schema       = array( 'type' => 'datetime-picker', 'value' => '' );
+
+$bha_schema = array(
+	'type'    => 'button-hover-animation',
+	'value'   => '',
+	'choices' => array( 'btnfx-lift' => 'Lift', 'btnfx-sweep' => 'Sweep' ),
+);
+
+$img_style_schema = array(
+	'type'    => 'image-style-picker',
+	'value'   => '',
+	'choices' => array( 'rounded' => 'Rounded', 'duotone' => 'Duotone' ),
+);
+$img_style_schema_strict = array_merge( $img_style_schema, array(
+	'allow_none' => false,
+	'value'      => 'rounded',
+) );
+
+$multi_picker_schema = array(
+	'type'   => 'multi-picker',
+	'picker' => array( 'kind' => array(
+		'type'    => 'select',
+		'value'   => 'image',
+		'choices' => array( 'image' => 'Image', 'video' => 'Video' ),
+	) ),
+	'choices' => array(
+		'image' => array( 'alt'      => array( 'type' => 'text' ) ),
+		'video' => array( 'url'      => array( 'type' => 'text' ),
+		                  'autoplay' => array( 'type' => 'switch' ) ),
+	),
+);
+
+$addable_schema = array(
+	'type'          => 'addable-popup',
+	'popup-options' => array( 'title' => array( 'type' => 'text' ) ),
+	'template'      => '{{= title }}',
+);
+$addable_limited = array_merge( $addable_schema, array( 'limit' => 2 ) );
+$addable_full    = array_merge( $addable_schema, array( 'type' => 'addable-popup-full' ) );
+
 $parity_cases = array(
 	// label,                      schema,                                    react emits,     php must store
 	array( 'textarea: plain',      array( 'type' => 'textarea' ),             'hello world',   'hello world' ),
@@ -335,6 +442,299 @@ $parity_cases = array(
 	// Slider stores a float — floatval() in the option type.
 	array( 'slider: number',       array( 'type' => 'slider' ),                                65,           65.0 ),
 	array( 'slider: zero',         array( 'type' => 'slider' ),                                0,            0.0 ),
+
+	/**
+	 * `number` stores an int OR a float depending on `numeric_type`, and clamps to
+	 * min/max. The React control casts and clamps the same way, so a value that
+	 * looks settled in the sidebar is the value that gets stored — the failure
+	 * this guards against is the quiet one, where PHP silently rewrites what the
+	 * editor showed and the user never learns which number won.
+	 */
+	array( 'number: float default',  array( 'type' => 'number' ),                              12.5,  12.5 ),
+	array( 'number: integer type',   array( 'type' => 'number', 'numeric_type' => 'integer' ), 12,    12 ),
+	array( 'number: zero',           array( 'type' => 'number' ),                              0,     0.0 ),
+	array( 'number: clamped to min', array( 'type' => 'number', 'min' => 5 ),                  5.0,   5.0 ),
+	array( 'number: clamped to max', array( 'type' => 'number', 'max' => 10 ),                 10.0,  10.0 ),
+
+	/**
+	 * `short-text` and `medium-text` are FW_Option_Type_Text subclasses that change
+	 * only the input's width, and share the React text control for that reason.
+	 * These assert the shared control is not merely a plausible substitute: the
+	 * value semantics really are identical.
+	 */
+	array( 'short-text: plain',    array( 'type' => 'short-text' ),                            'abc',        'abc' ),
+	array( 'medium-text: plain',   array( 'type' => 'medium-text' ),                           'abc',        'abc' ),
+	array( 'short-text: empty',    array( 'type' => 'short-text' ),                            '',           '' ),
+
+	/**
+	 * addable-popup stores an ARRAY OF OBJECTS. Its _get_value_from_input()
+	 * accepts either real arrays or JSON strings, because the jQuery renderer
+	 * submits each item through a hidden input; the React control emits arrays.
+	 *
+	 * The `limit` case is the one worth having: PHP truncates on save, so a
+	 * control that let you add past the cap would show work that is silently
+	 * discarded. The control hides its Add button at the cap for that reason,
+	 * and this asserts the cap it is hiding at is the real one.
+	 */
+	array( 'addable-popup: items', $addable_schema,
+		array( array( 'title' => 'One' ), array( 'title' => 'Two' ) ),
+		array( array( 'title' => 'One' ), array( 'title' => 'Two' ) ) ),
+	array( 'addable-popup: empty', $addable_schema, array(), array() ),
+	array( 'addable-popup: json wire', $addable_schema,
+		array( '{"title":"One"}' ),
+		array( array( 'title' => 'One' ) ) ),
+	array( 'addable-popup: limit truncates', $addable_limited,
+		array( array( 'title' => 'a' ), array( 'title' => 'b' ), array( 'title' => 'c' ) ),
+		array( array( 'title' => 'a' ), array( 'title' => 'b' ) ) ),
+	array( 'addable-popup-full: same shape', $addable_full,
+		array( array( 'title' => 'One' ) ),
+		array( array( 'title' => 'One' ) ) ),
+
+	/**
+	 * multi-picker stores the pick plus ONLY the selected choice's sub-values.
+	 * The pruning is the point: an unpruned Entrance picker carried a settings
+	 * block for all ~56 Animate.css effects and exhausted memory in the page
+	 * builder. These cases pin that behaviour down so a future change to the
+	 * React control cannot quietly reintroduce the collect-everything shape.
+	 *
+	 * Note the switch arrives as the STRING 'true' and is stored as a boolean:
+	 * unlike addable-popup, this type runs each child's _get_value_from_input(),
+	 * so children must emit the wire format, not the stored one.
+	 */
+	array( 'multi-picker: selected only', $multi_picker_schema,
+		array( 'kind' => 'video', 'video' => array( 'url' => 'a.mp4', 'autoplay' => 'true' ),
+		       'image' => array( 'alt' => 'dropped' ) ),
+		array( 'kind' => 'video', 'video' => array( 'url' => 'a.mp4', 'autoplay' => true ) ) ),
+	array( 'multi-picker: other branch', $multi_picker_schema,
+		array( 'kind' => 'image', 'image' => array( 'alt' => 'A cat' ) ),
+		array( 'kind' => 'image', 'image' => array( 'alt' => 'A cat' ) ) ),
+
+	/**
+	 * image-style-picker stores a preset KEY. Its validator accepts a declared
+	 * choice, plus '' when allow_none is on, and silently substitutes the option
+	 * default for anything else — so an out-of-date key does not error, it just
+	 * quietly becomes something else. The React control treats an unknown key as
+	 * unselected for that reason, rather than showing a selection the next save
+	 * would refuse.
+	 */
+	array( 'image-style: declared key', $img_style_schema,          'duotone', 'duotone' ),
+	array( 'image-style: none allowed', $img_style_schema,          '',        '' ),
+	array( 'image-style: none refused', $img_style_schema_strict,   '',        'rounded' ),
+	array( 'image-style: unknown key',  $img_style_schema,          'nope',    '' ),
+
+	/**
+	 * checkboxes stores ONLY the checked choices, each as `true`.
+	 *
+	 * The case that matters is 'unchecked sent as false'. _get_value_from_input()
+	 * keeps every entry whose value is not the EMPTY STRING and stores it as true —
+	 * it never tests truthiness — so `false` would come back CHECKED. The React
+	 * control omits unchecked keys entirely, and this pins that down against a
+	 * future tidy-up that "simplifies" it into sending both.
+	 */
+	array( 'checkboxes: two checked', $checkboxes_schema,
+		array( 'comments' => true, 'author' => true ),
+		array( 'comments' => true, 'author' => true ) ),
+	array( 'checkboxes: none checked', $checkboxes_schema, array(), array() ),
+	array( 'checkboxes: unknown key dropped', $checkboxes_schema,
+		array( 'comments' => true, 'gone' => true ),
+		array( 'comments' => true ) ),
+	// Documents the trap rather than the control: false does NOT mean unchecked.
+	array( 'checkboxes: false is not unchecked', $checkboxes_schema,
+		array( 'author' => false ),
+		array( 'author' => true ) ),
+
+	/**
+	 * button-style-picker stores the CLASS STRING, with the same accept-or-default
+	 * rule as image-style-picker. `allow_none => false` is used where a button must
+	 * always carry a real preset.
+	 */
+	array( 'button-style: declared key', $button_style_schema, 'btn-ghost', 'btn-ghost' ),
+	array( 'button-style: none allowed', $button_style_schema, '',          '' ),
+	array( 'button-style: none refused', $button_style_strict, '',          'btn-primary' ),
+	array( 'button-style: unknown key',  $button_style_schema, 'btn-nope',  'btn-primary' ),
+
+	/**
+	 * button-hover-animation accepts '' UNCONDITIONALLY — unlike its two cousins it
+	 * has no `allow_none` config, because "no hover effect" is valid for every
+	 * button. Asserted so the shared-looking trio does not get "unified" into one
+	 * control that forbids the empty value somewhere it is legal.
+	 */
+	array( 'hover-fx: declared key', $bha_schema, 'btnfx-sweep', 'btnfx-sweep' ),
+	array( 'hover-fx: none always ok', $bha_schema, '', '' ),
+	array( 'hover-fx: unknown key', $bha_schema, 'btnfx-nope', '' ),
+
+	/**
+	 * column-split stores an 'n/d' fraction, and _get_value_from_input() SNAPS an
+	 * out-of-set value to the nearest allowed one by ratio rather than rejecting
+	 * it. The React control only offers allowed fractions for exactly that reason —
+	 * the snap is helpful for a drag and confusing as a surprise.
+	 */
+	array( 'column-split: allowed',  $col_split_schema, '5/12', '5/12' ),
+	// Fractions are stored in LOWEST TERMS: the twelfths list yields 1/2, not 6/12.
+	// The React control reduces before offering a tile for exactly this reason —
+	// offering '6/12' would mean every click on it was silently rewritten on save.
+	array( 'column-split: reduced',  $col_split_schema, '1/2',  '1/2' ),
+	array( 'column-split: unreduced input reduces', $col_split_schema, '6/12', '1/2' ),
+	array( 'column-split: snaps',    $col_split_thirds, '5/12', '1/2' ),
+
+	// code-editor stores the string as given — no transform, unlike wp-editor.
+	array( 'code-editor: markup',    $code_schema, '<p>a</p>', '<p>a</p>' ),
+	array( 'code-editor: empty',     $code_schema, '',         '' ),
+
+	/**
+	 * datetime-picker validates the FORMATTING, not just the date: the validator
+	 * re-formats what it parsed and compares it back, so a valid date in the wrong
+	 * shape is discarded for the option default. An ISO string is the exact mistake
+	 * a React control is likely to make, so it is asserted as a failure case.
+	 */
+	array( 'datetime: declared format', $dt_schema, '2026/09/01 14:30', '2026/09/01 14:30' ),
+	array( 'datetime: ISO is REJECTED', $dt_schema, '2026-09-01T14:30', '' ),
+	array( 'datetime: empty',           $dt_schema, '',                 '' ),
+
+	/**
+	 * addable-box is addable-popup with its children under `box-options`, and it
+	 * DOES run each child's validator. The React control re-uses the repeater
+	 * component with the key remapped, so this asserts the remap actually reaches
+	 * the same stored shape.
+	 */
+	array( 'addable-box: items', $addable_box_schema,
+		array( array( 'label' => 'One' ), array( 'label' => 'Two' ) ),
+		array( array( 'label' => 'One' ), array( 'label' => 'Two' ) ) ),
+	array( 'addable-box: empty', $addable_box_schema, array(), array() ),
+
+	/**
+	 * date-picker stores dd-MM-yyyy, and its validator only casts to string — it
+	 * accepts ANY shape. That is what makes it dangerous: an ISO date saves fine
+	 * and is then misread, because PHP's strtotime() treats a dash-separated date
+	 * as d-m-Y. These assert the stored shape rather than the validator, since the
+	 * validator has no opinion.
+	 */
+	array( 'date-picker: dd-MM-yyyy', $date_schema, '01-09-2026', '01-09-2026' ),
+	array( 'date-picker: empty',      $date_schema, '',           '' ),
+
+	// multi-inline returns whatever array it is handed; the child ids are the keys.
+	array( 'multi-inline: pair', $multi_inline_sch,
+		array( 'monthly' => '29', 'yearly' => '290' ),
+		array( 'monthly' => '29', 'yearly' => '290' ) ),
+
+	/**
+	 * split-slider normalises widths to sum 100, and an EMPTY array is a real
+	 * value meaning AUTO (equal columns) rather than "unset" — the validator
+	 * returns array() for empty input and never expands it into explicit halves.
+	 * The React control normalises as you type so both paths hold the same shape.
+	 */
+	array( 'split-slider: sums to 100', $split_schema,
+		array( array( 'w' => 60, 'name' => '' ), array( 'w' => 40, 'name' => '' ) ),
+		array( array( 'w' => 60, 'name' => '' ), array( 'w' => 40, 'name' => '' ) ) ),
+	array( 'split-slider: empty is AUTO', $split_schema, array(), array() ),
+
+	/**
+	 * popover's stored shape depends on how many inner options it declares:
+	 * ONE is stored unwrapped (the inner option's own value), two or more as a
+	 * hash keyed by inner id. _get_value_from_input() branches on that count.
+	 *
+	 * The single case is the common one, and a control that wrapped it anyway
+	 * would produce a value the element cannot read — a setting that silently
+	 * reverts. Both shapes are asserted so the branch cannot be "tidied" away.
+	 */
+	array( 'popover: one inner is unwrapped', $popover_one, 'up', 'up' ),
+	array( 'popover: many inner is a hash',   $popover_many,
+		array( 'a' => 'x', 'b' => 'y' ), array( 'a' => 'x', 'b' => 'y' ) ),
+
+	/**
+	 * box-shadow stores INTEGER offsets — sanitize() casts each with
+	 * (int) round( (float) $v ) — alongside a free-string colour and a real
+	 * boolean. A control emitting '4' where the option stores 4 would round-trip
+	 * to a different value than the page builder saves for the same shadow.
+	 */
+	array( 'box-shadow: ints', $shadow_schema,
+		array( 'x' => 0, 'y' => 4, 'blur' => 12, 'spread' => 0, 'color' => 'rgba(0,0,0,.15)', 'inset' => false ),
+		array( 'x' => 0, 'y' => 4, 'blur' => 12, 'spread' => 0, 'color' => 'rgba(0,0,0,.15)', 'inset' => false ) ),
+	array( 'box-shadow: inset true', $shadow_schema,
+		array( 'x' => -2, 'y' => -2, 'blur' => 6, 'spread' => 1, 'color' => '#000', 'inset' => true ),
+		array( 'x' => -2, 'y' => -2, 'blur' => 6, 'spread' => 1, 'color' => '#000', 'inset' => true ) ),
+
+	/**
+	 * responsive always stores the FULL { base, md, lg } shape. An empty string
+	 * means "inherit the smaller width" — not "unset" — so a control that omitted
+	 * untouched devices would drop keys the element reads.
+	 */
+	/*
+	 * Whether a blank device SURVIVES depends on the inner type. A select with no
+	 * blank entry in its choices rejects '' and falls through to the first choice —
+	 * so 'md' => '' comes back as 'left' here. Real schemas that want an inheriting
+	 * device declare a blank/default choice, and then it round-trips intact (the
+	 * second case). Both are asserted because the difference is invisible until a
+	 * tablet quietly picks up a value nobody set.
+	 */
+	array( 'responsive: blank needs a blank choice', $responsive_schema,
+		array( 'base' => 'left', 'md' => '', 'lg' => 'right' ),
+		array( 'base' => 'left', 'md' => 'left', 'lg' => 'right' ) ),
+	array( 'responsive: blank survives when declared', $responsive_blank,
+		array( 'base' => 'left', 'md' => '', 'lg' => 'right' ),
+		array( 'base' => 'left', 'md' => '', 'lg' => 'right' ) ),
+	array( 'responsive: base only', $responsive_schema,
+		array( 'base' => 'left' ),
+		array( 'base' => 'left', 'md' => '', 'lg' => '' ) ),
+
+	/**
+	 * gradient-v2: FEWER THAN TWO STOPS IS NO GRADIENT. The validator discards a
+	 * lone stop and stores the empty form rather than restoring a default, and
+	 * that empty array is what turns the layer off — there is no enable switch.
+	 * The React control clears a gradient rather than leaving one stop behind.
+	 */
+	array( 'gradient: two stops', $grad_schema,
+		array( 'type' => 'linear', 'angle' => 90, 'stops' => array(
+			array( 'color' => '#3858e9', 'position' => 0 ),
+			array( 'color' => '#7f54b3', 'position' => 100 ) ) ),
+		array( 'type' => 'linear', 'angle' => 90, 'stops' => array(
+			array( 'color' => '#3858e9', 'position' => 0.0 ),
+			array( 'color' => '#7f54b3', 'position' => 100.0 ) ) ) ),
+	array( 'gradient: one stop is none', $grad_schema,
+		array( 'type' => 'linear', 'angle' => 90, 'stops' => array( array( 'color' => '#000', 'position' => 0 ) ) ),
+		array( 'type' => 'linear', 'angle' => 90, 'stops' => array() ) ),
+	array( 'gradient: angle clamps', $grad_schema,
+		array( 'type' => 'radial', 'angle' => 999, 'stops' => array() ),
+		array( 'type' => 'radial', 'angle' => 360, 'stops' => array() ) ),
+
+	/**
+	 * rgba-color-picker is LOOSER than color-picker: hex 3/4/6/8 or rgb()/rgba().
+	 * Normalising to hex here — as the colour-picker control must — would be a
+	 * quiet downgrade, since this type exists where alpha is the point.
+	 */
+	array( 'rgba: rgba string', $rgba_schema, 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)' ),
+	array( 'rgba: hex',         $rgba_schema, '#2f74e6',         '#2f74e6' ),
+	array( 'rgba: empty is a value', $rgba_schema, '',            '' ),
+
+	/**
+	 * table stores four parallel structures that must agree: `content` is rows x
+	 * columns, `cols` is as long as every content row, `rows` is as long as
+	 * `content`, and each row's `name` is DERIVED from whether its index falls
+	 * inside header_rows. The React control rebuilds the whole value on every
+	 * mutation for that reason.
+	 *
+	 * The WIRE format is a JSON blob under `__json` — what the page builder's JS
+	 * submits — and this asserts that path, because it is the one that exists. The
+	 * stored shape is NOT accepted as input: feeding it back returns empty cells,
+	 * since the parser falls through to the legacy pricing branch.
+	 *
+	 * That asymmetry is survivable only because the builder's editor BOOTS from the
+	 * stored model and re-serialises to `__json` on save. A block emits the stored
+	 * shape directly (nothing validates on that path, and the element's view reads
+	 * that shape), so both surfaces work — but anything that fed a stored value
+	 * back through the validator would silently empty the table.
+	 */
+	array( 'table: wire json to stored shape', $table_schema,
+		array(
+			'header_options' => array( 'table_purpose' => 'tabular' ),
+			'__json' => "{\"header_options\": {\"table_purpose\": \"tabular\", \"header_rows\": 1, \"footer_rows\": 0}, \"cols\": [{\"name\": \"default-col\", \"align\": \"left\", \"width\": \"\"}], \"content\": [[{\"textarea\": \"Plan\", \"colspan\": 1, \"rowspan\": 1, \"merged\": false}]]}",
+		),
+		array(
+			'header_options' => array( 'table_purpose' => 'tabular', 'header_rows' => 1, 'footer_rows' => 0 ),
+			'cols'    => array( array( 'name' => 'default-col', 'align' => 'left', 'width' => '' ) ),
+			'rows'    => array( array( 'name' => 'heading-row' ) ),
+			'content' => array( array( array( 'textarea' => 'Plan', 'colspan' => 1, 'rowspan' => 1, 'merged' => false ) ) ),
+		) ),
 
 	/**
 	 * unit-input stores a { value, unit } pair where the NUMBER HALF IS A STRING,
@@ -591,6 +991,76 @@ $bsp_req = fw_get_options_values_from_input(
 	array( 'p' => '' )
 );
 ct_eq( 'border picker: empty is rejected when allow_none is false', 'b-solid', $bsp_req['p'] ?? null );
+
+/* --------------------------------------------------------------------- *
+ * 2b. Builder item-type registration
+ * --------------------------------------------------------------------- */
+echo "\n== builder item-type registration ==\n";
+
+/**
+ * Each builder TYPE must fire its own :register_items action.
+ *
+ * FW_Option_Type_Builder::get_item_types() guards that action with a static
+ * flag. A plain `static $did_action = false` is shared by every instance AND
+ * every subclass, so the first builder type to resolve its items silenced all
+ * the others: they skipped their own action and reported zero item types.
+ *
+ * The symptom was remote from the cause. The Gutenberg bridge resolves the FORM
+ * builder's item types during init to build a field editor; that left the PAGE
+ * builder with no item types, so every item in a saved page rendered as a
+ * generic "Default View" box — with no PHP error and nothing in the log.
+ *
+ * Tested with two throwaway builder types rather than the real ones: the real
+ * ones register behind an is_admin() gate and may already have been resolved
+ * earlier in the request, either of which would make this pass or fail for
+ * reasons unrelated to the guard.
+ */
+if ( class_exists( 'FW_Option_Type_Builder' ) && ! class_exists( 'CT_Builder_A' ) ) {
+	eval(
+		'class CT_Builder_A extends FW_Option_Type_Builder {'
+		. ' public function get_type() { return "ct-builder-a"; }'
+		. ' protected function _render($id,$o,$d){ return ""; }'
+		. ' protected function _get_defaults(){ return array("value"=>array("json"=>"[]")); }'
+		. '}'
+		. 'class CT_Builder_B extends CT_Builder_A {'
+		. ' public function get_type() { return "ct-builder-b"; }'
+		. '}'
+	);
+}
+
+if ( class_exists( 'CT_Builder_A' ) ) {
+	$ct_fired = array();
+
+	foreach ( array( 'ct-builder-a', 'ct-builder-b' ) as $ct_bt ) {
+		add_action(
+			'fw_option_type_builder:' . $ct_bt . ':register_items',
+			function () use ( $ct_bt, &$ct_fired ) {
+				$ct_fired[ $ct_bt ] = true;
+			}
+		);
+	}
+
+	$ct_items = new ReflectionMethod( 'FW_Option_Type_Builder', 'get_item_types' );
+	$ct_items->setAccessible( true );
+
+	$ct_a = new CT_Builder_A();
+	$ct_b = new CT_Builder_B();
+
+	$ct_items->invoke( $ct_a );
+	$ct_items->invoke( $ct_b );
+
+	ct(
+		'first builder type fires its register_items action',
+		isset( $ct_fired['ct-builder-a'] ),
+		$ct_fired ? implode( ', ', array_keys( $ct_fired ) ) : 'nothing fired'
+	);
+
+	ct(
+		'a SECOND builder type still fires its own action',
+		isset( $ct_fired['ct-builder-b'] ),
+		$ct_fired ? implode( ', ', array_keys( $ct_fired ) ) : 'nothing fired'
+	);
+}
 
 /* --------------------------------------------------------------------- *
  * 3. Page-builder JSON round trip

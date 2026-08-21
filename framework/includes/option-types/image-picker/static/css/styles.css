@@ -96,6 +96,36 @@
 .fw-tooltip .fw-tooltip-content img.fw-option-type-image-picker-large-image {
 	display: block;
 }
+/* Enlarge-preview tooltip — frosted, light, readable.
+ * Preview SVGs (layout Full width / Boxed / Framed, header designs, blog cards, …) carry a dark
+ * caption on a TRANSPARENT strip below the mockup, so on the default dark (#333) tooltip that
+ * caption is unreadable. Give ONLY the image-picker large-image tooltip a light frosted-glass skin
+ * (help / info tooltips stay dark, as designed). The arrow colour is read from border-top-color by
+ * the positioner (fw-tooltip.js), so overriding the border keeps the arrow matching the panel.
+ * :has() is already relied on by this stylesheet (the value-holder rule above). */
+.fw-tooltip.fw-tooltip-default:has(.fw-option-type-image-picker-large-image) {
+	/* Translucent enough that the blur actually shows through (over the admin bar / content),
+	 * plus a diagonal sheen + bright top-edge highlight for a real glass-card look. A padded
+	 * frame makes the frost visible AROUND the opaque preview, not just in the caption strip. */
+	background-color: rgba(255, 255, 255, .55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, .30), rgba(255, 255, 255, .02) 44%, rgba(255, 255, 255, .16));
+	-webkit-backdrop-filter: blur(22px) saturate(1.9);
+	backdrop-filter: blur(22px) saturate(1.9);
+	border: 1px solid rgba(255, 255, 255, .65);
+	border-radius: 16px;
+	padding: 10px;
+	box-shadow:
+		0 20px 50px rgba(20, 26, 36, .30),
+		0 4px 14px rgba(20, 26, 36, .16),
+		inset 0 1px 0 rgba(255, 255, 255, .8),
+		inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+.fw-tooltip.fw-tooltip-default:has(.fw-option-type-image-picker-large-image) .fw-tooltip-content {
+	color: #2a2f37;
+}
+.fw-tooltip.fw-tooltip-default:has(.fw-option-type-image-picker-large-image) img.fw-option-type-image-picker-large-image {
+	border-radius: 9px;
+}
 /* Searchable image-picker (opt-in via the `search` option): a filter box on top and category
  * (optgroup) headers. Only applies to .fw-image-picker--searchable, so other pickers are unchanged. */
 .fw-image-picker-search {

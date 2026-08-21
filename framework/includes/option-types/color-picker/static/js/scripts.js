@@ -105,6 +105,33 @@
 			}
 		} );
 		[].forEach.call( document.querySelectorAll( ALL ), paint );
+
+		// Re-paint color inputs that appear AFTER window load — AJAX-loaded Theme-Settings tabs
+		// (Components → Color Presets etc.), page-builder modals, and freshly-added addable-box rows.
+		// The picker itself already works on these via Coloris's document-level focus delegation; only
+		// the swatch PREVIEW (the input's own background) was missing, so an unpainted input showed the
+		// `.code` default (a dark/black field) — the "all my presets show a black preview" bug. paint()
+		// never touches Coloris or the DOM structure (just the input's background/colour), so re-running
+		// it on new nodes is safe and idempotent.
+		var paintIn = function ( root ) {
+			if ( ! root ) { return; }
+			if ( root.matches && root.matches( ALL ) ) { paint( root ); }
+			if ( root.querySelectorAll ) { [].forEach.call( root.querySelectorAll( ALL ), paint ); }
+		};
+		if ( window.jQuery ) {
+			window.jQuery( document ).on( 'fw:options:init', function ( e ) { paintIn( e && e.target ? e.target : document ); } );
+		}
+		if ( window.MutationObserver ) {
+			var mo = new MutationObserver( function ( muts ) {
+				for ( var i = 0; i < muts.length; i++ ) {
+					for ( var j = 0; j < muts[ i ].addedNodes.length; j++ ) {
+						var n = muts[ i ].addedNodes[ j ];
+						if ( n && n.nodeType === 1 ) { paintIn( n ); }
+					}
+				}
+			} );
+			mo.observe( document.body, { childList: true, subtree: true } );
+		}
 	}
 
 	// Run on window `load`, not DOMContentLoaded: Coloris builds its picker element on its

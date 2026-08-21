@@ -242,6 +242,26 @@ jQuery(document).ready(function ($) {
 	};
 
 	/**
+	 * The element the box-title PREVIEW is written into. Current WordPress renders the postbox handle
+	 * as `<h2 class="hndle">&nbsp;</h2>` with NO inner class-less <span>, so the original selector
+	 * `.postbox-header > .hndle span:not([class])` matched nothing and every addable-box preview stayed
+	 * blank (the "all my presets show empty/black boxes" bug). Resolve the handle across WP's postbox
+	 * markup variants and ensure a class-less <span> exists to hold the rendered template.
+	 */
+	function titleTarget($box) {
+		var $hndle = $box.find('.postbox-header > .hndle').first();
+		if (!$hndle.length) { $hndle = $box.find('> .postbox-header .hndle, > .hndle, .hndle').first(); }
+		if (!$hndle.length) { return $(); }
+		var $span = $hndle.find('span:not([class])').first();
+		if (!$span.length) {
+			// Drop the placeholder &nbsp; text node, then add the span the template writes into.
+			$hndle.contents().filter(function () { return this.nodeType === 3; }).remove();
+			$span = $('<span></span>').appendTo($hndle);
+		}
+		return $span;
+	}
+
+	/**
 	 * Update box title using the 'template' option parameter and box option values
 	 */
 	var titleUpdater = {
@@ -301,7 +321,7 @@ jQuery(document).ready(function ($) {
 
 				var jsonParsedValues = JSON.parse(values) || {};
 
-				$box.find( '.postbox-header > .hndle span:not([class])' ).first().html(
+				titleTarget($box).html(
 					this.template(data.template, $.extend({}, {o: jsonParsedValues}, jsonParsedValues))
 				);
 
@@ -336,7 +356,7 @@ jQuery(document).ready(function ($) {
 					template = '[Ajax Error] '+ response.data.message
 				}
 
-				$box.find( '.postbox-header > .hndle span:not([class])' ).first().html( template );
+				titleTarget($box).html( template );
 
 				delete data;
 
@@ -345,7 +365,7 @@ jQuery(document).ready(function ($) {
 				this.isBusy = false;
 				$box.removeClass(titleUpdater.pendingClass);
 
-				$box.find( '.postbox-header > .hndle span:not([class])' ).first().text( '[Server Error] ' + status + ': ' + error.message );
+				titleTarget($box).text( '[Server Error] ' + status + ': ' + error.message );
 
 				delete data;
 
