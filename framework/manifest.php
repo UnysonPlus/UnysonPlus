@@ -2,10 +2,19 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '2.16.30';
+$manifest['version'] = '2.16.31';
 
 /**
  * Changelog
+ * 2.16.31 - Nine extensions that shipped with the plugin were invisible in the
+ *          Extensions manager: Newsletter / Subscriber CRM, Animated Icons,
+ *          Animation Engine, Chat, Gutenberg Blocks, Live Page Editor,
+ *          Snippets, Template Library and WooCommerce. Being bundled in the
+ *          plugin folder does nothing on its own — an extension is only offered
+ *          for download if it has an entry in available-extensions.php, and
+ *          none of these ever got one, so there was no way to install them from
+ *          a core-only site. Each now has an entry pointing at its own GitHub
+ *          repo, plus a thumbnail in the existing 256x256 style.
  * 2.16.20 - Rate limiting for the framework's public AJAX endpoints. The six
  *          wp_ajax_nopriv_* actions (newsletter signup, posts load-more and filter,
  *          portfolio load, WooCommerce load-more and quick view) all verified a

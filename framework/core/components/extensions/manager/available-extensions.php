@@ -83,6 +83,132 @@ $extensions = [
         ],
     ],
 
+    'newsletter-crm' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Newsletter / Subscriber CRM', 'fw'),
+        'description' => __('Collect and manage subscribers, organise them into lists, tags and saved segments, then compose and send campaigns with a drag-and-drop email builder that compiles to HTML which survives Outlook and Gmail. Double opt-in, one-click unsubscribe, CSV import/export and a REST endpoint included.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/newsletter-crm.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Newsletter-CRM-Extension',
+            ],
+        ],
+    ],
+
+    'animated-icons' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Animated Icons', 'fw'),
+        'description' => __('Adds an "Animated" tab to the icon picker, so any icon option can use Lottie, Rive, animated SVG or animated raster alongside font glyphs and images. Each technology is toggled per-site, and icons already using an animation keep rendering even if the extension is later turned off.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/animated-icons.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Animated-Icons-Extension',
+            ],
+        ],
+    ],
+
+    'animation-engine' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Animation Engine', 'fw'),
+        'description' => __('The home for animation capabilities in UnysonPlus, adding a Site-wide UX section to Theme Settings. Its first module is WebGL — a real-time refractive glass blob, liquid metal, distorted sphere or particle field rendered with Three.js. Further modules plug in over time: Scroll Motion, Hover, Cursor, Text Effects, Backgrounds and Page Transitions.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/animation-engine.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Animation-Engine-Extension',
+            ],
+        ],
+    ],
+
+    'chat' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Chat', 'fw'),
+        'description' => __('A floating, multi-channel contact button rendered site-wide — let visitors reach you on WhatsApp, Messenger, Telegram, SMS, Email or any custom link. One channel makes it a direct deep-link; several turn it into a launcher the visitor picks from.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/chat.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Chat-Extension',
+            ],
+        ],
+    ],
+
+    'gutenberg' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Gutenberg Blocks', 'fw'),
+        'description' => __('Exposes Unyson+ elements as native Gutenberg blocks, for people who prefer the block editor but still want the Unyson+ options framework. Blocks are server-rendered by the same code as the page builder, so the front-end output is identical.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/gutenberg.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Gutenberg-Extension',
+            ],
+        ],
+    ],
+
+    'live-editor' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Live Page Editor', 'fw'),
+        'description' => __('Edit page-builder pages directly on the live front end. Hover sections, columns and elements to select them and edit their options in place — a real-time visual builder layered on top of the existing Page Builder, reached from the "Edit Live" admin-bar button.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/live-editor.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Live-Editor-Extension',
+            ],
+        ],
+    ],
+
+    'snippets' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Snippets', 'fw'),
+        'description' => __('Build reusable page-builder content as snippets, then embed them anywhere with [snippet id="…"] — edit once, and every place it appears updates.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/snippets.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Snippets-Extension',
+            ],
+        ],
+    ],
+
+    'template-library' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Template Library', 'fw'),
+        'description' => __('A browsable library of premade page-builder templates — sections, columns and whole pages. Install one from the catalog and it appears under the Templates menu in the builder, ready to drop in. Downloaded templates live in your uploads folder, so the plugin stays lean.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/template-library.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Template-Library-Extension',
+            ],
+        ],
+    ],
+
+    'woocommerce' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('WooCommerce', 'fw'),
+        'description' => __('Integrates WooCommerce with the Unyson+ framework: makes any active theme WooCommerce-aware and adds a WooCommerce Elements tab to the page builder — product grids and carousels, single product, categories, add-to-cart, cart icon and mini-cart, the cart / checkout / account / order-tracking pages, product search and filters. Inert until WooCommerce itself is active.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/woocommerce.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-WooCommerce-Extension',
+            ],
+        ],
+    ],
+
     'theme-builder' => [
         'display'     => true,
         'parent'      => null,
