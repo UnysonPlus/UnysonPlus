@@ -391,6 +391,17 @@ jQuery(document).ready(function ($) {
 				}
 
 				fw.options.trigger.changeForEl(el);
+
+				// Live-update the box's template preview (debounced) so a template-driven
+				// preview — e.g. the pattern Preview Background — reflects edits immediately,
+				// without needing to save + refresh (or even collapse the box). The preview
+				// lives in the box TITLE, so re-rendering it never disturbs the open form.
+				var $liveBox = $(data.context).children('.fw-postbox, .postbox');
+				if ($liveBox.length) {
+					$liveBox.addClass(titleUpdater.pendingClass);
+					clearTimeout(titleUpdater._liveTimer);
+					titleUpdater._liveTimer = setTimeout(function () { titleUpdater.update(); }, 350);
+				}
 			});
 		});
 

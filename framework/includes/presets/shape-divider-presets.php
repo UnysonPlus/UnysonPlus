@@ -23,6 +23,7 @@
  */
 
 if ( ! function_exists( 'unysonplus_default_shape_divider_presets' ) ) :
+	/** Returns the default filterable list of SVG shape-divider presets. */
 	function unysonplus_default_shape_divider_presets() {
 		// The original four shapes, now expressed as full SVG so they are editable in the
 		// library exactly like a user-added one. viewBox is the shape-divider convention

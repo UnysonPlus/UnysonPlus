@@ -33,6 +33,7 @@
  */
 
 if ( ! function_exists( 'unysonplus_default_image_style_presets' ) ) :
+	/** Returns the default filterable list of image style presets (borders, shadows, shapes/masks). */
 	function unysonplus_default_image_style_presets() {
 		// Compact-color helper: build a { predefined, custom } value from a hex/rgba.
 		$col = function ( $custom, $predefined = '' ) {

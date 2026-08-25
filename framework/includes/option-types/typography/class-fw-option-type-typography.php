@@ -87,6 +87,7 @@ class FW_Option_Type_Typography extends FW_Option_Type {
 			return FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
 			$fonts = array(
+				/** Filters the list of standard/web-safe fonts offered by the typography option type. */
 				'standard' => apply_filters( 'fw_option_type_typography_v2_standard_fonts', array(
 					"Arial",
 					"Verdana",
@@ -105,6 +106,7 @@ class FW_Option_Type_Typography extends FW_Option_Type {
 					"Impact",
 					"Serif"
 				) ),
+				/** Filters the Google fonts list used by the typography option type before it is cached. */
 				'google' => apply_filters(
 					'fw_option_type_typography_v2_google_fonts',
 					json_decode( fw_get_google_fonts_v2(), true )

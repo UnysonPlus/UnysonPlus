@@ -134,6 +134,7 @@ if ( ! function_exists( 'unysonplus_build_page_css_string' ) ) :
 		if ( $arb_css !== '' ) { $css .= ( $css !== '' ? $glue : '' ) . $arb_css; }
 
 		// 2. Page-level CSS contributed by the theme (page bg + page_custom_css).
+		/** Filters theme-contributed page-level CSS (page background, custom CSS) appended to a post's dynamic stylesheet. */
 		$page_extra = trim( (string) apply_filters( 'unysonplus_page_css', '', $post_id ) );
 		if ( $page_extra !== '' ) {
 			$css .= ( $css !== '' ? $glue : '' ) . $page_extra;

@@ -3,23 +3,27 @@
 /** Font-size presets — defaults + getter + mobile auto-scaler. Loaded by ../presets.php. */
 
 if ( ! function_exists( 'unysonplus_default_font_size_presets' ) ) :
+	/** Returns the default filterable list of named font-size presets. */
 	function unysonplus_default_font_size_presets() {
+		/** Filters the built-in default font-size presets (Display 1-5, Lead) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_font_size_presets', array(
-			array( 'name' => 'Display 1', 'size' => '96', 'class' => 'display-1' ),
-			array( 'name' => 'Display 2', 'size' => '88', 'class' => 'display-2' ),
-			array( 'name' => 'Display 3', 'size' => '72', 'class' => 'display-3' ),
-			array( 'name' => 'Display 4', 'size' => '56', 'class' => 'display-4' ),
-			array( 'name' => 'Display 5', 'size' => '48', 'class' => 'display-5' ),
-			array( 'name' => 'Lead',      'size' => '22', 'class' => 'lead' ),
+			array( 'name' => 'Display 1', 'size' => array( 'value' => '96', 'unit' => 'px' ), 'class' => 'display-1' ),
+			array( 'name' => 'Display 2', 'size' => array( 'value' => '88', 'unit' => 'px' ), 'class' => 'display-2' ),
+			array( 'name' => 'Display 3', 'size' => array( 'value' => '72', 'unit' => 'px' ), 'class' => 'display-3' ),
+			array( 'name' => 'Display 4', 'size' => array( 'value' => '56', 'unit' => 'px' ), 'class' => 'display-4' ),
+			array( 'name' => 'Display 5', 'size' => array( 'value' => '48', 'unit' => 'px' ), 'class' => 'display-5' ),
+			array( 'name' => 'Lead',      'size' => array( 'value' => '22', 'unit' => 'px' ), 'class' => 'lead' ),
 		) );
 	}
 endif;
 
 if ( ! function_exists( 'unysonplus_get_font_size_presets' ) ) :
+	/** Returns the current font-size presets, preferring saved Theme Settings values over the defaults. */
 	function unysonplus_get_font_size_presets() {
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'font_sizes', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective font-size presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_font_size_presets', $saved );
 			}
 		}
@@ -46,6 +50,7 @@ if ( ! function_exists( 'unysonplus_mobile_font_size_scale' ) ) :
 		elseif  ( $desktop_px >= 16 ) { $scale = 0.90; } // gentle step-down so h4–h6-scale sizes (16–19px) still go fluid
 		else                          { $scale = 1.00; } // < 16px is already at the a11y floor — stays fixed
 
+		/** Filters the mobile shrink ratio applied to a desktop font size before it goes fluid, given the size in px and its context. */
 		$scale = apply_filters( 'unysonplus_mobile_font_scale', $scale, $desktop_px, $context );
 
 		return max( 14, round( $desktop_px * $scale ) );
@@ -58,6 +63,7 @@ if ( ! function_exists( 'unysonplus_fluid_type_range' ) ) :
 	 * mobile floor applies, at/above `max` the authored size applies. Filterable.
 	 */
 	function unysonplus_fluid_type_range() {
+		/** Filters the viewport min/max px range over which fluid typography interpolates between the mobile floor and authored size. */
 		$r   = apply_filters( 'unysonplus_fluid_type_viewport', array( 'min' => 360, 'max' => 1280 ) );
 		$min = isset( $r['min'] ) ? floatval( $r['min'] ) : 360;
 		$max = isset( $r['max'] ) ? floatval( $r['max'] ) : 1280;
@@ -141,6 +147,7 @@ if ( ! function_exists( 'unysonplus_type_scale_config' ) ) :
 	 */
 	function unysonplus_type_scale_config() {
 		$vp = unysonplus_fluid_type_range();
+		/** Filters the default modular type-scale config (base size, desktop and mobile ratios, step counts, floor). */
 		return apply_filters( 'unysonplus_type_scale_config', array(
 			'base_px'       => 16,     // body size at the max viewport
 			'ratio'         => 1.25,   // desktop step ratio (major third)

@@ -70,6 +70,7 @@ if ( ! function_exists( 'unysonplus_icon_pack_choices' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_all_icon_pack_ids' ) ) :
+	/** Returns the ids of all available icon packs. */
 	function unysonplus_all_icon_pack_ids() {
 		return array_keys( unysonplus_icon_pack_choices() );
 	}
@@ -109,6 +110,7 @@ if ( ! function_exists( 'unysonplus_enabled_icon_packs' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_icon_pack_enabled' ) ) :
+	/** Returns whether the given icon pack id is currently enabled. */
 	function unysonplus_icon_pack_enabled( $id ) {
 		return in_array( $id, unysonplus_enabled_icon_packs(), true );
 	}

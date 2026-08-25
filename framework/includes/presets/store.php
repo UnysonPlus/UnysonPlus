@@ -46,6 +46,7 @@ if ( ! function_exists( 'unysonplus_preset_store_get' ) ) :
 		 * back-compat.
 		 */
 		if ( ! get_option( 'upw_presets_theme_migrated' ) ) {
+			/** Filters the extension slug (default shortcodes) whose legacy settings store presets are read from before theme migration. */
 			$ext = apply_filters( 'unysonplus_preset_store_extension', 'shortcodes' );
 			return FW_WP_Option::get( 'fw_ext_settings_options:' . $ext, $key, $default_value );
 		}

@@ -31,6 +31,13 @@ $attr['class'] .= ' width-type-'. $option['width'];
 if (!empty($data['value'])) {
 	$attr['class'] .= ' has-boxes';
 }
+
+// Inline (compact) layout: label-left / input-right instead of the default stacked
+// (fw-force-xs) design. Opt-in via 'inline' => true. The class goes on the options
+// wrapper below; fw-force-xs is only emitted when NOT inline.
+$box_opts_class = !empty($option['inline'])
+	? 'fw-option-box-options fw-addable-box--inline'
+	: 'fw-option-box-options fw-force-xs';
 ?>
 <div <?php echo fw_attr_to_html($attr); ?>>
 	<!-- Fixes https://github.com/ThemeFuse/Unyson/issues/1278#issuecomment-208032542 -->
@@ -44,7 +51,7 @@ if (!empty($data['value'])) {
 			<?php $i++; ?>
 			<div class="fw-option-box fw-backend-options-virtual-context" data-name-prefix="<?php echo fw_htmlspecialchars($data['name_prefix'] .'['. $id .']['. $i .']') ?>" data-values="<?php echo fw_htmlspecialchars(json_encode($values)) ?>">
 				<?php ob_start() ?>
-				<div class="fw-option-box-options fw-force-xs">
+				<div class="<?php echo esc_attr($box_opts_class) ?>">
 					<?php
 					echo fw()->backend->render_options($box_options, $values, array(
 						'id_prefix'   => $data['id_prefix'] . $id .'-'. $i .'-',
@@ -84,7 +91,7 @@ if (!empty($data['value'])) {
 				fw()->backend->render_box(
 					$data['id_prefix'] . $id .'-'. $increment_placeholder .'-box',
 					'&nbsp;',
-					'<div class="fw-option-box-options fw-force-xs">'.
+					'<div class="'. esc_attr($box_opts_class) .'">'.
 						fw()->backend->render_options($box_options, $values, array(
 							'id_prefix'   => $data['id_prefix'] . $id .'-'. $increment_placeholder .'-',
 							'name_prefix' => $data['name_prefix'] .'['. $id .']['. $increment_placeholder .']',

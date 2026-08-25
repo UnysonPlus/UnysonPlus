@@ -19,6 +19,8 @@ class FW_Icon_Packs_Loader
 	public function __construct()
 	{
 		/**
+		 * Filters the registered icon packs for the icon-v3 option type.
+		 *
 		 * You are able to load more packs at this step.
 		 *
 		 * Default packs can't be changed.
@@ -353,6 +355,7 @@ class FW_Icon_Packs_Loader
 	{
 		if ($this->filtered_icon_packs) return;
 
+		/** Filters the list of icon pack names the icon-v3 option type makes available. */
 		$packs = apply_filters(
 			'fw:option_type:icon-v3:filter_packs',
 			$this->get_icon_packs_names()

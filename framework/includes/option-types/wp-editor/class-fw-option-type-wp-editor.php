@@ -154,6 +154,7 @@ class FW_Option_Type_Wp_Editor extends FW_Option_Type {
 			fw()->manifest->get_version()
 		);
 
+		/** Fires after the wp-editor option type enqueues its styles, letting code enqueue related scripts. */
 		do_action( 'fw:option-type:wp-editor:enqueue-scripts' );
 	}
 

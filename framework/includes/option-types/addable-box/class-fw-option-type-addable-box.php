@@ -117,6 +117,7 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 
 			fw_collect_options( $box_options, $option['box-options'], array(
 				'limit_option_types' => false,
+				/** Filters which container types are allowed inside an addable-box option (default: groups only). */
 				'limit_container_types' => apply_filters(
 					'fw:option-type:addable-box:limit-container-types',
 					// Use only groups and options by default
@@ -227,6 +228,14 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 			 * - full
 			 */
 			'width' => 'fixed',
+			/**
+			 * Inline (compact) layout. When true, each inner option renders as one
+			 * row — label on the left, input on the right — instead of the default
+			 * stacked layout (which forces the mobile `fw-force-xs` design). Opt-in,
+			 * so other addable-boxes are unaffected. Good for dense preset editors
+			 * (Button Sizes, etc.) where every field is a short value.
+			 */
+			'inline' => false,
 		);
 	}
 

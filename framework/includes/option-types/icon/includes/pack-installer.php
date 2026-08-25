@@ -30,6 +30,7 @@ if ( ! function_exists( 'fw_icon_pack_catalog_url' ) ) :
 	 * can point at a mirror/CDN. Default: the raw GitHub content of the icon-packs repo.
 	 */
 	function fw_icon_pack_catalog_url() {
+		/** Filters the URL of the installable icon-pack catalog.json, so a host can point at a mirror or CDN. */
 		return apply_filters(
 			'fw_icon_pack_catalog_url',
 			'https://raw.githubusercontent.com/UnysonPlus/UnysonPlus-Library/master/icon-packs/catalog.json'
@@ -607,6 +608,7 @@ endif;
  * -------------------------------------------------------------------------- */
 
 if ( ! function_exists( 'fw_icon_pack_ajax_nonce' ) ) :
+	/** Returns the nonce action name used for icon-pack management AJAX requests. */
 	function fw_icon_pack_ajax_nonce() { return 'fw_icon_pack_manage'; }
 endif;
 
@@ -622,6 +624,7 @@ endif;
  * -------------------------------------------------------------------------- */
 
 if ( ! function_exists( 'fw_icon_pack_enabled_option_key' ) ) :
+	/** Returns the per-theme option key storing which icon packs are enabled for the picker. */
 	function fw_icon_pack_enabled_option_key() {
 		$theme_id = ( function_exists( 'fw' ) && fw()->theme && fw()->theme->manifest )
 			? fw()->theme->manifest->get_id() : 'theme';
@@ -797,6 +800,7 @@ if ( ! function_exists( 'fw_icon_pack_installer_packs' ) ) :
 endif;
 
 if ( ! function_exists( 'fw_icon_pack_installer_payload' ) ) :
+	/** Builds the data payload (AJAX URL, nonce, packs, i18n) for the icon-pack installer UI. */
 	function fw_icon_pack_installer_payload() {
 		$catalog = fw_icon_pack_catalog();
 		return array(
@@ -883,6 +887,7 @@ if ( ! function_exists( 'fw_icon_lottie_enabled' ) ) :
 	 * extension flips it on from its "Lottie" toggle.
 	 */
 	function fw_icon_lottie_enabled() {
+		/** Filters whether Lottie icon technology is enabled (panel, player runtime, .json upload); default off, flipped on by the Animated Icons extension. */
 		return (bool) apply_filters( 'fw_icon_lottie_enabled', false );
 	}
 endif;
@@ -894,6 +899,7 @@ if ( ! function_exists( 'fw_icon_rive_enabled' ) ) :
 	 * flips it on from its "Rive" toggle.
 	 */
 	function fw_icon_rive_enabled() {
+		/** Filters whether Rive icon technology is enabled (panel, canvas runtime, .riv upload); default off, flipped on by the Animated Icons extension. */
 		return (bool) apply_filters( 'fw_icon_rive_enabled', false );
 	}
 endif;
@@ -923,6 +929,7 @@ if ( ! function_exists( 'fw_icon_svg_animation_enabled' ) ) :
 	 * <foreignObject>, external refs — stays excluded either way.
 	 */
 	function fw_icon_svg_animation_enabled() {
+		/** Filters whether SVG icons keep their SMIL animation tags instead of being stripped by the sanitizer; default off. */
 		return (bool) apply_filters( 'fw_icon_svg_animation_enabled', false );
 	}
 endif;
@@ -937,6 +944,7 @@ if ( ! function_exists( 'fw_icon_raster_enabled' ) ) :
 	 * from its "Animated raster" toggle.
 	 */
 	function fw_icon_raster_enabled() {
+		/** Filters whether animated raster icons (GIF/APNG/WebP) are surfaced as a supported technology hint; default off. */
 		return (bool) apply_filters( 'fw_icon_raster_enabled', false );
 	}
 endif;

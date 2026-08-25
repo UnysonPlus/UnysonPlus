@@ -54,6 +54,7 @@ class FW_Extension_Github_Update extends FW_Ext_Update_Service
 	 */
 	private function get_branches($user_slash_repo)
 	{
+		/** Filters the ordered list of GitHub branches to try (default master, main) when no explicit branch is configured for an update source. */
 		return apply_filters('fw_ext_update_github_branches', array('master', 'main'), $user_slash_repo);
 	}
 

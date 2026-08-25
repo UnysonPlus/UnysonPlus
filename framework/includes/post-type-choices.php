@@ -20,6 +20,7 @@ if ( ! function_exists( 'fw_upw_internal_post_types' ) ) :
 	 * @return string[]
 	 */
 	function fw_upw_internal_post_types() {
+		/** Filters the list of internal WordPress post type keys treated as plumbing (attachment, revision, etc.) and excluded from user content. */
 		return apply_filters( 'fw_upw_internal_post_types', array(
 			'attachment',
 			'revision',

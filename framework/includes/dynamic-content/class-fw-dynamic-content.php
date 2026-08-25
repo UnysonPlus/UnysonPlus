@@ -93,6 +93,8 @@ final class FW_Dynamic_Content {
 		$this->load_bundled_tags();
 
 		/**
+		 * Filters the registry of Dynamic Content tags, letting extensions register pickable tags with labels, params, and resolvers.
+		 *
 		 * Register Dynamic Content tags.
 		 *
 		 * @param array $tags  Keyed by tag id. Each value is an array:

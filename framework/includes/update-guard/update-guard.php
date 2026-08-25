@@ -18,6 +18,7 @@
  * / `fw_update_guard_title` filters.
  */
 if ( ! function_exists( 'fw_upw_update_guard_assets' ) ) {
+	/** Enqueues the update-guard CSS/JS only on the plugins.php and update-core.php admin screens. */
 	function fw_upw_update_guard_assets( $hook ) {
 		// Only the screens where a plugin update can be triggered.
 		if ( 'plugins.php' !== $hook && 'update-core.php' !== $hook ) {
@@ -49,6 +50,7 @@ if ( ! function_exists( 'fw_upw_update_guard_assets' ) ) {
 		wp_localize_script( 'fw-update-guard', 'fwUpdateGuard', array(
 			'plugin'  => $basename,
 			'slug'    => $slug,
+			/** Filters the title of the update-confirmation dialog shown before updating the Unyson+ Framework. */
 			'title'   => apply_filters( 'fw_update_guard_title', __( 'Update Unyson+ Framework?', 'fw' ) ),
 			'message' => apply_filters(
 				'fw_update_guard_message',

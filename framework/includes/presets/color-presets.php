@@ -3,7 +3,9 @@
 /** Color presets — defaults + getter + slug map. Loaded by ../presets.php. */
 
 if ( ! function_exists( 'unysonplus_default_color_presets' ) ) :
+	/** Returns the default filterable list of named color presets. */
 	function unysonplus_default_color_presets() {
+		/** Filters the built-in default named color palette (Primary, Secondary, and the Material-style hues) before user overrides. */
 		return apply_filters( 'unysonplus_default_color_presets', array(
 			// Semantic Bootstrap-derived colours — prepended so they're the
 			// FIRST picks across every shortcode's Color Preset selector.
@@ -42,10 +44,12 @@ if ( ! function_exists( 'unysonplus_default_color_presets' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_get_color_presets' ) ) :
+	/** Returns the current color presets, preferring saved Theme Settings values over the defaults. */
 	function unysonplus_get_color_presets() {
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'theme_colors', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective named color presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_color_presets', $saved );
 			}
 		}

@@ -197,8 +197,74 @@
 }
 .fw-preset-2col .fw-postbox:not(.closed) .inside {
 	opacity: 1;
-	transform: translateY(0);
+	/* `none`, NOT translateY(0): an identity transform still establishes a
+	   containing block, which breaks position:fixed for descendants (e.g. the
+	   color-picker-compact dropdown mis-positioned far right). `none` removes the
+	   containing block at rest while still animating the slide from the closed
+	   state's translateY(-6px). */
+	transform: none;
 	visibility: visible;
 }
 
 /* end: Controls */
+
+/* ---------------------------------------------------------------------------
+ * Inline (compact) layout — opt-in via 'inline' => true on the addable-box.
+ * The inline layout itself is the FRAMEWORK GRID, not custom CSS: view.php just
+ * omits the mobile-forcing `fw-force-xs` class, so each row uses the normal
+ * option grid — label (col-sm-3) left, input (col-sm-9) right — exactly like
+ * every other option at desktop widths. All we add here is tighter row padding
+ * for a denser preset card. Scoped so other addable-boxes are untouched.
+ * ------------------------------------------------------------------------- */
+.fw-addable-box--inline .fw-backend-option-design-default {
+	padding: 12px 16px;
+}
+
+/* Inline addable-box: widen the label column at the lg breakpoint. The option grid
+   defaults to col-lg-2 / col-lg-10 (~16 / 84%) at >=1200px, which cramps labels in
+   the 428px preset box (long labels wrap). Force a 3 / 9 (25 / 75%) split so the
+   label reads on one line. Scoped to .fw-addable-box--inline only. */
+@media (min-width: 1200px) {
+	.fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-label { width: 25%; }
+	.fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-input { width: 75%; }
+	.fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-desc { width: 75%; margin-left: 25%; }
+}
+
+/* Full-width controls stay STACKED even in inline mode — a textarea / editor
+   cramped into the 75% input column is unusable. Auto-excluded by control type
+   (textarea, wp-editor, code, code-editor), so no per-box config is needed; e.g.
+   the "Custom CSS" field in a preset box keeps its full-width, label-on-top layout.
+   The `.fw-backend-option-type-*` class adds specificity so this beats the 3/9
+   width overrides above. */
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea > .fw-backend-option-desc,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor > .fw-backend-option-desc,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code > .fw-backend-option-desc,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor > .fw-backend-option-desc {
+	width: 100%;
+	margin-left: 0;
+	float: none;
+}
+
+/* Help icons: reveal only on the field's OWN row hover, not when hovering anywhere
+   in the box. The addable-box is itself a .fw-backend-option, so the framework's
+   ".fw-backend-option:hover .fw-option-help-in-input" reveal fires for EVERY field
+   at once when the mouse enters the box area. Re-hide on the outer-box hover, then
+   reveal only for the specific field row that is hovered/focused. (Order matters:
+   the reveal rule follows the re-hide so it wins on the hovered row.) */
+.fw-backend-option.fw-backend-option-type-addable-box:hover .fw-option-help-in-input {
+	opacity: 0;
+	pointer-events: none;
+}
+.fw-backend-option-type-addable-box .fw-backend-option-design-default:hover .fw-option-help-in-input,
+.fw-backend-option-type-addable-box .fw-backend-option-design-default:focus-within .fw-option-help-in-input {
+	opacity: 1;
+	pointer-events: auto;
+}

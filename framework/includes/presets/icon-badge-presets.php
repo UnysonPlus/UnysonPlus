@@ -55,6 +55,7 @@ if ( ! function_exists( 'unysonplus_default_icon_badge_presets' ) ) :
 			return array( 'x' => 0, 'y' => $y, 'blur' => $blur, 'spread' => 0, 'color' => 'rgba(0,0,0,' . $alpha . ')', 'inset' => false );
 		};
 
+		/** Filters the built-in default icon badge presets (Circle, Soft Tile, Outline Ring, Hexagon) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_icon_badge_presets', array(
 			// Circle — solid brand fill, white glyph; lifts + glows on hover.
 			array(
@@ -133,6 +134,7 @@ if ( ! function_exists( 'unysonplus_get_icon_badge_presets' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'icon_badge_presets', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective icon badge presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_icon_badge_presets', $saved );
 			}
 		}

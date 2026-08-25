@@ -21,6 +21,7 @@ if ( ! function_exists( '_fw_dynamic_content_register_link_tags' ) ) :
 
 		// Max items listed per post type (keeps a huge type from making a giant
 		// dropdown). Filterable for sites that want more / fewer.
+		/** Filters the maximum number of permalink choices listed per post type in the dynamic-content link picker (default 200). */
 		$limit = (int) apply_filters( 'fw:dynamic-content:permalink_choices_limit', 200 );
 
 		$post_types = get_post_types( array( 'public' => true ), 'objects' );

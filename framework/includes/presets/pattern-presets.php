@@ -21,6 +21,7 @@
  */
 
 if ( ! function_exists( 'unysonplus_default_pattern_presets' ) ) :
+	/** Returns the default filterable list of pure-CSS background pattern presets. */
 	function unysonplus_default_pattern_presets() {
 		// 12 original, purely-CSS starter patterns (no external / third-party sources). Each is a
 		// semi-transparent overlay (dark rgba marks) so it reads on any site/section background;
@@ -290,4 +291,74 @@ if ( ! function_exists( 'unysonplus_render_site_background_pattern' ) ) :
 		echo unysonplus_pattern_render_layer( $id, true ); // phpcs:ignore WordPress.Security.EscapeOutput — admin-authored, scoped + script-stripped
 	}
 	add_action( 'wp_footer', 'unysonplus_render_site_background_pattern' );
+endif;
+
+if ( ! function_exists( 'unysonplus_repair_pattern_base64' ) ) :
+	/**
+	 * One-time self-heal for base64 SVG data-URIs in the Background Patterns library that were
+	 * lowercased by an older Site Converter build (its `cls()` helper lowercased the whole class
+	 * attribute, corrupting the case-sensitive base64 inside Tailwind `bg-[url('data:...')]`
+	 * classes). The correct-case base64 still lives verbatim in the captured section's own stored
+	 * post content, so we rebuild a lowercase→correct map from site content and swap any corrupt
+	 * pattern base64 back. Guarded by an option so the (content-scanning) pass runs at most once,
+	 * and only if a corrupt entry is actually detected. The current converter no longer corrupts
+	 * (it reads base64 from the raw class attr), so this only heals sites captured before that fix.
+	 *
+	 * @internal
+	 */
+	function unysonplus_repair_pattern_base64() {
+		if ( get_option( 'unysonplus_pattern_b64_repaired_v1' ) ) { return; }
+		if ( ! function_exists( 'fw_get_db_settings_option' ) || ! function_exists( 'fw_set_db_settings_option' ) ) { return; }
+
+		$bp = fw_get_db_settings_option( 'background_patterns', null );
+		if ( ! is_array( $bp ) ) { update_option( 'unysonplus_pattern_b64_repaired_v1', 1, false ); return; }
+
+		// Detect corruption first — skip the heavy content scan when nothing is broken.
+		$needs = false;
+		foreach ( $bp as $r ) {
+			if ( ! empty( $r['css'] ) && preg_match( '/base64,([A-Za-z0-9+\/=]{40,})/', $r['css'], $m )
+				&& strpos( (string) base64_decode( $m[1] ), '<svg' ) === false ) { $needs = true; break; }
+		}
+		if ( ! $needs ) { update_option( 'unysonplus_pattern_b64_repaired_v1', 1, false ); return; }
+
+		// Index every VALID (correct-case) SVG data-URI base64 found in site content, keyed by
+		// its lowercase form — that's what the corrupt library entry decays to.
+		global $wpdb;
+		$map     = array();
+		$queries = array(
+			"SELECT post_content FROM {$wpdb->posts}    WHERE post_content LIKE '%base64,%'",
+			"SELECT meta_value  FROM {$wpdb->postmeta} WHERE meta_value  LIKE '%base64,%'",
+		);
+		foreach ( $queries as $q ) {
+			foreach ( (array) $wpdb->get_col( $q ) as $val ) { // phpcs:ignore WordPress.DB
+				if ( preg_match_all( '/base64,([A-Za-z0-9+\/=]{40,})/', (string) $val, $mm ) ) {
+					foreach ( $mm[1] as $b ) {
+						if ( strpos( (string) base64_decode( $b ), '<svg' ) !== false ) { $map[ strtolower( $b ) ] = $b; }
+					}
+				}
+			}
+		}
+
+		$fixed = 0;
+		foreach ( $bp as &$r ) {
+			if ( empty( $r['css'] ) ) { continue; }
+			$r['css'] = preg_replace_callback(
+				'/base64,([A-Za-z0-9+\/=]{40,})/',
+				function ( $m ) use ( $map, &$fixed ) {
+					$b = $m[1];
+					if ( strpos( (string) base64_decode( $b ), '<svg' ) === false ) {
+						$lc = strtolower( $b );
+						if ( isset( $map[ $lc ] ) ) { $fixed++; return 'base64,' . $map[ $lc ]; }
+					}
+					return $m[0];
+				},
+				$r['css']
+			);
+		}
+		unset( $r );
+
+		if ( $fixed ) { fw_set_db_settings_option( 'background_patterns', $bp ); }
+		update_option( 'unysonplus_pattern_b64_repaired_v1', 1, false );
+	}
+	add_action( 'admin_init', 'unysonplus_repair_pattern_base64' );
 endif;

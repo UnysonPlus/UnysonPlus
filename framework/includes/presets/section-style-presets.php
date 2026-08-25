@@ -89,6 +89,7 @@ if ( ! function_exists( 'unysonplus_default_section_style_presets' ) ) :
 			);
 		};
 
+		/** Filters the built-in default section style presets (Alt, Light band skins) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_section_style_presets', array(
 			// Alt — subtle off-white band for alternating rhythm (inherits theme text).
 			$skin( 's000000001', 'Alt',   $bg( '#f7f7f7' ), $empty,        $empty,        $empty ),
@@ -139,6 +140,7 @@ if ( ! function_exists( 'unysonplus_get_section_style_presets' ) ) :
 			$saved = unysonplus_preset_store_get( 'section_style_presets', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
 				$saved = array_map( 'unysonplus_section_style_normalize_border', $saved );
+				/** Filters the section style presets, whether loaded from saved settings or the plugin defaults. */
 				return apply_filters( 'unysonplus_section_style_presets', $saved );
 			}
 		}

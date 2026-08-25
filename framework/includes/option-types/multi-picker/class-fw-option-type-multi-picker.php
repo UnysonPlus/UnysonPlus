@@ -577,6 +577,7 @@ class FW_Option_Type_Multi_Picker extends FW_Option_Type
 	 * fixes https://github.com/ThemeFuse/Unyson/issues/1440
 	 */
 	protected function _storage_load($id, array $option, $value, array $params) {
+		/** Filters whether the multi-picker runs storage_load on its inner choice options. */
 		if (apply_filters('fw:option-type:multi-picker:fw-storage:process-inner-options', false)) {
 			foreach ($option['choices'] as $choice_id => $choice) {
 				foreach (fw_extract_only_options($choice) as $opt_id => $opt) {

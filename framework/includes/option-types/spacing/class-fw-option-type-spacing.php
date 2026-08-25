@@ -104,6 +104,7 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 	 * @return array
 	 */
 	public function get_scale() {
+		/** Filters the spacing option type's scale array so a theme or extension can supply its own spacing steps. */
 		$scale = apply_filters( 'fw_option_type_spacing_scale', $this->default_scale() );
 		return ( is_array( $scale ) && ! empty( $scale ) ) ? $scale : $this->default_scale();
 	}
@@ -128,7 +129,9 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 			$slug = strtolower( $this->sanitize_class( $entry['name'] ) );
 			if ( $slug === '' ) { continue; }
 			$size  = isset( $entry['size'] ) ? $entry['size'] : '';
-			$label = $entry['name'] . ( $size !== '' ? ' (' . $size . ')' : '' );
+			// An arbitrary-value name (e.g. `[40px]`) already IS the value — don't append a redundant `(40px)`.
+			$is_arb = ( isset( $entry['name'][0] ) && $entry['name'][0] === '[' );
+			$label  = $entry['name'] . ( ( $size !== '' && ! $is_arb ) ? ' (' . $size . ')' : '' );
 			$out[ $this->class_name( $section, $slot, $bp, $slug ) ] = $label;
 		}
 		return $out;

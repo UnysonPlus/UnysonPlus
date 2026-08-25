@@ -9,12 +9,17 @@ if ( ! function_exists( 'unysonplus_default_spacing_scale' ) ) :
 	 * via Theme Settings → General → Spacing.
 	 */
 	function unysonplus_default_spacing_scale() {
+		/** Filters the built-in default spacing scale (Bootstrap-derived spacer steps plus mid-range steps) before user overrides. */
 		return apply_filters( 'unysonplus_default_spacing_scale', array(
 			array( 'name' => '0', 'size' => '0' ),
 			array( 'name' => '1', 'size' => '0.25rem' ),
 			array( 'name' => '2', 'size' => '0.5rem' ),
 			array( 'name' => '3', 'size' => '1rem' ),
 			array( 'name' => '4', 'size' => '1.5rem' ),
+			// Mid-range steps bridging the 24px→48px cliff (2rem / 2.5rem) — the values modern layouts use
+			// most. Bracket-named → rendered on demand by the per-page arbitrary-spacing handler (`.pt-[32px]`).
+			array( 'name' => '[32px]', 'size' => '32px' ),
+			array( 'name' => '[40px]', 'size' => '40px' ),
 			array( 'name' => '5', 'size' => '3rem' ),
 			array( 'name' => '6', 'size' => '3.5rem' ),
 			array( 'name' => '7', 'size' => '4rem' ),
@@ -51,6 +56,7 @@ if ( ! function_exists( 'unysonplus_get_spacing_scale' ) ) :
 							$migrated[] = array( 'name' => (string) $i, 'size' => $saved[ $key ] );
 						}
 					}
+					/** Filters the spacing-scale preset entries returned from saved settings. */
 					return apply_filters( 'unysonplus_spacing_scale', $migrated );
 				}
 				// Phase 2.5 entry-array shape — return as-is
@@ -64,10 +70,12 @@ endif;
 /* -----------------------------------------------------------------------------
  * Gap scale (Bootstrap row gutter / CSS grid `gap`)
  *
- * Separate scale from `spacing_scale` because the practical range for column
- * gaps tops out around 3rem — anything bigger is section-level spacing, not
- * a gap. Defaults mirror Bootstrap 5's `$spacers` so `g-{slug}` mental models
- * line up. Site overrides via Theme Settings → General → Spacing → Gaps.
+ * A distinct preset from `spacing_scale`, but its default now MIRRORS the spacing
+ * scale (slugs 0-12 = 0…8rem) plus the `[32px]`/`[40px]` mid-range steps, so
+ * `g-{slug}` ≡ `p-{slug}` and large hero / feature gutters (64px, 80px) are
+ * expressible instead of clamping at 48px. (Earlier it stopped at slug 5 / 3rem,
+ * which forced modern 40px/64px source gaps to snap to 48px on conversion.) Site
+ * overrides via Theme Settings → General → Spacing → Gaps.
  *
  * Slugs become:
  *   - CSS variables                  (e.g. `--gap-3`)
@@ -86,13 +94,28 @@ if ( ! function_exists( 'unysonplus_default_gap_scale' ) ) :
 	 * who really want a 4rem gutter can add it via Theme Settings.
 	 */
 	function unysonplus_default_gap_scale() {
+		/** Filters the built-in default gap scale (Bootstrap-derived gutter steps) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_gap_scale', array(
 			array( 'name' => '0', 'size' => '0'       ),
 			array( 'name' => '1', 'size' => '0.25rem' ),
 			array( 'name' => '2', 'size' => '0.5rem'  ),
 			array( 'name' => '3', 'size' => '1rem'    ),
 			array( 'name' => '4', 'size' => '1.5rem'  ),
+			// Mid-range steps that bridge the old 24px→48px cliff — the 2rem / 2.5rem gutters modern
+			// (Tailwind-era) grids lean on (`gap-8`, `gap-10`). Bracket-named so they read as exact lengths
+			// in the dropdown; the section view + css-tokens both sanitise `[32px]` → `.section--gap-32px`.
+			array( 'name' => '[32px]', 'size' => '32px' ),
+			array( 'name' => '[40px]', 'size' => '40px' ),
 			array( 'name' => '5', 'size' => '3rem'    ),
+			// Extended to MIRROR the spacing scale (slugs 6-12) so `g-N` ≡ `p-N` and large hero / feature
+			// gutters (64px, 80px) are expressible instead of clamping at 48px. Additive — 0-5 unchanged.
+			array( 'name' => '6',  'size' => '3.5rem' ),
+			array( 'name' => '7',  'size' => '4rem'   ),
+			array( 'name' => '8',  'size' => '4.5rem' ),
+			array( 'name' => '9',  'size' => '5rem'   ),
+			array( 'name' => '10', 'size' => '6rem'   ),
+			array( 'name' => '11', 'size' => '7rem'   ),
+			array( 'name' => '12', 'size' => '8rem'   ),
 		) );
 	}
 endif;
@@ -107,6 +130,7 @@ if ( ! function_exists( 'unysonplus_get_gap_scale' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'gap_scale', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective gap scale (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_gap_scale', $saved );
 			}
 		}

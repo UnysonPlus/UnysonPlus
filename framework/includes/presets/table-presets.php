@@ -38,6 +38,8 @@ endif;
 
 if ( ! function_exists( 'unysonplus_default_table_presets' ) ) :
 	/**
+	 * Returns the default filterable list of table style presets.
+	 *
 	 * Default Table Presets, in the shape consumed by the `table-presets` option
 	 * type. Each preset → a `.tbl-{slug}` class applied to the Table wrapper; the
 	 * CSS is emitted by css-tokens.php. Colors are compact-picker values
@@ -60,6 +62,7 @@ if ( ! function_exists( 'unysonplus_default_table_presets' ) ) :
 		$u     = function ( $value, $unit = 'px' ) { return array( 'value' => (string) $value, 'unit' => $unit ); };
 		$noshadow = array( 'x' => 0, 'y' => 0, 'blur' => 0, 'spread' => 0, 'color' => '', 'inset' => false );
 
+		/** Filters the built-in default table style presets (Clean Lines, etc.) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_table_presets', array(
 
 			// Clean Lines — no frame, horizontal row separators, underlined header.
@@ -214,6 +217,7 @@ if ( ! function_exists( 'unysonplus_get_table_presets' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'table_presets', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the table presets, whether loaded from saved settings or the plugin defaults. */
 				return apply_filters( 'unysonplus_table_presets', $saved );
 			}
 		}

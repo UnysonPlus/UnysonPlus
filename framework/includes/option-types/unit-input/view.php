@@ -10,7 +10,25 @@
 	unset( $div_attr['value'], $div_attr['name'] );
 }
 
-$value = is_array( $data['value'] ) ? $data['value'] : array();
+$value = $data['value'];
+// A JSON-string value (multi-inline nesting) → decode. A LEGACY SCALAR length (an option promoted from
+// `text`/`number` to `unit-input`, e.g. a Text Style size stored as "96" or "0.5px") → split its trailing
+// unit into { value, unit } so the migrated field displays instead of showing blank. Anything else → defaults.
+if ( is_string( $value ) ) {
+	$sv = trim( $value );
+	if ( isset( $sv[0] ) && $sv[0] === '{' ) {
+		$decoded = json_decode( $sv, true );
+		$value   = is_array( $decoded ) ? $decoded : array();
+	} elseif ( $sv !== '' && preg_match( '/^(-?[0-9.]+)\s*(px|rem|em|%|vw|vh|ch|pt)?$/i', $sv, $m ) ) {
+		$value = array( 'value' => $m[1], 'unit' => ( ! empty( $m[2] ) ? strtolower( $m[2] ) : '' ) );
+	} else {
+		$value = array();
+	}
+} elseif ( is_numeric( $value ) ) {
+	$value = array( 'value' => (string) $value, 'unit' => '' );
+} elseif ( ! is_array( $value ) ) {
+	$value = array();
+}
 $value = array_merge( array( 'value' => '', 'unit' => 'px' ), $value );
 
 $units = FW_Option_Type_Unit_Input::normalize_units( isset( $option['units'] ) ? $option['units'] : array() );

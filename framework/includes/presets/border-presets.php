@@ -61,6 +61,7 @@ if ( ! function_exists( 'unysonplus_default_border_presets' ) ) :
 			);
 		};
 
+		/** Filters the built-in default column border presets (Card, Outline, Soft Shadow, Hover Lift) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_border_presets', array(
 			// Card — hairline border + small radius + soft shadow; lifts on hover.
 			array(
@@ -133,6 +134,7 @@ if ( ! function_exists( 'unysonplus_get_border_presets' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'border_presets', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective column border presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_border_presets', $saved );
 			}
 		}

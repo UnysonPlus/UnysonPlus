@@ -531,6 +531,7 @@ if ( ! class_exists( 'FW_Option_Type_Multi_Select' ) ):
 				$set['suppress_filters'] = true;
 			}
 
+			/** Filters the WP_Query args used by the multi-select option's post autocomplete lookup. */
 			return apply_filters( 'fw:option-type:multi-select:query_posts', $set );
 		}
 	}

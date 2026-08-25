@@ -16,6 +16,7 @@
  * also ships the official v4-shims, so any class this misses still renders.
  */
 if ( ! function_exists( 'fw_fa4_to_fa6' ) ) :
+	/** Rewrites a legacy Font Awesome 4 class string to its FA6 equivalent, leaving non-FA4 classes untouched. */
 	function fw_fa4_to_fa6( $class ) {
 		$class = trim( (string) $class );
 		if ( $class === '' ) { return $class; }

@@ -133,6 +133,7 @@ if ( ! function_exists( 'unysonplus_default_button_color_presets' ) ) :
 			);
 		};
 
+		/** Filters the built-in default button color presets (solid, outline, gradient, link) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_button_color_presets', array(
 			// Solid — Primary first (most-used), then Secondary, then the rest.
 			$solid( '0000000002', 'Primary',   'white', 'primary',   'indigo' ),
@@ -188,6 +189,7 @@ if ( ! function_exists( 'unysonplus_get_button_color_presets' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'button_colors', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective button color presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_button_color_presets', $saved );
 			}
 		}
@@ -210,6 +212,7 @@ if ( ! function_exists( 'unysonplus_default_button_size_presets' ) ) :
 		// unitless) string. border-width is NOT a size concern — it lives on the
 		// Button Preset (skin).
 		$u = function ( $value, $unit = 'px' ) { return array( 'value' => (string) $value, 'unit' => $unit ); };
+		/** Filters the built-in default button size presets (xs through xl) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_button_size_presets', array(
 			array( 'id' => '0000010005', 'size_name' => 'Extra Large', 'slug' => 'xl', 'font_size' => $u( 22 ), 'line_height' => '1.4', 'padding_y' => $u( 14 ), 'padding_x' => $u( 24 ), 'border_radius' => $u( 10 ) ),
 			array( 'id' => '0000010004', 'size_name' => 'Large',       'slug' => 'lg', 'font_size' => $u( 20 ), 'line_height' => '1.4', 'padding_y' => $u( 12 ), 'padding_x' => $u( 20 ), 'border_radius' => $u( 8 )  ),
@@ -231,6 +234,7 @@ if ( ! function_exists( 'unysonplus_get_button_size_presets' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'button_sizes', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective button size presets (saved Theme Settings values or defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_button_size_presets', $saved );
 			}
 		}
@@ -249,6 +253,7 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 	 * hover-fx.css and are not duplicated here.
 	 */
 	function unysonplus_default_custom_hover_animations() {
+		/** Filters the seeded sample custom button hover animations (Pulse Ring, Swing, etc.) shown before user overrides. */
 		return apply_filters( 'unysonplus_default_custom_hover_animations', array(
 			array(
 				'id'   => '0000020001',
@@ -314,6 +319,7 @@ if ( ! function_exists( 'unysonplus_get_custom_hover_animations' ) ) :
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
 			$saved = unysonplus_preset_store_get( 'button_animations', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective custom button hover animations (saved Theme Settings values or seeded samples). */
 				return apply_filters( 'unysonplus_custom_hover_animations', $saved );
 			}
 		}

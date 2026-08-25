@@ -87,6 +87,7 @@ class FW_Extension_Custom_Update extends FW_Ext_Update_Service {
 		}
 
 		$request = wp_remote_post(
+			/** Filters the remote URL queried for the latest version during a custom update check. */
 			apply_filters( 'fw_custom_url_version', $set['remote'], $set ),
 			array(
 				'timeout' => $this->download_timeout,

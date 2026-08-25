@@ -263,6 +263,7 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 							__( 'Green',      'fw' ) => '#4caf50',
 							__( 'Orange',     'fw' ) => '#ff9800',
 						);
+					/** Filters the preset color palette offered by the Background Pro option type's color picker. */
 					$palette = apply_filters( 'fw_option_type_background_pro_color_palette', $palette );
 
 					$this->_render_sub( 'color/value', array(

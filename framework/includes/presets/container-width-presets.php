@@ -68,6 +68,7 @@ if ( ! function_exists( 'unysonplus_get_container_width_presets' ) ) :
 		if ( function_exists( 'unysonplus_preset_store_get' ) ) {
 			$saved = unysonplus_preset_store_get( 'container_width_presets', null );
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
+				/** Filters the effective container width presets (saved store values or built-in defaults) returned to consumers. */
 				return apply_filters( 'unysonplus_container_width_presets', $saved );
 			}
 		}

@@ -42,6 +42,24 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		// still keeps a --font-size-{slug} token (+ !important) so it also feeds
 		// mobile scaling and beats Bootstrap / component utilities.
 		// (Stored under the legacy `font_sizes` key — a size-only Text Style.) ---
+		$text_style_extra_css = ''; // freeform per-Text-Style Custom CSS, folded into $button_extra_css below
+		// Resolve a Text Style length value (Size / Letter-spacing) that may be a unit-input { value, unit },
+		// a JSON string of the same, a legacy bare number, or an already-typed length. $legacy_unit is the
+		// unit assumed for a bare legacy number ('px' for Size, 'em' for tracking).
+		$ts_len = function ( $v, $legacy_unit = 'px' ) {
+			if ( is_string( $v ) ) {
+				$t = trim( $v );
+				if ( isset( $t[0] ) && $t[0] === '{' ) { $d = json_decode( $t, true ); if ( is_array( $d ) ) { $v = $d; } }
+			}
+			if ( is_array( $v ) ) {
+				$n = isset( $v['value'] ) ? trim( (string) $v['value'] ) : '';
+				if ( $n === '' ) { return ''; }
+				return $n . ( isset( $v['unit'] ) && $v['unit'] !== '' ? (string) $v['unit'] : $legacy_unit );
+			}
+			$v = trim( (string) $v );
+			if ( $v === '' ) { return ''; }
+			return is_numeric( $v ) ? $v . $legacy_unit : preg_replace( '/[^0-9a-z.%\-]/i', '', $v );
+		};
 		if ( is_array( $font_sizes ) ) {
 			foreach ( $font_sizes as $entry ) {
 				// Resolve the target selector: an explicit class (e.g. Bootstrap
@@ -61,12 +79,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 
 				$decls = array();
 
-				// Size — token + !important (unchanged; also feeds mobile scaling).
-				if ( ! empty( $entry['size'] ) ) {
-					$size_value          = is_numeric( $entry['size'] ) ? $entry['size'] . 'px' : $entry['size'];
-					$var_name            = "--font-size-{$slug}";
-					$tokens[ $var_name ] = $size_value;
-					$decls[]             = "font-size:var({$var_name}) !important";
+				// Size — token + !important (also feeds mobile scaling). Now a unit-input { value, unit }
+				// (px/rem/em); a legacy bare number is still read as px.
+				if ( isset( $entry['size'] ) ) {
+					$size_value = $ts_len( $entry['size'], 'px' );
+					if ( $size_value !== '' ) {
+						$var_name            = "--font-size-{$slug}";
+						$tokens[ $var_name ] = $size_value;
+						$decls[]             = "font-size:var({$var_name}) !important";
+					}
 				}
 				// Weight — numeric. No !important needed: `:root .{class}` (0,2,0)
 				// already outranks Bootstrap's .display-N (0,1,0) and the tag-token
@@ -79,20 +100,46 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( isset( $entry['line_height'] ) && trim( (string) $entry['line_height'] ) !== '' ) {
 					$decls[] = 'line-height:' . preg_replace( '/[^0-9a-z.%\-]/i', '', trim( (string) $entry['line_height'] ) );
 				}
-				// Letter-spacing — a bare number is treated as em (tracking); a value
-				// carrying its own unit passes through.
-				if ( isset( $entry['letter_spacing'] ) && trim( (string) $entry['letter_spacing'] ) !== '' ) {
-					$ls      = trim( (string) $entry['letter_spacing'] );
-					$ls      = is_numeric( $ls ) ? $ls . 'em' : preg_replace( '/[^0-9a-z.%\-]/i', '', $ls );
-					$decls[] = 'letter-spacing:' . $ls;
+				// Letter-spacing — now a unit-input { value, unit } (em/px/rem); a legacy bare number is read
+				// as em (tracking). unysonplus_css_length would assume px, so resolve via $ts_len with an em legacy.
+				if ( isset( $entry['letter_spacing'] ) ) {
+					$ls = $ts_len( $entry['letter_spacing'], 'em' );
+					if ( $ls !== '' ) { $decls[] = 'letter-spacing:' . $ls; }
 				}
 				// Text-transform — whitelisted keyword.
 				if ( ! empty( $entry['transform'] ) && in_array( $entry['transform'], array( 'none', 'uppercase', 'lowercase', 'capitalize' ), true ) ) {
 					$decls[] = 'text-transform:' . $entry['transform'];
 				}
+				// Colour — a compact preset value ({ predefined slug → var(--color-*), or custom hex/rgba }) or a
+				// raw string. NOT !important (unlike size/weight): the `:root .{class}` selector (0,2,0) already
+				// outranks Bootstrap + tag/utility colour defaults, so the preset colour applies by default — but
+				// a PER-ELEMENT explicit colour (an inline `style="color:…"`, e.g. a light heading on a dark
+				// section) MUST win. `!important` here forced every element on the preset to the preset colour,
+				// overriding light-on-dark text; a size preset should size, not dictate colour over an override.
+				if ( ! empty( $entry['color'] ) ) {
+					$col_css = function_exists( 'unysonplus_preset_color_to_css' )
+						? unysonplus_preset_color_to_css( $entry['color'] )
+						: ( is_array( $entry['color'] ) ? ( $entry['color']['custom'] ?? '' ) : (string) $entry['color'] );
+					$col_css = trim( (string) $col_css );
+					if ( $col_css !== '' ) { $decls[] = 'color:' . $col_css; }
+				}
 
 				if ( ! empty( $decls ) ) {
 					$utility_rules[ ":root {$selector}" ] = implode( ';', $decls ) . ';';
+				}
+
+				// Custom CSS — freeform escape hatch for anything the fields don't cover. `selector` (or the
+				// button-style `{{SELECTOR}}`) → the style's real selector; a bare declaration block (no braces)
+				// is wrapped in the style's rule. Emitted into the raw sink so full rules / pseudo-states work.
+				if ( ! empty( $entry['custom_css'] ) ) {
+					$ccss = trim( (string) $entry['custom_css'] );
+					if ( $ccss !== '' ) {
+						if ( strpos( $ccss, '{' ) === false ) {
+							$text_style_extra_css .= "\n{$selector}{" . rtrim( $ccss, "; \t\n\r" ) . ";}";
+						} else {
+							$text_style_extra_css .= "\n" . str_replace( array( '{{SELECTOR}}', 'selector' ), $selector, $ccss );
+						}
+					}
 				}
 			}
 		}
@@ -155,7 +202,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			$slug = preg_replace( '/^(text|bg|background|border|btn)-/', '', $v );
 			return isset( $color_slug_to_hex[ $slug ] ) ? $color_slug_to_hex[ $slug ] : '';
 		};
-		$button_extra_css = ''; // freeform per-preset custom CSS, appended at assembly
+		$button_extra_css = $text_style_extra_css; // freeform per-preset custom CSS (seeded with Text Style Custom CSS), appended at assembly
 
 		// numeric -> px; pass other CSS units through untouched.
 		$len = function ( $v ) {
@@ -347,6 +394,12 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$max_w = $size_len( $bs['max_width'] ?? '' );
 				if ( $max_w !== '' ) { $parts[] = "max-width:{$max_w}"; }
 
+				// MIN HEIGHT — a FIXED button height (a source `h-11` = 44px), which the source sizes by height
+				// + flex-centring rather than vertical padding. Centre the content to that height so the button
+				// matches the source exactly (no padding-Y guesswork). Flex is added only when a height is set.
+				$min_h = $size_len( $bs['min_height'] ?? '' );
+				if ( $min_h !== '' ) { $parts[] = "min-height:{$min_h}"; $parts[] = 'display:inline-flex'; $parts[] = 'align-items:center'; $parts[] = 'justify-content:center'; }
+
 				if ( ! empty( $parts ) ) {
 					$utility_rules[ ".btn-{$slug}" ] = implode( ';', $parts ) . ';';
 				}
@@ -502,11 +555,20 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				}
 				$base = array_merge( $base, $border_state_decls( $def, $sides ) );
 
-				// Default-state background fill (box preset) — color/gradient/image. Emitted
-				// WITHOUT !important, like padding: a default fill the element can override.
+				// Default-state background fill (box preset) — color/gradient/image. Emitted WITH !important,
+				// like the preset's border/radius: an explicitly-chosen Box Preset fill must beat a shortcode's
+				// generic card default of EQUAL specificity that loads later in the cascade (e.g. the theme's
+				// `.icon-box{background:#fff}` card style, which otherwise painted a dark-glass card white). The
+				// element's OWN Background option is emitted scoped (higher specificity) so it still overrides.
 				if ( isset( $def['background'] ) ) {
 					$bg_decls = rtrim( $bg_pro_decls( $def['background'] ), ';' );
-					if ( $bg_decls !== '' ) { $base[] = $bg_decls; }
+					if ( $bg_decls !== '' ) {
+						$bg_decls = implode( ';', array_filter( array_map( function ( $d ) {
+							$d = trim( $d );
+							return ( $d === '' || strpos( $d, '!important' ) !== false ) ? $d : $d . ' !important';
+						}, explode( ';', $bg_decls ) ) ) );
+						$base[] = $bg_decls;
+					}
 				}
 
 				if ( $base ) { $utility_rules[ ".boxp-{$slug}" ] = implode( ';', $base ) . ';'; }
@@ -515,7 +577,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$hov = $border_state_decls( $hover, $sides );
 				if ( isset( $hover['background'] ) ) {
 					$bg_decls = rtrim( $bg_pro_decls( $hover['background'] ), ';' );
-					if ( $bg_decls !== '' ) { $hov[] = $bg_decls; }
+					if ( $bg_decls !== '' ) {
+						// !important so the HOVER fill beats the DEFAULT-state fill (itself !important, to override a
+						// shortcode's generic card default) - without it the default state won even on hover.
+						$bg_decls = implode( ';', array_filter( array_map( function ( $d ) {
+							$d = trim( $d );
+							return ( $d === '' || strpos( $d, '!important' ) !== false ) ? $d : $d . ' !important';
+						}, explode( ';', $bg_decls ) ) ) );
+						$hov[] = $bg_decls;
+					}
 				}
 				if ( $hov ) { $utility_rules[ ".boxp-{$slug}:hover" ] = implode( ';', $hov ) . ';'; }
 
@@ -1412,6 +1482,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		// → Custom CSS through this filter). Folded into the presets file so it
 		// rides the same combiner-absorbed, cacheable handle and is no longer
 		// emitted as its own inline <style> block in wp_head.
+		/** Filters the global custom CSS string folded into the cacheable presets stylesheet. */
 		$global_extra = trim( (string) apply_filters( 'unysonplus_global_css', '' ) );
 
 		if ( empty( $tokens ) && empty( $utility_rules ) && $global_extra === '' ) { return ''; }

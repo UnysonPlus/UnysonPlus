@@ -23,6 +23,7 @@ if ( ! function_exists( 'fw_icon_svg_pack_registry' ) ) :
 		$stroke = 'width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
 			. ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 
+		/** Filters the registry of built-in SVG icon packs (id => title, slug, svg_open), allowing more packs to be registered. */
 		return apply_filters( 'fw_icon_svg_packs', array(
 			'lucide' => array(
 				'title'    => 'Lucide',
@@ -47,6 +48,7 @@ if ( ! function_exists( 'fw_icon_svg_pack_install_dir' ) ) :
 	 */
 	function fw_icon_svg_pack_install_dir() {
 		$dir = fw_upw_uploads_dir( 'icon-packs' )['path'];
+		/** Filters the absolute install root path where on-demand icon packs are written under wp-content/uploads. */
 		return apply_filters( 'fw_icon_svg_pack_install_dir', $dir );
 	}
 endif;
@@ -95,6 +97,7 @@ if ( ! function_exists( 'fw_icon_svg_pack_data' ) ) :
 endif;
 
 if ( ! function_exists( 'fw_icon_svg_pack_search_data' ) ) :
+	/** Returns the cached search index data for an SVG icon pack, loaded from its bundled JSON file. */
 	function fw_icon_svg_pack_search_data( $pack ) {
 		static $cache = array();
 		if ( isset( $cache[ $pack ] ) ) { return $cache[ $pack ]; }

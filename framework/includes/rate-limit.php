@@ -54,6 +54,8 @@ if ( ! function_exists( 'fw_rate_limit_id' ) ) :
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '';
 
 		/**
+		 * Filters the raw client IP used for rate limiting, for use behind a validated proxy or CDN.
+		 *
 		 * Filter the raw client address used for rate limiting.
 		 *
 		 * Use this behind a load balancer or CDN, and validate the proxy before
@@ -69,6 +71,8 @@ endif;
 
 if ( ! function_exists( 'fw_rate_limit_exceeded' ) ) :
 	/**
+	 * Returns true when an action exceeds its per-window hit limit for the current visitor (editors exempt).
+	 *
 	 * Count one hit against `$action` and report whether the caller is over budget.
 	 *
 	 * Sliding-ish window: the first hit starts a counter that expires after
@@ -95,6 +99,8 @@ if ( ! function_exists( 'fw_rate_limit_exceeded' ) ) :
 		}
 
 		/**
+		 * Filters a rate limit before it is applied for an action; return 0 or less to disable limiting for that action.
+		 *
 		 * Filter a limit before it is applied, or disable one entirely.
 		 *
 		 * Return 0 (or less) for `$limit` to switch the limiter off for an action.
