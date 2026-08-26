@@ -44,7 +44,7 @@ $extensions = [
     'backups' => [
         'display'     => true,
         'parent'      => null,
-        'name'        => __('Backup & Demo Content', 'fw'),
+        'name'        => __('Backups & Demo Content', 'fw'),
         'description' => __('This extension lets you create an automated backup schedule, import demo content or even create a demo content archive for migration purposes.', 'fw'),
         'thumbnail'   => $thumbnails_uri . '/backups.svg',
         'download'    => [
@@ -205,6 +205,20 @@ $extensions = [
             'source' => 'github',
             'opts'   => [
                 'user_repo' => $github_account . '/UnysonPlus-WooCommerce-Extension',
+            ],
+        ],
+    ],
+
+    'site-migration' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Site Migration', 'fw'),
+        'description' => __('Packages a WordPress site — database and files — into a single portable archive, and restores one onto another install. The whole job runs in the background in resumable slices, so it survives PHP timeouts and a closed browser, and URLs are rewritten with a serialization-aware replacer that leaves serialized and JSON data intact.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/site-migration.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Site-Migration-Extension',
             ],
         ],
     ],
