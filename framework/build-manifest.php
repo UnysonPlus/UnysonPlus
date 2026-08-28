@@ -991,6 +991,8 @@ return array(
 	'/includes/option-types/wp-editor/static/scripts.js',
 	'/includes/option-types/wp-editor/static/styles.css',
 	'/static/css/backend-options.css',
+	'/static/css/backend-options-grid.css',
+	'/static/css/backend-options-skin.css',
 	'/static/css/fw-select.css',
 	'/static/css/fw-tooltip.css',
 	'/static/css/fw.css',

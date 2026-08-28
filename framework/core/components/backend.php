@@ -537,6 +537,28 @@ final class _FW_Component_Backend {
 				fw()->manifest->get_version()
 			);
 
+			/**
+			 * The admin refresh ships in two layers on top of backend-options.css:
+			 * `-grid` de-Bootstraps the option row (float grid -> CSS Grid) and
+			 * `-skin` paints it. Both DEPEND on 'fw-backend-options' rather than
+			 * merely listing it, because between rules of equal specificity the one
+			 * printed last wins -- the skin has to cascade after the base it
+			 * overrides, and a dependency is what guarantees that ordering.
+			 */
+			wp_register_style(
+				'fw-backend-options-grid',
+				fw_get_framework_asset_uri('/static/css/backend-options-grid.css'),
+				['fw-backend-options'],
+				fw()->manifest->get_version()
+			);
+
+			wp_register_style(
+				'fw-backend-options-skin',
+				fw_get_framework_asset_uri('/static/css/backend-options-skin.css'),
+				['fw-backend-options-grid'],
+				fw()->manifest->get_version()
+			);
+
 			wp_register_script(
 				'fw-backend-options',
 				fw_get_framework_asset_uri('/static/js/backend-options.js'),
@@ -1519,6 +1541,7 @@ final class _FW_Component_Backend {
 			$this->register_static();
 			wp_enqueue_media();
 			wp_enqueue_style('fw-backend-options');
+			wp_enqueue_style('fw-backend-options-skin');
 			wp_enqueue_script('fw-backend-options');
 		}
 
@@ -1658,6 +1681,7 @@ final class _FW_Component_Backend {
 				$this->register_static();
 				wp_enqueue_media();
 				wp_enqueue_style('fw-backend-options');
+			wp_enqueue_style('fw-backend-options-skin');
 				wp_enqueue_script('fw-backend-options');
 				$static_enqueue = false;
 			}
