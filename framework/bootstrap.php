@@ -40,6 +40,7 @@ if (defined('FW')) {
                 return;
             }
 
+            /** Fires at the start of framework bootstrap, before autoload and core initialization. */
             do_action('fw_before_init');
 
             $dir = __DIR__;

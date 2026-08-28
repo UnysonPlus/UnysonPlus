@@ -200,6 +200,7 @@ abstract class FW_Db_Options_Model {
 					} catch ( FW_Cache_Not_Found_Exception $e ) {
 						FW_Cache::set(
 							$cache_key,
+							/** Filters the map of option types to skip when filling missing DB values with defaults. */
 							$skip_types_process = apply_filters( 'fw:options-default-values:skip-types', array(// 'type' => true
 							) )
 						);

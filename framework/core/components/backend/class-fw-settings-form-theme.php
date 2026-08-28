@@ -168,6 +168,7 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 		 * @param bool $should_register Default check result.
 		 */
 		$should_register = (bool) fw()->theme->locate_path('/options/settings.php');
+		/** Filters whether the Theme Settings admin menu should register, letting plugins force it on themes lacking a settings.php. */
 		$should_register = (bool) apply_filters( 'fw_theme_settings_menu_register', $should_register );
 		if ( ! $should_register ) {
 			return;
@@ -274,6 +275,7 @@ class FW_Settings_Form_Theme extends FW_Settings_Form {
 			if (fw()->backend->_get_settings_page_slug() === $plugin_page) {
 				$this->enqueue_static();
 
+				/** Fires after the settings page's option static assets are enqueued. */
 				do_action('fw_admin_enqueue_scripts:settings');
 			}
 		}

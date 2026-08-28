@@ -215,12 +215,14 @@ abstract class FW_Settings_Form {
 		}
 
 		if ($this->is_theme_settings()) {
+			/** Fires while rendering a Theme Settings form, passing ajax-submit and side-tabs flags so listeners can hook the form markup. */
 			do_action('fw_settings_form_render', array(
 				'ajax_submit' => $this->get_is_ajax_submit(),
 				'side_tabs' => $this->get_is_side_tabs()
 			));
 
 			{
+				/** Filters the Theme Settings form button labels (Save Changes, Reset Options) so they can be customized. */
 				$texts = apply_filters('fw_settings_form_texts', array(
 					'save_button' => __('Save Changes', 'fw'),
 					'reset_button' => __('Reset Options', 'fw'),
@@ -349,6 +351,7 @@ abstract class FW_Settings_Form {
 			}
 
 			if ( $this->is_theme_settings() ) {
+				/** Fires after a Theme Settings form is reset, passing the old and new values so listeners can react to the reset. */
 				do_action( 'fw_settings_form_reset', $old_values, $new_values );
 			} else {
 				do_action( 'fw:settings-form:' . $this->get_id() . ':reset', $old_values, $new_values );
@@ -368,6 +371,7 @@ abstract class FW_Settings_Form {
 			 * }
 			 */
 			$new_values = $this->is_theme_settings()
+				/** Filters the values retained when Theme Settings are reset, letting code persist selected options (e.g. API credentials) through a reset. */
 				? apply_filters( 'fw_settings_form_reset:values', array(), $old_values )
 				: apply_filters( 'fw:settings-form:' . $this->get_id() . ':reset:values', array(), $old_values );
 

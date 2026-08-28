@@ -374,6 +374,8 @@ final class _FW_Component_Extensions
 			}
 
 			/**
+			 * Filters the registered extension locations map after all locations are collected and before it is cached.
+			 *
 			 * @since 2.6.9
 			 */
 			$locations = apply_filters('fw_extensions_locations_after', $locations);

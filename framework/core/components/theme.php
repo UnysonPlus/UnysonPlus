@@ -17,6 +17,7 @@ final class _FW_Component_Theme {
 	public function __construct() {
 		$manifest = array();
 
+		/** Filters the path to the theme's manifest.php file loaded when building the theme manifest. */
 		if ( ( $manifest_file = apply_filters( 'fw_framework_manifest_path', fw_get_template_customizations_directory( '/theme/manifest.php' ) ) ) && is_file( $manifest_file ) ) {
 			// Load in an isolated scope (no leaking locals, no silent @-suppression),
 			// matching the child-theme path below.
@@ -92,6 +93,7 @@ final class _FW_Component_Theme {
 		try {
 			return FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
+			/** Filters the resolved Theme Settings options array (cached), letting plugins inject or modify settings options. */
 			$options = apply_filters( 'fw_settings_options', $this->get_options( 'settings' ) );
 
 			FW_Cache::set( $cache_key, $options );
@@ -106,6 +108,7 @@ final class _FW_Component_Theme {
 		try {
 			return FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
+			/** Filters the framework's customizer options array before it is cached. */
 			$options = apply_filters( 'fw_customizer_options', $this->get_options( 'customizer' ) );
 
 			FW_Cache::set( $cache_key, $options );
@@ -120,6 +123,7 @@ final class _FW_Component_Theme {
 		try {
 			return FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
+			/** Filters the resolved options for a post type (after the type-specific filter) before they are cached. */
 			$options = apply_filters(
 				'fw_post_options',
 				apply_filters( "fw_post_options:$post_type", $this->get_options( 'posts/' . $post_type ) ),
@@ -138,6 +142,7 @@ final class _FW_Component_Theme {
 		try {
 			return FW_Cache::get( $cache_key );
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
+			/** Filters the resolved term/taxonomy options array for a taxonomy (cached), letting code inject or modify term options. */
 			$options = apply_filters(
 				'fw_taxonomy_options',
 				apply_filters( "fw_taxonomy_options:$taxonomy", $this->get_options( 'taxonomies/' . $taxonomy ) ),
@@ -194,6 +199,8 @@ final class _FW_Component_Theme {
 			}
 
 			/**
+			 * Filters the resolved theme config array after config.php and child overrides are merged (cached once per request), for framework-level defaults.
+			 *
 			 * Filter the resolved theme config after the theme's own
 			 * config.php (and child-theme override) have been merged in.
 			 *

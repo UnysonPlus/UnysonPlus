@@ -7,6 +7,8 @@ if (!defined('FW')) die('Forbidden');
 // Process the `fw-storage` option parameter
 
 /**
+ * Saves an option value through its configured fw-storage backend, or returns the value unchanged when none is set.
+ *
  * @param string $id
  * @param array $option
  * @param mixed $value
@@ -40,6 +42,8 @@ function fw_db_option_storage_save($id, array $option, $value, array $params = a
 }
 
 /**
+ * Loads an option value through its configured fw-storage backend, or returns the value unchanged when none is set.
+ *
  * @param string $id
  * @param array $option
  * @param mixed $value
@@ -88,6 +92,8 @@ function fw_db_option_storage_load($id, array $option, $value, array $params = a
 }
 
 /**
+ * Returns the registered option storage type instance for the given type, all types when none is given, or null.
+ *
  * @param null|string $type
  * @return FW_Option_Storage_Type|FW_Option_Storage_Type[]|null
  * @since 2.5.0
@@ -105,6 +111,7 @@ function fw_db_option_storage_type($type = null) {
 			$register->register(new FW_Option_Storage_Type_Term_Meta());
 		}
 
+		/** Fires to let code register additional option storage types on the storage-type register. */
 		do_action('fw:option-storage-types:register', $register);
 
 		$types = $register->_get_types($access_key);

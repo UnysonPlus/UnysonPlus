@@ -308,6 +308,8 @@ function fw_update_metadata( $meta_type, $object_id, $meta_key, $meta_value, $pr
 ;
 
 /**
+ * Deletes object metadata rows matching the given meta type, object, key and optional value.
+ *
  * Delete metadata for the specified object.
  *
  * @uses $wpdb WordPress database object for queries.
@@ -531,6 +533,8 @@ function fw_add_post_meta( $post_id, $meta_key, $meta_value, $unique = false ) {
 }
 
 /**
+ * Updates a post meta value via fw_update_metadata(), adding it if the key does not exist.
+ *
  * Update post meta field based on post ID.
  *
  * Use the $prev_value parameter to differentiate between meta fields with the

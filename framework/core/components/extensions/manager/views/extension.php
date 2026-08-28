@@ -50,6 +50,8 @@ if ($ext && $ext->get_settings_options()) {
 }
 
 /**
+ * Filters an extension card's custom Settings link URL; return a URL to show it or '' to hide it.
+ *
  * Let an extension expose a custom Settings link on its card (e.g. one that
  * points to a dedicated admin page instead of the built-in settings form).
  * Return a URL to show the link, or '' to hide it.

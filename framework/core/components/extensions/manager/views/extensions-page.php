@@ -225,6 +225,7 @@ if (empty($display_active_extensions)): ?>
         ?>
     </div>
 
+    <?php /** Filters whether the Extensions page shows the toggle for incompatible or other available extensions; defaults to true. */ ?>
     <?php if ($something_displayed && apply_filters('fw_extensions_page_show_other_extensions', true)): ?>
         <p class="fw-text-center toggle-not-compat-ext-btn-wrapper">
             <?php

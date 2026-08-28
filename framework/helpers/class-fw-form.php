@@ -298,11 +298,13 @@ class FW_Form {
 			$render_data = $data;
 		}
 
+		/** Fires before the opening form tag when an FW_Form renders, passing the form instance. */
 		do_action( 'fw_form_display:before_form', $this );
 
 		// display form errors in frontend
 		echo '<form ' . fw_attr_to_html( $render_data['attr'] ) . ' >';
 
+		/** Fires just after the opening form tag when an FW_Form renders, passing the form instance so listeners can inject markup inside the form. */
 		do_action( 'fw_form_display:before', $this );
 
 		echo fw_html_tag( 'input',
@@ -346,10 +348,12 @@ class FW_Form {
 				) );
 		}
 
+		/** Fires just before the closing form tag when an FW_Form renders, passing the form instance so listeners can inject markup inside the form. */
 		do_action( 'fw_form_display:after', $this );
 
 		echo '</form>';
 
+		/** Fires after the closing form tag when an FW_Form renders, passing the form instance. */
 		do_action( 'fw_form_display:after_form', $this );
 	}
 
@@ -552,6 +556,7 @@ class FW_Form {
 	 * @since 2.6.6
 	 */
 	private function get_nonce_name( $render_data = array() ) {
+		/** Filters extra data appended to a FW_Form nonce name so sub-forms sharing one instance stay distinct. */
 		return '_nonce_' . md5( $this->id . apply_filters( 'fw:form:nonce-name-data', '', $this, $render_data ) );
 	}
 

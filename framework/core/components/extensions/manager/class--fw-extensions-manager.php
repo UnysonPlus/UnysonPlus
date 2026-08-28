@@ -228,6 +228,7 @@ final class _FW_Extensions_Manager
 			$available = $available['extensions'];
 
 			// Allow theme to register available extensions
+			/** Filters the theme-relative path of the available-extensions.php file the Extensions manager looks for, letting a theme relocate it. */
 			$theme_available_ext_file = fw_fix_path( get_template_directory() ) . apply_filters('fw_theme_available_extensions_file_path', fw_get_framework_customizations_dir_rel_path( '/theme/available-extensions.php' ));
 
 			if ( file_exists( $theme_available_ext_file ) ) {
@@ -497,6 +498,7 @@ final class _FW_Extensions_Manager
 			)
 		);
 
+		/** Fires after plugin activation activates theme-supported extensions, before any redirect to the extensions install page. */
 		do_action('fw_after_plugin_activate:before_potential_redirect');
 
 		if (is_admin() && $this->can_install() && $this->get_supported_extensions_for_install()) {
@@ -703,6 +705,7 @@ final class _FW_Extensions_Manager
 
 	private function get_tmp_dir($append = '')
 	{
+		/** Filters the temporary directory path used by the Extensions manager (default wp-content/tmp), letting code relocate it. */
 		return apply_filters('fw_tmp_dir', fw_fix_path(WP_CONTENT_DIR) .'/tmp') . $append;
 	}
 
@@ -741,9 +744,11 @@ final class _FW_Extensions_Manager
 					}
 
 					if (!empty($succeeded_extensions)) {
+						/** Fires after extensions are successfully activated via the deferred activation flow, passing the map of activated extension names. */
 						do_action('fw_extensions_after_activation', $succeeded_extensions);
 					}
 					if (!empty($failed_extensions)) {
+						/** Fires when extensions fail to activate after a deferred activation attempt, passing the map of failed extension names. */
 						do_action('fw_extensions_activation_failed', $failed_extensions);
 					}
 				}
@@ -763,9 +768,11 @@ final class _FW_Extensions_Manager
 					}
 
 					if (!empty($succeeded_extensions)) {
+						/** Fires after extensions are successfully deactivated via the deferred flow, passing the map of deactivated extension names. */
 						do_action('fw_extensions_after_deactivation', $succeeded_extensions);
 					}
 					if (!empty($failed_extensions)) {
+						/** Fires when extensions fail to deactivate after a deferred attempt, passing the map of failed extension names. */
 						do_action('fw_extensions_deactivation_failed', $failed_extensions);
 					}
 				}
@@ -887,6 +894,7 @@ final class _FW_Extensions_Manager
 			}
 		}
 
+		/** Filters whether the custom Extensions admin menu item is registered; returning false suppresses it. */
 		if (! apply_filters('fw_backend_enable_custom_extensions_menu', true)) {
 			return;
 		}
@@ -1927,6 +1935,7 @@ final class _FW_Extensions_Manager
 			}
 		}
 
+		/** Fires after the extensions install process completes, passing the per-extension result array (WP_Error entries on failure). */
 		do_action( 'fw_extensions_install', $result );
 
 		if ( $cancel_on_error && $has_errors ) {
@@ -2211,6 +2220,7 @@ final class _FW_Extensions_Manager
 			}
 		}
 
+		/** Fires after the extensions uninstall process completes, passing the per-extension result array. */
 		do_action('fw_extensions_uninstall', $result);
 
 		if (
@@ -2594,6 +2604,7 @@ final class _FW_Extensions_Manager
 			update_option($db_wp_option_name, $db_wp_option_value, false);
 		}
 
+		/** Fires just before extensions are activated, passing the array of extensions queued for activation. */
 		do_action('fw_extensions_before_activation', $extensions_for_activation);
 
 		if ($has_errors) {
@@ -2840,6 +2851,7 @@ final class _FW_Extensions_Manager
 			update_option($db_wp_option_name, $db_wp_option_value, false);
 		}
 
+		/** Fires just before extensions are deactivated, passing the array of extensions queued for deactivation. */
 		do_action('fw_extensions_before_deactivation', $extensions_for_deactivation);
 
 		if ($has_errors) {
@@ -2861,6 +2873,7 @@ final class _FW_Extensions_Manager
 		 */
 		$extension = $data['data']['extension'];
 
+		/** Fires while rendering an extension's settings form (hook name appends the extension name) before its options fields are output. */
 		do_action('fw_extension_settings_form_render:'. $extension->get_name());
 
 		echo fw_html_tag('input', array(
@@ -2950,6 +2963,7 @@ final class _FW_Extensions_Manager
 
 		$data['redirect'] = fw_current_url();
 
+		/** Fires after an extension's settings form is saved (hook name appends the extension name), passing the option values from before the save. */
 		do_action('fw_extension_settings_form_saved:'. $extension->get_name(), $options_before_save);
 
 		return $data;
@@ -3088,6 +3102,8 @@ final class _FW_Extensions_Manager
 		$register = new _FW_Ext_Download_Source_Register( self::get_access_key()->get_key() );
 
 		/**
+		 * Fires so extensions can register additional download sources with the extensions manager's registrar.
+		 *
 		 * Register download sources for extensions.
 		 *
 		 * Usage:
@@ -3635,6 +3651,7 @@ final class _FW_Extensions_Manager
 	 */
 	public function _action_theme_switch()
 	{
+		/** Filters whether theme extensions are auto-activated on theme switch; returning false skips activation. */
 		if ( ! apply_filters( 'fw_after_switch_theme_activate_exts', true ) ) {
 			return;
 		}
@@ -3793,6 +3810,7 @@ final class _FW_Extensions_Manager
 	 * @internal
 	 */
 	public function _action_admin_notices() {
+		/** Filters whether the admin notice about missing required extensions is shown; default true. */
 		$should_notify = apply_filters(
 			'fw_notify_about_missing_extensions',
 			true

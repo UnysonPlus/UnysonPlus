@@ -34,6 +34,11 @@ if ( ! function_exists( 'unysonplus_default_pattern_presets' ) ) :
 				'root_class'   => $cls,
 				'html'         => '<div class="' . $cls . '"></div>',
 				'css'          => '.' . $cls . '{width:100%;height:100%;' . $decls . '}',
+				// These starters are dark rgba marks meant to read on a LIGHT surface, so preview
+				// them on white regardless of the site's own (possibly dark) body background —
+				// otherwise dark-on-dark makes them look like a solid block. Preview-only; it never
+				// affects where the pattern is actually applied.
+				'preview_bg'   => '#ffffff',
 			);
 		};
 

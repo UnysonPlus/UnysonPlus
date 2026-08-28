@@ -30,6 +30,8 @@ class FW_Db_Options_Model_Settings extends FW_Db_Options_Model {
 
 	protected function _after_set($item_id, $option_id, $sub_keys, $old_value, array $extra_data = array()) {
 		/**
+		 * Fires after a settings option value is set, passing the option id and change details so listeners can react to setting updates.
+		 *
 		 * @since 2.6.0
 		 */
 		do_action('fw_settings_options_update', array(
@@ -145,6 +147,7 @@ class FW_Db_Options_Model_Post extends FW_Db_Options_Model {
 	protected function get_options($item_id, array $extra_data = array()) {
 		$post_type = $this->get_post_type($item_id);
 
+		/** Filters whether post-option DB storage/altering is enabled for a given post type, used to avoid recursive option-lookup loops. */
 		if (apply_filters('fw_get_db_post_option:fw-storage-enabled',
 			/**
 			 * Slider extension has too many fw_get_db_post_option()
@@ -190,6 +193,8 @@ class FW_Db_Options_Model_Post extends FW_Db_Options_Model {
 		fw()->backend->_sync_post_separate_meta($post_id);
 
 		/**
+		 * Fires after a post's options are saved, passing the post id and option id so listeners can react to the update.
+		 *
 		 * @since 2.2.8
 		 */
 		do_action('fw_post_options_update',
@@ -386,6 +391,8 @@ class FW_Db_Options_Model_Term extends FW_Db_Options_Model {
 
 	protected function _after_set($item_id, $option_id, $sub_keys, $old_value, array $extra_data = array()) {
 		/**
+		 * Fires after a term option value is set, passing term id, taxonomy, and option id so listeners can react to the change.
+		 *
 		 * @since 2.6.0
 		 */
 		do_action('fw_term_options_update', array(
@@ -549,6 +556,8 @@ class FW_Db_Options_Model_Customizer extends FW_Db_Options_Model {
 
 	protected function _after_set($item_id, $option_id, $sub_keys, $old_value, array $extra_data = array()) {
 		/**
+		 * Fires after a customizer option value is saved, passing details of the changed option.
+		 *
 		 * @since 2.6.0
 		 */
 		do_action('fw_customizer_options_update', array(

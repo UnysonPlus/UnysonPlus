@@ -60,6 +60,7 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 
 			if ( empty( $branch ) ) {
 				$response = wp_remote_get(
+					/** Filters the GitHub API base URL used when the extensions manager resolves a repository's default branch (default https://api.github.com). */
 					apply_filters( 'fw_github_api_url', 'https://api.github.com' )
 					. '/repos/' . $set['user_repo'],
 					[ 'timeout' => 25 ]

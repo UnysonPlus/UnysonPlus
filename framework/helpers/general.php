@@ -38,6 +38,7 @@ function fw_get_framework_customizations_dir_rel_path( $append = '' ) {
 	} catch ( FW_Cache_Not_Found_Exception $e ) {
 		FW_Cache::set(
 			$cache_key,
+			/** Filters the relative path to the framework-customizations directory (default /framework-customizations) before it is cached. */
 			$dir = apply_filters( 'fw_framework_customizations_dir_rel_path', '/framework-customizations' )
 		);
 	}
@@ -138,6 +139,7 @@ function fw_get_framework_customizations_dir_rel_path( $append = '' ) {
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
 			FW_Cache::set(
 				$cache_key,
+				/** Filters the absolute path to the framework directory before it is cached. */
 				$dir = apply_filters(
 					'fw_framework_directory',
 					fw_fix_path( dirname( dirname( __FILE__ ) ) ) // double dirname() to remove '/helpers', use parent dir
@@ -161,6 +163,7 @@ function fw_get_framework_customizations_dir_rel_path( $append = '' ) {
 		} catch ( FW_Cache_Not_Found_Exception $e ) {
 			FW_Cache::set(
 				$cache_key,
+				/** Filters the resolved URI of the framework directory before it is cached, letting a host override where framework assets load from. */
 				$uri = apply_filters(
 					'fw_framework_directory_uri',
 					( $uri = fw_get_path_url( fw_get_framework_directory() ) )
@@ -224,6 +227,8 @@ function fw_get_framework_customizations_dir_rel_path( $append = '' ) {
 
 if ( ! function_exists( 'fw_min_uri' ) ) {
 	/**
+	 * Rewrites a framework CSS/JS asset URI to its .min variant when a built minified file exists.
+	 *
 	 * Receiver-agnostic minified-asset wrapper.
 	 *
 	 * Wrap any already-built framework/extension asset URL (e.g. the result of
@@ -458,6 +463,7 @@ function fw_rand_md5() {
 	return md5( wp_generate_password( 32, false ) );
 }
 
+/** Returns a per-request incrementing counter, unique within the current page load. */
 function fw_unique_increment() {
 	static $i = 0;
 
@@ -1047,6 +1053,8 @@ function fw_collect_first_level_options( &$collected, &$options ) {
 }
 
 /**
+ * Recursively walks an options array and collects every option and container into the referenced result array.
+ *
  * @param array $result
  * @param array $options
  * @param array $settings
@@ -1283,6 +1291,7 @@ function fw_get_options_values_from_input( array $options, $input_array = null )
 
 	$values = array();
 
+	/** Filters an early override for option values extracted from input; returning a non-null value short-circuits the default extraction. */
 	$maybe_new_values = apply_filters(
 		'fw:get_options_values_from_input:before',
 		null,
@@ -1309,6 +1318,8 @@ function fw_get_options_values_from_input( array $options, $input_array = null )
 }
 
 /**
+ * Validates option input and returns a map of option ids to their validation error messages.
+ *
  * Collect server-side validation errors for option input (Phase 3b).
  *
  * Returns a map of { option_id => error_message } for every leaf option that
@@ -1340,6 +1351,8 @@ function fw_get_options_errors_from_input( array $options, $input_array = null )
 		);
 
 		/**
+		 * Filters the validation error for a single option value during save; return a non-empty string to mark the field invalid.
+		 *
 		 * Authoritative server-side custom validation: uniqueness, existence,
 		 * external API checks, cross-field rules, … Registered in PHP (NOT in the
 		 * option array) so it can't be tampered with via the modal save payload.
@@ -1363,6 +1376,8 @@ function fw_get_options_errors_from_input( array $options, $input_array = null )
 }
 
 /**
+ * Converts an HTML array-attribute name like 'hello[world]' into a slash-separated multikey path.
+ *
  * @param $attr_name
  * @param bool $set_mode
  *
@@ -1414,6 +1429,8 @@ function fw_prepare_option_value( $value ) {
 }
 
 /**
+ * Returns whether the current request is rendering for an editor (admin, AJAX, or block-renderer REST).
+ *
  * Whether the current request is an EDITING surface rather than a visitor page view.
  *
  * Shortcode views use this to show authoring guidance — "Add a poster image and a
@@ -1460,6 +1477,8 @@ function fw_is_editor_context() {
 }
 
 /**
+ * Returns whether the current save_post is a genuine Save rather than a revision or autosave (deprecated).
+ *
  * This function is used in 'save_post' action
  *
  * Used to check if current post save is a regular "Save" button press
@@ -1488,6 +1507,8 @@ function fw_is_real_post_save( $post_id ) {
 }
 
 /**
+ * Returns the cached list of Google fonts keyed by family, with position metadata.
+ *
  * @return Array with Google fonts
  */
 function fw_get_google_fonts() {
@@ -1510,6 +1531,7 @@ function fw_get_google_fonts() {
 			);
 		}
 
+		/** Filters the assembled Google Fonts list (family, variants, position) before it is cached and returned. */
 		$fonts = apply_filters( 'fw_google_fonts', $fonts );
 
 		FW_Cache::set( $cache_key, $fonts );
@@ -1519,6 +1541,8 @@ function fw_get_google_fonts() {
 }
 
 /**
+ * Returns the Google fonts catalog as a JSON string, preferring the bundled static file.
+ *
  * @return string JSON encoded array with Google fonts
  */
 function fw_get_google_fonts_v2() {
@@ -1545,6 +1569,7 @@ function fw_get_google_fonts_v2() {
         ( $saved_data['last_update'] + $ttl < time() )
     ) {
         $response = wp_remote_get(
+            /** Filters the remote URL fetched for the Google web-fonts catalog when the local cache is stale. */
             apply_filters(
                 'fw_googleapis_webfonts_url',
                 'https://google-webfonts-cache.unyson.io/v1/webfonts'
@@ -1576,6 +1601,8 @@ function fw_get_google_fonts_v2() {
 }
 
 /**
+ * Returns the full URL of the current request, resolved against the site home and cached statically.
+ *
  * @return string Current url
  */
 function fw_current_url() {
@@ -1605,6 +1632,7 @@ function fw_current_url() {
 	return $url;
 }
 
+/** Returns whether the given string is a syntactically valid domain name. */
 function fw_is_valid_domain_name( $domain_name ) {
 	return ( preg_match( "/^([a-z\d](-*[a-z\d])*)(\.([a-z\d](-*[a-z\d])*))*$/i", $domain_name ) // valid chars check
 	         && preg_match( "/^.{1,253}$/", $domain_name ) // overall length check
@@ -1738,6 +1766,7 @@ function fw_human_bytes( $bytes, $precision = 2 ) {
 	}
 }
 
+/** Returns the UTF-8 length of a string, using mb_strlen() when available. */
 function fw_strlen( $string ) {
 	if ( function_exists( 'mb_strlen' ) ) {
 		return mb_strlen( $string, 'UTF-8' );
@@ -1789,6 +1818,8 @@ function fw_is_post_edit() {
 }
 
 /**
+ * Converts a hyphenated directory name into an underscore-separated class name (e.g. 'foo-bar' to 'Foo_Bar').
+ *
  * @param string $dirname 'foo-bar'
  *
  * @return string 'Foo_Bar'
@@ -1890,6 +1921,8 @@ function fw_id_to_title( $id ) {
 }
 
 /**
+ * Returns the given URL with its scheme stripped down to a protocol-relative '//' prefix.
+ *
  * Alias
  *
  * @param string $extension_name
@@ -1900,9 +1933,7 @@ function fw_ext( $extension_name ) {
 	return fw()->extensions->get( $extension_name );
 }
 
-/*
- * Return URI without scheme
- */
+/** Returns the given URL with its scheme stripped down to a protocol-relative '//' prefix. */
 function fw_get_url_without_scheme( $url ) {
 	return preg_replace( '/^[^:]+:\/\//', '//', $url );
 }
@@ -2067,6 +2098,8 @@ function fw_string_to_icon_html( $icon, array $attributes = array() ) {
 }
 
 /**
+ * Returns a human-readable message for the last json_decode error, or null when there was none.
+ *
  * @return string|null
  * @since 2.4.10
  */
@@ -2140,6 +2173,7 @@ function fw_multi_ext2type( $ext_array = array() ) {
 }
 
 if ( ! function_exists( 'fw_resize' ) ) {
+	/** Resizes an image URL to the given dimensions via FW_Resize, returning the original URL on failure. */
 	function fw_resize( $url, $width = false, $height = false, $crop = false ) {
 		$fw_resize = FW_Resize::getInstance();
 		$response  = $fw_resize->process( $url, $width, $height, $crop );
@@ -2150,6 +2184,8 @@ if ( ! function_exists( 'fw_resize' ) ) {
 
 if ( ! function_exists( 'fw_image_tag' ) ) {
 	/**
+	 * Builds a responsive img tag for an attachment ID or image URL with sizing, srcset and loading hints.
+	 *
 	 * Modern <img> builder shared across shortcodes (media-image, reviews-table …).
 	 *
 	 * Improvements over hand-built <img> tags from the Unyson era:

@@ -11,6 +11,7 @@ if (!defined('FW')) die('Forbidden');
  */
 class FW_Session {
 	private static function start_session() {
+		/** Filters whether PHP sessions may be started (default true), letting a site disable session_start() usage. */
 		if ( apply_filters( 'fw_use_sessions', true ) && ! session_id() ) {
 			session_start();
 		}

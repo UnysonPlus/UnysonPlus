@@ -68,6 +68,7 @@ final class _FW_Component_Backend {
 	 * @internal
 	 */
 	public function _get_settings_page_slug(): string {
+		/** Filters the admin slug used for the framework's Settings page (default 'fw-settings'). */
 		return apply_filters('fw_get_settings_page_slug', 'fw-settings');
 	}
 
@@ -277,6 +278,7 @@ final class _FW_Component_Backend {
 	 */
 	private function allow_frontend_options_runtime(): bool
 	{
+		/** Filters whether the options-UI static assets may register on the front end, for front-end editors like the Live Page Editor. */
 		return (bool) apply_filters('fw:backend:enqueue-options-on-frontend', false)
 			&& (doing_action('wp_enqueue_scripts') || did_action('wp_enqueue_scripts'));
 	}
@@ -498,6 +500,7 @@ final class _FW_Component_Backend {
 			wp_localize_script('fw', '_fw_localized', [
 				'FW_URI'     => fw_get_framework_directory_uri(),
 				'SITE_URI'   => site_url(),
+				/** Filters the URL of the loader/spinner image passed to framework JavaScript (default the framework logo SVG). */
 				'LOADER_URI' => apply_filters('fw_loader_image', fw_get_framework_directory_uri() . '/static/img/logo.svg'),
 				'l10n'       => array_merge(
 					$l10n = [
@@ -516,7 +519,11 @@ final class _FW_Component_Backend {
 					apply_filters('fw_js_l10n', $l10n)
 				),
 				'options_modal' => [
-					/** @since 2.6.13 */
+					/**
+					 * Filters whether the options modal's default Reset button is disabled.
+					 *
+					 * @since 2.6.13
+					 */
 					'default_reset_bnt_disabled' => apply_filters('fw:option-modal:default:reset-btn-disabled', false),
 				],
 			]);
@@ -821,8 +828,10 @@ final class _FW_Component_Backend {
 		// fixes word_press style: .form-field input { width: 95% }
 		echo '<style type="text/css">.fw-option-type-radio input, .fw-option-type-checkbox input { width: auto; }</style>';
 
+		/** Fires before taxonomy term options are rendered on the term-edit screen. */
 		do_action('fw_backend_options_render:taxonomy:before');
 		echo $this->render_options($collected, $values, [], 'taxonomy');
+		/** Fires after taxonomy term options are rendered on the term-edit screen. */
 		do_action('fw_backend_options_render:taxonomy:after');
 	}
 
@@ -1146,6 +1155,7 @@ final class _FW_Component_Backend {
 			fw_get_options_values_from_input($options)
 		);
 
+		/** Fires after a taxonomy term's options are saved, passing the term id and taxonomy name. */
 		do_action('fw_save_term_options', $term_id, $taxonomy->name, []);
 	}
 
@@ -1221,6 +1231,7 @@ final class _FW_Component_Backend {
 					fw()->theme->get_post_options(get_post_type())
 				);
 
+				/** Fires after a post-edit screen's option static assets are enqueued, passing the current post. */
 				do_action('fw_admin_enqueue_scripts:post', get_post());
 			}
 		}
@@ -1237,6 +1248,7 @@ final class _FW_Component_Backend {
 					fw()->theme->get_taxonomy_options(get_current_screen()->taxonomy)
 				);
 
+				/** Fires after a term/taxonomy screen's option static assets are enqueued, passing the taxonomy. */
 				do_action('fw_admin_enqueue_scripts:term', get_current_screen()->taxonomy);
 			}
 		}
@@ -1256,6 +1268,8 @@ final class _FW_Component_Backend {
 		check_ajax_referer( 'fw_backend_options', '_nonce' );
 
 		/**
+		 * Filters the capability required to use the backend option-render/value-processing AJAX endpoints (default edit_posts).
+		 *
 		 * Defense-in-depth: the nonce alone gates these endpoints, so any
 		 * logged-in user able to obtain it could drive option rendering /
 		 * value processing. Require an editing capability as well. Filterable
@@ -1298,6 +1312,7 @@ final class _FW_Component_Backend {
 				$values = [];
 			}
 
+			/** Filters the option values used when rendering options over AJAX; returning non-null overrides the default extracted values. */
 			$filtered_values = apply_filters(
 				'fw:ajax_options_render:values',
 				null,
@@ -1570,6 +1585,7 @@ final class _FW_Component_Backend {
 					foreach ($collected_type_options as $id => &$_option) {
 						$data = $options_data; // do not change directly to not affect next loops
 
+						/** Filters an early override for an option's value during backend rendering; a non-null return replaces the computed value. */
 						$maybe_future_value = apply_filters(
 							'fw:render_options:option_value',
 							null,
@@ -1710,6 +1726,7 @@ final class _FW_Component_Backend {
 
 		$data['id_prefix'] = $data['id_prefix'] ?? $this->get_options_id_attr_prefix();
 
+		/** Filters the data array passed to an option's render view just before the option markup is generated. */
 		$data = apply_filters('fw:backend:option-render:data', $data);
 
 		return fw_render_view(fw_get_framework_directory('/views/backend-option-design-' . $design . '.php'), [
@@ -1798,16 +1815,51 @@ final class _FW_Component_Backend {
 				$meta_box_template
 			);
 
-			// add html_before|after_title placeholders
-			$meta_box_template = str_replace(
-				'<h2 class="hndle">' . $placeholders['title'] . '</h2>',
-				'<h2 class="hndle">'
-				. '<small class="fw-html-before-title">' . $placeholders['html_before_title'] . '</small>'
+			// add html_before|after_title placeholders.
+			// The before/after-title <small> wrappers are where box options inject their header
+			// controls — for the addable-box that's the Duplicate + Delete (×) buttons — and the
+			// class-less <span> in between is what the addable-box title-preview JS writes into.
+			// WordPress has changed the postbox title markup over versions: classic WP emitted
+			// `<h2 class="hndle">{title}</h2>`, while WP 5.5+ wraps it in a `.postbox-header` and
+			// adds attributes/an id to the <h2 class="hndle …"> (and sometimes a native <span>).
+			// The original EXACT string match only matched classic markup, so on modern WP it
+			// silently failed and the controls were dropped EVERYWHERE box options render (Theme
+			// Settings preset grids AND the page-builder Advanced tab's Custom HTML Attributes) —
+			// leaving no way to remove a row.
+			//
+			// The injection MUST be scoped to the <h2 class="hndle"> content: the title placeholder
+			// ALSO appears inside the postbox toggle button's aria-label / screen-reader text
+			// ("Toggle panel: {title}"). A blanket str_replace there dumps <small>/<span> markup
+			// into an attribute — which breaks the tag and leaks a stray `">` into the row — and
+			// duplicates the controls into the screen-reader text. So match only the h2's own
+			// content, via a regex that tolerates the extra <h2> attributes and an optional native
+			// <span>, and replace just that one occurrence.
+			$before_after =
+				'<small class="fw-html-before-title">' . $placeholders['html_before_title'] . '</small>'
 				. '<span>' . $placeholders['title'] . '</span>'
-				. '<small class="fw-html-after-title">' . $placeholders['html_after_title'] . '</small>'
-				. '</h2>',
-				$meta_box_template
+				. '<small class="fw-html-after-title">' . $placeholders['html_after_title'] . '</small>';
+
+			$count   = 0;
+			$patched = preg_replace(
+				'~(<h2\b[^>]*\bhndle\b[^>]*>)\s*(?:<span>\s*)?'
+					. preg_quote($placeholders['title'], '~')
+					. '(?:\s*</span>)?\s*(</h2>)~',
+				'${1}' . $before_after . '${2}',
+				$meta_box_template,
+				1,
+				$count
 			);
+
+			if ($patched !== null && $count > 0) {
+				$meta_box_template = $patched;
+			} else {
+				// Fallback: classic WP exact markup (no <h2> attributes, no <span>).
+				$meta_box_template = str_replace(
+					'<h2 class="hndle">' . $placeholders['title'] . '</h2>',
+					'<h2 class="hndle">' . $before_after . '</h2>',
+					$meta_box_template
+				);
+			}
 
 			FW_Cache::set($cache_key, $meta_box_template);
 		}
@@ -1884,6 +1936,7 @@ final class _FW_Component_Backend {
 		static $did_options_init = false;
 		if (!$did_options_init) {
 			$did_options_init = true;
+			/** Fires once, the first time an option type is requested, so extensions can register their option types. */
 			do_action('fw_option_types_init');
 		}
 
@@ -1895,6 +1948,7 @@ final class _FW_Component_Backend {
 			return $this->option_types[$type];
 		}
 
+		/** Filters whether an admin flash warning is shown for an undefined option type; passes the type. */
 		if (is_admin() && apply_filters('fw_backend_undefined_option_type_warn_user', true, $type)) {
 			FW_Flash_Messages::add(
 				'fw-get-option-type-undefined-' . $type,
@@ -1941,6 +1995,7 @@ final class _FW_Component_Backend {
 		static $did_containers_init = false;
 		if (!$did_containers_init) {
 			$did_containers_init = true;
+			/** Fires once on first container-type access to let code register custom container types. */
 			do_action('fw_container_types_init');
 		}
 
@@ -2019,10 +2074,12 @@ final class _FW_Component_Backend {
 			'fw-backend-customizer',
 			'_fw_backend_customizer_localized',
 			[
+				/** Filters the debounce timeout (ms) before a customizer option change is applied (default 333). */
 				'change_timeout' => apply_filters('fw_customizer_option_change_timeout', 333),
 			]
 		);
 
+		/** Fires after customizer backend option scripts are enqueued. */
 		do_action('fw_admin_enqueue_scripts:customizer');
 	}
 
