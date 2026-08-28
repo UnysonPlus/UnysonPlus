@@ -95,7 +95,7 @@
 	cursor: pointer; -webkit-user-select: none; user-select: none;
 }
 .fw-mp-pop-trigger:hover { border-color: #b4b9be; }
-.fw-mp-pop.is-open .fw-mp-pop-trigger { border-color: #007cba; box-shadow: 0 0 0 1px #007cba; }
+.fw-mp-pop.is-open .fw-mp-pop-trigger { border-color: var(--fw-accent, #007cba); box-shadow: 0 0 0 1px var(--fw-accent, #007cba); }
 .fw-mp-pop-summary { font-weight: 600; color: #23282d; }
 .fw-mp-pop-caret { color: #7e8993; line-height: 1; transition: transform .15s ease; }
 .fw-mp-pop.is-open .fw-mp-pop-caret { transform: rotate(180deg); }

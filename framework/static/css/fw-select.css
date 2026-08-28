@@ -24,8 +24,8 @@
 
 .fw-select.focus .fw-select-control,
 .fw-select .fw-select-control:focus-within {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 	outline: 2px solid transparent;
 }
 
@@ -47,8 +47,8 @@
 }
 
 .fw-select.multi .fw-select-control > .item.active {
-	background: #2271b1;
-	border-color: #2271b1;
+	background: var(--fw-accent, #2271b1);
+	border-color: var(--fw-accent, #2271b1);
 	color: #fff;
 }
 
@@ -69,7 +69,7 @@
 
 .fw-select-dropdown .active {
 	background: #f0f6fc;
-	color: #2271b1;
+	color: var(--fw-accent, #2271b1);
 }
 
 .fw-select-dropdown .optgroup-header {

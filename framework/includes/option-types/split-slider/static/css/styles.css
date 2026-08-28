@@ -88,7 +88,7 @@
 }
 
 .fw-option-type-split-slider .fw-ss-divider:hover,
-.fw-option-type-split-slider .fw-ss-divider:focus { background: #2271b1; }
+.fw-option-type-split-slider .fw-ss-divider:focus { background: var(--fw-accent, #2271b1); }
 
 .fw-option-type-split-slider .fw-ss-grip {
 	display: block;
@@ -102,7 +102,7 @@
 .fw-option-type-split-slider.fw-ss-dragging,
 .fw-option-type-split-slider.fw-ss-dragging .fw-ss-track { cursor: ew-resize; }
 
-.fw-option-type-split-slider.fw-ss-dragging .fw-ss-divider { background: #135e96; }
+.fw-option-type-split-slider.fw-ss-dragging .fw-ss-divider { background: var(--fw-accent-hover, #135e96); }
 
 /* Toolbar (add / remove columns) */
 .fw-option-type-split-slider .fw-ss-toolbar {

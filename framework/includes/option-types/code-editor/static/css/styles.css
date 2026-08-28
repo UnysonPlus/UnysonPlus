@@ -27,8 +27,8 @@ textarea.fw-option-code-editor {
 
 /* Editor focus state — match WP's standard focus blue. */
 .CodeMirror-focused {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 }
 
 /* Greyed sample overlay (initPlaceholder() in scripts.js). CodeMirror's WP bundle has no

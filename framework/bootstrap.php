@@ -64,6 +64,10 @@ if (defined('FW')) {
             // Loaded here (not per-extension) because the public endpoints live in
             // several extensions and must all count against one implementation.
             require $dir . '/includes/rate-limit.php';
+            // Shared ICON palette (fw_upw_icon_palette()). Loaded here rather than
+            // required from each glyph builder: the option-picker thumbnails are
+            // drawn in a dozen files across core, shortcodes and megamenu.
+            require $dir . '/includes/icon-palette.php';
             // Shared post-type choice list (fw_upw_post_type_choices()) used by the
             // Post Types + Custom Fields extensions.
             require $dir . '/includes/post-type-choices.php';

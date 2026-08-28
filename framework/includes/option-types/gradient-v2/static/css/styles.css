@@ -38,8 +38,8 @@
 .fw-option-type-gradient-v2 .gv2-output:focus,
 .fw-option-type-gradient-v2.gv2-open .gv2-output {
 	outline: 2px solid transparent;
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 }
 /* Unparseable text while typing — overrides the focus ring. */
 .fw-option-type-gradient-v2 .gv2-output.is-invalid,
@@ -167,7 +167,7 @@
 }
 
 .fw-option-type-gradient-v2 .gv2-mode-btn.is-active {
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 	color: #fff;
 }
 
@@ -301,14 +301,14 @@
 	border-radius: 4px;
 	padding: 6px 12px;
 	font-size: 13px;
-	color: #2271b1;
+	color: var(--fw-accent, #2271b1);
 	cursor: pointer;
 	width: 100%;
 }
 
 .fw-option-type-gradient-v2 .gv2-add-stop:hover {
 	background: #f0f6fc;
-	border-color: #2271b1;
+	border-color: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-gradient-v2 .wp-picker-container .wp-color-result.button {

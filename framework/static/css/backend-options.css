@@ -851,10 +851,6 @@ body.rtl .fw-backend-side-tabs .form-footer-buttons input[type="submit"] {
 	margin-right: 26px;
 }
 
-.fw-backend-side-tabs .form-footer-buttons input[type="submit"].button-primary {
-	margin-left: 26px;
-}
-
 .fw-backend-side-tabs .form-footer-buttons input[type="submit"].button-secondary {
 	margin-left: 13px;
 }

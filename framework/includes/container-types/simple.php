@@ -44,11 +44,11 @@ class FW_Container_Type_Group extends FW_Container_Type {
 			$auto_title = function_exists( 'fw_id_to_title' ) ? fw_id_to_title( $id ) : '';
 			if ( ! empty( $group['title'] ) && $group['title'] !== $auto_title ) {
 				// Decode first so a title written with entities (e.g. "&amp;") isn't double-escaped.
-				$html .= '<div class="fw-backend-options-group__title" style="margin:22px 0 2px;padding:0 27px;font-size:11px;font-weight:600;line-height:1.4;letter-spacing:.06em;text-transform:uppercase;color:#646970">'
+				$html .= '<div class="fw-backend-options-group__title">'
 					. esc_html( html_entity_decode( (string) $group['title'], ENT_QUOTES ) ) . '</div>';
 			}
 			if ( ! empty( $group['desc'] ) ) {
-				$html .= '<p class="fw-backend-options-group__desc" style="margin:0 0 14px;padding:0 27px;color:#646970;font-size:12.5px;line-height:1.5">'
+				$html .= '<p class="fw-backend-options-group__desc">'
 					. wp_kses_post( $group['desc'] ) . '</p>';
 			}
 			$html .= fw()->backend->render_options( $group['options'], $values, $data );

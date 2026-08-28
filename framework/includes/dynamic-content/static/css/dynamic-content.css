@@ -2,7 +2,7 @@
 
 .fw-dynamic-content-trigger {
 	display: inline-block;
-	color: #2271b1;
+	color: var(--fw-accent, #2271b1);
 	text-decoration: none;
 	cursor: pointer;
 	width: 20px;
@@ -17,7 +17,7 @@
 .fw-dynamic-content-trigger:hover,
 .fw-dynamic-content-trigger:focus {
 	opacity: 1;
-	color: #135e96;
+	color: var(--fw-accent-hover, #135e96);
 }
 
 /*
@@ -137,7 +137,7 @@
 .fw-dc-item:hover,
 .fw-dc-item:focus {
 	background: #f0f6fc;
-	color: #135e96;
+	color: var(--fw-accent-hover, #135e96);
 }
 
 .fw-dc-item-params {

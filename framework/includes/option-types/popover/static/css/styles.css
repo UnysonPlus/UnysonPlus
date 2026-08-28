@@ -21,13 +21,13 @@
 }
 
 .fw-option-type-popover .fw-popover-trigger:hover {
-	border-color: #2271b1;
+	border-color: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-popover .fw-popover-trigger:focus {
 	outline: none;
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 }
 
 /* The input cell is full-width (width-type 'full') so the in-flow panel spans the
@@ -129,8 +129,8 @@
 
 .fw-option-type-popover .fw-popover-tab.is-active {
 	background: #fff;
-	color: #2271b1;
-	box-shadow: inset 0 -2px 0 #2271b1;
+	color: var(--fw-accent, #2271b1);
+	box-shadow: inset 0 -2px 0 var(--fw-accent, #2271b1);
 }
 
 /* Panels sit below the tab strip; give them breathing room from it. */

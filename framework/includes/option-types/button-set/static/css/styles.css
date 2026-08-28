@@ -84,7 +84,7 @@
 }
 
 .fw-option-type-button-set .fw-button-set-input:focus-visible + .fw-button-set-button {
-	box-shadow: var(--fw-focus-ring, 0 0 0 1px #2271b1);
+	box-shadow: var(--fw-focus-ring, 0 0 0 1px var(--fw-accent, #2271b1));
 	outline: 2px solid transparent; /* visible in Windows high-contrast mode */
 	outline-offset: 0;
 	position: relative;

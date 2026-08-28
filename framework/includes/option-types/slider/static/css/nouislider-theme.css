@@ -25,11 +25,11 @@
 
 .fw-noui.noUi-horizontal .noUi-handle {
 	width: 34px; height: 22px; right: -17px; top: -9px;
-	border-radius: 11px; border: none; background: #2271b1;
+	border-radius: 11px; border: none; background: var(--fw-accent, #2271b1);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, .28); cursor: grab;
 }
 .fw-noui .noUi-handle::before, .fw-noui .noUi-handle::after { display: none; }
-.fw-noui .noUi-handle:focus { outline: 2px solid #135e96; outline-offset: 1px; }
+.fw-noui .noUi-handle:focus { outline: 2px solid var(--fw-accent-hover, #135e96); outline-offset: 1px; }
 
 /* Value sits INSIDE the handle pill (like Ion). */
 .fw-noui .noUi-tooltip {

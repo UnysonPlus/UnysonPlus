@@ -73,7 +73,7 @@
 
 .fw-option-type-column-split .fw-cs-divider:hover,
 .fw-option-type-column-split .fw-cs-divider:focus {
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-column-split .fw-cs-grip {
@@ -91,4 +91,4 @@
 .fw-option-type-column-split.fw-cs-dragging,
 .fw-option-type-column-split.fw-cs-dragging .fw-cs-track { cursor: ew-resize; }
 
-.fw-option-type-column-split.fw-cs-dragging .fw-cs-divider { background: #135e96; }
+.fw-option-type-column-split.fw-cs-dragging .fw-cs-divider { background: var(--fw-accent-hover, #135e96); }

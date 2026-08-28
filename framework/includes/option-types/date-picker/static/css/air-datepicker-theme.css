@@ -6,13 +6,13 @@
  */
 
 .air-datepicker {
-	--adp-accent-color: #2271b1;
-	--adp-color-current-date: #2271b1;
-	--adp-cell-background-color-selected: #2271b1;
-	--adp-cell-background-color-selected-hover: #135e96;
+	--adp-accent-color: var(--fw-accent, #2271b1);
+	--adp-color-current-date: var(--fw-accent, #2271b1);
+	--adp-cell-background-color-selected: var(--fw-accent, #2271b1);
+	--adp-cell-background-color-selected-hover: var(--fw-accent-hover, #135e96);
 	--adp-cell-background-color-in-range: rgba(34, 113, 177, 0.12);
 	--adp-cell-background-color-in-range-hover: rgba(34, 113, 177, 0.2);
-	--adp-day-name-color: #2271b1;
-	--adp-time-track-color-active: #2271b1;
+	--adp-day-name-color: var(--fw-accent, #2271b1);
+	--adp-time-track-color-active: var(--fw-accent, #2271b1);
 	z-index: 100100;
 }

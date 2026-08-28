@@ -183,13 +183,13 @@
 	transition: transform .15s ease;
 }
 .upw-ipk__switch input:checked + .upw-ipk__switch-track {
-	background: #2271b1;
+	background: var(--fw-accent, var(--fw-accent, #3858e9));
 }
 .upw-ipk__switch input:checked + .upw-ipk__switch-track .upw-ipk__switch-knob {
 	transform: translateX(16px);
 }
 .upw-ipk__switch input:focus-visible + .upw-ipk__switch-track {
-	outline: 2px solid #2271b1;
+	outline: 2px solid var(--fw-accent, var(--fw-accent, #3858e9));
 	outline-offset: 2px;
 }
 .upw-ipk__switch input:disabled + .upw-ipk__switch-track {
@@ -263,7 +263,7 @@
 	width: 14px;
 	height: 14px;
 	border: 2px solid rgba(0, 0, 0, .18);
-	border-top-color: #2271b1;
+	border-top-color: var(--fw-accent, var(--fw-accent, #3858e9));
 	border-radius: 50%;
 	animation: upw-ipk-spin .7s linear infinite;
 	vertical-align: middle;
@@ -289,7 +289,7 @@
 .upw-ipk__notice {
 	margin: 10px 0 0;
 	padding: 8px 12px;
-	border-left: 3px solid #72aee6;
+	border-left: 3px solid color-mix(in srgb, var(--fw-accent, #3858e9) 55%, #fff);
 	background: #f0f6fc;
 	font-size: 12px;
 	color: #1d2327;

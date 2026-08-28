@@ -40,18 +40,18 @@
 }
 
 .fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger:hover {
-	border-color: #2271b1;
+	border-color: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger:focus {
 	outline: 2px solid transparent;
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger[aria-expanded="true"] {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var(--fw-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger-swatch {
@@ -157,7 +157,7 @@
 }
 
 .fw-option-type-predefined-colors-color-picker-compact .pccpc__option.is-selected {
-	border-left-color: #2271b1;
+	border-left-color: var(--fw-accent, #2271b1);
 	background: #f0f6fc;
 	font-weight: 600;
 }

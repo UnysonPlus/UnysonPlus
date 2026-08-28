@@ -83,8 +83,8 @@
 }
 
 .fw-sp-row.is-linked .fw-sp-link {
-	color: #2271b1;
-	border-color: #2271b1;
+	color: var(--fw-accent, #2271b1);
+	border-color: var(--fw-accent, #2271b1);
 }
 
 .fw-sp-link .dashicons {

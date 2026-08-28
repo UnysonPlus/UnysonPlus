@@ -1,0 +1,1917 @@
+/* -----------------------------------------------------------------------------
+ * backend-options-skin.css — admin refresh, STEP 2: the visual layer
+ *
+ * Layers on top of backend-options-grid.css (step 1, structure only). Kept in a
+ * separate file behind its own handle so structure and paint can be reverted
+ * independently while this is being validated.
+ *
+ * Everything is scoped under UnysonPlus' own containers (.fw-backend-option,
+ * .fw-options-tabs-wrapper, .fw-postbox). Nothing here touches generic wp-admin
+ * chrome — the WordPress admin menu, admin bar, and other plugins' screens are
+ * out of scope by design.
+ * -------------------------------------------------------------------------- */
+
+/* ---- 1. Tokens ------------------------------------------------------------
+ * Light is the default and lives here. Dark is the same contract revalued (§9).
+ * The accent defers to the chosen WP admin colour scheme where WordPress
+ * exposes it, so someone on Midnight or Ectoplasm keeps their colour.
+ * -------------------------------------------------------------------------- */
+/* Accent tokens are declared on `body`, NOT `:root`, and this matters.
+ *
+ * WordPress sets `--wp-admin-theme-color` per scheme on `body.admin-color-*`
+ * (modern #3858e9, blue #437aa8, coffee #916745, midnight #cf4339, …), while a
+ * stale `#007cba` sits on `:root` from an unrelated stylesheet. A custom
+ * property resolves where it is DECLARED, so declaring the accent at `:root`
+ * captured the stale root value and every scheme rendered the same blue.
+ * Declaring it on `body` picks up whichever scheme the user chose.
+ *
+ * The soft/ring/hover variants are derived from the accent with color-mix so
+ * they follow the scheme too. Static rgba fallbacks come first for browsers
+ * without color-mix (pre-2023), which simply ignore the later declaration. */
+body {
+	--u-accent:       var(--wp-admin-theme-color, #2b6cb8);
+	--u-accent-fg:    var(--u-accent);          /* accent used as TEXT */
+	--u-on-accent:    #fff;
+
+	--u-accent-hover: var(--wp-admin-theme-color-darker-10, #225a9c);
+	--u-accent-soft:  rgba(43, 108, 184, 0.10);
+	--u-accent-ring:  rgba(43, 108, 184, 0.22);
+	--u-accent-soft:  color-mix(in srgb, var(--u-accent) 10%, transparent);
+	--u-accent-ring:  color-mix(in srgb, var(--u-accent) 25%, transparent);
+}
+
+:root {
+	--u-surface: #fff;
+	--u-raised:  #fbfbfc;
+	--u-sunken:  #f2f3f5;
+
+	--u-ink:      #1f2430;
+	--u-ink-soft: #454c59;
+	--u-muted:    #6b7280;
+
+	--u-border:       #e2e4e9;
+	--u-border-soft:  #eceef1;
+	--u-border-input: #c8ccd4;
+	--u-border-hover: #a9afba;
+
+	--u-danger: #b42318;
+
+	--u-control-h: 34px;   /* consumed by admin-controls.css */
+
+	/* Label line box. Half the gap between this and --u-control-h is how far the
+	 * label is nudged down so its FIRST LINE centres on a standard control
+	 * (backend-options-grid.css Â§1). Calibrated against the rendered
+	 * line box + label box, not guessed. */
+	--u-label-lh: 26px;
+
+	/* Height of the Theme Settings footer action bar. THREE things must agree on
+	 * this number or a stripe of background shows through: the bar's own height,
+	 * the negative margin that pulls it up over the side column, and the column's
+	 * reserved padding-bottom. backend-options.css hard-codes 70px/-71px/70px in
+	 * three places; deriving all three from one token stops them drifting. */
+	--u-footer-h: 68px;
+
+	/* Spacing scale -- every gap in this skin is a multiple of 4px (an "8-point
+	 * grid", the 4px half-step included). Off-grid one-offs are what made the
+	 * vertical rhythm read as arbitrary: rows were 7px, panels 12px, groups 0.
+	 *
+	 * Stated in px, not rem, deliberately. The WP admin is a px-composed UI (13px
+	 * body, 30px controls, 20px dashicons) sitting at a 16px root, so `.5rem` is
+	 * 8px TODAY but rescales with the browser's base font size while WordPress's
+	 * own chrome around it does not -- our rows would drift out of step with the
+	 * admin furniture they sit in. One unit for the whole surface. Switching the
+	 * skin to a rem scale later is a one-line change to these four values.
+	 *
+	 * (4px == .25rem, 8px == .5rem, 12px == .75rem, 16px == 1rem at a 16px root.) */
+	--u-space-1:  4px;
+	--u-space-2:  8px;
+	--u-space-3: 12px;
+	--u-space-4: 16px;
+
+	/* Horizontal padding of an option row. Anything that re-applies the row inset
+	 * (multi-picker's popover rule, the group titles) reads it from here, so the
+	 * value cannot drift out of sync the way the old hard-coded 27px did. */
+	--u-row-pad-x: 20px;
+
+	--u-r-sm: 5px;
+	--u-r:    8px;
+
+	--u-shadow-sm: 0 1px 2px rgba(23, 28, 38, 0.05);
+	--u-shadow:    0 1px 2px rgba(23, 28, 38, 0.04), 0 4px 14px -6px rgba(23, 28, 38, 0.12);
+
+	--u-t: 150ms;
+	--u-e: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- 2. Row rhythm --------------------------------------------------------
+ * 24px/27px padding with a hard divider on every row read like a ruled ledger
+ * and cost a lot of vertical space. Tighter padding and a faint divider.
+ *
+ * The hover tint is kept, but only on rows where it reads as a subtle highlight
+ * rather than a large block of shifting colour. Two exclusions do that:
+ *
+ *   1. `:not(:has(.fw-backend-option-design-default))` — a row that CONTAINS
+ *      other option rows is a container (addable-box, multi, multi-picker,
+ *      popup, popover, group). Those are tall by definition, and it also stops
+ *      a nested hover tinting its ancestors, since :hover bubbles.
+ *   2. A named list of tall types — editors, canvases and full-page controls,
+ *      PLUS the repeater/popup containers. The repeaters need naming as well as
+ *      the :has() test: an empty addable-box has no child rows yet (they are
+ *      cloned when you add one), so :has() sees nothing while the control is
+ *      already tall.
+ *
+ *      Picker GRIDS are deliberately NOT excluded — image-picker, icon,
+ *      predefined-colors, gradient, gradient-v2 and both typography types are
+ *      wide but not especially tall, and the tint reads as a highlight there
+ *      rather than a shifting block. border-presets is excluded instead: its
+ *      preview stack is tall enough to have the same problem the editors do.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default {
+	/* SYMMETRIC vertical padding, and it costs no vertical rhythm.
+	 *
+	 * backend-options.css zeroes `padding-bottom` on every grouped row that is not
+	 * the last child (measured: 9 of 11 visible rows), so the row box ended flush
+	 * with its content and the hover tint sat hard against the bottom edge while
+	 * leaving 14px of air on top.
+	 *
+	 * Content-to-content spacing is unchanged: it was 14px top + 0 bottom, it is
+	 * now 7px + 7px. Same gap, tint centred. */
+	padding: var(--u-space-2) var(--u-row-pad-x);
+	border-bottom-color: var(--u-border-soft);
+	transition: background var(--u-t) var(--u-e);
+}
+
+/* Give those grouped rows their bottom padding back so the tint is even. Matches
+ * the specificity of the rules that zero it, and wins on order. */
+.fw-backend-options-group:not(.show-borders) > .fw-backend-option-design-default:not(:last-child),
+.fw-option-type-multi:not(.fw-option-type-multi-show-borders) > .fw-backend-option-design-default:not(:last-child) {
+	padding-bottom: var(--u-space-2);
+}
+
+.fw-backend-option-design-default:hover:not(:has(.fw-backend-option-design-default)):not(.fw-backend-option-type-wp-editor):not(.fw-backend-option-type-code-editor):not(.fw-backend-option-type-svg-code):not(.fw-backend-option-type-page-builder):not(.fw-backend-option-type-builder):not(.fw-backend-option-type-map):not(.fw-backend-option-type-background-pro):not(.fw-backend-option-type-table):not(.fw-backend-option-type-table-presets):not(.fw-backend-option-type-html-full):not(.fw-backend-option-type-form-builder):not(.fw-backend-option-type-addable-box):not(.fw-backend-option-type-addable-popup):not(.fw-backend-option-type-addable-popup-full):not(.fw-backend-option-type-addable-option):not(.fw-backend-option-type-multi-picker):not(.fw-backend-option-type-popup):not(.fw-backend-option-type-popover):not(.fw-backend-option-type-border-presets) {
+	background: var(--u-raised);
+}
+
+/* ---- 3. Label and description --------------------------------------------- */
+.fw-backend-option-design-default > .fw-backend-option-label label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--u-ink);
+	line-height: 1.4;
+}
+
+/* The description was italic, which is harder to read at small sizes and was
+ * doing the job that colour and size should do. */
+.fw-backend-option-design-default > .fw-backend-option-desc {
+	font-style: normal;
+	color: var(--u-muted);
+}
+
+.fw-backend-option-design-default > .fw-backend-option-desc,
+.fw-backend-option-design-default > .fw-backend-option-desc > .fw-inner {
+	max-width: none;      /* full width — no reading-measure cap */
+	width: auto;
+}
+
+.fw-backend-option-design-default > .fw-backend-option-desc > .fw-inner {
+	font-size: 12px;
+	line-height: 1.5;
+	padding-top: 6px;
+	text-wrap: pretty;
+}
+
+/* ---- 4. One control vocabulary --------------------------------------------
+ * Scoped to the option input cell so nothing leaks into wp-admin at large.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-backend-option-input input[type="text"],
+.fw-backend-option .fw-backend-option-input input[type="password"],
+.fw-backend-option .fw-backend-option-input input[type="number"],
+.fw-backend-option .fw-backend-option-input input[type="email"],
+.fw-backend-option .fw-backend-option-input input[type="url"],
+.fw-backend-option .fw-backend-option-input select,
+.fw-backend-option .fw-backend-option-input textarea {
+	padding: 5px 10px;
+	font-size: 13px;
+	color: var(--u-ink);
+	background: var(--u-surface);
+	border: 1px solid var(--u-border-input);
+	border-radius: var(--u-r-sm);
+	box-shadow: none;
+	transition: border-color var(--u-t) var(--u-e), box-shadow var(--u-t) var(--u-e);
+}
+
+.fw-backend-option .fw-backend-option-input input[type="text"]:hover,
+.fw-backend-option .fw-backend-option-input select:hover,
+.fw-backend-option .fw-backend-option-input textarea:hover {
+	border-color: var(--u-border-hover);
+}
+
+.fw-backend-option .fw-backend-option-input input[type="text"]:focus,
+.fw-backend-option .fw-backend-option-input input[type="password"]:focus,
+.fw-backend-option .fw-backend-option-input input[type="number"]:focus,
+.fw-backend-option .fw-backend-option-input select:focus,
+.fw-backend-option .fw-backend-option-input textarea:focus {
+	border-color: var(--u-accent);
+	box-shadow: 0 0 0 3px var(--u-accent-ring);
+	outline: 2px solid transparent;   /* keep an outline for forced-colors mode */
+	outline-offset: 0;
+}
+
+.fw-backend-option .fw-backend-option-input textarea {
+	line-height: 1.55;
+}
+
+/* ---- 5. Help: ONE icon, in the label --------------------------------------
+ * The row renders the icon twice and swaps by viewport breakpoint: a
+ * hover-revealed copy absolutely positioned in the control cell, and a
+ * label-side copy shown only at xs. Thirteen option types ship CSS whose only
+ * job is putting the floating copy back where it belongs.
+ *
+ * Showing the label copy at every width retires all of that. The `!important`
+ * is needed to beat `.fw-visible-xs-block { display: none !important }`.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-option-help-in-input {
+	display: none !important;
+}
+
+/* The icon sits ON the label line by putting both in normal INLINE flow.
+ *
+ * `<label>` ships as `display: block; float: left`, which pushed the icon onto a
+ * line of its own. A baseline flex row was tried first and is the wrong tool
+ * here: a flex item with `min-width: 0` may shrink to zero, and in narrow popup
+ * columns the label collapsed to ~28px and rendered one letter per line. Inline
+ * flow gives the same result with no shrink behaviour to go wrong. */
+.fw-backend-option-design-default > .fw-backend-option-label > .fw-inner > label {
+	display: inline;
+	float: none;
+}
+
+.fw-backend-option .fw-option-help-in-label {
+	display: inline-block !important;
+	float: none !important;
+	margin-left: 4px;
+	/* `middle` rather than a pixel nudge. Measured against the label's centre:
+	 * baseline -1.16px, middle +0.59px, -2px +0.84px, -5px +3.84px — a negative
+	 * vertical-align pushes the icon DOWN, so hand-tuned negatives move it
+	 * further out, not closer. Sizing the glyph box near the label's own height
+	 * (17px) keeps the remainder sub-pixel. */
+	vertical-align: middle;
+	color: #9aa1ad;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	cursor: pointer;
+	/* Hover-revealed, not permanent. Opacity (not display) so the space stays
+	 * reserved and nothing shifts when it appears. */
+	opacity: 0;
+	transition: opacity var(--u-t) var(--u-e), color var(--u-t) var(--u-e);
+}
+
+/* Reveal ONLY the hovered row's own icon.
+ *
+ * `.fw-backend-option:hover` also matches every ancestor option row, so in a
+ * preset panel of nine nested rows all 57 icons lit up at once. The
+ * `:not(:has(... :hover))` guard restricts it to the innermost hovered row, and
+ * the child combinator keeps it to that row's own label. */
+.fw-backend-option-design-default:hover:not(:has(.fw-backend-option-design-default:hover)) > .fw-backend-option-label .fw-option-help-in-label,
+.fw-backend-option-design-default:focus-within:not(:has(.fw-backend-option-design-default:focus-within)) > .fw-backend-option-label .fw-option-help-in-label,
+.fw-backend-option .fw-option-help-in-label:focus,
+.fw-backend-option .fw-option-help-in-label.active {
+	opacity: 1;
+}
+
+.fw-backend-option .fw-option-help-in-label:hover,
+.fw-backend-option .fw-option-help-in-label:focus {
+	color: var(--u-accent-fg);
+}
+
+/* The control cell no longer reserves room for a floating icon. */
+.fw-backend-option-design-default.with-help > .fw-backend-option-input > .fw-inner {
+	padding-right: 0;
+}
+
+/* ---- 6. Tabs: the classic tab, modernised ---------------------------------
+ * These tabs swap panels, so they keep the tab affordance: the active tab is
+ * bordered on left/top/right and blends into the panel below, which is what
+ * makes a tab read as "this panel belongs to me".
+ *
+ * What changes versus the original is the costume, not the metaphor: 1px
+ * borders in the token palette instead of #c3c4c7, rounded top corners, real
+ * spacing instead of line-height hacks, and no grey boxes on inactive tabs.
+ *
+ * The "seam" (active tab bottom edge blending into the panel) is done by
+ * pulling the row down 1px over the rail and painting the active tab's
+ * bottom border in the surface colour — the same technique the original used,
+ * just expressed once instead of via a white ::after overlay.
+ *
+ * NOTE: `.fw-options-tabs-list` is shared with the VERTICAL side-tab column on
+ * Theme Settings. §12 restyles that separately at higher specificity.
+ * -------------------------------------------------------------------------- */
+.fw-options-tabs-wrapper > .fw-options-tabs-list {
+	border-bottom: 1px solid var(--u-border);
+	padding-bottom: 0;
+}
+
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	margin-bottom: -1px;      /* overlap the rail so the active tab can break it */
+}
+
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li {
+	float: none;
+	margin: 0;
+}
+
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab {
+	margin: 0;
+	background: transparent;
+	border: 1px solid transparent;
+	/* padding-box, NOT the default border-box: otherwise the hover fill paints
+	 * underneath the 1px transparent bottom border and visually severs the rail
+	 * beneath the tab. Clipping to the padding box lets the rail run unbroken
+	 * under every inactive tab while still allowing the ACTIVE tab to cover it
+	 * (its bottom border is opaque `--u-surface`, which is the seam). */
+	background-clip: padding-box;
+	border-radius: var(--u-r-sm) var(--u-r-sm) 0 0;
+	padding: 9px 14px;
+	font-size: 13px;
+	font-weight: 550;
+	line-height: 20px;
+	color: var(--u-muted);
+	transition: color var(--u-t) var(--u-e), background var(--u-t) var(--u-e),
+	            border-color var(--u-t) var(--u-e);
+}
+
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:hover {
+	background: var(--u-sunken);
+	color: var(--u-ink);
+}
+
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--u-accent-ring);
+}
+
+/* Active: bordered on three sides, bottom edge painted out so the tab and its
+ * panel read as one surface. */
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab,
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab:hover {
+	background: var(--u-surface);
+	border-color: var(--u-border);
+	border-bottom-color: var(--u-surface);
+	color: var(--u-ink);
+	font-weight: 650;
+}
+
+/* backend-options.css scopes two of these under `.postbox`, which outranks the
+ * rules above: inactive tabs get `--fw-surface-alt` as a background, and the
+ * active tab's bottom border is forced to #fff. Answer at the same scope. */
+.postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab,
+.fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab {
+	background: transparent;
+	background-clip: padding-box;
+	border: 1px solid transparent;
+}
+
+.postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:hover,
+.fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:hover {
+	background: var(--u-sunken);
+	background-clip: padding-box;
+}
+
+.postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
+.postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab,
+.fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
+.fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab {
+	background: var(--u-surface);
+	border-color: var(--u-border);
+	border-bottom-color: var(--u-surface);
+	color: var(--u-ink);
+}
+
+/* Theme Settings nests its inner tab strip inside the side-tab shell, where
+ * backend-options.css adds its own seam handling (:439 border-bottom #fff and
+ * a :489 white ::after bar). The surface-coloured bottom border above already
+ * does that job, so the overlay is switched off and the border points at the
+ * token instead of a literal white. */
+.fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-contents .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab {
+	border-color: var(--u-border);
+	border-bottom-color: var(--u-surface);
+}
+
+.fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-contents > .fw-inner > .fw-options-tab > .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active:after {
+	display: none;
+}
+
+/* Side-tab column: undo the segmented track. `.fw-options-tabs-list` is shared
+ * between the horizontal strip and the vertical Theme Settings side column, and
+ * a wrapped inline-flex there produced a broken two-column block. */
+.fw-backend-side-tabs > .fw-options-tabs-wrapper > .fw-options-tabs-list ul {
+	display: block;
+	padding: 0;
+	gap: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+}
+
+.fw-backend-side-tabs > .fw-options-tabs-wrapper > .fw-options-tabs-list ul li {
+	display: block;
+	float: none;
+	width: 100%;
+}
+
+.fw-backend-side-tabs > .fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab {
+	display: block;
+	width: 100%;
+	border-radius: 0;
+	box-shadow: none;
+	padding: 11px 16px;
+	box-sizing: border-box;
+}
+
+/* ---- 7. Panels -------------------------------------------------------------
+ * NOTE on the header divider: WordPress draws it on `.postbox-header`, not on
+ * `.hndle` (wp-admin/css/common.css). Styling `.hndle` alone therefore does
+ * nothing — the visible line belongs to the wrapper.
+ * -------------------------------------------------------------------------- */
+.fw-postbox > .postbox-header,
+.postbox-with-fw-options > .postbox-header {
+	border-bottom-color: var(--u-border);
+}
+
+body.fw-skin-dark .fw-postbox > .postbox-header,
+body.fw-skin-dark .postbox-with-fw-options > .postbox-header {
+	border-bottom-color: var(--u-border);
+}
+
+.fw-postbox,
+.postbox-with-fw-options {
+	border-color: var(--u-border);
+	border-radius: var(--u-r);
+	box-shadow: var(--u-shadow);
+}
+
+.fw-postbox > .hndle,
+.postbox-with-fw-options > .hndle {
+	border-bottom-color: var(--u-border-soft);
+	font-size: 13.5px;
+	font-weight: 650;
+	color: var(--u-ink);
+	letter-spacing: -0.01em;
+}
+
+/* ---- 8. Groups ------------------------------------------------------------- */
+.fw-backend-options-group:not(.show-borders) {
+	border-bottom-color: var(--u-border-soft);
+}
+
+/* ---- 9. Dark ---------------------------------------------------------------
+ * Same token contract, different values. No rule above is duplicated. Declared
+ * twice only because CSS cannot share a block across a media boundary.
+ * -------------------------------------------------------------------------- */
+.fw-skin-dark {
+	--u-accent:       #4a86d8;
+	--u-accent-hover: #5c95e2;
+	--u-accent-fg:    #8ab4f0;
+	--u-accent-soft:  rgba(74, 134, 216, 0.18);
+	--u-accent-ring:  rgba(74, 134, 216, 0.34);
+
+	--u-surface: #22262e;
+	--u-raised:  #282d36;
+	--u-sunken:  #1c2028;
+
+	--u-ink:      #f0f2f5;
+	--u-ink-soft: #d3d7de;
+	--u-muted:    #a6adba;
+
+	--u-border:       #363c46;
+	--u-border-soft:  #2e343d;
+	--u-border-input: #444b57;
+	--u-border-hover: #5a6270;
+
+	--u-danger: #f38b82;
+
+	--u-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+	--u-shadow:    0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+	.fw-skin-auto {
+		--u-accent:       #4a86d8;
+		--u-accent-hover: #5c95e2;
+		--u-accent-fg:    #8ab4f0;
+		--u-accent-soft:  rgba(74, 134, 216, 0.18);
+		--u-accent-ring:  rgba(74, 134, 216, 0.34);
+
+		--u-surface: #22262e;
+		--u-raised:  #282d36;
+		--u-sunken:  #1c2028;
+
+		--u-ink:      #f0f2f5;
+		--u-ink-soft: #d3d7de;
+		--u-muted:    #a6adba;
+
+		--u-border:       #363c46;
+		--u-border-soft:  #2e343d;
+		--u-border-input: #444b57;
+		--u-border-hover: #5a6270;
+
+		--u-danger: #f38b82;
+
+		--u-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+		--u-shadow:    0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+	}
+}
+
+/* Surfaces need repainting for dark; the tokens alone only cover properties the
+ * rules above already reference. */
+.fw-skin-dark .fw-postbox,
+.fw-skin-dark .postbox-with-fw-options,
+.fw-skin-auto .fw-postbox,
+.fw-skin-auto .postbox-with-fw-options {
+	background: var(--u-surface);
+	color: var(--u-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-backend-option-design-default,
+	.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab,
+	.fw-backend-option .fw-backend-option-input input,
+	.fw-backend-option .fw-backend-option-input select,
+	.fw-backend-option .fw-backend-option-input textarea {
+		transition-duration: 1ms;
+	}
+}
+
+/* -----------------------------------------------------------------------------
+ * 10. Dark: structural chrome
+ *
+ * The tokens in §9 only reach properties the rules above already reference.
+ * Everything below is a surface that paints its own literal colour and would
+ * otherwise stay white inside a dark panel.
+ *
+ * SCOPE NOTE — this covers the framework CHROME only (tab shell, panel titles,
+ * side-tab column, footer bar). It does NOT complete dark mode: 38 of the 51
+ * option-type stylesheets paint their own literal light colours, and each needs
+ * tokenising individually. Auto-follow-the-OS is deliberately disabled until
+ * that work is done; dark is opt-in via ?fw_skin=dark.
+ *
+ * The `body.` prefix is load-bearing: the theme's fw-settings.css loads after
+ * the plugin, so a bare class selector loses the cascade to it.
+ * -------------------------------------------------------------------------- */
+body.fw-skin-dark .fw-options-tabs-wrapper,
+body.fw-skin-dark .fw-options-tabs-contents,
+body.fw-skin-dark .fw-options-tabs-contents.metabox-holder {
+	background: var(--u-surface);
+	color: var(--u-ink);
+}
+
+/* Panel titles were rendering dark-on-dark ("General Settings", "Theme Layout"). */
+/* `h2.hndle` sits inside `div.postbox-header`, so a child combinator misses it,
+ * and WordPress's own common.css paints `h2, h3` dark. Descendant + the body
+ * prefix is what actually wins here. */
+body.fw-skin-dark .fw-postbox .hndle,
+body.fw-skin-dark .postbox .hndle,
+body.fw-skin-dark .fw-postbox .postbox-header,
+body.fw-skin-dark .postbox .postbox-header,
+body.fw-skin-dark .fw-postbox .hndle span,
+body.fw-skin-dark .postbox .hndle span {
+	color: var(--u-ink);
+	background: transparent;
+}
+
+body.fw-skin-dark .fw-postbox > .handlediv,
+body.fw-skin-dark .postbox > .handlediv,
+body.fw-skin-dark .fw-postbox .toggle-indicator::before {
+	color: var(--u-muted);
+}
+
+/* Side-tab column. */
+/* The side-tab list is a DIRECT child of the form; there is no tabs-wrapper
+ * element between them, so the wrapper-based selector never matched. */
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-list li,
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list a.nav-tab,
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list a.nav-tab span {
+	background: var(--u-sunken);
+	/* `!important` because backend-options.css colours the parent <li> via
+	 * --fw-text and the anchor inherits it; without this the labels render
+	 * dark-on-dark and the whole side column reads as empty rows. */
+	color: var(--u-ink-soft) !important;
+	border-color: var(--u-border-soft);
+}
+
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list a.nav-tab:hover {
+	background: var(--u-raised);
+	color: var(--u-ink);
+}
+
+/* Footer action bar. */
+body.fw-skin-dark .form-footer-buttons {
+	background: var(--u-sunken);
+	border-color: var(--u-border-soft);
+}
+
+/* Section eyebrows / group headings inside option groups. */
+body.fw-skin-dark .fw-backend-options-group,
+body.fw-skin-dark .fw-option-box,
+body.fw-skin-dark .fw-option-boxes {
+	background: transparent;
+	color: var(--u-ink);
+}
+
+/* -----------------------------------------------------------------------------
+ * 11. Control height
+ *
+ * This belongs in admin-controls.css (which owns control sizing and documents
+ * why), but edits to EXISTING plugin files do not survive on this install — a
+ * bulk mirror of the working copy has reverted them twice. Only new files
+ * persist, so the override lives here instead.
+ *
+ * admin-controls.css sets 30px via
+ *   :is(.wrap[class*="fw-"], .wrap.upw-tpl, #fw-extensions-list-wrapper, …) …
+ *
+ * GOTCHA: `:is()` takes the specificity of its MOST SPECIFIC argument, and that
+ * list contains `#fw-extensions-list-wrapper`. So the rule carries ID-level
+ * specificity (1,0,0) on EVERY surface it covers, including plain
+ * `.fw-backend-option`. No class-based selector can outrank it, which is why
+ * `!important` is used here rather than a longer selector.
+ *
+ * Worth fixing upstream: splitting the ID out of the :is() list would drop that
+ * rule back to class specificity and make it overridable normally.
+ *
+ * TO UPSTREAM: fold this back into admin-controls.css as
+ * `var(--u-control-h, 30px)` and delete this section.
+ * -------------------------------------------------------------------------- */
+body .fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]),
+body .fw-backend-option .fw-backend-option-input input[type="text"]:not([readonly]),
+body .fw-backend-option .fw-backend-option-input input[type="password"],
+body .fw-backend-option .fw-backend-option-input input[type="number"] {
+	min-height: var(--u-control-h, 34px) !important;
+	height: var(--u-control-h, 34px) !important;
+	line-height: calc(var(--u-control-h, 34px) - 2px) !important;
+}
+
+/* -----------------------------------------------------------------------------
+ * 12. Theme Settings side navigation
+ *
+ * The left column was left stock while the content area was refreshed, so it
+ * read as unfinished: a 1px rule under every item, a full-bleed blue active bar
+ * that merged into the page header, no hover affordance, and a stray divider
+ * under the last item ("Demo Options") followed by empty space.
+ *
+ * Specificity note: backend-options.css targets these at
+ *   .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li a.nav-tab
+ * which is (0,4,3). The `body` prefix below takes these to (0,4,4) so they win
+ * without !important.
+ * -------------------------------------------------------------------------- */
+
+/* The column becomes a distinct surface instead of white-on-white, and the
+ * gradient hairline divider is replaced by a real border. */
+body .fw-backend-side-tabs .fw-options-tabs-first-level {
+	background: var(--u-sunken);
+}
+
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list {
+	background: var(--u-sunken);
+	/* No right border: the column and the footer bar share `--u-sunken`, so the
+	 * shape reads as one continuous surface and a divider only chops it up. */
+	border-right: 0;
+	padding: 8px 8px var(--u-footer-h);
+	box-sizing: border-box;
+}
+
+/* Dividers between every item are replaced by spacing; the last one was leaving
+ * an orphaned rule above the empty tail of the column. */
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li {
+	border: 0;
+	margin: 0 0 1px;
+	overflow: visible;
+}
+
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li a.nav-tab {
+	height: auto;
+	line-height: 1.35;
+	padding: 9px 12px;
+	border-radius: var(--u-r-sm);
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--u-ink-soft);
+	background: transparent;
+	transition: background var(--u-t) var(--u-e), color var(--u-t) var(--u-e);
+}
+
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list .ui-tabs-nav a:hover,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li a.nav-tab:hover {
+	background: var(--u-surface);
+	color: var(--u-ink);
+}
+
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li a.nav-tab:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--u-accent-ring);
+}
+
+/* Active: a contained pill rather than a full-bleed bar that ran into the page
+ * header. Carried by background + weight + colour, not a side stripe. */
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab {
+	background: var(--u-surface);
+	color: var(--u-accent-fg);
+	font-weight: 650;
+	box-shadow: var(--u-shadow-sm);
+}
+
+/* Dark */
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-first-level,
+body.fw-skin-dark .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list {
+	background: var(--u-sunken);
+	border-right-color: var(--u-border);
+}
+
+/* -----------------------------------------------------------------------------
+ * 13. Theme Settings header
+ *
+ * The coloured bar STAYS. It is the one piece of brand presence on the screen,
+ * and backend-options.css already varies it per WP admin colour scheme
+ * (light / blue / coffee / ectoplasm / midnight / ocean / sunrise). Repainting
+ * it as a neutral surface both flattened the page and threw those variants away.
+ *
+ * So this section deliberately does NOT touch the background or the title: the
+ * original 27px/300 white title and its .6-opacity byline are left alone.
+ * Only two things change.
+ * -------------------------------------------------------------------------- */
+
+/* 1a. Vertically centre the header contents.
+ *
+ * The header is a Bootstrap float row whose two columns have different natural
+ * heights: the title column is 67px (20px padding + a 27px/1 title + 20px) and
+ * the actions column is 80px (padding + a 34px button). Floated columns hang
+ * from the top, so the title sat 6px above the optical centre.
+ *
+ * Flex with `align-items: center` centres both columns against the tallest.
+ * The clearfix pseudo-elements from `.fw-row` have to be removed or they become
+ * flex items and open a phantom third column. */
+body .fw-settings-form-header {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+body .fw-settings-form-header::before,
+body .fw-settings-form-header::after {
+	content: none;
+}
+
+body .fw-settings-form-header > div {
+	float: none;
+}
+
+/* 1b. NOT sticky -- deliberately, matching the original.
+ *
+ * This was `position: sticky; top: 32px` to keep Save reachable on a long tab.
+ * The cost outweighed that: the header is a tall block (title, byline, and the
+ * Reset / Save row), so pinning it permanently spent a large slice of the
+ * viewport -- worst at phone widths, where it left very little room for the
+ * options it sits above. The original does not pin it, and the footer bar
+ * already carries Save, so nothing is stranded by letting it scroll away. */
+
+/* backend-options.css gives the header an explicit background per scheme for
+ * light / blue / coffee / ectoplasm / midnight / ocean / sunrise — those are
+ * deliberate chrome colours (midnight's is near-black, not its red accent), so
+ * they are left alone. It predates `fresh` and `modern`, which therefore fell
+ * back to the root-scoped `--fw-accent` (#007cba) and ignored the scheme.
+ * Only those two are filled in here. */
+body.admin-color-fresh .fw-backend-side-tabs .fw-settings-form-header,
+body.admin-color-modern .fw-backend-side-tabs .fw-settings-form-header,
+body.admin-color-fresh .fw-settings-form-header,
+body.admin-color-modern .fw-settings-form-header {
+	background-color: var(--u-accent);
+}
+
+/* 2. Actions: one clear primary, one quiet secondary.
+ *
+ * On a coloured bar the primary action inverts — a white button reading in the
+ * bar colour — rather than attempting accent-on-accent. Reset drops to a plain
+ * link so it stops competing with Save. */
+body .fw-backend-side-tabs .fw-settings-form-header .button-primary,
+body .fw-settings-form-header .button-primary {
+	background: #fff;
+	border-color: #fff;
+	color: var(--u-accent);
+	border-radius: var(--u-r-sm);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+	text-shadow: none;
+	font-weight: 600;
+}
+
+body .fw-backend-side-tabs .fw-settings-form-header .button-primary:hover,
+body .fw-settings-form-header .button-primary:hover {
+	background: rgba(255, 255, 255, 0.9);
+	border-color: rgba(255, 255, 255, 0.9);
+	color: var(--u-accent);
+}
+
+body .fw-backend-side-tabs .fw-settings-form-header .button-primary:focus-visible,
+body .fw-settings-form-header .button-primary:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
+
+/* Reset Tab Options: a link, not a button. */
+body .fw-backend-side-tabs .fw-settings-form-header .button-secondary,
+body .fw-backend-side-tabs .fw-settings-form-header .fw-settings-form-reset-tab-btn,
+body .fw-backend-side-tabs .fw-settings-form-header input[type="submit"]:not(.button-primary),
+body .fw-settings-form-header .button-secondary,
+body .fw-settings-form-header .fw-settings-form-reset-tab-btn {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	text-shadow: none;
+	color: rgba(255, 255, 255, 0.85);
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	padding: 6px 8px;
+	height: auto;
+	min-height: 0;
+	border-radius: var(--u-r-sm);
+	cursor: pointer;
+	text-decoration: none;
+	transition: color var(--u-t) var(--u-e);
+}
+
+body .fw-backend-side-tabs .fw-settings-form-header .button-secondary:hover,
+body .fw-backend-side-tabs .fw-settings-form-header .fw-settings-form-reset-tab-btn:hover,
+body .fw-backend-side-tabs .fw-settings-form-header input[type="submit"]:not(.button-primary):hover,
+body .fw-settings-form-header .button-secondary:hover,
+body .fw-settings-form-header .fw-settings-form-reset-tab-btn:hover {
+	background: transparent;
+	color: #fff;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+body .fw-backend-side-tabs .fw-settings-form-header input[type="submit"]:not(.button-primary):focus-visible,
+body .fw-settings-form-header .button-secondary:focus-visible,
+body .fw-settings-form-header .fw-settings-form-reset-tab-btn:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+	color: #fff;
+}
+
+/* The footer bar sits on a plain surface, so it keeps real buttons. */
+body .form-footer-buttons .button-primary {
+	background: var(--u-accent);
+	border-color: var(--u-accent);
+	color: #fff;
+	border-radius: var(--u-r-sm);
+	box-shadow: var(--u-shadow-sm);
+	text-shadow: none;
+}
+
+body .form-footer-buttons .button-primary:hover {
+	background: var(--u-accent-hover);
+	border-color: var(--u-accent-hover);
+}
+
+body .form-footer-buttons .button-secondary {
+	background: var(--u-surface);
+	border: 1px solid var(--u-border-input);
+	color: var(--u-ink-soft);
+	border-radius: var(--u-r-sm);
+	box-shadow: none;
+	text-shadow: none;
+}
+
+body .form-footer-buttons .button-secondary:hover {
+	background: var(--u-raised);
+	color: var(--u-ink);
+	border-color: var(--u-border-hover);
+}
+
+/* -----------------------------------------------------------------------------
+ * 14. Paired controls read as ONE control
+ *
+ * unit-input renders a value field and a unit <select> as two separately
+ * bordered boxes with a gap, so a single value ("1170 px") looked like two
+ * unrelated inputs. The border, radius and focus ring move to the wrapper and
+ * the children go borderless, which is how a segmented field is normally built.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-unit-input-row {
+	display: inline-flex;
+	align-items: stretch;
+	background: var(--u-surface);
+	border: 1px solid var(--u-border-input);
+	border-radius: var(--u-r-sm);
+	overflow: hidden;
+	transition: border-color var(--u-t) var(--u-e), box-shadow var(--u-t) var(--u-e);
+}
+
+.fw-backend-option .fw-unit-input-row:hover {
+	border-color: var(--u-border-hover);
+}
+
+/* The ring belongs to the whole group, not to whichever half has focus. */
+.fw-backend-option .fw-unit-input-row:focus-within {
+	border-color: var(--u-accent);
+	box-shadow: 0 0 0 3px var(--u-accent-ring);
+}
+
+.fw-backend-option .fw-unit-input-row .fw-unit-input-value,
+.fw-backend-option .fw-unit-input-row .fw-unit-input-unit,
+.fw-backend-option .fw-backend-option-input .fw-unit-input-row input,
+.fw-backend-option .fw-backend-option-input .fw-unit-input-row select {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	margin: 0;
+	outline: none;
+}
+
+/* Suppress the per-child focus treatment from §4 — the wrapper owns it now. */
+.fw-backend-option .fw-backend-option-input .fw-unit-input-row input:focus,
+.fw-backend-option .fw-backend-option-input .fw-unit-input-row select:focus {
+	border: 0;
+	box-shadow: none;
+}
+
+/* The unit half reads as an affordance attached to the value, not a peer field. */
+.fw-backend-option .fw-unit-input-row .fw-unit-input-unit,
+.fw-backend-option .fw-backend-option-input .fw-unit-input-row select {
+	border-left: 1px solid var(--u-border-soft);
+	background: var(--u-sunken);
+	color: var(--u-muted);
+	font-size: 12.5px;
+	padding-left: 8px;
+	padding-right: 22px;
+}
+
+.fw-backend-option .fw-unit-input-row .fw-unit-input-value {
+	font-variant-numeric: tabular-nums;
+}
+
+/* -----------------------------------------------------------------------------
+ * 15. Side nav: the ACTIVE item must not repaint on hover
+ *
+ * jQuery UI adds `ui-state-hover` alongside `ui-state-active`, and something in
+ * that combination was flipping the active side tab to a solid accent fill with
+ * white text on hover — so pointing at the tab you are already on made it look
+ * like a different, louder control.
+ *
+ * Hovering the current item should be a no-op: it is already selected, there is
+ * nothing to preview. Pinned high enough to win regardless of which rule was
+ * doing the repaint.
+ * -------------------------------------------------------------------------- */
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-state-active a.nav-tab:hover,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-state-active a.nav-tab:focus,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab:hover,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-state-hover.ui-state-active a.nav-tab {
+	background: var(--u-surface);
+	color: var(--u-accent-fg);
+	box-shadow: var(--u-shadow-sm);
+}
+
+/* Inactive items keep a quiet hover — a surface lift, never an accent fill. */
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li:not(.ui-state-active) a.nav-tab:hover,
+body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li.ui-state-hover:not(.ui-state-active) a.nav-tab {
+	background: var(--u-surface);
+	color: var(--u-ink);
+}
+
+/* -----------------------------------------------------------------------------
+ * 16. Full-bleed option types get no row padding
+ *
+ * The option row's 20px horizontal padding is right for a label + control, but
+ * wrong for option types that ARE a full UI in their own right. The page builder
+ * renders its own toolbar, element palette and section canvas, each with their
+ * own insets, so the row padding stacked on top and floated the whole builder
+ * 20px in from the metabox edges.
+ *
+ * Scoped to those types rather than zeroing padding globally — a blanket
+ * `padding: 14px 0` would strip the horizontal spacing from every ordinary
+ * option row in every postbox.
+ *
+ * Vertical padding is kept: it is the gap between the builder and the metabox
+ * chrome, which still wants breathing room.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default.fw-backend-option-type-page-builder,
+.fw-backend-option-design-default.fw-backend-option-type-builder {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 17. Nested option rows must not re-apply the row inset
+ *
+ * multi-picker renders its picker (and the revealed choice options) as full
+ * option rows inside `.picker-group` / `.choice-group`, which themselves sit
+ * inside the parent option row. The horizontal padding was therefore applied
+ * twice, so the nested control sat ~20px right of every sibling row — visible on
+ * the shortcode Advanced tab, where "Position" was indented relative to
+ * "Overflow" and "Visibility".
+ *
+ * multi-picker.css already zeroes the vertical padding on these rows for the
+ * same reason; this is the horizontal half of that fix.
+ * -------------------------------------------------------------------------- */
+.fw-option-type-multi-picker > .picker-group > .fw-backend-option-design-default,
+.fw-option-type-multi-picker > .choice-group > .fw-backend-option-design-default {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 18. Sub-tab strips inside a panel sit on a sunken band
+ *
+ * A tab rail floating on the same white as its panel gives the tabs nothing to
+ * sit on, so the strip reads as loose text until you find the active tab. A
+ * sunken band behind the strip groups the tabs and makes the active one — which
+ * stays white — read as lifted out of the band and joined to the content below.
+ *
+ * `--u-sunken` is #f2f3f5, so this is the token equivalent of the literal colour
+ * that was tried by hand.
+ *
+ * The `.inside` margin goes with it: the framework puts a 10px top margin there,
+ * which left a white gap between the panel header and the band.
+ * -------------------------------------------------------------------------- */
+.postbox .fw-options-tabs-wrapper > .fw-options-tabs-list,
+.fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list {
+	/* No band fill. The tabs read as tabs from their own borders and the active
+	 * tab's white fill; the sunken strip behind them was extra weight the row did
+	 * not need. (The Theme Settings SIDE navigation keeps its band -- that is a
+	 * different component, styled separately below.) */
+	background: transparent;
+	padding: 10px 10px 0;
+	border-bottom-color: var(--u-border-soft);
+}
+
+.postbox-with-fw-options > .inside,
+.fw-postbox > .inside {
+	margin-top: 0 !important;
+}
+
+/* Dark */
+body.fw-skin-dark .postbox .fw-options-tabs-wrapper > .fw-options-tabs-list,
+body.fw-skin-dark .fw-postbox .fw-options-tabs-wrapper > .fw-options-tabs-list {
+	background: var(--u-sunken);
+	border-bottom-color: var(--u-border-soft);
+}
+
+/* -----------------------------------------------------------------------------
+ * 19. Footer action bar
+ *
+ * Sits on the same sunken surface as the side column so the two read as one
+ * continuous tray around the white content, rather than a white strip floating
+ * under it.
+ *
+ * The buttons are centred with flex rather than a top margin: a margin only
+ * looks centred while the bar's height happens to match, and drifts as soon as
+ * padding or button size changes.
+ * -------------------------------------------------------------------------- */
+.fw-backend-side-tabs .form-footer-buttons,
+.fw-settings-form .form-footer-buttons {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: var(--u-sunken);
+	/* No top border: the colour change already separates the bar, and a 1px
+	 * border offsets the content box by half a pixel so the buttons stop being
+	 * exactly centred. */
+	border-top: 0;
+	padding: 14px 20px;
+	min-height: var(--u-footer-h);
+	box-sizing: border-box;
+}
+
+/* Pull the bar up over the space the side column reserves for it. Same token,
+ * so it lands flush instead of leaving (or overlapping) a sliver. */
+.fw-backend-side-tabs .fw-options-tabs-wrapper + .form-footer-buttons {
+	margin: calc(var(--u-footer-h) * -1) 0 0 198px;
+}
+
+.fw-backend-side-tabs .form-footer-buttons input[type="submit"],
+.fw-backend-side-tabs .form-footer-buttons .button,
+.fw-settings-form .form-footer-buttons input[type="submit"],
+.fw-settings-form .form-footer-buttons .button {
+	margin: 0;
+	float: none;
+	vertical-align: middle;
+}
+
+/* The separator the framework prints between the footer buttons is redundant
+ * once they are flex children with a real gap. */
+.fw-backend-side-tabs .form-footer-buttons .submit-button-separator,
+.fw-settings-form .form-footer-buttons .submit-button-separator {
+	display: none;
+}
+
+body.fw-skin-dark .fw-backend-side-tabs .form-footer-buttons,
+body.fw-skin-dark .fw-settings-form .form-footer-buttons {
+	background: var(--u-sunken);
+}
+
+/* -----------------------------------------------------------------------------
+ * 20. The enhanced select matches the native controls
+ *
+ * fw-select renders its own trigger, which shipped at 30px tall, square, with a
+ * #ddd border and a transparent background — beside a 34px text input with a 5px
+ * radius and the token border, the two read as different form systems.
+ *
+ * Same height token, same radius, same border, same focus ring.
+ * -------------------------------------------------------------------------- */
+/* `!important` on the paint properties: fw-select's own stylesheet keeps
+ * repainting the trigger (the height token applied cleanly, the border/radius
+ * did not), and the declaration doing it is not reachable from a plain cascade
+ * walk. Scoped tightly to option inputs so it cannot leak elsewhere. */
+.fw-backend-option .fw-backend-option-input .fw-select-control,
+.fw-backend-option .fw-select .fw-select-control,
+.fw-backend-option .fw-select-control {
+	min-height: var(--u-control-h, 34px);
+	border: 1px solid var(--u-border-input) !important;
+	border-radius: var(--u-r-sm) !important;
+	background: var(--u-surface) !important;
+	box-shadow: none;
+	box-sizing: border-box;
+	transition: border-color var(--u-t) var(--u-e), box-shadow var(--u-t) var(--u-e);
+}
+
+.fw-backend-option .fw-select .fw-select-control:hover,
+.fw-backend-option .fw-select-control:hover {
+	border-color: var(--u-border-hover) !important;
+}
+
+/* fw-select flags its open/focused state on the wrapper, so match both that and
+ * real focus inside the control. */
+.fw-backend-option .fw-select.focused .fw-select-control,
+.fw-backend-option .fw-select.open .fw-select-control,
+.fw-backend-option .fw-select-control:focus-within {
+	border-color: var(--u-accent) !important;
+	box-shadow: 0 0 0 3px var(--u-accent-ring);
+}
+
+.fw-backend-option .fw-select {
+	border: 0;
+	border-radius: var(--u-r-sm);
+	background: transparent;
+}
+
+/* Keep the value text optically centred in the taller trigger. */
+.fw-backend-option .fw-select .fw-select-control > div,
+.fw-backend-option .fw-select-control > div {
+	line-height: calc(var(--u-control-h, 34px) - 2px);
+	color: var(--u-ink);
+	font-size: 13px;
+}
+
+body.fw-skin-dark .fw-backend-option .fw-select .fw-select-control {
+	background: var(--u-surface);
+	border-color: var(--u-border-input);
+	color: var(--u-ink);
+}
+
+/* -----------------------------------------------------------------------------
+ * 21. Option group title + description
+ *
+ * These were inline styles repeated on every group in `container-types/simple.php`
+ * (see the note there). Moving them here means one definition, themeable, and
+ * the inset now tracks the option rows instead of a hard-coded 27px that drifted
+ * when the row padding changed to 20px.
+ * -------------------------------------------------------------------------- */
+.fw-backend-options-group__title {
+	margin: 22px 0 2px;
+	padding: 0 var(--u-row-pad-x);   /* matches .fw-backend-option-design-default */
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--u-muted);
+}
+
+.fw-backend-options-group__desc {
+	margin: 0 0 14px;
+	padding: 0 var(--u-row-pad-x);
+	color: var(--u-muted);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+/* Full-bleed option types get no row inset, so their group labels match. */
+.fw-backend-option-type-page-builder .fw-backend-options-group__title,
+.fw-backend-option-type-page-builder .fw-backend-options-group__desc {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 22. Picker triggers join the control vocabulary
+ *
+ * Several option types render their own "select-like" trigger, and every one
+ * arrived at a different size and shape:
+ *
+ *   pccpc__trigger 28px | bsp__ / isp__ / tsp__ 30px | bha__ 32px | 3px radius
+ *   gv2-trigger 34px square | upw-easing-trigger 6px radius | fw-popover 4px
+ *
+ * Beside a 34px / 5px-radius text input they read as a different form system.
+ * Listed explicitly rather than matched on a `*__trigger` wildcard, so a future
+ * unrelated class cannot be swept in by accident.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .bsp__trigger,
+.fw-backend-option .bha__trigger,
+.fw-backend-option .isp__trigger,
+.fw-backend-option .tsp__trigger,
+.fw-backend-option .pccpc__trigger,
+.fw-backend-option .gv2-trigger,
+.fw-backend-option .upw-easing-trigger,
+.fw-backend-option .fw-popover-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	min-height: var(--u-control-h, 34px);
+	padding: 4px 10px;
+	box-sizing: border-box;
+	background: var(--u-surface);
+	border: 1px solid var(--u-border-input);
+	border-radius: var(--u-r-sm);
+	box-shadow: none;
+	font-size: 13px;
+	color: var(--u-ink);
+	transition: border-color var(--u-t) var(--u-e), box-shadow var(--u-t) var(--u-e);
+}
+
+.fw-backend-option .bsp__trigger:hover,
+.fw-backend-option .bha__trigger:hover,
+.fw-backend-option .isp__trigger:hover,
+.fw-backend-option .tsp__trigger:hover,
+.fw-backend-option .pccpc__trigger:hover,
+.fw-backend-option .gv2-trigger:hover,
+.fw-backend-option .upw-easing-trigger:hover,
+.fw-backend-option .fw-popover-trigger:hover {
+	border-color: var(--u-border-hover);
+}
+
+.fw-backend-option .bsp__trigger:focus-visible,
+.fw-backend-option .bha__trigger:focus-visible,
+.fw-backend-option .isp__trigger:focus-visible,
+.fw-backend-option .tsp__trigger:focus-visible,
+.fw-backend-option .pccpc__trigger:focus-visible,
+.fw-backend-option .gv2-trigger:focus-visible,
+.fw-backend-option .upw-easing-trigger:focus-visible,
+.fw-backend-option .fw-popover-trigger:focus-visible {
+	outline: none;
+	border-color: var(--u-accent);
+	box-shadow: 0 0 0 3px var(--u-accent-ring);
+}
+
+/* The muted placeholder inside a trigger ("— Select —"). */
+.fw-backend-option .bsp__trigger-placeholder,
+.fw-backend-option .isp__trigger-placeholder,
+.fw-backend-option .tsp__trigger-placeholder,
+.fw-backend-option .gv2-trigger-caret {
+	color: var(--u-muted);
+}
+
+/* -----------------------------------------------------------------------------
+ * 23. Picker grids inside popovers fill their panel evenly
+ *
+ * image-picker lays its thumbnails out as fixed-width floats
+ * (`ul.thumbnails li { float: left; margin: 0 5px 5px 0 }`). In a popover panel
+ * that leaves a ragged right edge — measured on Site Background Pattern: 11px
+ * inset on the left, 51px on the right, so the grid read as pushed left.
+ *
+ * A real grid with `auto-fill` distributes the leftover space across the
+ * columns instead of dumping it all at the end.
+ * -------------------------------------------------------------------------- */
+/* The control's inner wrapper carries `.fw-pull-left`, i.e. `float: left`, so it
+ * SHRINK-WRAPS to its content instead of filling the cell. A grid inside it then
+ * sizes itself to that shrunken box — the picker collapsed to a single 121px
+ * column. Take it out of the float first, then the grid has a real width. */
+.fw-mp-pop-panel .fw-backend-option-input .fw-inner,
+.fw-mp-pop-panel .fw-backend-option-input .fw-pull-left,
+.fw-addable-box--inline .fw-backend-option-input .fw-inner,
+.fw-addable-box--inline .fw-backend-option-input .fw-pull-left {
+	/* `!important` is required, not decorative: fw.css ships
+	 * `.fw-pull-left { float: left !important }`, so a plain `float: none` here
+	 * silently lost and the wrapper kept shrink-wrapping. Wide panels hid it --
+	 * the floated box still happened to resolve full-width -- but inside the
+	 * narrower shortcode modal it collapsed to one tile column, which is what
+	 * broke the entrance-animation picker.
+	 *
+	 * Descendant, not child: the wrapper is not always a direct child of the
+	 * input cell. */
+	float: none !important;
+	width: 100%;
+	max-width: 100%;
+}
+
+/* FLAT pickers only -- the list that directly holds the tiles.
+ *
+ * The searchable / tabs picker nests one level deeper:
+ *
+ *   ul.image_picker_selector
+ *     li            <- one per CATEGORY
+ *       ul          <- the actual tiles
+ *         li.group_title
+ *         li ...    <- tiles
+ *
+ * Gridding the outer list there put the CATEGORY WRAPPERS into 110px columns,
+ * so each category's inner list was ~110px wide and its floated tiles could
+ * only fit one per row. That was the entrance-animation picker rendering one
+ * icon per line. `:not(:has(> li > ul))` keeps this rule on the flat shape. */
+.fw-mp-pop-panel ul.thumbnails:not(:has(> li > ul)),
+.fw-mp-pop-panel ul.image_picker_selector:not(:has(> li > ul)),
+.fw-addable-box--inline ul.thumbnails:not(:has(> li > ul)),
+.fw-addable-box--inline ul.image_picker_selector:not(:has(> li > ul)) {
+	display: grid;
+	/* `min(110px, 100%)` so a panel narrower than one tile still yields a single
+	 * column that FITS, instead of a 110px track overflowing its container. */
+	grid-template-columns: repeat(auto-fill, minmax(min(110px, 100%), 1fr));
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.fw-mp-pop-panel ul.thumbnails:not(:has(> li > ul)) > li,
+.fw-mp-pop-panel ul.image_picker_selector:not(:has(> li > ul)) > li,
+.fw-addable-box--inline ul.thumbnails:not(:has(> li > ul)) > li,
+.fw-addable-box--inline ul.image_picker_selector:not(:has(> li > ul)) > li {
+	float: none;
+	margin: 0;
+	width: auto;
+	max-width: none;
+}
+
+/* Let each thumbnail fill the cell it was given. */
+.fw-mp-pop-panel ul.thumbnails > li .thumbnail,
+.fw-mp-pop-panel ul.thumbnails > li img,
+.fw-addable-box--inline ul.thumbnails > li .thumbnail,
+.fw-addable-box--inline ul.thumbnails > li img {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* -----------------------------------------------------------------------------
+ * 24. The switch follows the admin colour scheme
+ *
+ * switch/static/adaptive-switch/styles.css hard-codes #00709f in three places
+ * (the label colour, the label colour in the switcher, and the dot). That blue
+ * is fixed, so on Midnight, Sunrise, Coffee, Ectoplasm or the Default indigo the
+ * switch was the one control still showing the old teal.
+ *
+ * Pointed at `--u-accent`, which resolves to `--wp-admin-theme-color` for the
+ * user's chosen scheme. Overridden here rather than edited in place: that file
+ * is an existing plugin file, and those get reverted by the localhost mirror.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .adaptive-switch label.switch-label,
+.fw-backend-option .adaptive-switch .switch-switcher label.switch-label {
+	color: var(--u-accent);
+}
+
+.fw-backend-option .adaptive-switch .switch-dot span {
+	background-color: var(--u-accent);
+}
+
+/* -----------------------------------------------------------------------------
+ * 25. Compact colour picker in a panel: stack its two parts
+ *
+ * The control is three pieces — a preset dropdown, a radio, and a custom hex
+ * field. On one ~266px line they end up cramped (measured 160 + 16 + 80 with
+ * almost no room between). Giving the dropdown a full row pushes the
+ * custom-colour pair onto a second line, which reads much cleaner.
+ * -------------------------------------------------------------------------- */
+.fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .pccpc__trigger,
+.fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .pccpc__trigger,
+
+/* The hex field takes the rest of the second line, beside the radio. */
+.fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-option-type-color-picker,
+.fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-option-type-color-picker,
+.fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-option-type-color-picker {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+
+/* -----------------------------------------------------------------------------
+ * 26. The framework's own accent token follows the admin colour scheme
+ *
+ * backend-options.css:18 declares `--fw-accent: var(--wp-admin-theme-color, …)`
+ * on `:root`. That is the same bug as my own tokens had: WordPress sets
+ * `--wp-admin-theme-color` per scheme on `body.admin-color-*`, while a stale
+ * #007cba sits on `:root`. Declared at `:root`, the token captured the stale
+ * value and never followed the scheme.
+ *
+ * Re-declaring it on `body` fixes every `var(--fw-accent)` consumer at once —
+ * button-set's checked state, its focus ring, and 11 others.
+ * -------------------------------------------------------------------------- */
+body {
+	--fw-accent:     var(--wp-admin-theme-color, #2271b1);
+	--fw-focus-ring: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
+	/* Same stale-token trap: backend-options.css declares this at :root too, so
+	 * it also has to be rebound here. The option-type stylesheets now consume it
+	 * (their literal hovers were swept to var(--fw-accent-hover, …)), which makes
+	 * this the token that decides every hover state in the framework.
+	 *
+	 * WordPress only publishes --wp-admin-theme-color-darker-10 for SOME schemes,
+	 * so it cannot be relied on alone; color-mix darkens the accent itself when
+	 * the darker variant is absent. */
+	--fw-accent-hover: var(--wp-admin-theme-color-darker-10,
+	                       color-mix(in srgb, var(--wp-admin-theme-color, #2271b1) 85%, #000));
+}
+
+/* -----------------------------------------------------------------------------
+ * 27. Components that hard-code the blue instead of using the token
+ *
+ * These write #2271b1 literally, so no token change can reach them. Overridden
+ * here because the files are existing plugin files and edits to those are
+ * reverted by the localhost mirror.
+ * -------------------------------------------------------------------------- */
+
+/* Sliders — handle, and the filled part of the track. */
+.fw-backend-option .fw-noui.noUi-horizontal .noUi-handle,
+.fw-backend-option .fw-noui .noUi-handle {
+	background: var(--u-accent);
+}
+
+.fw-backend-option .fw-noui .noUi-connect {
+	background: color-mix(in srgb, var(--u-accent) 35%, #fff);
+}
+
+/* Spacing — the linked-sides toggle. */
+.fw-backend-option .fw-sp-row.is-linked .fw-sp-link {
+	color: var(--u-accent);
+	border-color: var(--u-accent);
+}
+
+/* Dynamic Content trigger. */
+.fw-backend-option .fw-dynamic-content-trigger {
+	color: var(--u-accent);
+}
+
+/* -----------------------------------------------------------------------------
+ * 28. The compact colour picker wraps instead of overflowing
+ *
+ * `.pccpc__row` ships as `flex-wrap: nowrap`, so its three parts (preset
+ * dropdown, radio, custom hex field) always sit on one line. In any narrow
+ * column that line runs past the control and collides with whatever is beside it
+ * — visible on the Buttons preset panel, where "Text Color" landed on top of the
+ * Background Color field.
+ *
+ * Allowing it to wrap keeps all three inline where there is room (so the label
+ * and control still read as one row) and folds them onto extra lines only when
+ * the column is genuinely too narrow. Applied globally, not per-panel: the
+ * overflow happens wherever the column is tight, not in a fixed set of places.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .pccpc__row {
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.fw-backend-option .pccpc__row > * {
+	min-width: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 29. Popover rows use the CURRENT row inset, not the old 27px
+ *
+ * multi-picker.css:131 re-applies `padding: 0 27px` to any multi-picker holding
+ * a popover, specifically so its trigger lines up with the other options in the
+ * section. That was right when the option row used 27px; the row is 20px now, so
+ * the rule over-indented the trigger by exactly 7px on each side — the Site
+ * Background Pattern trigger sat 7px inside the Site Background panel above it.
+ *
+ * Reads the same token as the row itself, so the two stay in step.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default.fw-backend-option-type-multi-picker.fw-mp-pop-option,
+.fw-backend-option-design-default.fw-backend-option-type-multi-picker:has(.fw-mp-pop) {
+	padding-left: var(--u-row-pad-x);
+	padding-right: var(--u-row-pad-x);
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 30. Uniform vertical rhythm inside popover + addable panels
+ *
+ * addable-box styles.css sets `padding: 12px 16px` on rows inside an inline
+ * addable box. Two classes, so it outranked the one-class row rule for the TOP
+ * padding -- but the bottom padding came from the grouped-row rule below, which
+ * it does not match. Result: every row in a Text Style preset panel measured
+ * 12px top / 7px bottom, so the gaps between options read as uneven and the
+ * hover tint sat off-centre.
+ *
+ * Vertical padding is normalised here; the panel keeps its own 16px horizontal
+ * inset, which is deliberate (a panel is narrower than a settings section).
+ * Three classes so this holds regardless of stylesheet load order -- option-type
+ * stylesheets are enqueued on demand and can land after the skin.
+ * ------------------------------------------------------------------------- */
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-design-default,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-design-default,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-design-default {
+	padding-top: var(--u-space-2);
+	padding-bottom: var(--u-space-2);
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 31. Inline-block control roots sit on their parent's text baseline
+ *
+ * The compact colour picker's root is `display: inline-block`. An inline-level
+ * box aligns to the BASELINE of the line box it sits in, so the control started
+ * 8px below the top of its cell while every block-level control started at 0 --
+ * which is why the "Color" row read as misaligned even after the label rule was
+ * correct. (The 8px is the descender space under the parent's line box; it
+ * tracks font-size, so it is not a constant that could just be subtracted.)
+ *
+ * Inside an option row the control root is the only thing in its cell, so there
+ * is no inline context worth preserving: make it block-level and the baseline
+ * gap disappears. Left inline everywhere else, where it may genuinely sit in a
+ * run of text.
+ * ------------------------------------------------------------------------- */
+.fw-backend-option-design-default > .fw-backend-option-input > .fw-option-type-predefined-colors-color-picker-compact {
+	display: block;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 32. The multi-picker's own group inset joins the scale
+ *
+ * multi-picker.css gives `.picker-group` its own vertical padding, set back
+ * when rows were 7px. Left alone it is the one remaining off-grid inset, and it
+ * shows: a picker group sits a pixel proud of the rows above and below it.
+ * Overridden here rather than edited in place, so the shipped option-type
+ * stylesheet stays untouched and this whole skin remains additive.
+ * ------------------------------------------------------------------------- */
+.fw-option-type-multi-picker.fw-option-type-multi-picker-without-borders > .picker-group,
+.fw-option-type-multi-picker.fw-option-type-multi-picker-with-borders:not(.has-choice) > .picker-group {
+	padding-top: var(--u-space-2);
+	padding-bottom: var(--u-space-2);
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 33. Rows whose control is not a 34px box
+ *
+ * Â§1 of the grid sheet nudges every label down half the gap between a standard
+ * control and a label line, which lands it dead-centre on a 34px input. Three
+ * shapes are not 34px boxes and needed the offset adjusted rather than an
+ * opt-out from the whole model:
+ *
+ * a) Checkbox / radio lists. The control is a 16px box sitting at the top of
+ *    its cell, so the standard nudge pushed the label 7px BELOW it. With no
+ *    offset the label sits on the first item's own text line, which is where it
+ *    belongs -- and stays there as the list grows.
+ *
+ * b) The gradient-v2 trigger renders at 44px while every other trigger in the
+ *    skin is 34px. That was already an inconsistency in the control vocabulary;
+ *    correcting the height fixes the alignment as a side effect.
+ *
+ * c) The icon preview wrapper centres its 40px button inside a 55px flex box,
+ *    dropping the button 7.5px below the top of the cell -- the same failure as
+ *    the colour picker's wrapper, from the same cause (a container taller than
+ *    its first line, centring its content).
+ * ------------------------------------------------------------------------- */
+.fw-backend-option-design-default.fw-backend-option-type-checkbox > .fw-backend-option-label,
+.fw-backend-option-design-default.fw-backend-option-type-checkboxes > .fw-backend-option-label,
+.fw-backend-option-design-default.fw-backend-option-type-radio > .fw-backend-option-label {
+	padding-top: 0;
+}
+
+.fw-backend-option-design-default .gv2-trigger {
+	height: var(--u-control-h);
+	min-height: var(--u-control-h);
+}
+
+.fw-backend-option-design-default .fw-icon-v3-preview-wrapper {
+	align-items: flex-start;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 34. The help icon is taken out of the label's text flow entirely
+ *
+ * The icon is a SIBLING of <label> inside `.fw-inner`, so in normal inline flow
+ * it is one more inline box at the end of the text -- and when the label wraps,
+ * the icon can land alone on a line of its own, making that row taller than its
+ * neighbours. That was the inconsistent row spacing on "Letter spacing".
+ *
+ * Reserving room with padding-right is the wrong lever: it narrows the text,
+ * causing MORE wrapping, and only moves the orphaned icon to a different label.
+ *
+ * So the icon leaves the flow: pinned to the top-right corner of the label cell,
+ * it contributes NO width and NO height, and the text gets the whole track. A
+ * label now wraps only when the label itself is genuinely too long -- never
+ * because of the icon -- and the icon can no longer affect any row's height.
+ *
+ * It can overlap the text of a very long label, which is a deliberate trade:
+ * the icon only becomes visible on hover/focus, so for the entire time anyone
+ * is reading the label it is not there at all.
+ * ------------------------------------------------------------------------- */
+.fw-backend-option-design-default > .fw-backend-option-label > .fw-inner.fw-inner {
+	position: relative;
+	/* padding-right previously held space for the icon; the icon no longer takes
+	 * any, so it goes back to the text. All four sides are set so the RTL variant
+	 * (which puts the inset on the left) is covered by the same rule. */
+	padding: 3px 0 0;
+}
+
+.fw-backend-option-design-default > .fw-backend-option-label .fw-option-help-in-label {
+	position: absolute;
+	/* Logical, so RTL pins it to the far LEFT without a second rule. */
+	inset-inline-end: 0;
+	/* Sits on the first line's optical centre: the 3px top padding plus half the
+	 * difference between a 17px line box and the 16px icon. */
+	top: 5px;
+	margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * 35. The unit-input is the last control off the 34px vocabulary
+ *
+ * Its parts are 34px but the row around them measures 36px, so a Size or
+ * Letter-spacing row sat 2px taller than the text rows beside it. There is no
+ * padding and no border involved: the parts are inline-level, so the row's line
+ * box adds descender space beneath them -- the same 2px-here, 8px-there family
+ * of bug as the colour picker's wrapper and the icon wrapper.
+ *
+ * A flex row has no line box, so the gap cannot exist.
+ * ------------------------------------------------------------------------- */
+.fw-backend-option-design-default .fw-unit-input-row {
+	display: flex;
+	align-items: stretch;
+	/* Pinned, not left to the tallest item: one of the parts still measures 36px
+	 * on its own, and inheriting that is exactly the 2px being removed. */
+	height: var(--u-control-h);
+}
+
+.fw-backend-option-design-default .fw-unit-input-row::before,
+.fw-backend-option-design-default .fw-unit-input-row::after {
+	content: none;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 36. Device switcher follows the admin colour scheme
+ *
+ * fw-device-tabs.css paints the active device tab with a literal #2271b1, so it
+ * stayed WordPress-blue under every other admin colour scheme. Repointed at
+ * --fw-accent (which Â§26 binds to --wp-admin-theme-color), with the literal
+ * kept as the fallback for the case where the scheme variable is absent.
+ *
+ * Doubled `.is-active` to clear the shipped rule's specificity regardless of
+ * stylesheet load order, rather than relying on this file coming later.
+ * ------------------------------------------------------------------------- */
+.fw-device-tabs .fw-device-tab.is-active.is-active,
+.fw-device-head .fw-device-tab.is-active.is-active {
+	background: var(--fw-accent, #2271b1);
+	color: #fff;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 37. Searchable / tabs image-pickers: grid the TILES, not the categories
+ *
+ * These pickers group their tiles under category headings, so the tile list is
+ * one level deeper than a flat picker:
+ *
+ *   ul.image_picker_selector
+ *     li            <- one per CATEGORY
+ *       ul          <- the actual tiles
+ *         li.group_title
+ *         li ...    <- tiles
+ *
+ * The outer list stays a plain block (it stacks CATEGORIES, which is correct)
+ * and the inner list becomes the wrapping tile grid.
+ *
+ * SPECIFICITY: every selector here is written as
+ *   .fw-option-type-image-picker.fw-image-picker--x ul.thumbnails.image_picker_selector ...
+ * = four classes, because the shipped rule
+ *   .fw-option-type-image-picker ul.thumbnails.image_picker_selector li { float: left }
+ * is three classes and beat the shorter form. While it won, the category <li>
+ * stayed floated and therefore SHRANK TO FIT its widest tile -- about 100px --
+ * so the grid inside it computed exactly one column and the tiles came out one
+ * per row. The layout was right; it was being applied to a box that had already
+ * collapsed.
+ *
+ * A wrapping grid, not `display: flex`: flex defaults to `nowrap`, which lays
+ * the tiles out in one endless line and gives the panel a horizontal scrollbar
+ * instead of wrapping (exactly what the flex experiment produced). `auto-fill`
+ * also spreads the leftover space across the columns instead of leaving it all
+ * at the right edge.
+ * ------------------------------------------------------------------------- */
+/* Only the NESTED shape. `:has(> li > ul)` is the test for 'this list holds
+ * categories, not tiles' -- a searchable/tabs picker with ungrouped choices
+ * renders flat, and must keep the flat tile grid instead of this. */
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector:has(> li > ul),
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector:has(> li > ul) {
+	display: block;
+	overflow-x: visible;
+}
+
+/* The CATEGORY wrapper must fill the panel, not shrink to its widest tile. */
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector:has(> li > ul) > li,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector:has(> li > ul) > li {
+	float: none;
+	display: block;
+	width: auto;
+	max-width: none;
+	margin: 0 0 14px;
+}
+
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector > li > ul,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector > li > ul {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(84px, 100%), 1fr));
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* The category heading spans the row rather than occupying a tile slot. */
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector > li > ul > li.group_title,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector > li > ul > li.group_title {
+	grid-column: 1 / -1;
+	float: none;
+	width: auto;
+}
+
+/* Tiles become grid items: no floats, no margins (the gap handles spacing). */
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector > li > ul > li,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector > li > ul > li {
+	float: none;
+	margin: 0;
+	width: auto;
+	max-width: none;
+}
+
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector > li > ul > li .thumbnail,
+.fw-option-type-image-picker.fw-image-picker--searchable ul.thumbnails.image_picker_selector > li > ul > li img,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector > li > ul > li .thumbnail,
+.fw-option-type-image-picker.fw-image-picker--tabs ul.thumbnails.image_picker_selector > li > ul > li img {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 38. The animation card's remove (X) button is hover-revealed
+ *
+ * Same treatment as the help icon: a destructive control that is permanently
+ * visible reads as part of the field, and on a row whose job is "pick an
+ * effect" the X competes with the control for attention every time the eye
+ * lands there. Revealing it on hover keeps the row calm and still puts it
+ * exactly where the hand already is.
+ *
+ * Opacity, not `display` / `visibility`: the space stays reserved, so nothing
+ * shifts sideways when it fades in -- and unlike `visibility: hidden` the
+ * button stays hit-testable, so a click that lands as it appears still works.
+ *
+ * Revealed on hover OR focus-within, and the button keeps its own :focus rule,
+ * so it is reachable by keyboard -- a control that only exists on pointer hover
+ * would otherwise be invisible to anyone tabbing through the card.
+ * ------------------------------------------------------------------------- */
+.upw-anim-card .upw-anim-card-remove {
+	/* Nudged to sit level with the control and clear of the field's right edge
+	 * (the shipped rule puts it at 11px/8px). */
+	top: 17px;
+	right: 22px;
+	opacity: 0;
+	transition: opacity var(--u-t) var(--u-e), color var(--u-t) var(--u-e);
+}
+
+.upw-anim-card:hover .upw-anim-card-remove,
+.upw-anim-card:focus-within .upw-anim-card-remove,
+.upw-anim-card .upw-anim-card-remove:focus,
+.upw-anim-card .upw-anim-card-remove:focus-visible {
+	opacity: 1;
+}
+
+/* Destructive affordance only once it is actually visible. */
+.upw-anim-card .upw-anim-card-remove:hover,
+.upw-anim-card .upw-anim-card-remove:focus {
+	color: var(--u-danger, #b42318);
+}
+
+/* The caret steps aside to make room for the X.
+ *
+ * The trigger is `display: flex; justify-content: space-between`, so the caret
+ * is pinned to its right edge and PADDING is what positions it: 10px at rest
+ * puts it hard right, 28px on hover slides it left by the width of the button
+ * that is fading in beside it. Padding rather than a transform because the
+ * caret must not overlap the X at any point in the transition -- a transform
+ * would move the glyph while leaving its box (and its hit area) behind.
+ *
+ * Bound to the SAME `:hover` / `:focus-within` on the card that reveals the X,
+ * deliberately: if the two used different triggers they could desync and the
+ * caret would sit under the button.
+ */
+.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger {
+	padding-right: 10px;
+	transition: padding-right var(--u-t) var(--u-e);
+}
+
+.upw-anim-card:hover .fw-mp-pop > .fw-mp-pop-trigger,
+.upw-anim-card:focus-within .fw-mp-pop > .fw-mp-pop-trigger {
+	padding-right: 28px;
+}
+
+/* Motion-sensitive users get the state change without the fade or the slide. */
+@media (prefers-reduced-motion: reduce) {
+	.upw-anim-card .upw-anim-card-remove,
+	.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger {
+		transition: none;
+	}
+}
+
+/* -----------------------------------------------------------------------------
+ * 39. Small screens
+ *
+ * Below 783px the framework's side-tab column already stops being a column: the
+ * nav and the contents both go full width and stack. Two pieces of the desktop
+ * treatment did not follow, and both were measured at a 390px viewport:
+ *
+ *  - The footer bar kept `margin: -68px 0 0 198px` -- the pull-up over the space
+ *    the side column reserves, plus the column's own width. With no column there
+ *    that left the bar 170px wide inside a 390px page, so its two buttons spilled
+ *    to x=506 and the whole admin page scrolled sideways. The offsets are desktop
+ *    geometry, so they are simply dropped here, and the buttons are allowed to
+ *    wrap rather than forced onto one line.
+ *
+ *  - The nav list kept `padding-bottom: var(--u-footer-h)`, which only exists to
+ *    reserve room for that pulled-up bar. Once the bar sits in normal flow it is
+ *    just 68px of dead space above the content.
+ *
+ * The background-pro tab strip is `display: flex` with `flex: 1 1 0` tabs, and a
+ * flex item's automatic minimum size is its content -- so the strip could not
+ * shrink to fit and overflowed instead. Wrapping is the right answer for three
+ * or four short tabs; `flex-basis: auto` lets a wrapped row size to its label.
+ * -------------------------------------------------------------------------- */
+@media (max-width: 782px) {
+	.fw-backend-side-tabs .fw-options-tabs-wrapper + .form-footer-buttons {
+		margin: 0;
+	}
+
+	.fw-backend-side-tabs .form-footer-buttons,
+	.fw-settings-form .form-footer-buttons {
+		flex-wrap: wrap;
+	}
+
+	body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list {
+		padding-bottom: 8px;
+	}
+
+	.fw-option-type-background-pro .bg-pro__tabs {
+		flex-wrap: wrap;
+	}
+
+	.fw-option-type-background-pro .bg-pro__tab {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	/* The table / sidebar-picker grid already scrolls itself inside
+	 * `.fw-tabular-scroll`, so the grid was never the problem -- its toolbar was.
+	 * `.fw-tabular-toolbar-group` is a `nowrap` flex row that measured 642px in a
+	 * 286px toolbar, and that single element was what dragged the whole admin page
+	 * out to a 703px scroll width at a 390px viewport. Wrapping rather than
+	 * scrolling it, because the toolbar carries popovers that an `overflow` would
+	 * clip. */
+	.fw-tabular-toolbar-group,
+	.fw-option-type-split-slider .fw-ss-toolbar {
+		flex-wrap: wrap;
+	}
+
+	/* CodeMirror measures itself once at init and writes that width inline, so a
+	 * narrow cell leaves it 368px wide inside 318px. Capping it lets the editor
+	 * scroll its own long lines, which is what you want from a code field anyway. */
+	.fw-backend-option-type-code-editor .CodeMirror,
+	.fw-backend-option-type-code-editor .CodeMirror-scroll {
+		max-width: 100%;
+	}
+
+	/* The email builder nests full option rows inside a cell, and the inner row's
+	 * `.fw-row` negative gutter margins let it out past its own container. */
+	.fw-backend-option-type-email-builder .fw-backend-option,
+	.fw-backend-option-type-email-builder .builder-items {
+		max-width: 100%;
+	}
+
+	/* noUiSlider centres a handle on the track end, so half of it (and the end
+	 * pip label) hangs past the track. There is room to absorb that at desktop
+	 * widths; at 390px it clipped. */
+	.fw-backend-option-type-slider > .fw-backend-option-input,
+	.fw-backend-option-type-short-slider > .fw-backend-option-input,
+	.fw-backend-option-type-range-slider > .fw-backend-option-input,
+	.fw-backend-option-type-split-slider > .fw-backend-option-input {
+		padding-inline: 17px;
+	}
+}

@@ -55,7 +55,7 @@
 }
 .fw-option-type-table-presets-item-header .fw-option-type-table-presets-item-duplicate { cursor: pointer; }
 .fw-option-type-table-presets-item-toggle:hover,
-.fw-option-type-table-presets-item-duplicate:hover { color: #2271b1; }
+.fw-option-type-table-presets-item-duplicate:hover { color: var(--fw-accent, #2271b1); }
 .fw-option-type-table-presets-item-remove { color: #b32d2e; }
 .fw-option-type-table-presets-item-remove:hover { color: #d63638; }
 /* Reveal Duplicate / Remove only while hovering the item (fade for ease). */
@@ -159,13 +159,13 @@
 }
 .fw-tp-tab:last-child { border-right: none; }
 .fw-tp-tab:hover { background: #f0f0f1; color: #1d2327; }
-.fw-tp-tab.is-active { background: #fff; color: #2271b1; }
+.fw-tp-tab.is-active { background: #fff; color: var(--fw-accent, #2271b1); }
 .fw-tp-tab.is-active::after {
 	content: '';
 	position: absolute;
 	left: 0; right: 0; bottom: -1px;
 	height: 2px;
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 }
 .fw-tp-panel { display: none; padding: 6px 10px; }
 .fw-tp-panel.is-active { display: block; }

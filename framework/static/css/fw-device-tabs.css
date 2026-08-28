@@ -38,7 +38,7 @@
 
 .fw-device-tabs .fw-device-tab.is-active {
 	color: #fff;
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 }
 
 .fw-device-tabs .fw-device-tab .dashicons {
@@ -146,7 +146,7 @@
 .fw-device-head .fw-device-tab.is-active {
 	display: inline-flex;
 	color: #fff;
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 }
 
 /* Hover / focus the pill: expand all three icons. */

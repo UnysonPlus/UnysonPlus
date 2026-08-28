@@ -56,7 +56,7 @@
 
 .fw-option-type-background-pro .bg-pro__tab.is-active {
 	background: #fff;
-	color: #2271b1;
+	color: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-background-pro .bg-pro__tab.is-active::after {
@@ -66,7 +66,7 @@
 	right: 0;
 	bottom: -1px;
 	height: 2px;
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 }
 
 .fw-option-type-background-pro .bg-pro__tab-dot {
@@ -86,8 +86,8 @@
 }
 
 .fw-option-type-background-pro .bg-pro__tab.is-active.has-value .bg-pro__tab-dot {
-	background: #2271b1;
-	border-color: #2271b1;
+	background: var(--fw-accent, #2271b1);
+	border-color: var(--fw-accent, #2271b1);
 }
 
 /* ----- Panels ----- */
@@ -152,7 +152,7 @@
 
 .fw-option-type-background-pro .bg-pro__row-help:hover,
 .fw-option-type-background-pro .bg-pro__row-help:focus {
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 	color: #fff;
 	outline: none;
 }
