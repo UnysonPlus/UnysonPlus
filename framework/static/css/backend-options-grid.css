@@ -258,7 +258,12 @@ body.rtl .fw-backend-option-design-default > .fw-backend-option-desc {
 	 * is out of the text flow (skin Â§34) -- the longest, "Letter spacing", is
 	 * 81px. It was widened to ~112px while the icon still consumed width; that is
 	 * no longer needed, so the field keeps the 22px instead. */
-	grid-template-columns: minmax(0, 90px) minmax(0, 1fr);
+	/* The label track is FIXED, not `minmax(0, 90px)`. A 0 minimum lets grid
+	 * collapse the track whenever the input column's min-content demands the
+	 * space -- measured in the Color Presets box, the label cell shrank to ~30px
+	 * and "Color" broke onto two lines as "Col / or". The input column is the one
+	 * that should absorb the squeeze, and `minmax(0, 1fr)` already lets it. */
+	grid-template-columns: 90px minmax(0, 1fr);
 	column-gap: 12px;
 }
 
@@ -400,7 +405,14 @@ body.rtl .fw-backend-option-design-default > .fw-backend-option-desc {
 .fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-input,
 .fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-label,
 .fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-input {
-	width: 100%;
+	/* `!important` is deliberate. These cells still carry the float grid's
+	 * `fw-col-sm-3` / `fw-col-lg-2` classes, and in these narrow panels the
+	 * percentage kept winning in practice -- measured: a 90px track with the label
+	 * box resolving to 22.5px (25% of it), which is what broke "Color" into
+	 * "Col / or" in the Color Presets box. Forcing width:100% inline on the same
+	 * element resolves it to the full 90px, so this pins the declaration that the
+	 * cascade was otherwise dropping. */
+	width: 100% !important;
 	max-width: 100%;
 	box-sizing: border-box;
 }
@@ -564,14 +576,20 @@ body.rtl .fw-backend-option-design-default > .fw-backend-option-desc {
  * controls overflowing, and the page scrolling horizontally (506px of content in
  * a 390px viewport).
  *
- * 782px is the boundary WordPress itself uses for the admin's mobile layout, and
- * it is exactly where fw.css switches the float grid over, so the two agree.
+ * 782px is WordPress's own admin mobile boundary (and where fw.css switches the
+ * float grid), but the two-column row is still crushed well ABOVE it: on a landscape
+ * tablet (iPad Mini, 1024px) the admin chrome leaves the options panel narrow enough
+ * that labels wrap and the preset editors (Box / Icon Badge presets, Background Fill)
+ * cram. So the stack kicks in at 1024px to cover the whole 783-1024 landscape-tablet /
+ * narrow-laptop band, not just phones. (The precise, panel-width-aware fix would be a
+ * container query on a new full-width row wrapper — see section 7 for why the retrofit
+ * onto existing shrink-to-fit wrappers was reverted.)
  *
  * The label's `padding-top` goes back to 0 here: that nudge exists to centre a
  * label's first line against a control BESIDE it, and there is nothing beside it
  * once the row is stacked.
  * -------------------------------------------------------------------------- */
-@media (max-width: 782px) {
+@media (max-width: 1024px) {
 	.fw-backend-option-design-default,
 	.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label),
 	.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label),

@@ -916,6 +916,21 @@ body .form-footer-buttons .button-secondary:hover {
 	transition: border-color var(--u-t) var(--u-e), box-shadow var(--u-t) var(--u-e);
 }
 
+/* Specificity, not load order, has to decide the display mode here.
+ *
+ * unit-input's own sheet says `.fw-option-type-unit-input .fw-unit-input-row
+ * { display: flex }` -- exactly the same (0,2,0) specificity as the rule above,
+ * so whichever sheet prints last wins. Standalone that is the skin, and the row
+ * shrink-wraps to ~138px. But a unit-input nested in a `responsive` wrapper has
+ * its option-type CSS enqueued ON DEMAND, i.e. AFTER the skin, so `flex` won
+ * there instead: the row became block-level and stretched the full 920px cell
+ * with a 72px input floating at its left end. That is the "Container Width looks
+ * nothing like Container Gutter" case. Taking this to (0,3,0) settles it in both
+ * contexts regardless of print order. */
+.fw-backend-option .fw-option-type-unit-input .fw-unit-input-row {
+	display: inline-flex;
+}
+
 .fw-backend-option .fw-unit-input-row:hover {
 	border-color: var(--u-border-hover);
 }
@@ -936,6 +951,34 @@ body .form-footer-buttons .button-secondary:hover {
 	box-shadow: none;
 	margin: 0;
 	outline: none;
+}
+
+/* The two halves must fill the ROW's content box, not the control token.
+ *
+ * §11 pins `height: var(--u-control-h)` on every option input and select, which is
+ * right for a standalone control. Inside the segmented row it is 2px too tall:
+ * the row is 34px including its 1px border, so its content box is 32px, and a
+ * 34px child overflows by exactly 1px top and bottom -- measured `above=1,
+ * below=-1`, which is why the value and the unit sat high in the field.
+ *
+ * Letting them stretch to the row instead makes the height follow the row
+ * automatically, and dropping the vertical padding lets the browser centre the
+ * text the way it does for any auto-height input. */
+/* The `body` prefix matches §11's own specificity -- it is `body .fw-backend-option
+ * .fw-backend-option-input input[type="text"]` (0,3,2) and this was (0,3,1), so
+ * the height stayed pinned at 34px. Equal specificity now, and this rule sits
+ * later in the same file, so it wins. */
+body .fw-backend-option .fw-backend-option-input .fw-unit-input-row input,
+/* The select needs §11's `:not()` chain too: those two attribute negations make
+ * its selector (0,4,2) against this rule's (0,3,2), so without them the unit half
+ * stayed 34px while the value half was already fixed. */
+body .fw-backend-option .fw-backend-option-input .fw-unit-input-row select:not([multiple]):not([size]) {
+	height: auto !important;
+	min-height: 0 !important;
+	align-self: stretch;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	line-height: normal !important;
 }
 
 /* Suppress the per-child focus treatment from §4 — the wrapper owns it now. */
@@ -1022,9 +1065,29 @@ body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list 
  *
  * multi-picker.css already zeroes the vertical padding on these rows for the
  * same reason; this is the horizontal half of that fix.
+ *
+ * GATED ON THE PARENT ROW HAVING A LABEL, because only then is there an inset to
+ * double. Measured: a multi-picker in a LABELLED row gets `padding: 8px 20px` and
+ * supplies the inset, so the nested rows must not re-apply it; but when the
+ * multi-picker's own row is LABEL-LESS it gets `8px 0` and supplies nothing, and
+ * its whole ancestor chain measured 0 horizontal padding -- so zeroing there left
+ * the nested row 20px left of every sibling. That is the Theme Settings "Site
+ * Width Mode" picker, which renders full-width like a top-level row.
  * -------------------------------------------------------------------------- */
-.fw-option-type-multi-picker > .picker-group > .fw-backend-option-design-default,
-.fw-option-type-multi-picker > .choice-group > .fw-backend-option-design-default {
+/* The multi-picker ROW never carries the horizontal inset; its nested picker /
+ * choice rows do. That split is what keeps a nested row aligned with ordinary
+ * rows above and below it.
+ *
+ * multi-picker.css already says this -- `.fw-backend-option-type-multi-picker
+ * { padding-left: 0; padding-right: 0 }` -- but at (0,1,0) it ties with the skin's
+ * own row padding, so LOAD ORDER decided it. In Theme Settings the option-type
+ * sheet printed last and the row measured `8px 0` (correct); inside a shortcode
+ * modal the skin printed last, the row kept `8px 20px`, and the nested row added
+ * its own 20px on top -- the 20px indent seen on Max Width, Drop Cap and Position.
+ *
+ * At (0,2,0) this is settled by specificity in both contexts, so the nested rows
+ * can simply keep the standard inset (no zeroing rule needed any more). */
+.fw-backend-option.fw-backend-option-type-multi-picker {
 	padding-left: 0;
 	padding-right: 0;
 }
@@ -1164,12 +1227,78 @@ body.fw-skin-dark .fw-settings-form .form-footer-buttons {
 	background: transparent;
 }
 
-/* Keep the value text optically centred in the taller trigger. */
-.fw-backend-option .fw-select .fw-select-control > div,
-.fw-backend-option .fw-select-control > div {
+/* Keep the value text optically centred in the taller trigger.
+ *
+ * `:not(.item)` matters: in a MULTI-select the `> div` children are the chips, and
+ * a 32px line-height made each chip 36px tall inside a 34px control -- taller than
+ * its own container, so it overflowed the bottom and could never be centred
+ * (measured: 1px above, -3px below). Chips get their own sizing below. */
+.fw-backend-option .fw-select .fw-select-control > div:not(.item),
+.fw-backend-option .fw-select-control > div:not(.item) {
 	line-height: calc(var(--u-control-h, 34px) - 2px);
 	color: var(--u-ink);
 	font-size: 13px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Multi-select chips
+ *
+ * The control is laid out as flex so the chips are centred by the box model
+ * rather than by a hand-tuned line-height, which is what broke above. `gap`
+ * replaces the chips' own margins so the spacing is even on every row once they
+ * wrap.
+ * -------------------------------------------------------------------------- */
+/* Both selectors sit ABOVE fw-select.css's own `.fw-select.multi
+ * .fw-select-control > .item` (0,4,0) -- at (0,3,0) the padding here silently
+ * lost and the chips kept their cramped 1px 6px. fw-select.css is also enqueued
+ * per option type, so it can print after the skin; specificity, not order. */
+.fw-backend-option .fw-select.multi .fw-select-control,
+.fw-backend-option .fw-select-control:has(.item) {
+	/* `!important` on display and the vertical padding for the reason §20 already
+	 * records: fw-select repaints its own control from a declaration that is not
+	 * reachable through a plain cascade walk. Measured here -- `align-items` and
+	 * `gap` from THIS rule applied while `display` and the padding from the same
+	 * block did not, which is only explicable by that repaint. */
+	display: flex !important;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding-top: 4px !important;
+	padding-bottom: 4px !important;
+}
+
+/* The text input shares the chips' row instead of claiming a line of its own.
+ * Without a basis it takes its default ~150px intrinsic width, wraps to a second
+ * row and doubles the control's height the moment any chip is present. */
+.fw-backend-option .fw-select.multi .fw-select-control > input,
+.fw-backend-option .fw-select-control:has(.item) > input {
+	flex: 1 1 60px;
+	min-width: 60px;
+	width: auto;
+	height: 22px;
+	line-height: 22px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.fw-backend-option .fw-select.multi .fw-select-control > .item,
+.fw-backend-option .fw-select-control .item {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	/* 9px of breathing room either side of the label -- the shipped 5px left the
+	 * text nearly touching the chip edge. */
+	padding: 0 5px 0 9px;
+	line-height: 22px;
+	font-size: 13px;
+	color: var(--u-ink);
+	background: var(--u-sunken);
+	border: 1px solid var(--u-border);
+	border-radius: 4px;
+	margin: 0;
 }
 
 body.fw-skin-dark .fw-backend-option .fw-select .fw-select-control {
@@ -1914,4 +2043,214 @@ body {
 	.fw-backend-option-type-split-slider > .fw-backend-option-input {
 		padding-inline: 17px;
 	}
+}
+
+/* -----------------------------------------------------------------------------
+ * 40. Image-picker tiles get the skin's corner radius
+ *
+ * The option type ships `border-radius: 2px` on `.thumbnail` with a `3px solid`
+ * selected border. At that ratio the outer corner of the green selection frame
+ * reads as a hard right angle -- 2px of rounding disappears underneath a 3px
+ * border. `--u-r-sm` (5px) is the same radius the skin gives inputs and panels,
+ * so a selected tile now matches everything around it.
+ *
+ * Specificity is deliberately above the shipped rule's (0,4,2): option-type CSS
+ * is sometimes enqueued ON DEMAND and therefore prints after the skin (the
+ * `responsive` wrapper does exactly that), so load order cannot be relied on.
+ *
+ * The dashicon check badge needs no rule of its own -- `.thumbnail` is
+ * `overflow: hidden`, so the corner clips to whatever radius this sets.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-option-type-image-picker ul.thumbnails.image_picker_selector li .thumbnail {
+	border-radius: var(--u-r-sm);
+}
+
+/* -----------------------------------------------------------------------------
+ * 41. The select POPUP, styled -- `appearance: base-select`
+ *
+ * Until recently the panel a <select> opens was drawn by the operating system and
+ * could not be styled at all, which is why a skinned trigger still dropped a grey
+ * Win32 list underneath it. `appearance: base-select` opts the control into the
+ * CSS box model so `::picker(select)`, `::picker-icon` and `option` become real
+ * styleable boxes -- while it stays a genuine <select>.
+ *
+ * That last part is the reason this is preferable to a JS listbox here: the page
+ * builder renders options over AJAX, and anything JS-driven has to be
+ * re-initialised on every render (the same failure mode as the postbox toggles).
+ * A real <select> needs no initialisation, and keeps native keyboard behaviour,
+ * screen-reader semantics and form submission for free.
+ *
+ * The whole block is @supports-gated, so on Firefox/Safari (and Chrome < 135)
+ * absolutely nothing here applies and the control renders exactly as it does
+ * today. This is additive, never a regression.
+ *
+ * NOT applied to: `multiple` / `size` list boxes (a panel makes no sense), selects
+ * tom-select has taken over (`.tomselected` -- it hides the original and draws its
+ * own), or the unit-input's segmented select, which is deliberately borderless and
+ * shares a box with the value field.
+ * -------------------------------------------------------------------------- */
+@supports (appearance: base-select) {
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected),
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected)::picker(select) {
+		appearance: base-select;
+	}
+
+	/* The trigger keeps the exact look it already has. `base-select` makes the
+	 * control a flex box whose first child is the selected text, so the padding
+	 * moves off the old text-only box, and WP's background-image arrow is dropped
+	 * in favour of ::picker-icon. */
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 0 10px;
+		background-image: none;
+	}
+
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected)::picker-icon {
+		color: var(--u-ink-soft);
+		transition: transform var(--u-t) var(--u-e);
+	}
+
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected):open::picker-icon {
+		transform: rotate(180deg);
+	}
+
+	/* The panel itself: same surface, border, radius and elevation as the option
+	 * popovers elsewhere in the skin, so a dropdown reads as part of the same UI. */
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected)::picker(select) {
+		background: var(--u-surface);
+		border: 1px solid var(--u-border);
+		border-radius: var(--u-r-sm);
+		box-shadow: 0 8px 28px rgba(20, 26, 36, .14), 0 2px 6px rgba(20, 26, 36, .08);
+		padding: 4px;
+		margin-top: 4px;
+		max-height: 320px;
+		overflow-y: auto;
+	}
+
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) option {
+		padding: 6px 9px;
+		border-radius: 4px;
+		color: var(--u-ink);
+		background: transparent;
+		/* The options INHERIT the trigger's line-height, which §11 pins to
+		 * `calc(var(--u-control-h) - 2px)` = 32px so the CLOSED control centres its
+		 * text on a 34px box. That is right for the trigger and far too tall for a
+		 * list row -- it made every item a 44px slab. 24px is a comfortable reading
+		 * line for 13px text and keeps the row at 36px including the padding. */
+		line-height: 24px;
+	}
+
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) option:hover {
+		background: var(--u-sunken);
+	}
+
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) option:checked {
+		background: var(--u-accent);
+		color: #fff;
+	}
+
+	/* The UA's tick would sit beside our own selected-row highlight and read as two
+	 * competing "this one" signals. */
+	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) option::checkmark {
+		display: none;
+	}
+
+	/* The unit-input's select is one half of a segmented control -- it must stay a
+	 * plain borderless box, not gain a panel and an icon of its own.
+	 *
+	 * It carries the SAME `:not()` chain as the rule it is overriding, deliberately:
+	 * each `:not()` contributes its argument's weight, so the inclusion selector
+	 * above is (0,5,1). Without the chain this exclusion is only (0,3,1) and loses
+	 * -- measured: all 5 unit-input selects were picking up base-select. With it
+	 * this is (0,6,1) and wins. */
+	.fw-backend-option .fw-backend-option-input .fw-unit-input-row select:not([multiple]):not([size]):not(.tomselected) {
+		appearance: auto;
+		display: inline-block;
+		padding: 0 4px;
+	}
+}
+
+/* -----------------------------------------------------------------------------
+ * 42. List boxes (`select[multiple]` / `select[size]`) get the panel's row style
+ *
+ * These are excluded from §41 on purpose -- `appearance: base-select` is for the
+ * DROPDOWN picker, and a list box has no picker to style. Its rows are ordinary
+ * boxes though, so they can be styled directly, and they were not: measured
+ * `padding: 0 2px 1px`, `line-height: normal`, an 18px row and the UA's grey
+ * selection bar, sitting inside an otherwise fully skinned control.
+ *
+ * The row treatment is deliberately IDENTICAL to the dropdown's in §41 (same
+ * padding, 24px line, 4px radius, sunken hover, accent selection) so a chosen
+ * item looks the same whether it was picked from a popup or a list.
+ *
+ * No `appearance` change and no @supports gate: this is plain CSS that works in
+ * every browser, unlike §41.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option .fw-backend-option-input select[multiple],
+.fw-backend-option .fw-backend-option-input select[size] {
+	/* 4px so the rows' own padding sets the inset, matching ::picker(select). */
+	padding: 4px;
+}
+
+.fw-backend-option .fw-backend-option-input select[multiple] option,
+.fw-backend-option .fw-backend-option-input select[size] option {
+	/* Tighter than the dropdown's 6px. A list box shows `size` rows AT ONCE, so row
+	 * height multiplies straight into the control's height -- at 6px padding a
+	 * size=7 box grew from 138px to 213px. 4px keeps the roomier, legible row
+	 * without the control eating the page. (`line-height` is set for completeness
+	 * but Chrome ignores it on options inside a list box -- the padding is what
+	 * actually moves the row.) */
+	padding: 4px 9px;
+	line-height: 24px;
+	border-radius: 4px;
+	color: var(--u-ink);
+}
+
+.fw-backend-option .fw-backend-option-input select[multiple] option:hover,
+.fw-backend-option .fw-backend-option-input select[size] option:hover {
+	background: var(--u-sunken);
+}
+
+/* `!important` because the UA paints the selection of a list box with its own
+ * highlight colour, which otherwise survives a plain background declaration. */
+.fw-backend-option .fw-backend-option-input select[multiple] option:checked,
+.fw-backend-option .fw-backend-option-input select[size] option:checked {
+	background: var(--u-accent) !important;
+	color: #fff !important;
+}
+
+/* The group heading is a label, not a choice -- caption weight and colour keep it
+ * from reading as a selectable row. */
+.fw-backend-option .fw-backend-option-input select[multiple] optgroup,
+.fw-backend-option .fw-backend-option-input select[size] optgroup {
+	font-weight: 600;
+	color: var(--u-ink-soft);
+	padding: 6px 9px 2px;
+}
+
+.fw-backend-option .fw-backend-option-input select[multiple] optgroup option,
+.fw-backend-option .fw-backend-option-input select[size] optgroup option {
+	font-weight: 400;
+	color: var(--u-ink);
+}
+
+/* -----------------------------------------------------------------------------
+ * 43. Compact predefined-colours picker: rows fill the panel
+ *
+ * `.pccpc__option` is laid out by its own stylesheet without a width, so each row
+ * shrank to its label and the hover/selected highlight stopped short of the panel
+ * edge -- visible as a ragged right edge on "White", "Primary" and friends.
+ *
+ * `calc(100% - 1px)` rather than a flat 100%: the panel draws a 1px border and
+ * the rows sit inside it, so a full 100% overshoots by exactly that hairline and
+ * re-introduces a horizontal scrollbar on the panel.
+ * -------------------------------------------------------------------------- */
+/* `.fw-backend-option` prefix: the option type's own rule is the SAME (0,2,0)
+ * specificity and its sheet is enqueued per option type, so it prints after the
+ * skin and wins on order alone -- measured, the row kept its `calc(100% - 22.6px)`.
+ * At (0,3,0) this is decided by specificity instead. */
+.fw-backend-option .fw-option-type-predefined-colors-color-picker-compact .pccpc__option {
+	width: calc(100% - 1px);
 }

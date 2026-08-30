@@ -221,15 +221,25 @@
 }
 .fw-bp-row-1 > .fw-backend-option { flex-basis: 100%; }
 
-/* A two-option row (e.g. Border Style + Border Width): two columns on DESKTOP only,
-   aligned so the labels line up with the single-column rows. Stacks to one full-width
-   column on tablet / mobile. */
+/* A two-option row (e.g. Border Style + Border Width): two 50% columns on DESKTOP,
+   stacking to one full-width column on tablet / mobile. Each option keeps its own CSS-grid
+   label|input layout (grid-template-columns from backend-options-grid.css). Note: the
+   .fw-backend-option element IS the grid (it also carries .fw-backend-option-design-default),
+   so DON'T set a `width` on the label — that shrinks it WITHIN its grid track and collapsed it
+   to ~38px (wrapping). Instead give the option a max-content label track so short labels like
+   "Border Style" stay on one line while the input takes the rest. These .fw-bp-* rules are a
+   shared namespace across the border/icon-badge preset editors, so keep the two files in sync. */
 @media (max-width: 767.98px) {
 	.fw-bp-row-2 > .fw-backend-option { flex-basis: 100%; }
 }
 @media (min-width: 768px) {
-	.fw-bp-row-2 .fw-backend-option-label { width: calc((50% - 16.66666667%) + 10px); }
-	.fw-bp-row-2 .fw-backend-option-input { width: auto; }
+	.fw-bp-row-2 > .fw-backend-option {
+		/* Mirror the single-column label track so the LEFT option's input lines up with the
+		   full-width rows above/below. `min(220px, 50%)` of each half = 25% of the row (capped
+		   at 220, same as the default grid) and stays responsive; 20px column-gap matches too. */
+		grid-template-columns: minmax(0, min(220px, calc(50% + 13px))) minmax(0, 1fr);
+		column-gap: 20px;
+	}
 }
 
 .fw-bp-panel .fw-backend-option-design-default {

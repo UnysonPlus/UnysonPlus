@@ -279,7 +279,10 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 							),
 							'custom' => array(
 								'type'   => 'custom',
-								'picker' => 'color-picker',
+								// ALPHA-capable picker (Coloris opacity slider → stores rgba()) so a background
+								// can be transparent / a semi-transparent scrim (e.g. an overlay footer over a
+								// full-height hero, a tinted section). A plain hex value still round-trips.
+								'picker' => 'rgba-color-picker',
 							),
 						),
 					), $id_prefix, $name_prefix );

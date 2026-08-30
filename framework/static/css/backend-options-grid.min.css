@@ -1,1 +1,610 @@
-.fw-backend-option-design-default { display: grid; --fw-gutter-x: 0px; --fw-gutter-y: 0px; grid-template-columns: minmax(0, min(220px, 25%)) minmax(0, 1fr); column-gap: 20px; align-items: start; } .fw-backend-option-design-default > .fw-backend-option-label { padding-top: calc((var(--u-control-h, 34px) - var(--u-label-lh, 20px)) / 2); } .fw-backend-option-design-default::before, .fw-backend-option-design-default::after { content: none; } .fw-backend-option-design-default > .fw-backend-option-label, .fw-backend-option-design-default > .fw-backend-option-input, .fw-backend-option-design-default > .fw-backend-option-desc { float: none; width: auto; max-width: none; min-width: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; justify-self: stretch; box-sizing: border-box; } .fw-backend-option-design-default > .fw-backend-option-label { grid-column: 1; grid-row: 1; } .fw-backend-option-design-default > .fw-backend-option-input { grid-column: 2; grid-row: 1; } .fw-backend-option-design-default > .fw-backend-option-desc { grid-column: 2; grid-row: 2; } .fw-backend-option-design-default > .fw-backend-option-desc > .fw-inner { max-width: 78ch; } .fw-backend-option-design-default:not(:has(> .fw-backend-option-label)) { grid-template-columns: minmax(0, 1fr); column-gap: 0; } .fw-backend-option-design-default:not(:has(> .fw-backend-option-label)) > * { grid-column: 1; grid-row: auto; } .fw-backend-option-design-default > *:not(.fw-backend-option-label):not(.fw-backend-option-input):not(.fw-backend-option-desc) { grid-column: 1 / -1; } body.rtl .fw-backend-option-design-default > .fw-backend-option-label, body.rtl .fw-backend-option-design-default > .fw-backend-option-input, body.rtl .fw-backend-option-design-default > .fw-backend-option-desc { float: none; } .fw-force-xs .fw-backend-option-design-default { grid-template-columns: minmax(0, 1fr); column-gap: 0; } .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label, .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-input, .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-desc { grid-column: 1; } .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label { grid-row: 1; } .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-input { grid-row: 2; } .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-desc { grid-row: 3; } .fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label > .fw-inner { padding-bottom: 5px; } .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label), .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) { grid-template-columns: minmax(0, 90px) minmax(0, 1fr); column-gap: 12px; } .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label, .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label { grid-column: 1; grid-row: 1; } .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input, .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input { grid-column: 2; grid-row: 1; } .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-desc, .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-desc { grid-column: 2; grid-row: 2; } .media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-label, .media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-input, .media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-desc { width: auto; max-width: none; margin-left: 0; margin-right: 0; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"], .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"], .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"], .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] { grid-template-columns: minmax(0, 1fr); column-gap: 0; padding-top: 4px; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-input { padding-bottom: 18px; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-label, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-label, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-label, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-label { grid-column: 1; grid-row: 1; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-input, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-input { grid-column: 1; grid-row: 2; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-desc, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-desc, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-desc, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-desc { grid-column: 1; grid-row: 3; } .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-label > .fw-inner, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-label > .fw-inner, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-label > .fw-inner, .fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-label > .fw-inner { padding-bottom: 5px; } .fw-mp-pop-panel .fw-backend-option-design-default > .fw-backend-option-label, .fw-mp-pop-panel .fw-backend-option-design-default > .fw-backend-option-input, .fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-label, .fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-input, .fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-label, .fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-input { width: 100%; max-width: 100%; box-sizing: border-box; } .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-textarea, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-code-editor, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-wp-editor, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-svg-code, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-html, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient-v2, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-icon, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-image-picker, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-svg-code, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-html, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient-v2, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-icon, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-image-picker, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-textarea, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-code-editor, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-wp-editor, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-svg-code, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-html, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient-v2, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-icon, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-image-picker { grid-template-columns: minmax(0, 1fr) !important; column-gap: 0 !important; } .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-textarea > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-code-editor > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-svg-code > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-html > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-icon > *, .fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-image-picker > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-svg-code > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-html > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-icon > *, .fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-image-picker > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-textarea > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-code-editor > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-svg-code > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-html > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-icon > *, .fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-image-picker > * { grid-column: 1 / -1 !important; grid-row: auto !important; } .fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option, .fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option, .fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; } .fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before, .fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after, .fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before, .fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after, .fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before, .fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after { content: none; } .fw-backend-option-design-default.fw-backend-option-type-unique, .fw-backend-option-design-default.fw-backend-option-type-hidden { display: none; } @media (max-width: 782px) { .fw-backend-option-design-default, .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label), .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label), .media-frame-content .fw-backend-option.fw-backend-option-design-default { grid-template-columns: minmax(0, 1fr); column-gap: 0; } .fw-backend-option-design-default > .fw-backend-option-label, .fw-backend-option-design-default > .fw-backend-option-input, .fw-backend-option-design-default > .fw-backend-option-desc, .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label, .fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input, .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label, .fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input { grid-column: 1; grid-row: auto; } .fw-backend-option-design-default > .fw-backend-option-label { padding-top: 0; margin-bottom: 4px; } }
+/* -----------------------------------------------------------------------------
+ * backend-options-grid.css — admin refresh, STEP 1: de-Bootstrap the option row
+ *
+ * Takes `.fw-backend-option-design-default` off the Bootstrap-3 float grid
+ * (`float: left` + percentage widths + clearfix) and onto CSS grid.
+ *
+ * Deliberately LAYOUT-ONLY. No colours, no spacing changes, no type changes —
+ * so anything that regresses here is structural and trivially attributable.
+ * The visual skin layers on top of this in a later step.
+ *
+ * SCOPE: `.fw-col-*` and `.fw-row` are left untouched globally. 55 extension
+ * files depend on them, so the grid stays; only the option ROW stops using it.
+ * Everything below neutralises those classes on three specific elements rather
+ * than changing markup, which keeps the change revertible by dropping this file.
+ * -------------------------------------------------------------------------- */
+
+/* 1. The row becomes the grid.
+ *    `minmax(180px, 260px)` replaces the fluid 25% (`fw-col-sm-3`) that
+ *    collapsed to a sliver inside the page-builder modal. */
+.fw-backend-option-design-default {
+	display: grid;
+	/* `minmax(0, 260px)`, NOT `minmax(180px, 260px)`. A 180px floor overflowed
+	 * every option nested inside a narrow container (addable-box / addable-popup
+	 * on the Components tab): measured 317 overflowing rows vs 24 on the float
+	 * baseline. With a 0 floor the label track still takes its full 260px
+	 * wherever there is room, and simply gives ground instead of overflowing. */
+	/* `min(260px, 45%)` is the width-aware cap that replaces the container query
+	 * I had to revert. In a wide panel 45% exceeds 260px so the label track is a
+	 * flat 260px; in a 280px sidebar metabox it resolves to 126px instead of
+	 * eating 226px and collapsing the control column to zero. */
+	/* Track 220px + 20px gap = controls start 240px in.
+	 *
+	 * Measured directly (this stylesheet disabled) the ORIGINAL layout put the
+	 * control 191px in. 288px (a 260px track) read as too wide, 200px as too
+	 * narrow, so this sits deliberately between them: ~50px more label room than
+	 * the original, ~48px less than the first attempt.
+	 *
+	 * The gap carries what used to be the label cell's own 20px right padding,
+	 * which section 3 strips along with the rest of the Bootstrap geometry.
+	 *
+	 * `min(…, 45%)` is the guard that stops the label starving the control column
+	 * in a narrow panel or sidebar metabox. */
+	/* `min(220px, 25%)`. The 220px cap is what a wide settings page uses; the
+	 * 25% is the float grid's OWN ratio (the label shipped as `fw-col-sm-3`),
+	 * restored so narrower contexts match the original instead of all getting
+	 * the same fixed 220px.
+	 *
+	 * It matters most in the shortcode modal: an 800px row gives 25% = 200px,
+	 * which is exactly what the float layout produced. At a flat 220px the
+	 * label column ran 20px wide there and pushed every control right of where
+	 * it used to sit. A wide Theme Settings row is unaffected -- 25% of it
+	 * exceeds 220px, so the cap still wins and that column is unchanged.
+	 *
+	 * The earlier 45% was a guard against the label starving the control in a
+	 * narrow context; 25% is strictly tighter, so the guard still holds. */
+	/* Opt this row out of the Bootstrap gutter system.
+	 *
+	 * The row still carries `.fw-row`, and the THEME's frontend-grid.css
+	 * implements Bootstrap 5's PAIRED gutter on it:
+	 *
+	 *   .fw-row      { margin-top: calc(-1 * var(--bs-gutter-y)); ... }
+	 *   .fw-row > *  { margin-top: var(--bs-gutter-y); ... }
+	 *
+	 * -- the row pulls UP by the gutter and each child pushes DOWN by it. In
+	 * wp-admin that stylesheet is not loaded, so neither half applies. In the
+	 * Live Editor the panel renders inside the theme's document and both do:
+	 * measured row margin -24px/-12px and +24px on every cell, which put a 24px
+	 * gap above each description and inflated the control track from 34px to 58px.
+	 *
+	 * Zeroing the CHILD half alone is a trap: the row keeps its -24px and every
+	 * row is dragged up over the one above it. Both halves derive from
+	 * --bs-gutter-*, which those rules define as `var(--fw-gutter-*, 1.5rem)` --
+	 * an override hook that is otherwise undefined. Setting it to 0 here switches
+	 * the whole system off consistently, instead of fighting either half. */
+	--fw-gutter-x: 0px;
+	--fw-gutter-y: 0px;
+
+	grid-template-columns: minmax(0, min(220px, 25%)) minmax(0, 1fr);
+	column-gap: 20px;
+	/* Labels align to the FIRST LINE of their control, never to cell centres.
+	 *
+	 * `align-items: center` looked right on a one-line label beside a one-line
+	 * input and wrong everywhere else, because it centres the label CELL against
+	 * the whole control: a 92px stacked colour picker pushed its label 23px below
+	 * the swatch, and a label cell taller than its own text (a wrapped or
+	 * icon-bearing label) floated the text 8px high. Both were then papered over
+	 * with a 24-selector opt-out list that had to grow for every new tall type.
+	 *
+	 * Instead: pin every cell to the top and nudge the label down by exactly half
+	 * the difference between a standard control and a label line box. A one-line
+	 * label lands dead-centre on a 34px control; a two-line label grows downward
+	 * from that same first line; a tall control keeps its label beside its first
+	 * row. No per-type list, so a new option type is correct by default. */
+	align-items: start;
+}
+
+.fw-backend-option-design-default > .fw-backend-option-label {
+	padding-top: calc((var(--u-control-h, 34px) - var(--u-label-lh, 20px)) / 2);
+}
+
+/* 2. The row carries `.fw-row .fw-clearfix`, whose ::before/::after would
+ *    otherwise become stray grid items and open phantom rows. */
+.fw-backend-option-design-default::before,
+.fw-backend-option-design-default::after {
+	content: none;
+}
+
+/* 3. Neutralise the float-grid geometry on the three cells. Their `fw-col-*`
+ *    classes stay in the markup (harmless, and third-party CSS may match on
+ *    them); only the geometry they impose is overridden. */
+.fw-backend-option-design-default > .fw-backend-option-label,
+.fw-backend-option-design-default > .fw-backend-option-input,
+.fw-backend-option-design-default > .fw-backend-option-desc {
+	float: none;
+	width: auto;
+	max-width: none;
+	min-width: 0;
+	margin-left: 0;
+	margin-right: 0;
+	padding-left: 0;
+	padding-right: 0;
+	/* Fill the track explicitly. `width: auto` alone relies on the default
+	 * `justify-items: normal` still being in force; anything upstream that makes
+	 * these cells shrink-to-fit collapses the label to its min-content width and
+	 * renders it one character per line in a narrow column. */
+	justify-self: stretch;
+	box-sizing: border-box;
+}
+
+/* 4. Explicit placement. Source order is unchanged (label, input, desc).
+ *
+ *    The description goes under the CONTROL, not under the label. Measured on
+ *    this install: option descriptions run a median of 164 characters, 78% are
+ *    over 120, p90 is 321. In a 260px label column that median is a 5-line
+ *    block and every row inherits its height. In the ~900px control column it
+ *    is two lines. The label column stays tight for scanning; the prose gets
+ *    the width prose needs. */
+.fw-backend-option-design-default > .fw-backend-option-label { grid-column: 1; grid-row: 1; }
+.fw-backend-option-design-default > .fw-backend-option-input { grid-column: 2; grid-row: 1; }
+.fw-backend-option-design-default > .fw-backend-option-desc  { grid-column: 2; grid-row: 2; }
+
+/* Prose stays readable regardless of how wide the panel gets. */
+.fw-backend-option-design-default > .fw-backend-option-desc > .fw-inner {
+	max-width: 78ch;
+}
+
+/* 5. Rows with no label cell collapse to a single column.
+ *
+ *    `label => false` omits the label element, so there is nothing to align
+ *    against and every child should span the full width.
+ *
+ *    This is matched with `:has()` rather than `:first-child` on the input.
+ *    A `:first-child` test is wrong the moment anything else is injected ahead
+ *    of the input — the theme's Typography "Live preview" is exactly that, and
+ *    it left the preview auto-placed into the 260px label track at ~220px wide
+ *    while the input still sat in column 2. */
+.fw-backend-option-design-default:not(:has(> .fw-backend-option-label)) {
+	grid-template-columns: minmax(0, 1fr);
+	column-gap: 0;
+}
+
+.fw-backend-option-design-default:not(:has(> .fw-backend-option-label)) > * {
+	grid-column: 1;
+	grid-row: auto;
+}
+
+/* 5b. Anything a theme or option type injects as a direct child of a LABELLED
+ *     row is not one of the three known cells, so it has no explicit placement
+ *     and would be auto-placed into the label track. Span it instead. */
+.fw-backend-option-design-default > *:not(.fw-backend-option-label):not(.fw-backend-option-input):not(.fw-backend-option-desc) {
+	grid-column: 1 / -1;
+}
+
+/* 6. RTL: grid handles direction natively, so the float-swap hacks are inert. */
+body.rtl .fw-backend-option-design-default > .fw-backend-option-label,
+body.rtl .fw-backend-option-design-default > .fw-backend-option-input,
+body.rtl .fw-backend-option-design-default > .fw-backend-option-desc {
+	float: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * 7. Container queries — ATTEMPTED AND REVERTED. Do not re-add naively.
+ *
+ * Applying `container-type: inline-size` to `.fw-postbox > .inside`,
+ * `.fw-backend-options-group`, `.fw-options-tabs-contents` and `.fw-inner-option`
+ * collapsed the inline addable-box layout (Theme Settings -> Components ->
+ * Color Presets) to zero width: labels overlapped, swatch rows crushed.
+ *
+ * Cause: `container-type: inline-size` implies size containment, so the element
+ * can no longer be sized by its contents. `.fw-backend-options-group.fw-container`
+ * is shrink-to-fit, so containment resolves its inline size to 0.
+ *
+ * Any future attempt needs a container element that is guaranteed block-level and
+ * full-width — realistically a new wrapper introduced in the option-row template,
+ * not container-type retrofitted onto existing framework elements. Until then the
+ * row stays two-column at all widths, which matches the float baseline's behaviour.
+ * -------------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------------
+ * 8. Narrow contexts: honour `.fw-force-xs`
+ *
+ * `backend-options.js` already adds `.fw-force-xs` to `#side-sortables`, which
+ * is the framework's hand-rolled stand-in for a container query. The float
+ * layout had rules for it; the grid layout must honour it too, or options in a
+ * sidebar metabox render label-only with a zero-width control.
+ *
+ * This is a narrower fix than container queries (it only covers contexts the
+ * framework already flags), but it is safe — no containment, so it cannot
+ * collapse shrink-to-fit ancestors the way `container-type` did.
+ * -------------------------------------------------------------------------- */
+/* `.fw-mp-pop-panel` is the multi-picker popup body (Color Presets, Text Style
+ * Presets, …). It is ~380px wide, so the two-column split left a short label
+ * like "Color" stranded beside a large empty gap. Same treatment as .fw-force-xs. */
+.fw-force-xs .fw-backend-option-design-default {
+	grid-template-columns: minmax(0, 1fr);
+	column-gap: 0;
+}
+
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label,
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-input,
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-desc {
+	grid-column: 1;
+}
+
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label { grid-row: 1; }
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-input { grid-row: 2; }
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-desc  { grid-row: 3; }
+
+.fw-force-xs .fw-backend-option-design-default > .fw-backend-option-label > .fw-inner {
+	padding-bottom: 5px;
+}
+
+/* -----------------------------------------------------------------------------
+ * 9. Popups and inline box editors: COMPACT two columns, not stacked
+ *
+ * These panels (multi-picker popups like Color Presets / Text Style Presets, and
+ * addable-box inline item editors) are ~380px wide. Two things are wrong there
+ * by default:
+ *
+ *   - the standard 260px label track strands a short label like "Color" beside a
+ *     large empty gap, and
+ *   - stacking label-above-field (the first attempt at fixing that) makes the
+ *     panel enormously tall — a 9-field text style preset became a full-page
+ *     scroll.
+ *
+ * The answer is neither: keep the label inline, just size the track to the label
+ * rather than to the page: wide enough for the labels that actually occur,
+ * capped so it never starves the field.
+ * -------------------------------------------------------------------------- */
+/* Only rows that ACTUALLY have a label get the compact label track. Without the
+ * `:has()` guard this rule also hit label-less rows and reserved 110px of empty
+ * column in front of them — visible on the Site Background Pattern popup, where
+ * the swatch grid was pushed ~122px off the panel's left edge. It overrode the
+ * label-less single-column rule in §5 purely by coming later in the file. */
+.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label),
+.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) {
+	/* 90px holds every label in these panels on ONE line now that the help icon
+	 * is out of the text flow (skin Â§34) -- the longest, "Letter spacing", is
+	 * 81px. It was widened to ~112px while the icon still consumed width; that is
+	 * no longer needed, so the field keeps the 22px instead. */
+	/* The label track is FIXED, not `minmax(0, 90px)`. A 0 minimum lets grid
+	 * collapse the track whenever the input column's min-content demands the
+	 * space -- measured in the Color Presets box, the label cell shrank to ~30px
+	 * and "Color" broke onto two lines as "Col / or". The input column is the one
+	 * that should absorb the squeeze, and `minmax(0, 1fr)` already lets it. */
+	grid-template-columns: 90px minmax(0, 1fr);
+	column-gap: 12px;
+}
+
+.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label {
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input {
+	grid-column: 2;
+	grid-row: 1;
+}
+
+.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-desc,
+.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-desc {
+	grid-column: 2;
+	grid-row: 2;
+}
+
+/* -----------------------------------------------------------------------------
+ * 10. Neutralise the media-frame "modal fix"
+ *
+ * backend-options.css:1319 carries a float-era fix for the options modal that,
+ * at >=1200px viewport, hard-codes the Bootstrap column geometry:
+ *
+ *   .media-frame-content .fw-backend-option > .fw-backend-option-label.fw-col-lg-2  { width: 25% }
+ *   .media-frame-content .fw-backend-option > .fw-backend-option-input.fw-col-lg-10 { width: 75% }
+ *   .media-frame-content .fw-backend-option > .fw-backend-option-desc.fw-col-lg-offset-2 {
+ *       margin-left: 25%; width: 75%; }
+ *
+ * Against a grid row this is actively harmful: the cells get explicit widths that
+ * disagree with their tracks (labels wrap early inside a wider track, the control
+ * overflows its column) and the description picks up a 25% left margin, so it
+ * sits indented from the control it belongs to. That is the misalignment in the
+ * shortcode options panel.
+ *
+ * The geometry rules in §3 already say `width: auto; margin-left: 0`, but at two
+ * classes they lose to that four-class selector. Matching the class count here
+ * (media-frame-content + fw-backend-option + design-default + the cell) ties the
+ * specificity, and this file loads later, so it wins.
+ * -------------------------------------------------------------------------- */
+.media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-label,
+.media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-input,
+.media-frame-content .fw-backend-option.fw-backend-option-design-default > .fw-backend-option-desc {
+	width: auto;
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 11. Option rows used as COLUMNS stack their label
+ *
+ * The theme (unysonplus-theme/assets/css/fw-settings.css:196) turns certain
+ * addable-popup options into a flex column row — `flex: 1 1 180px` — so the
+ * footer/header "Column 1..5" pickers sit side by side. Each of those rows is
+ * therefore only ~180-370px wide.
+ *
+ * At that width a label column plus a control is nonsense: measured 155px label
+ * + 161px control, which is what pushed the boxes out of alignment and clipped
+ * the last column. They need the label ABOVE the field.
+ *
+ * The selectors mirror the theme's own definition of "this is a column" (the id
+ * suffix/infix it matches on), so the two stay in agreement.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"],
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"],
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"],
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] {
+	grid-template-columns: minmax(0, 1fr);
+	column-gap: 0;
+	padding-top: 4px;
+}
+
+/* Bottom spacing goes on the INPUT CELL, not the row.
+ *
+ * The theme's column rule sets `padding: 0` and `margin: 0 !important` on the
+ * row itself, so neither row padding-bottom nor row margin survives — the "Add"
+ * button ended up flush against the row's bottom edge and read as clipped. The
+ * cell is not targeted by those rules, so the spacing holds there. */
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-input {
+	padding-bottom: 18px;
+}
+
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-label,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-label,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-label,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-label {
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-input,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-input {
+	grid-column: 1;
+	grid-row: 2;
+}
+
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-desc,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-desc,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-desc,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-desc {
+	grid-column: 1;
+	grid-row: 3;
+}
+
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id*="_col_"] > .fw-backend-option-label > .fw-inner,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_left"] > .fw-backend-option-label > .fw-inner,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_center"] > .fw-backend-option-label > .fw-inner,
+.fw-backend-option-design-default.fw-backend-option-type-addable-popup[id$="_right"] > .fw-backend-option-label > .fw-inner {
+	padding-bottom: 5px;
+}
+
+/* -----------------------------------------------------------------------------
+ * 12. Force the label cell to fill its track in narrow panels
+ *
+ * In the popup / inline-box panels the label cell was resolving to 27.5px — 25%
+ * of the 110px track, i.e. the Bootstrap `fw-col-sm-3` percentage — even though
+ * §3 sets `width: auto` and `justify-self: stretch` on it. The result was a
+ * label box one character wide, rendering "Name" as N-a-m-e down the panel.
+ *
+ * `width: 100%` on a grid item resolves against its grid AREA, so it fills the
+ * track exactly without hard-coding the track width in a second place.
+ *
+ * Kept as its own rule rather than folded into §3: this is a targeted repair for
+ * the narrow-panel contexts where the cell was measurably collapsing, not a
+ * general change to how the cells size.
+ * -------------------------------------------------------------------------- */
+.fw-mp-pop-panel .fw-backend-option-design-default > .fw-backend-option-label,
+.fw-mp-pop-panel .fw-backend-option-design-default > .fw-backend-option-input,
+.fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-label,
+.fw-addable-box--inline .fw-backend-option-design-default > .fw-backend-option-input,
+.fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-label,
+.fw-option-box-options .fw-backend-option-design-default > .fw-backend-option-input {
+	/* `!important` is deliberate. These cells still carry the float grid's
+	 * `fw-col-sm-3` / `fw-col-lg-2` classes, and in these narrow panels the
+	 * percentage kept winning in practice -- measured: a 90px track with the label
+	 * box resolving to 22.5px (25% of it), which is what broke "Color" into
+	 * "Col / or" in the Color Presets box. Forcing width:100% inline on the same
+	 * element resolves it to the full 90px, so this pins the declaration that the
+	 * cascade was otherwise dropping. */
+	width: 100% !important;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+
+/* -----------------------------------------------------------------------------
+ * 13. Wide/tall option types are exempt from the panel two-column layout
+ *
+ * In a ~282px popup panel the control column is only ~114px. Fine for a text
+ * field or a select; wrong for anything that needs room. Measured in the Text
+ * Style preset panel:
+ *
+ *   predefined-colors-color-picker-compact  ran 148px past its column (the
+ *                                           colour "bleed")
+ *   textarea (Custom CSS)                   squeezed into 114px
+ *
+ * These stack (label above control) inside panels only. On a full settings page
+ * they keep the normal two-column row.
+ *
+ * This is the same pattern as the other exemption lists already in use:
+ *   - grid  section 11 : option rows the theme uses as layout columns
+ *   - grid  section  8 : narrow contexts flagged with .fw-force-xs
+ *   - skin  section  2 : tall types excluded from the hover tint
+ *   - skin  section 16 : full-bleed types with no row padding
+ * -------------------------------------------------------------------------- */
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-textarea,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-code-editor,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-wp-editor,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-svg-code,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-html,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient-v2,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-icon,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-image-picker,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-svg-code,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-html,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient-v2,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-icon,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-image-picker,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-textarea,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-code-editor,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-wp-editor,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-svg-code,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-html,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient-v2,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-icon,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-image-picker {
+	/* `!important`: several rules in this file legitimately set a two-column
+	 * template for panel rows, and this exemption has to beat all of them
+	 * regardless of source order. Without it the row kept a 2-track template whose
+	 * first track collapsed to 0, which rendered the label one letter per line. */
+	grid-template-columns: minmax(0, 1fr) !important;
+	column-gap: 0 !important;
+}
+
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-textarea > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-code-editor > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-svg-code > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-html > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-icon > *,
+.fw-mp-pop-panel .fw-backend-option-design-default.fw-backend-option-type-image-picker > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-textarea > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-code-editor > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-svg-code > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-html > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-icon > *,
+.fw-addable-box--inline .fw-backend-option-design-default.fw-backend-option-type-image-picker > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-textarea > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-code-editor > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-wp-editor > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-svg-code > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-html > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-predefined-colors-color-picker > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-gradient-v2 > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-icon > *,
+.fw-option-box-options .fw-backend-option-design-default.fw-backend-option-type-image-picker > * {
+	/* `1 / -1`, not `1`. The row template can still resolve to two tracks in
+	 * some panel contexts (first collapsing to 0); pinning children to column 1
+	 * then gave them a zero-width box, which rendered "Custom CSS" one letter
+	 * per line. Spanning every column is width-independent. */
+	grid-column: 1 / -1 !important;
+	/* `auto` must be !important too: other rules assign the label and the input
+	 * BOTH to `grid-row: 1` for the two-column layout. Without overriding that,
+	 * the stacked label and its control land in the same cell and the control is
+	 * painted over the label — the label simply disappears. */
+	grid-row: auto !important;
+}
+
+/* The compact colour picker also has to wrap its swatch + select + custom field
+ * instead of running off the panel edge. */
+.fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option,
+.fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option,
+.fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	/* `flex-start`, not `center`. When the parts wrap onto two lines this box
+	 * grows taller than its content, and centring then pushed the FIRST line
+	 * (the trigger) 8px down -- so the "Color" row's control no longer started
+	 * at the top of its cell like every other control, and the label read as
+	 * misaligned. Aligning to the top keeps the first line flush. */
+	align-items: flex-start;
+}
+
+/* ...and that box also carries `.fw-clearfix`, whose ::before/::after are
+ * `content: " "; display: table`. Harmless while it was a block, but the moment
+ * it becomes a flex container they turn into FLEX ITEMS -- two 8px strips, one
+ * above the content and one below. That was the whole of the "Color" row's 8px
+ * offset: not alignment, not padding, a float clearfix that outlived its float.
+ *
+ * Same hazard as Â§2 on the row itself. Any float-era clearfix that gets
+ * flex/grid display must have its pseudos killed in the same rule. */
+.fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before,
+.fw-mp-pop-panel .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after,
+.fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before,
+.fw-addable-box--inline .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after,
+.fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::before,
+.fw-option-box-options .fw-backend-option-input-type-predefined-colors-color-picker-compact .fw-inner-option::after {
+	content: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * 14. Option types with no visible control render no row
+ *
+ * `unique` and `hidden` emit only a hidden input — there is nothing to show. In
+ * the float layout their row collapsed to zero height because the only content
+ * had no height and the floated label did not contribute any. As a grid row the
+ * label cell contributes height, so the label appeared: an "Id" row showed up in
+ * every Button/Text Style preset box and on the shortcode Advanced tab.
+ * -------------------------------------------------------------------------- */
+.fw-backend-option-design-default.fw-backend-option-type-unique,
+.fw-backend-option-design-default.fw-backend-option-type-hidden {
+	display: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * 15. Small screens: stack the row
+ *
+ * The float layout stacked automatically below 783px, because the label/input
+ * carried `.fw-col-sm-*` and fw.css only applies those at `min-width: 783px` --
+ * under that they fell back to `.fw-col-xs-12` (100%) and sat one per line. The
+ * grid layout has no such breakpoint, so it kept two columns all the way down:
+ * measured at 390px the tracks were `82px 226px`, the label crushed to 82px, two
+ * controls overflowing, and the page scrolling horizontally (506px of content in
+ * a 390px viewport).
+ *
+ * 782px is the boundary WordPress itself uses for the admin's mobile layout, and
+ * it is exactly where fw.css switches the float grid over, so the two agree.
+ *
+ * The label's `padding-top` goes back to 0 here: that nudge exists to centre a
+ * label's first line against a control BESIDE it, and there is nothing beside it
+ * once the row is stacked.
+ * -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+	.fw-backend-option-design-default,
+	.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label),
+	.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label),
+	.media-frame-content .fw-backend-option.fw-backend-option-design-default {
+		grid-template-columns: minmax(0, 1fr);
+		column-gap: 0;
+	}
+
+	.fw-backend-option-design-default > .fw-backend-option-label,
+	.fw-backend-option-design-default > .fw-backend-option-input,
+	.fw-backend-option-design-default > .fw-backend-option-desc,
+	.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label,
+	.fw-mp-pop-panel .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input,
+	.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-label,
+	.fw-addable-box--inline .fw-backend-option-design-default:has(> .fw-backend-option-label) > .fw-backend-option-input {
+		grid-column: 1;
+		grid-row: auto;
+	}
+
+	.fw-backend-option-design-default > .fw-backend-option-label {
+		padding-top: 0;
+		margin-bottom: 4px;
+	}
+}

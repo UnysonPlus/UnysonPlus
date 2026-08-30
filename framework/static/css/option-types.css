@@ -42,8 +42,18 @@ textarea.fw-option-type-textarea {
 }
 
 
+/* 130px, not 100px. The gap selects render `name (size)` labels -- "1 (0.25rem)"
+ * measures 65px of text at the admin's 13px, and the control spends 22px on
+ * padding/border plus roughly 20px on the native caret well, so 100px clipped the
+ * longest current label by about 7px. 130px clears every shipped label with real
+ * margin, and the margin matters because the gap scale is user-editable
+ * (unysonplus_get_gap_scale) -- a renamed entry can grow the longest label at any
+ * time. Kept deliberately narrow rather than switching these fields to
+ * `medium-select`, whose 300px floor would break the paired single-row layouts
+ * that shortcode-styling-helper.php and spacing/styles.css build around this
+ * class. */
 .fw-option-width-short {
-	width: 100px !important;
+	width: 130px !important;
 }
 
 /* `number`: a consistent width so a bounded field (with a `max`) and an unbounded one
