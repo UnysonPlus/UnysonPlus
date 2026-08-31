@@ -135,7 +135,7 @@ Elementor-Pro-style **dynamic tags**: Text / Textarea / Rich-Editor option field
 The original Unyson manual at `manual.unyson.io` has been taken down. Historical Unyson documentation can still be accessed via the Internet Archive:
 👉 [Archived Unyson Documentation Manual](https://web.archive.org/web/20221130053349/http://manual.unyson.io/)
 
-Unyson+-specific documentation is published at 👉 [unysonplus.github.io](https://unysonplus.github.io/) (source: [`UnysonPlus/UnysonPlus.github.io`](https://github.com/UnysonPlus/UnysonPlus.github.io)). Contributions are welcome.
+Unyson+-specific documentation is published at 👉 [unysonplus.github.io](https://docs.unysonplus.com/) (source: [`UnysonPlus/UnysonPlus.github.io`](https://github.com/UnysonPlus/UnysonPlus.github.io)). Contributions are welcome.
 
 ## Extensions
 

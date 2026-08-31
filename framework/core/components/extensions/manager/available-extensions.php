@@ -139,16 +139,16 @@ $extensions = [
         ],
     ],
 
-    'gutenberg' => [
+    'blocks' => [
         'display'     => true,
         'parent'      => null,
-        'name'        => __('Gutenberg Blocks', 'fw'),
-        'description' => __('Exposes Unyson+ elements as native Gutenberg blocks, for people who prefer the block editor but still want the Unyson+ options framework. Blocks are server-rendered by the same code as the page builder, so the front-end output is identical.', 'fw'),
-        'thumbnail'   => $thumbnails_uri . '/gutenberg.svg',
+        'name'        => __('Blocks', 'fw'),
+        'description' => __('Exposes Unyson+ elements as native blocks in the WordPress block editor, for people who prefer it but still want the Unyson+ options framework. Blocks are server-rendered by the same code as the page builder, so the front-end output is identical.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/blocks.svg',
         'download'    => [
             'source' => 'github',
             'opts'   => [
-                'user_repo' => $github_account . '/UnysonPlus-Gutenberg-Extension',
+                'user_repo' => $github_account . '/UnysonPlus-Blocks-Extension',
             ],
         ],
     ],

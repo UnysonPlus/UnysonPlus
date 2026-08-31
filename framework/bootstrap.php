@@ -170,7 +170,7 @@ if (defined('FW')) {
 
             // React control layer (fw.controls) — the SECOND renderer for the
             // option schema, for surfaces that cannot consume PHP-rendered HTML
-            // (Gutenberg block inspectors, new React admin screens). Registers
+            // (block inspectors, new React admin screens). Registers
             // the script handle only; nothing is enqueued until a consumer calls
             // wp_enqueue_script('fw-controls'). The PHP _render() path is
             // untouched and stays authoritative for the builder + options pages.
