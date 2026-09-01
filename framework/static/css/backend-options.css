@@ -422,7 +422,9 @@ body.branch-4-3 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-t
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li.ui-state-active a.nav-tab {
 	font-weight: 600;
-	margin: 0;
+	/* No margin reset: this rule outranks the skin's (0,5,3 vs 0,4,4), so
+	   zeroing it here would single out the active tab as the one bar with
+	   no breathing room around it. */
 }
 
 .fw-backend-side-tabs .fw-options-tabs-first-level>.fw-options-tabs-list ul li.ui-state-active a.nav-tab,

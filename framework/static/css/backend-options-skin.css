@@ -453,8 +453,17 @@ body.fw-skin-dark .postbox-with-fw-options > .postbox-header {
 	border-bottom-color: var(--u-border);
 }
 
+/* `.postbox` is WordPress's OWN metabox class, included deliberately: on a screen
+ * that already carries UnysonPlus options, the core boxes beside them (Publish,
+ * Categories, Featured image, other plugins' boxes) otherwise keep the stock
+ * square 1px look and the panel reads as two different design systems stacked.
+ *
+ * The blast radius is naturally limited -- this stylesheet is only enqueued
+ * alongside `fw-backend-options`, so it never reaches the Dashboard or unrelated
+ * admin screens. */
 .fw-postbox,
-.postbox-with-fw-options {
+.postbox-with-fw-options,
+.postbox {
 	border-color: var(--u-border);
 	border-radius: var(--u-r);
 	box-shadow: var(--u-shadow);
@@ -698,6 +707,10 @@ body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list 
 }
 
 body .fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list ul li a.nav-tab {
+	/* A little air top and bottom, so the active bar and a hovered neighbour
+	   never touch. The li below only separates them by 1px, which is not
+	   enough once both are filled shapes rather than text on white. */
+	margin: .25rem 0;
 	height: auto;
 	line-height: 1.35;
 	padding: 9px 12px;
@@ -2100,7 +2113,13 @@ body {
 	 * moves off the old text-only box, and WP's background-image arrow is dropped
 	 * in favour of ::picker-icon. */
 	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected) {
-		display: flex;
+		/* NO `display` here, deliberately. `appearance: base-select` already gives the
+		 * trigger its own layout, and declaring display at this selector's (0,5,1)
+		 * overrode the `display: none` that option types use to HIDE their native
+		 * select behind a custom UI -- `.fw-option-type-predefined-colors select`
+		 * (0,1,1) and `.fw-option-type-image-picker select`. That made an empty
+		 * dropdown appear above the swatch grid. Anything this rule needs must not
+		 * resurrect a hidden control. */
 		align-items: center;
 		gap: 8px;
 		padding: 0 10px;

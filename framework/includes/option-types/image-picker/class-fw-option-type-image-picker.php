@@ -67,10 +67,17 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 	 */
 	protected function _enqueue_static($id, $option, $data)
 	{
+		// NOTE: both scripts below touch jQuery at PARSE time (image-picker.js calls
+		// jQuery.fn.extend immediately; scripts.js reads jQuery.noop), so `jquery` must be a
+		// declared dependency. It used to be omitted, which worked only by luck: in the classic
+		// editor something else enqueues jQuery early enough that it prints first. In the block
+		// editor the meta-box loader prints footer scripts in a different order, jQuery landed
+		// after these, `jQuery.fn.extend` threw, and the picker never upgraded the <select> —
+		// leaving a bare radio where the layout thumbnails should be.
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type() . '-image-picker',
 			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/image-picker/image-picker.js'),
-			array(),
+			array('jquery'),
 			fw()->manifest->get_version(),
 			true
 		);
@@ -85,7 +92,7 @@ class Fw_Option_Type_Image_Picker extends FW_Option_Type
 		wp_enqueue_script(
 			'fw-option-' . $this->get_type(),
 			fw_get_framework_asset_uri('/includes/option-types/' . $this->get_type() . '/static/js/scripts.js'),
-			array('fw-events', 'fw-tooltip'),
+			array('jquery', 'fw-option-' . $this->get_type() . '-image-picker', 'fw-events', 'fw-tooltip'),
 			fw()->manifest->get_version(),
 			true
 		);

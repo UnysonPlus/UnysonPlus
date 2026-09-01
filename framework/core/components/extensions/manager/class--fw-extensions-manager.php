@@ -935,6 +935,28 @@ final class _FW_Extensions_Manager
 				'none',
 				3
 			);
+			/**
+			 * Name the first child for what it opens.
+			 *
+			 * WordPress auto-creates a submenu entry that repeats the parent's title, so
+			 * the group read "Unyson+ > Unyson+" while every sibling (Asset Optimizer,
+			 * Site Converter, Shortcodes) names its function. Registering a submenu
+			 * against the SAME slug replaces that generated entry's LABEL only -- the
+			 * slug, URL and capability are unchanged, so existing links and bookmarks
+			 * keep working.
+			 *
+			 * "Extensions" rather than "Extensions Manager": it matches the page's own
+			 * heading ("Unyson+ Extensions") and the terse sibling labels, the same way
+			 * core renames Media > Library rather than "Media Library Manager".
+			 */
+			add_submenu_page(
+				$data['slug'],
+				$data['title'],
+				__( 'Extensions', 'fw' ),
+				$data['capability'],
+				$data['slug'],
+				$data['content_callback']
+			);
 		}
 	}
 

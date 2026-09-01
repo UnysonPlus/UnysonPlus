@@ -2,10 +2,34 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version'] = '3.0.11';
+$manifest['version'] = '3.0.13';
 
 /**
  * Changelog
+ * 3.0.13 - Release milestone: delivers Theme Builder 1.1.49. The Theme Builder's
+ *          admin surface is rebuilt around a Divi-style canvas of Template cards
+ *          with actionable Header/Body/Footer slots, alongside a Tree view of the
+ *          site's own template hierarchy that shows both which Template wins
+ *          where and where the coverage gaps are. Conditions are edited as rows
+ *          rather than two walls of checkboxes, can now be combined with AND as
+ *          well as OR, and gain author, author-archive and page-template rules
+ *          plus every public taxonomy. Templates can be switched off or given a
+ *          tie-break priority, presets say which Templates depend on them, and
+ *          cards carry live front-end thumbnails. No stored data changes shape:
+ *          existing Templates keep their exact behaviour.
+ *
+ * 3.0.12 - Theme Settings option search. The settings screen had grown past the
+ *          point where scanning the side navigation was a reliable way to find a
+ *          field, so a filter-as-you-type box now sits above the tab list: it
+ *          matches an option's label, description or tab path, shows the trail
+ *          the option lives under, then opens the tabs in turn and scrolls to the
+ *          row. The index is built in PHP from the same options array the form
+ *          renders from, because lazy_tabs parks each tab's markup in a data
+ *          attribute until that tab is opened -- a DOM search would only ever see
+ *          the tab you are already on, and the pre-rendered HTML runs to tens of
+ *          megabytes. The Extensions manager's first submenu entry is also named
+ *          "Extensions" now instead of repeating the parent menu's title; its
+ *          slug is unchanged, so existing links keep working.
  * 2.16.31 - Nine extensions that shipped with the plugin were invisible in the
  *          Extensions manager: Newsletter / Subscriber CRM, Animated Icons,
  *          Animation Engine, Chat, Gutenberg Blocks, Live Page Editor,

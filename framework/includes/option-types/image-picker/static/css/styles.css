@@ -40,6 +40,29 @@
 	-webkit-user-drag: none;
 }
 
+/*
+ * BLOCK EDITOR FIX. Gutenberg ships `.block-editor__container img { height:auto; max-width:100% }`
+ * (wp-admin/load-styles.php). This picker sizes its thumbnails with the HTML `height` attribute and
+ * declares no CSS size of its own — and a presentational attribute loses to author CSS. So inside the
+ * block editor the image's size depended on its parent while the parent's width depended on the image;
+ * both collapsed to 0x0 and the option rendered as a ~55x20 sliver showing only the selected item's
+ * green border. Classic editor was unaffected (no such rule), which is why this only appeared once
+ * meta boxes were shown in the block editor.
+ *
+ * Restoring intrinsic sizing is enough: `max-width:none` stops the parent-dependent width, and the
+ * explicit height re-establishes a size that does not depend on the collapsed parent.
+ */
+.block-editor__container .fw-option-type-image-picker ul.thumbnails.image_picker_selector li .thumbnail img {
+	max-width: none;
+	width: auto;
+	height: 104px;
+}
+
+.block-editor__container .fw-option-type-image-picker ul.thumbnails.image_picker_selector li .thumbnail {
+	width: auto;
+	height: auto;
+}
+
 .fw-option-type-image-picker ul.thumbnails.image_picker_selector li .thumbnail.selected {
 	border: 3px solid #64bd1f;
 }

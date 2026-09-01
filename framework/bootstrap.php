@@ -68,6 +68,16 @@ if (defined('FW')) {
             // required from each glyph builder: the option-picker thumbnails are
             // drawn in a dozen files across core, shortcodes and megamenu.
             require $dir . '/includes/icon-palette.php';
+
+			/**
+			 * Theme Settings option search.
+			 *
+			 * Indexes the settings options in PHP and ships a filter-as-you-type box
+			 * above the side navigation. Indexed rather than searched in the DOM
+			 * because `lazy_tabs` keeps each tab's markup parked in an attribute until
+			 * the tab is opened, so a DOM query would only ever see the current tab.
+			 */
+			require $dir . '/includes/options-search.php';
             // Shared post-type choice list (fw_upw_post_type_choices()) used by the
             // Post Types + Custom Fields extensions.
             require $dir . '/includes/post-type-choices.php';
