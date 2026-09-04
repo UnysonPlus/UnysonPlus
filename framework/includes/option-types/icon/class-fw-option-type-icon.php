@@ -270,9 +270,12 @@ class FW_Option_Type_Icon extends FW_Option_Type
             // stored is already clean (render also sanitises, defence-in-depth).
             if (!empty($input['markup'])) {
                 $markup = (string) $input['markup'];
-                $result['markup'] = function_exists('sc_icon_sanitize_svg')
-                    ? sc_icon_sanitize_svg($markup)
-                    : $markup;
+                // Core sanitiser (framework/includes/svg-sanitize.php) is always loaded, so SVG
+                // markup is never stored raw — even on a core-only build where the shortcodes
+                // extension (and its sc_icon_sanitize_svg wrapper) is absent.
+                $result['markup'] = function_exists('fw_upw_sanitize_svg')
+                    ? fw_upw_sanitize_svg($markup)
+                    : ( function_exists('sc_icon_sanitize_svg') ? sc_icon_sanitize_svg($markup) : '' );
             }
         }
 

@@ -186,21 +186,14 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		$button_presets = function_exists( 'unysonplus_get_button_color_presets' )
 			? unysonplus_get_button_color_presets()
 			: array();
-		$resolve_btn_color = function ( $v ) use ( $color_slug_to_hex ) {
-			// Compact color picker shape: { predefined: slug|class, custom: hex }.
-			// Custom wins; otherwise resolve the predefined slug to a hex.
-			if ( is_array( $v ) ) {
-				$custom = isset( $v['custom'] ) ? trim( (string) $v['custom'] ) : '';
-				if ( $custom !== '' ) { return $custom; }
-				$v = isset( $v['predefined'] ) ? trim( (string) $v['predefined'] ) : '';
-			}
-			$v = (string) $v;
-			if ( $v === '' ) { return ''; }
-			if ( $v[0] === '#' ) { return $v; }
-			if ( isset( $color_slug_to_hex[ $v ] ) ) { return $color_slug_to_hex[ $v ]; }
-			// Tolerate utility-class style values like text-blue / bg-blue / border-blue.
-			$slug = preg_replace( '/^(text|bg|background|border|btn)-/', '', $v );
-			return isset( $color_slug_to_hex[ $slug ] ) ? $color_slug_to_hex[ $slug ] : '';
+		// Compact color picker shape: { predefined: slug|class, custom: hex }. The logic now
+		// lives in unysonplus_resolve_preset_color() (presets/color-presets.php) so the CSS
+		// pipeline and anything else that has to turn a saved colour value into a literal
+		// colour — e.g. the block style variations published from the Section Styles — share
+		// ONE implementation and cannot drift apart. Kept as a closure so the call sites below
+		// are untouched.
+		$resolve_btn_color = function ( $v ) {
+			return function_exists( 'unysonplus_resolve_preset_color' ) ? unysonplus_resolve_preset_color( $v ) : '';
 		};
 		$button_extra_css = $text_style_extra_css; // freeform per-preset custom CSS (seeded with Text Style Custom CSS), appended at assembly
 
@@ -731,7 +724,13 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					/* ---- icon sizing (font glyph + inline SVG) ---- */
 					$icon = $len( $ib_unit_str( isset( $bp['icon_size'] ) ? $bp['icon_size'] : '' ) );
 					if ( $icon !== '' ) {
-						$button_extra_css .= "\n{$sel} svg{width:{$icon} !important;height:{$icon} !important;fill:currentColor}";
+						$button_extra_css .= "\n{$sel} svg{width:{$icon} !important;height:{$icon} !important}";
+						// Glyph COLOUR by the SVG's own paint model: OUTLINE icons (lucide et al. ship
+						// `fill="none"` + `stroke="currentColor"`) get their STROKE coloured — forcing
+						// `fill:currentColor` there turned every outline icon into a solid blob; SOLID icons
+						// get their FILL coloured. currentColor = the badge's icon colour set above.
+						$button_extra_css .= "\n{$sel} svg[fill=\"none\"]{stroke:currentColor}";
+						$button_extra_css .= "\n{$sel} svg:not([fill=\"none\"]){fill:currentColor}";
 						$button_extra_css .= "\n{$sel} i,{$sel} [class*=\"fa-\"]{font-size:{$icon} !important;line-height:1}";
 					}
 
@@ -1187,7 +1186,11 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					$c_clip = trim( (string) ( isset( $mcustom['custom_clip'] ) ? $mcustom['custom_clip'] : '' ) );
 					if ( $c_svg !== '' ) {
 						if ( stripos( $c_svg, '<svg' ) !== false ) {
-							$clean = function_exists( 'sc_imgbox_sanitize_svg' ) ? sc_imgbox_sanitize_svg( $c_svg ) : preg_replace( '#<(script|style)[^>]*>.*?</\1>#is', '', $c_svg );
+							// Prefer the strong core allowlist sanitiser (always loaded); the image-box
+							// denylist / naive regex are only fallbacks (never hit on a normal build).
+							$clean = function_exists( 'fw_upw_sanitize_svg' )
+								? fw_upw_sanitize_svg( $c_svg )
+								: ( function_exists( 'sc_imgbox_sanitize_svg' ) ? sc_imgbox_sanitize_svg( $c_svg ) : preg_replace( '#<(script|style)[^>]*>.*?</\1>#is', '', $c_svg ) );
 							if ( trim( (string) $clean ) !== '' ) { $vars[] = '--imgs-mask:url("data:image/svg+xml,' . rawurlencode( $clean ) . '")'; }
 						} else {
 							$u = preg_replace( '/["\'\s()]/', '', $c_svg ); // url-safe
@@ -1415,11 +1418,16 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				// .g-* above and from Bootstrap's fixed .gap-N — these resolve to the theme
 				// Gap-Scale var. Per-breakpoint, mobile-first: base applies at all widths;
 				// md/lg go into the responsive @media blocks via $responsive_spacing.
-				$utility_rules[ ".sc-cgap-{$slug}" ] = "gap:{$var} !important;";
+				// House-namespaced `fw-gap-*` is the primary (emitted by the modern Div);
+				// `sc-cgap-*` stays as an alias so existing markup + other shortcodes keep working.
+				// Also expose the gap as `--fw-flex-gap` so a flex Div's width-span children can subtract it
+				// from their width (a flex-wrap row of `50%` items + a gap would otherwise overflow and wrap
+				// to one-per-row). Inherited by children; defaults to 0 where no gap class is present.
+				$utility_rules[ ".fw-gap-{$slug}, .sc-cgap-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
 				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
 				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
-				$responsive_spacing[768][ ".sc-cgap-md-{$slug}" ] = "gap:{$var} !important;";
-				$responsive_spacing[992][ ".sc-cgap-lg-{$slug}" ] = "gap:{$var} !important;";
+				$responsive_spacing[768][ ".fw-gap-md-{$slug}, .sc-cgap-md-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
+				$responsive_spacing[992][ ".fw-gap-lg-{$slug}, .sc-cgap-lg-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
 
 				// Per-section modifier classes — scope the gap to every .row
 				// inside a section. No !important: specificity (0,2,0) beats

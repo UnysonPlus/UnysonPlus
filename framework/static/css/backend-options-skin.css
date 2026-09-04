@@ -2124,6 +2124,26 @@ body {
 		gap: 8px;
 		padding: 0 10px;
 		background-image: none;
+
+		/* Clip the selected label, the way a native select always did.
+		 *
+		 * This is the one behaviour `base-select` silently takes away. A native
+		 * <select> renders its selected text in a UA-drawn box that ALWAYS clips to
+		 * the control; under base-select that text becomes ordinary flex content, so
+		 * it inherits `white-space: normal` and wraps, and with `overflow: visible`
+		 * the extra lines paint straight over the rows above and below.
+		 *
+		 * It bit Theme Settings > Components > Gaps: "Default Gap" is a
+		 * `short-select` (130px) whose first choice reads "None (use Bootstrap
+		 * default -- 1.5rem horizontal, 0 vertical)". That wrapped to four lines --
+		 * a 130x34 control with a scrollHeight of 112 -- and overlapped the "Add gap"
+		 * button and the field descriptions.
+		 *
+		 * Fixed here rather than by shortening the label: any long choice in any
+		 * narrow select has the same problem, and the label is doing useful work. */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.fw-backend-option .fw-backend-option-input select:not([multiple]):not([size]):not(.tomselected)::picker-icon {

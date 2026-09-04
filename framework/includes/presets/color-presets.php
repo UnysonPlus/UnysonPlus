@@ -75,3 +75,40 @@ if ( ! function_exists( 'unysonplus_color_preset_slug_map' ) ) :
 		return $out;
 	}
 endif;
+
+if ( ! function_exists( 'unysonplus_resolve_preset_color' ) ) :
+	/**
+	 * Resolve a compact colour-picker value to a literal CSS colour.
+	 *
+	 * Accepts the shapes the option types actually save:
+	 *   array( 'predefined' => <slug|utility-class>, 'custom' => <hex> )  — custom wins
+	 *   '#rrggbb'                                                        — passed through
+	 *   '<slug>' / 'text-<slug>' / 'bg-<slug>' / 'border-<slug>' / 'btn-<slug>'
+	 *
+	 * Named slugs resolve through unysonplus_color_preset_slug_map(), the same helper the
+	 * CSS pipeline derives `--color-{slug}` from, so a resolved colour can never drift from
+	 * the token it is named after. Returns '' when nothing resolves, so callers can treat
+	 * "no colour" as "emit nothing" rather than guessing a default.
+	 *
+	 * @param mixed $v
+	 * @return string
+	 */
+	function unysonplus_resolve_preset_color( $v ) {
+		$map = function_exists( 'unysonplus_color_preset_slug_map' ) ? unysonplus_color_preset_slug_map() : array();
+
+		if ( is_array( $v ) ) {
+			$custom = isset( $v['custom'] ) ? trim( (string) $v['custom'] ) : '';
+			if ( $custom !== '' ) { return $custom; }
+			$v = isset( $v['predefined'] ) ? trim( (string) $v['predefined'] ) : '';
+		}
+
+		$v = (string) $v;
+		if ( $v === '' ) { return ''; }
+		if ( $v[0] === '#' ) { return $v; }
+		if ( isset( $map[ $v ] ) ) { return $map[ $v ]; }
+
+		// Tolerate utility-class style values like text-blue / bg-blue / border-blue.
+		$slug = preg_replace( '/^(text|bg|background|border|btn)-/', '', $v );
+		return isset( $map[ $slug ] ) ? $map[ $slug ] : '';
+	}
+endif;

@@ -68,6 +68,9 @@ if (defined('FW')) {
             // required from each glyph builder: the option-picker thumbnails are
             // drawn in a dozen files across core, shortcodes and megamenu.
             require $dir . '/includes/icon-palette.php';
+            // Core inline-SVG sanitiser (fw_upw_*) — always present so the core icon + image-mask
+            // option types are defended even on a core-only build (shortcodes sc_icon_* delegate here).
+            require $dir . '/includes/svg-sanitize.php';
 
 			/**
 			 * Theme Settings option search.

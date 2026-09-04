@@ -11,8 +11,10 @@
 
 :root {
 	--fw-muted:          #777;
-	--fw-primary:        #428bca;
-	--fw-primary-hover:  #3071a9;
+	/* Was the Bootstrap-3 pair #428bca / #3071a9. Only .fw-text-primary and its
+	   hover read these, both admin-side, so they now match the skin accent. */
+	--fw-primary:        #3858e9;
+	--fw-primary-hover:  #2f43bb;
 	--fw-success:        #3c763d;
 	--fw-success-hover:  #2b542c;
 	--fw-info:           #31708f;
@@ -2654,7 +2656,10 @@ body.rtl .fw-force-xs .fw-col-xs-offset-0 {
 
 a.fw-wp-link,
 .fw-wp-link-color {
-	color: #0074a2;
+	/* Was the WordPress 3.x-era #0074a2. Tracks the skin's accent so this stays in
+	   step with the rest of the admin; the literal is the skin's own value, for the
+	   pages where the skin stylesheet is not enqueued. */
+	color: var(--u-accent, #3858e9);
 	transition-property: border,background,color;
 	transition-duration: .05s;
 	transition-timing-function: ease-in-out;

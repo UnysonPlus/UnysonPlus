@@ -1,0 +1,188 @@
+/* -----------------------------------------------------------------------------
+ * Theme Settings — option search
+ *
+ * Sits above the side navigation. Uses the skin's own tokens so it reads as part
+ * of the settings chrome rather than a bolted-on widget; every token has a
+ * literal fallback so the widget still looks right if the skin is not loaded.
+ * -------------------------------------------------------------------------- */
+
+/* Padding rather than margin, so the breathing room belongs to the box itself.
+   With a margin the gap falls OUTSIDE the box's background and renders as a white
+   band between the blue settings header and the field.
+
+   The LEFT inset is 8px, not 10px, to line the field up with the side navigation
+   below it (the tabs list carries its own 8px inset).
+
+   NOTE: the icon, the clear button and the results panel are positioned against
+   this box, so their offsets below track these insets — 8px on the left, 10px on
+   the right. Change one and the magnifier drifts onto the placeholder text. */
+.fw-options-search {
+	position: relative;
+	padding: 10px 10px 10px 8px;
+}
+
+/* The selector is deliberately heavier than a single class: wp-admin styles
+   `input[type="search"]` itself, and at one class this rule's padding lost to it
+   (measured `0 12px`, so the 32px left inset never applied and the magnifier sat
+   on top of the placeholder text). Element + attribute + two classes clears it. */
+.fw-options-search input.fw-options-search__input[type="search"] {
+	width: 100%;
+	height: var(--u-control-h, 34px);
+	box-sizing: border-box;
+	padding: 0 30px 0 32px;
+	font-size: 13px;
+	color: var(--u-ink, #1f2430);
+	background: var(--u-surface, #fff);
+	border: 1px solid var(--u-border-input, #c3c8cf);
+	border-radius: var(--u-r-sm, 5px);
+	box-shadow: none;
+	transition: border-color .12s ease, box-shadow .12s ease;
+}
+
+/* `type="search"` gets the browser's own clear button, which sat beside the
+   styled one -- two crosses in the same field. The native control cannot be
+   restyled, so it is suppressed and ours (which also resets the results list)
+   does the job. */
+.fw-options-search input.fw-options-search__input::-webkit-search-cancel-button,
+.fw-options-search input.fw-options-search__input::-webkit-search-decoration {
+	-webkit-appearance: none;
+	appearance: none;
+	display: none;
+}
+
+.fw-options-search input.fw-options-search__input:hover {
+	border-color: var(--u-border-hover, #8c8f94);
+}
+
+.fw-options-search input.fw-options-search__input:focus {
+	outline: none;
+	border-color: var(--u-accent, #3858e9);
+	box-shadow: 0 0 0 3px var(--u-accent-ring, rgba(56, 88, 233, .18));
+}
+
+/* The magnifier is drawn rather than loaded: one less asset, and it inherits the
+   caption colour so it stays legible in both themes. */
+.fw-options-search__icon {
+	position: absolute;
+	left: 19px;          /* 8px box inset + 11px inside the field */
+	top: 50%;
+	width: 13px;
+	height: 13px;
+	margin-top: -7px;
+	pointer-events: none;
+	border: 1.6px solid var(--u-ink-soft, #50575e);
+	border-radius: 50%;
+	opacity: .75;
+}
+
+.fw-options-search__icon::after {
+	content: "";
+	position: absolute;
+	right: -5px;
+	bottom: -3px;
+	width: 6px;
+	height: 1.6px;
+	background: var(--u-ink-soft, #50575e);
+	transform: rotate(45deg);
+	border-radius: 1px;
+}
+
+.fw-options-search__clear {
+	position: absolute;
+	right: 16px;         /* 10px box inset + 6px inside the field */
+	top: 50%;
+	width: 20px;
+	height: 20px;
+	margin-top: -10px;
+	padding: 0;
+	font-size: 17px;
+	line-height: 18px;
+	color: var(--u-ink-soft, #50575e);
+	background: transparent;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+}
+
+.fw-options-search__clear:hover {
+	background: var(--u-sunken, #f2f3f5);
+	color: var(--u-ink, #1f2430);
+}
+
+/* -------- results -------- */
+
+.fw-options-search__results {
+	position: absolute;
+	z-index: 30;
+	left: 8px;
+	right: 10px;
+	top: calc(100% + 4px);
+	max-height: 340px;
+	overflow-y: auto;
+	padding: 4px;
+	background: var(--u-surface, #fff);
+	border: 1px solid var(--u-border, #dcdcde);
+	border-radius: var(--u-r-sm, 5px);
+	box-shadow: 0 8px 28px rgba(20, 26, 36, .14), 0 2px 6px rgba(20, 26, 36, .08);
+}
+
+.fw-options-search__hit {
+	display: block;
+	width: 100%;
+	padding: 7px 9px;
+	text-align: left;
+	background: transparent;
+	border: 0;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.fw-options-search__hit:hover,
+.fw-options-search__hit:focus-visible {
+	background: var(--u-sunken, #f2f3f5);
+	outline: none;
+}
+
+.fw-options-search__label {
+	display: block;
+	font-size: 13px;
+	line-height: 1.35;
+	color: var(--u-ink, #1f2430);
+}
+
+.fw-options-search__path {
+	display: block;
+	margin-top: 1px;
+	font-size: 11.5px;
+	line-height: 1.35;
+	color: var(--u-ink-soft, #50575e);
+}
+
+.fw-options-search__hit mark {
+	padding: 0;
+	color: inherit;
+	background: transparent;
+	font-weight: 700;
+}
+
+.fw-options-search__empty {
+	margin: 0;
+	padding: 10px;
+	font-size: 12.5px;
+	color: var(--u-ink-soft, #50575e);
+}
+
+/* -------- the jump target -------- */
+
+/* A brief tint rather than a persistent outline: it answers "which row did it
+   take me to?" and then gets out of the way. */
+.fw-backend-option.fw-option-search-hit {
+	background: var(--u-accent-ring, rgba(56, 88, 233, .18));
+	transition: background .4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-backend-option.fw-option-search-hit {
+		transition: none;
+	}
+}
