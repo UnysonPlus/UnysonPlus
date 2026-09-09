@@ -67,6 +67,14 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 					'mute'         => 'yes',
 					'playsinline'  => 'yes',
 					'allow_interaction' => 'no',
+					// Positioning of the video layer. 'scroll' (default) = the normal contained
+					// background that scrolls with its box. 'fixed' = a viewport-pinned backdrop
+					// (`position:fixed`, full-viewport, behind content) — the video analog of the
+					// image layer's `attachment: fixed`, for a page-wide fixed-video backdrop (a
+					// single stationary video the whole page scrolls over). Consumed at the SITE
+					// background level (Theme Settings → General Layout → Site Background), where a
+					// dedicated renderer prints the fixed <video> host on wp_body_open.
+					'position'     => 'scroll',
 				),
 				// A tint layered OVER the image (and gradient/color) — a semi-transparent colour
 				// and/or a gradient, both rendered on top so text stays legible on hero images.
@@ -675,6 +683,10 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 		// flag). So a saved value used to read `enabled:"no"` right next to a real video, which looks broken
 		// in exports / the Site Converter. Derive the flag from the resolved sources so the stored model
 		// reflects reality. Purely cosmetic — rendering already ignores it — but no more confusing state.
+		// Video positioning: 'scroll' (contained, default) or 'fixed' (viewport-pinned backdrop).
+		if ( isset( $input_value['video']['position'] ) ) {
+			$out['video']['position'] = ( 'fixed' === $input_value['video']['position'] ) ? 'fixed' : 'scroll';
+		}
 		$out['video']['enabled'] = (
 			! empty( $out['video']['external_url'] )
 			|| ( is_array( $out['video']['source_mp4'] )  && ! empty( $out['video']['source_mp4']['url'] ) )

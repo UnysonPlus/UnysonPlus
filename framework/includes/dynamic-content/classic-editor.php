@@ -71,19 +71,36 @@ if ( ! function_exists( '_fw_dc_enqueue_picker_assets' ) ) :
 		}
 
 		$ver = fw()->manifest->get_version();
+		// Suffix the version with each asset's mtime so an edited CSS/JS busts the browser
+		// cache even between releases (the manifest version alone stays fixed until a release,
+		// which left admins serving a stale dynamic-content.css after a hotfix).
+		// Track the mtime of the file actually SERVED: production serves the .min.css
+		// (fw_get_framework_asset_uri swaps .css→.min.css when SCRIPT_DEBUG is off). Use the max
+		// mtime of source + min so editing EITHER busts the browser cache.
+		$dc_dir  = fw_get_framework_directory( '/includes/dynamic-content/static' );
+		$css_mt  = max(
+			is_file( "$dc_dir/css/dynamic-content.css" ) ? filemtime( "$dc_dir/css/dynamic-content.css" ) : 0,
+			is_file( "$dc_dir/css/dynamic-content.min.css" ) ? filemtime( "$dc_dir/css/dynamic-content.min.css" ) : 0
+		);
+		$js_mt   = max(
+			is_file( "$dc_dir/js/dynamic-content.js" ) ? filemtime( "$dc_dir/js/dynamic-content.js" ) : 0,
+			is_file( "$dc_dir/js/dynamic-content.min.js" ) ? filemtime( "$dc_dir/js/dynamic-content.min.js" ) : 0
+		);
+		$css_ver = $css_mt ? $ver . '.' . $css_mt : $ver;
+		$js_ver  = $js_mt  ? $ver . '.' . $js_mt  : $ver;
 
 		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style(
 			'fw-dynamic-content',
 			fw_get_framework_asset_uri( '/includes/dynamic-content/static/css/dynamic-content.css' ),
 			array( 'fw' ),
-			$ver
+			$css_ver
 		);
 		wp_enqueue_script(
 			'fw-dynamic-content',
 			fw_get_framework_asset_uri( '/includes/dynamic-content/static/js/dynamic-content.js' ),
 			array( 'jquery', 'fw-events', 'fw', 'fw-reactive-options' ),
-			$ver,
+			$js_ver,
 			true
 		);
 		wp_localize_script( 'fw-dynamic-content', '_fw_dynamic_content', array(

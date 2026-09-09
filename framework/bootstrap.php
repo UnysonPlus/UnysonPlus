@@ -172,6 +172,12 @@ if (defined('FW')) {
             // eager-required so its FW_Option_Type::register() fires before any
             // options.php uses type 'position-box' (the shared Advanced tab does).
             require $dir . '/includes/option-types/position-box/class-fw-option-type-position-box.php';
+            // tabs — plugin-only composite that groups nested options into a
+            // compact in-option tab strip (extracted from background-pro's tab
+            // UI). class_exists guard inside the file; eager-required so its
+            // FW_Option_Type::register() fires before any options.php uses type
+            // 'tabs' (Scroll Keyframes' Start / Middle / End states do).
+            require $dir . '/includes/option-types/tabs/class-fw-option-type-tabs.php';
             // Canonical, plugin-owned schema for the shortcode preset libraries
             // (Color/Typography/Spacing/Buttons/Box/Table). Injected into Appearance
             // -> Theme Settings -> Components by the Shortcodes extension

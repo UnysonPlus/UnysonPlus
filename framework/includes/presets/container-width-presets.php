@@ -123,8 +123,15 @@ if ( ! function_exists( 'unysonplus_container_width_map' ) ) :
 			$px   = self_upw_cw_width_string( $cw );
 			if ( $slug !== '' && $px !== '' ) { $out[ $slug ] = $px; }
 		}
-		// Safety net: the built-in slugs always resolve even if the library was emptied.
-		$out += array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
+		// Safety net: the FULL standard scale always resolves even if the library only registered a subset.
+		// The Site Converter maps a source content-band width onto one of these slugs (small…wide-xxl); when
+		// the matching preset wasn't registered (e.g. a full-width-flex source with no `max-w-*` wrapper to
+		// cluster, so only narrow/medium/wide were saved), the slug used to resolve to nothing and the band
+		// rendered EDGE-TO-EDGE. Guaranteeing all eight here keeps every converted section capped.
+		$out += array(
+			'small'  => '640px', 'prose'   => '672px', 'narrow'  => '768px', 'medium'  => '896px',
+			'wide'   => '1024px', 'wide-l' => '1152px', 'wide-xl' => '1280px', 'wide-xxl' => '1440px',
+		);
 		return $out;
 	}
 endif;

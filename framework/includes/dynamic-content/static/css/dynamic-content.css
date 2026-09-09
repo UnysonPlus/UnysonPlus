@@ -65,6 +65,21 @@
 	position: relative;
 }
 
+/*
+ * Rich Editor with NO media-buttons row (media_buttons:false — e.g. a compact one-line editor like
+ * Special Heading → Subtitle): the JS can't relocate the icon into that row, so it would otherwise
+ * fall into normal flow BELOW the editor. Pin it to the editor's top-right instead — sitting in the
+ * empty right side of the formatting toolbar, matching the right-anchored icon on the text fields
+ * in the same panel. (`:not(.fw-dc-editor-button)` leaves the relocated button case untouched.)
+ */
+.fw-backend-option-descriptor[data-fw-option-type="wp-editor"] .fw-dynamic-content-trigger:not(.fw-dc-editor-button) {
+	position: absolute;
+	top: 10px; /* vertically centers the icon in the formatting toolbar row */
+	right: 8px;
+	margin: 0;
+	z-index: 2;
+}
+
 .wp-media-buttons .fw-dc-editor-button {
 	position: static;
 	width: auto;
@@ -72,6 +87,18 @@
 	line-height: 28px;
 	opacity: 1;
 	vertical-align: middle;
+	/*
+	 * Match the "Add Media" button — icon AND label in the WP admin accent blue.
+	 * `!important` is required: WP core's `.wp-core-ui .button { color:#2c3338 }` has the
+	 * same specificity (0,2,0) and loads AFTER this file, so without it the near-black core
+	 * colour wins the source-order tie and the label/icon (both `color:inherit`) render dark.
+	 */
+	color: var(--wp-admin-theme-color, #2271b1) !important;
+}
+
+.wp-media-buttons .fw-dc-editor-button:hover,
+.wp-media-buttons .fw-dc-editor-button:focus {
+	color: var(--wp-admin-theme-color, #2271b1) !important;
 }
 
 .wp-media-buttons .fw-dc-editor-button .dashicons {
@@ -85,6 +112,20 @@
 
 .wp-media-buttons .fw-dc-editor-button .fw-dc-label {
 	vertical-align: top;
+}
+
+/*
+ * Force the accent blue on the button AND its icon/label DIRECTLY (not via `inherit`),
+ * beating WP core's `.wp-core-ui .button` / `.media-frame a.button { color:#2c3338 }`.
+ * `!important` + naming those exact core selectors leaves nothing to win the cascade.
+ */
+.wp-media-buttons a.fw-dc-editor-button,
+.wp-media-buttons a.fw-dc-editor-button:hover,
+.wp-media-buttons a.fw-dc-editor-button:focus,
+.media-frame a.button.fw-dc-editor-button,
+.wp-media-buttons a.fw-dc-editor-button .fw-dc-label,
+.wp-media-buttons a.fw-dc-editor-button .dashicons {
+	color: var(--wp-admin-theme-color, #2271b1) !important;
 }
 
 /* Popover */

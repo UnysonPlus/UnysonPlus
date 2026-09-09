@@ -313,18 +313,36 @@ abstract class FW_Option_Type
                                  * registry the frontend resolver uses (single source of truth).
                                  */
                                 if (function_exists('fw_dynamic_content')) {
+                                        // Suffix the version with each asset's mtime so an edited CSS/JS busts the
+                                        // browser cache even between releases (the manifest version alone stays fixed
+                                        // until a release, leaving a stale dynamic-content.css served after a hotfix).
+                                        // Production serves the .min.css (fw_get_framework_asset_uri swaps
+                                        // .css→.min.css when SCRIPT_DEBUG is off), so bust on the max mtime of
+                                        // source + min — editing either regenerates the ?ver.
+                                        $dc_ver = fw()->manifest->get_version();
+                                        $dc_dir = fw_get_framework_directory('/includes/dynamic-content/static');
+                                        $dc_css_mt = max(
+                                            is_file("$dc_dir/css/dynamic-content.css") ? filemtime("$dc_dir/css/dynamic-content.css") : 0,
+                                            is_file("$dc_dir/css/dynamic-content.min.css") ? filemtime("$dc_dir/css/dynamic-content.min.css") : 0
+                                        );
+                                        $dc_js_mt = max(
+                                            is_file("$dc_dir/js/dynamic-content.js") ? filemtime("$dc_dir/js/dynamic-content.js") : 0,
+                                            is_file("$dc_dir/js/dynamic-content.min.js") ? filemtime("$dc_dir/js/dynamic-content.min.js") : 0
+                                        );
+                                        $dc_css_v = $dc_css_mt ? $dc_ver . '.' . $dc_css_mt : $dc_ver;
+                                        $dc_js_v  = $dc_js_mt  ? $dc_ver . '.' . $dc_js_mt  : $dc_ver;
                                         wp_enqueue_style('dashicons');
                                         wp_enqueue_style(
                                                 'fw-dynamic-content',
                                                 fw_get_framework_asset_uri('/includes/dynamic-content/static/css/dynamic-content.css'),
                                                 array('fw'),
-                                                fw()->manifest->get_version()
+                                                $dc_css_v
                                         );
                                         wp_enqueue_script(
                                                 'fw-dynamic-content',
                                                 fw_get_framework_asset_uri('/includes/dynamic-content/static/js/dynamic-content.js'),
                                                 array('jquery', 'fw-events', 'fw', 'fw-reactive-options'),
-                                                fw()->manifest->get_version(),
+                                                $dc_js_v,
                                                 true
                                         );
                                         wp_localize_script('fw-dynamic-content', '_fw_dynamic_content', array(
