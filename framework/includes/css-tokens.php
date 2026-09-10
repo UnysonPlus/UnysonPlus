@@ -1158,7 +1158,12 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			// that still needs clipping is a hover-ZOOM crop (`:hover img{transform:scale(...)}`) — set
 			// `--imgs-overflow:hidden` on that image so the zoom stays inside the frame.
 			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:var(--imgs-overflow,visible);border-radius:var(--imgs-radius,0)}"
-				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;aspect-ratio:var(--imgs-aspect,auto);object-fit:cover;border-radius:var(--imgs-radius,0);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
+				// NOTE: aspect-ratio + object-fit are intentionally NOT here. They are emitted
+				// per-slug below, ONLY for presets that define a crop (an aspect ratio or a square
+				// mask). A blanket `aspect-ratio:var(--imgs-aspect,auto)` mis-sizes a fixed-dimension
+				// <img> (the `auto` fallback made a 560px-wide photo render ~1500px tall), so non-crop
+				// styles (rounded/pill/filters/scrim) must keep the image's natural ratio.
+				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;border-radius:var(--imgs-radius,0);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
 				. "\n.imgs-wrap::before{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-duo,transparent);mix-blend-mode:color;pointer-events:none}"
 				. "\n.imgs-wrap::after{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-scrim,transparent);pointer-events:none}";
 
@@ -1168,9 +1173,10 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( $id === '' || ! isset( $imgs_slugs[ $id ] ) ) { continue; }
 				$slug = $imgs_slugs[ $id ];
 				$vars = array();
+				$aspect_css = ''; // set when this preset defines a crop (aspect ratio / square mask)
 
 				$ar = isset( $s['aspect'] ) ? (string) $s['aspect'] : 'auto';
-				if ( isset( $imgs_aspect[ $ar ] ) ) { $vars[] = '--imgs-aspect:' . $imgs_aspect[ $ar ]; }
+				if ( isset( $imgs_aspect[ $ar ] ) ) { $vars[] = '--imgs-aspect:' . $imgs_aspect[ $ar ]; $aspect_css = $imgs_aspect[ $ar ]; }
 
 				/* Shape / Mask from the shared library: radius → --imgs-radius, clip → --imgs-clip,
 				   svg → --imgs-mask; a "square" shape forces --imgs-aspect:1/1 (emitted AFTER the
@@ -1214,7 +1220,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					$rad = $len( isset( $s['radius'] ) ? (string) $s['radius'] : '' );
 					if ( $rad !== '' ) { $vars[] = '--imgs-radius:' . $rad; }
 				}
-				if ( $mask_square ) { $vars[] = '--imgs-aspect:1/1'; }
+				if ( $mask_square ) { $vars[] = '--imgs-aspect:1/1'; $aspect_css = '1/1'; }
 
 				$filter = isset( $s['filter'] ) ? (string) $s['filter'] : 'none';
 				if ( isset( $imgs_filter[ $filter ] ) ) { $vars[] = '--imgs-filter:' . $imgs_filter[ $filter ]; }
@@ -1237,6 +1243,13 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 
 				if ( ! empty( $vars ) ) {
 					$button_extra_css .= "\n.imgs-{$slug}{" . implode( ';', $vars ) . ";}";
+				}
+
+				// Crop presets only: give the <img> the ratio box + object-fit. Emitted here (not in
+				// the shared base rule) so non-crop styles keep the image's natural ratio and a
+				// fixed-width <img> isn't stretched by an `aspect-ratio:auto` fallback.
+				if ( $aspect_css !== '' ) {
+					$button_extra_css .= "\n.imgs-{$slug}>img,.imgs-{$slug} img{aspect-ratio:{$aspect_css};object-fit:cover;}";
 				}
 
 				/* ---- freeform per-preset Custom CSS (advanced) ----
@@ -1550,7 +1563,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 23, // bumped: fluid typography — font-size presets emit clamp() instead of a mobile step-down
+			'schema'    => 24, // bumped: image-style crop (aspect-ratio/object-fit) moved off the shared base rule to per-crop-preset rules, so non-crop styles keep the natural ratio
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),

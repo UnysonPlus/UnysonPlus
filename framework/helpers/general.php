@@ -2206,14 +2206,19 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 	 */
 	function fw_image_tag( $source, $args = array() ) {
 		$args = array_merge( array(
-			'width'         => '',
-			'height'        => '',
-			'class'         => 'img-fluid',
-			'alt'           => '',
-			'fetchpriority' => '',
-			'sizes'         => '',
-			'fallback_size' => 'large',
-			'extra_attr'    => array(),
+			'width'           => '',
+			'height'          => '',
+			'class'           => 'img-fluid',
+			'alt'             => '',
+			'fetchpriority'   => '',
+			'sizes'           => '',
+			'fallback_size'   => 'large',
+			'extra_attr'      => array(),
+			// Focal crop (optional): drop the image into an aspect-ratio box and choose which
+			// part shows — object-fit cover/contain + object-position, "like background-position".
+			'aspect_ratio'    => '', // e.g. '16/9', '1/1' — empty = natural ratio, no crop
+			'object_fit'      => '', // cover | contain (only with aspect_ratio)
+			'object_position' => '', // e.g. 'center center', '50% 20%' (only with cover)
 		), $args );
 
 		$dim = function ( $raw ) {
@@ -2235,10 +2240,26 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 		list( $w_css, $w_px ) = $dim( $args['width'] );
 		list( $h_css, $h_px ) = $dim( $args['height'] );
 
+		// Focal-crop mode: an aspect_ratio puts the image in a ratio box and crops via CSS
+		// (object-fit + object-position), so it OVERRIDES the exact-px server crop below.
+		$ar        = trim( (string) $args['aspect_ratio'] );
+		$has_ratio = ( '' !== $ar );
+
 		$style = '';
 		if ( '' !== $w_css ) { $style .= 'width:' . $w_css . ';'; }
-		if ( '' !== $h_css ) { $style .= 'height:' . $h_css . ';'; }
-		if ( '' !== $w_css && '' !== $h_css ) { $style .= 'object-fit:contain;'; }
+		if ( $has_ratio ) {
+			// Ratio drives height; default to filling the (optionally width-capped) column.
+			if ( '' === $w_css ) { $style .= 'width:100%;'; }
+			$style .= 'height:auto;aspect-ratio:' . $ar . ';';
+			$fit    = ( 'contain' === $args['object_fit'] ) ? 'contain' : 'cover';
+			$style .= 'object-fit:' . $fit . ';';
+			if ( 'cover' === $fit && '' !== trim( (string) $args['object_position'] ) ) {
+				$style .= 'object-position:' . trim( (string) $args['object_position'] ) . ';';
+			}
+		} else {
+			if ( '' !== $h_css ) { $style .= 'height:' . $h_css . ';'; }
+			if ( '' !== $w_css && '' !== $h_css ) { $style .= 'object-fit:contain;'; }
+		}
 
 		$attr = is_array( $args['extra_attr'] ) ? $args['extra_attr'] : array();
 		$attr['class']    = $args['class'];
@@ -2264,8 +2285,9 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 			$attr['alt'] = $alt;
 
 			// Exact px crop -> fw_resize 1x, plus a 2x density srcset when the
-			// source is big enough (retina) without upscaling.
-			if ( $w_px && $h_px ) {
+			// source is big enough (retina) without upscaling. Skipped in focal-crop
+			// mode (aspect_ratio), which crops responsively via CSS instead.
+			if ( $w_px && $h_px && ! $has_ratio ) {
 				$src1 = fw_resize( $id, $w_px, $h_px, true );
 				$meta = wp_get_attachment_metadata( $id );
 				if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] )
@@ -2277,6 +2299,22 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 				}
 				$attr['src'] = esc_url( $src1 );
 				return fw_html_tag( 'img', $attr );
+			}
+
+			// Width-only (or height-only): derive the OTHER dimension from the image's real
+			// aspect ratio so the width/height attribute pair stays consistent. Otherwise
+			// wp_get_attachment_image() fills in the full-size height next to our overridden
+			// width, and the mismatched pair (e.g. 420×649 for a landscape) makes the browser
+			// stretch — squishing the image into the wrong shape.
+			if ( ! $has_ratio && ( ( $w_px && ! $h_px ) || ( $h_px && ! $w_px ) ) ) {
+				$meta = wp_get_attachment_metadata( $id );
+				if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+					if ( $w_px && ! $h_px ) {
+						$attr['height'] = (int) round( $w_px * ( $meta['height'] / $meta['width'] ) );
+					} else {
+						$attr['width'] = (int) round( $h_px * ( $meta['width'] / $meta['height'] ) );
+					}
+				}
 			}
 
 			// Otherwise let WordPress emit a responsive srcset/sizes set.

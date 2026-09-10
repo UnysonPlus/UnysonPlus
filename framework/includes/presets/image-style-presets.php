@@ -58,6 +58,7 @@ if ( ! function_exists( 'unysonplus_default_image_style_presets' ) ) :
 		return array(
 			$p( 'rounded',   __( 'Rounded', 'fw' ),        array( 'mask' => $mask( 'rounded' ) ) ),
 			$p( 'circle',    __( 'Circle', 'fw' ),         array( 'mask' => $mask( 'circle' ) ) ),
+			$p( 'pill',      __( 'Pill', 'fw' ),           array( 'radius' => '999px' ) ),
 			$p( 'portrait',  __( 'Portrait Card', 'fw' ),  array( 'aspect' => '3-4', 'radius' => '12px' ) ),
 			$p( 'monochrome',__( 'Monochrome', 'fw' ),     array( 'radius' => '12px', 'filter' => 'grayscale' ) ),
 			$p( 'duotone',   __( 'Duotone', 'fw' ),        array( 'radius' => '12px', 'filter' => 'duotone', 'duo_color' => $col( '#2f74e6' ) ) ),
@@ -107,3 +108,49 @@ if ( ! function_exists( 'unysonplus_image_style_preset_slug_map' ) ) :
 		return $map;
 	}
 endif;
+
+if ( ! function_exists( 'unysonplus_maybe_add_pill_image_style' ) ) :
+	/**
+	 * Non-destructive migration: ensure the "Pill" shape preset exists in a site's SAVED
+	 * image styles (Pill was added to the defaults in this version). Sites that never
+	 * customised Image Styles already get it from the defaults; this only backfills sites
+	 * with a saved set that predates Pill. Runs once on `admin_init`, guarded by an option.
+	 */
+	function unysonplus_maybe_add_pill_image_style() {
+		if ( get_option( 'unysonplus_image_styles_pill_added' ) ) { return; }
+		if ( ! function_exists( 'unysonplus_preset_store_get' ) || ! function_exists( 'unysonplus_preset_store_set' ) ) { return; }
+
+		$saved = unysonplus_preset_store_get( 'image_styles', null );
+		// No saved set → the defaults (which include Pill) are in effect; nothing to do.
+		if ( ! is_array( $saved ) || empty( $saved ) ) {
+			update_option( 'unysonplus_image_styles_pill_added', '1' );
+			return;
+		}
+		foreach ( $saved as $s ) {
+			if ( is_array( $s ) && isset( $s['id'] ) && 'pill' === $s['id'] ) {
+				update_option( 'unysonplus_image_styles_pill_added', '1' );
+				return; // already present (user may have added their own)
+			}
+		}
+		// Pull the default Pill preset and insert it right after Circle (else append).
+		$pill = null;
+		foreach ( unysonplus_default_image_style_presets() as $d ) {
+			if ( isset( $d['id'] ) && 'pill' === $d['id'] ) { $pill = $d; break; }
+		}
+		if ( is_array( $pill ) ) {
+			$out = array();
+			$inserted = false;
+			foreach ( $saved as $s ) {
+				$out[] = $s;
+				if ( ! $inserted && is_array( $s ) && isset( $s['id'] ) && 'circle' === $s['id'] ) {
+					$out[]    = $pill;
+					$inserted = true;
+				}
+			}
+			if ( ! $inserted ) { $out[] = $pill; }
+			unysonplus_preset_store_set( 'image_styles', $out );
+		}
+		update_option( 'unysonplus_image_styles_pill_added', '1' );
+	}
+endif;
+add_action( 'admin_init', 'unysonplus_maybe_add_pill_image_style' );
