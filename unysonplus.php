@@ -3,7 +3,7 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 3.0.22
+ * Version: 3.0.23
  * Author: Lastimosa.com.ph
  * Author URI: http://lastimosa.com.ph
  * License: GPL2+
@@ -36,6 +36,43 @@ if ( defined( 'FW' ) ) {
 
                 // Enable release assets (use ZIP from GitHub releases if available)
                 $unysonplus_update_checker->getVcsApi()->enableReleaseAssets();
+
+                // Plugin icon for the WordPress update UI. Self-hosted plugins can't pull an
+                // icon from wordpress.org, so supply it from the bundled logo — WordPress reads
+                // it from the update object's `icons` array (Updates screen + "View details"
+                // modal). NOTE: because this ships inside the plugin, the icon appears only for
+                // versions that already contain this code (the first update after this ships
+                // still shows the generic icon).
+                $unysonplus_icons = array(
+                        '1x'      => plugins_url( 'framework/static/img/unysonplus-logo-green-bg.jpg', __FILE__ ),
+                        '2x'      => plugins_url( 'framework/static/img/unysonplus-logo-green-bg.jpg', __FILE__ ),
+                        'default' => plugins_url( 'framework/static/img/unysonplus-logo-green-bg.jpg', __FILE__ ),
+                );
+
+                // (a) The "View version details" modal.
+                add_filter( 'puc_request_info_result-unysonplus', function ( $info ) use ( $unysonplus_icons ) {
+                        if ( is_object( $info ) ) { $info->icons = $unysonplus_icons; }
+                        return $info;
+                } );
+
+                // (b) The Updates screen / Plugins-list update-row icon (the transient's update object).
+                // Priority 99 so it runs AFTER the update checker has injected our update entry into
+                // the transient — otherwise the icon would be set on an entry that doesn't exist yet.
+                add_filter( 'site_transient_update_plugins', function ( $transient ) use ( $unysonplus_icons ) {
+                        $file = plugin_basename( __FILE__ );
+                        if ( isset( $transient->response[ $file ] ) && is_object( $transient->response[ $file ] ) ) {
+                                $transient->response[ $file ]->icons = $unysonplus_icons;
+                        }
+                        return $transient;
+                }, 99 );
+        }
+
+        // Suggest the Unyson+ parent theme (a dismissible, info-styled notice) when the
+        // plugin is active but a different theme is. Recommended, not required — the plugin
+        // works with any theme; the notice offers one-click install/activate of the theme.
+        if ( is_admin() && file_exists( __DIR__ . '/framework/includes/class-unysonplus-theme-suggestion.php' ) ) {
+                require_once __DIR__ . '/framework/includes/class-unysonplus-theme-suggestion.php';
+                UnysonPlus_Theme_Suggestion::init();
         }
 
         /**

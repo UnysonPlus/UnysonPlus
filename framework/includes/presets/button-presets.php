@@ -258,7 +258,7 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 			array(
 				'id'   => '0000020001',
 				'name' => 'Pulse Ring',
-				'css'  => '{{BTN}}:hover { animation: {{ANIM}} 1.1s ease infinite; }
+				'css'  => '{{SELECTOR}}:hover { animation: {{ANIM}} 1.1s ease infinite; }
 @keyframes {{ANIM}} {
   0%   { box-shadow: 0 0 0 0 rgba(0,0,0,.35); }
   70%  { box-shadow: 0 0 0 12px rgba(0,0,0,0); }
@@ -268,7 +268,7 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 			array(
 				'id'   => '0000020002',
 				'name' => 'Swing',
-				'css'  => '{{BTN}}:hover { transform-origin: top center; animation: {{ANIM}} .7s ease; }
+				'css'  => '{{SELECTOR}}:hover { transform-origin: top center; animation: {{ANIM}} .7s ease; }
 @keyframes {{ANIM}} {
   20%  { transform: rotate(8deg); }
   40%  { transform: rotate(-6deg); }
@@ -280,7 +280,7 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 			array(
 				'id'   => '0000020003',
 				'name' => 'Rubber Band',
-				'css'  => '{{BTN}}:hover { animation: {{ANIM}} .8s ease; }
+				'css'  => '{{SELECTOR}}:hover { animation: {{ANIM}} .8s ease; }
 @keyframes {{ANIM}} {
   0%   { transform: scale(1, 1); }
   30%  { transform: scale(1.25, .75); }
@@ -293,7 +293,7 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 			array(
 				'id'   => '0000020004',
 				'name' => 'Squeeze',
-				'css'  => '{{BTN}}:hover { animation: {{ANIM}} .45s ease; }
+				'css'  => '{{SELECTOR}}:hover { animation: {{ANIM}} .45s ease; }
 @keyframes {{ANIM}} {
   0%, 100% { transform: scale(1, 1); }
   50%      { transform: scale(1.1, .85); }
@@ -302,8 +302,8 @@ if ( ! function_exists( 'unysonplus_default_custom_hover_animations' ) ) :
 			array(
 				'id'   => '0000020005',
 				'name' => 'Raise & Glow',
-				'css'  => '{{BTN}} { transition: transform .25s ease, box-shadow .25s ease; }
-{{BTN}}:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -8px rgba(0,0,0,.45); }',
+				'css'  => '{{SELECTOR}} { transition: transform .25s ease, box-shadow .25s ease; }
+{{SELECTOR}}:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -8px rgba(0,0,0,.45); }',
 			),
 		) );
 	}
@@ -311,13 +311,20 @@ endif;
 
 if ( ! function_exists( 'unysonplus_get_custom_hover_animations' ) ) :
 	/**
-	 * Returns the user's saved custom hover animations (Theme Settings → Buttons →
-	 * Hover Animations) or the seeded samples. Each entry: { id, name, css }. Slug
-	 * (from name) becomes the class suffix `.btnfx-c-{slug}`.
+	 * Returns the user's saved custom hover animations — the ONE shared library
+	 * (Theme Settings → Components → Hover Animations) consumed by the Button
+	 * shortcode's picker AND a Box Preset's Hover Animation field — or the seeded
+	 * samples. Each entry: { id, name, css } with {{SELECTOR}} / {{ANIM}} tokens
+	 * ({{BTN}} = legacy alias). Slug (from name) becomes the class suffix
+	 * `.btnfx-c-{slug}`; a box preset that picks it gets the same CSS re-targeted
+	 * onto its own `.boxp-{slug}` (see unysonplus_hover_fx_css_for()).
 	 */
 	function unysonplus_get_custom_hover_animations() {
 		if ( function_exists( 'fw_get_db_settings_option' ) ) {
-			$saved = unysonplus_preset_store_get( 'button_animations', null );
+			// The SHARED library (Theme Settings → Components → Hover Animations); a site saved before the
+			// library moved out of the Buttons tab still has its list under the legacy key — read that.
+			$saved = unysonplus_preset_store_get( 'hover_animations', null );
+			if ( ! is_array( $saved ) || empty( $saved ) ) { $saved = unysonplus_preset_store_get( 'button_animations', null ); }
 			if ( is_array( $saved ) && ! empty( $saved ) ) {
 				/** Filters the effective custom button hover animations (saved Theme Settings values or seeded samples). */
 				return apply_filters( 'unysonplus_custom_hover_animations', $saved );

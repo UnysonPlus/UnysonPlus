@@ -38,6 +38,12 @@ class FW_Option_Type_Addable_Box extends FW_Option_Type
 				true
 			);
 
+			// A row whose title template renders a LIGHT preview `.btn` (a Size / Hover Animation
+			// sample) vanishes into the light postbox header — this flips that header dark
+			// (`.is-light-preview`). Shared with the button-presets type; same handle = one load.
+			wp_enqueue_style('fw-preset-preview-contrast', fw_get_framework_asset_uri('/static/css/preset-preview-contrast.css'), array(), fw()->manifest->get_version());
+			wp_enqueue_script('fw-preset-preview-contrast', fw_get_framework_asset_uri('/static/js/preset-preview-contrast.js'), array('jquery'), fw()->manifest->get_version(), true);
+
 			$enqueue = false;
 		}
 

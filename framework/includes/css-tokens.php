@@ -242,7 +242,13 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			// resolved bg_color above remains a fallback. Empty value emits nothing.
 			if ( isset( $st['gradient'] ) && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
 				$grad = FW_Option_Type_Gradient_V2::to_css( $st['gradient'] );
-				if ( $grad !== '' ) { $d[] = "background-image:{$grad}"; }
+				if ( $grad !== '' ) {
+					$d[] = "background-image:{$grad}";
+					// A gradient with NO solid fill: the real background-color is transparent. Say so, or the
+					// button base's zero-specificity `:where(.btn-primary){background-color:#0d6efd}` fallback
+					// shows through a translucent gradient as a blue tint.
+					if ( $bg === '' ) { $d[] = 'background-color:transparent'; }
+				}
 			}
 			if ( $tt !== '' )   { $d[] = "text-transform:{$tt}"; }
 
@@ -395,6 +401,12 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 
 				if ( ! empty( $parts ) ) {
 					$utility_rules[ ".btn-{$slug}" ] = implode( ';', $parts ) . ';';
+				}
+				// The base `.btn{display:inline-block}` is a single class at the SAME specificity as `.btn-{slug}` and
+				// loads after the presets CSS, so it silently beat the inline-flex above — the label sat at the TOP of
+				// the min-height box. `.btn.btn-{slug}` (two classes) wins regardless of load order.
+				if ( $min_h !== '' ) {
+					$utility_rules[ ".btn.btn-{$slug}" ] = 'display:inline-flex;align-items:center;justify-content:center;';
 				}
 			}
 		}
@@ -581,6 +593,17 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					}
 				}
 				if ( $hov ) { $utility_rules[ ".boxp-{$slug}:hover" ] = implode( ';', $hov ) . ';'; }
+
+				/* ---- Hover Animation (the SHARED library) → re-targeted onto this box ---- */
+				// The preset picked a built-in `.btnfx-*` effect or a custom `.btnfx-c-*` one — the same list the
+				// Button shortcode offers. Its rules are cloned with `.boxp-{slug}` as the selector (built-ins from
+				// hover-fx.css, incl. the @keyframes they animate; customs re-rendered with {{SELECTOR}} = the box),
+				// so a card lifts / glows / tilts exactly like a button would, with no extra class on the element.
+				$hanim = isset( $bp['hover_animation'] ) ? preg_replace( '/[^a-z0-9-]/', '', strtolower( (string) $bp['hover_animation'] ) ) : '';
+				if ( $hanim !== '' && function_exists( 'unysonplus_hover_fx_css_for' ) ) {
+					$hcss = unysonplus_hover_fx_css_for( $hanim, ".boxp-{$slug}" );
+					if ( $hcss !== '' ) { $button_extra_css .= "\n" . $hcss; }
+				}
 
 				/* ---- structured hover effects (Box Style → Hover Effects) ---- */
 				// A curated set of named advanced hovers layered ON TOP of the Hover
@@ -1060,8 +1083,9 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		}
 
 		// --- Custom hover animations -> .btnfx-c-{slug} rules ---
-		// User-authored effects (Theme Settings → Buttons → Hover Animations). Their
-		// CSS uses {{BTN}}/{{ANIM}} tokens, is scrubbed of markup/script tricks, and is
+		// User-authored effects from the SHARED library (Theme Settings → Components → Hover
+		// Animations — one list for buttons and boxes). Their CSS uses {{SELECTOR}}/{{ANIM}}
+		// tokens ({{BTN}} still accepted), is scrubbed of markup/script tricks, and is
 		// appended to the preset stylesheet (loaded front end + admin), so they appear
 		// in the Button shortcode's Hover Animation dropdown next to the built-ins.
 		$custom_anims  = function_exists( 'unysonplus_get_custom_hover_animations' ) ? unysonplus_get_custom_hover_animations() : array();
@@ -1083,10 +1107,10 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$anim_css = preg_replace( '/javascript\s*:/i', '', $anim_css );
 				$anim_css = preg_replace( '/expression\s*\(/i', '', $anim_css );
 
-				// Tokens -> concrete, per-entry namespaced selectors.
+				// Tokens -> concrete, per-entry namespaced selectors ({{BTN}} = legacy alias of {{SELECTOR}}).
 				$anim_css = str_replace(
-					array( '{{BTN}}', '{{ANIM}}' ),
-					array( ".btnfx-c-{$slug}", "btnfxc-{$slug}" ),
+					array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ),
+					array( ".btnfx-c-{$slug}", ".btnfx-c-{$slug}", "btnfxc-{$slug}" ),
 					$anim_css
 				);
 
@@ -1724,3 +1748,103 @@ add_action( 'wp_enqueue_scripts',    'unysonplus_enqueue_preset_css', 35 );
 add_action( 'admin_enqueue_scripts', 'unysonplus_enqueue_preset_css', 35 );
 add_action( 'wp_head',               'unysonplus_inline_preset_css_fallback', 99 );
 add_action( 'admin_head',            'unysonplus_inline_preset_css_fallback', 99 );
+
+if ( ! function_exists( 'unysonplus_hover_fx_parse_css' ) ) :
+	/**
+	 * Parse a stylesheet into top-level blocks: rules ({ media, selectors[], body }) and
+	 * @keyframes ({ name, text }). @media blocks are flattened — their inner rules carry the
+	 * media prelude. Comments stripped. Minimal, brace-matched; enough for hover-fx.css.
+	 *
+	 * @return array{ rules: array, keyframes: array }
+	 */
+	function unysonplus_hover_fx_parse_css( $css, $media = '' ) {
+		$out = array( 'rules' => array(), 'keyframes' => array() );
+		$css = preg_replace( '#/\*.*?\*/#s', '', (string) $css );
+		$i = 0; $n = strlen( $css );
+		while ( $i < $n ) {
+			$open = strpos( $css, '{', $i );
+			if ( $open === false ) { break; }
+			$prelude = trim( substr( $css, $i, $open - $i ) );
+			$depth = 1; $j = $open + 1;
+			while ( $j < $n && $depth > 0 ) { $c = $css[ $j ]; if ( $c === '{' ) { $depth++; } elseif ( $c === '}' ) { $depth--; } $j++; }
+			$body = substr( $css, $open + 1, $j - $open - 2 );
+			$i = $j;
+			if ( $prelude === '' ) { continue; }
+			if ( preg_match( '/^@(?:-webkit-)?keyframes\s+([a-zA-Z0-9_-]+)/', $prelude, $km ) ) {
+				$out['keyframes'][ $km[1] ] = $prelude . '{' . $body . '}';
+			} elseif ( strpos( $prelude, '@media' ) === 0 || strpos( $prelude, '@supports' ) === 0 ) {
+				$inner = unysonplus_hover_fx_parse_css( $body, $prelude );
+				$out['rules']     = array_merge( $out['rules'], $inner['rules'] );
+				$out['keyframes'] = array_merge( $out['keyframes'], $inner['keyframes'] );
+			} elseif ( $prelude[0] !== '@' ) {
+				$out['rules'][] = array( 'media' => $media, 'selectors' => array_map( 'trim', explode( ',', $prelude ) ), 'body' => trim( $body ) );
+			}
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_hover_fx_css_for' ) ) :
+	/**
+	 * The CSS of ONE hover effect from the shared Hover Animations library, re-targeted onto
+	 * $target (e.g. `.boxp-card`): a built-in `btnfx-*` is cloned from hover-fx.css (every rule
+	 * whose selector list names the effect class, with that class swapped for $target, plus the
+	 * @keyframes those rules animate); a custom `btnfx-c-{slug}` is re-rendered with
+	 * {{SELECTOR}} = $target. This is how a Box Preset uses the same library as a button without
+	 * any extra class on the element — the preset's own `.boxp-{slug}` carries the motion.
+	 *
+	 * @param string $fx     'btnfx-lift' | 'btnfx-c-pulse-ring' | …
+	 * @param string $target the selector to re-target onto
+	 * @return string CSS ('' when unknown)
+	 */
+	function unysonplus_hover_fx_css_for( $fx, $target ) {
+		static $parsed = null;
+		$fx     = preg_replace( '/[^a-z0-9-]/', '', strtolower( (string) $fx ) );
+		$target = trim( (string) $target );
+		if ( $fx === '' || $target === '' || ! preg_match( '/^[.#a-zA-Z0-9_ ,:>+~\[\]="\'-]+$/', $target ) ) { return ''; }
+
+		// CUSTOM (shared library entry) → the same CSS the button gets, with the box as {{SELECTOR}}.
+		if ( strpos( $fx, 'btnfx-c-' ) === 0 ) {
+			if ( ! function_exists( 'unysonplus_get_custom_hover_animations' ) || ! function_exists( 'unysonplus_custom_hover_animation_slug_map' ) ) { return ''; }
+			$want = substr( $fx, 8 );
+			$map  = unysonplus_custom_hover_animation_slug_map();
+			foreach ( unysonplus_get_custom_hover_animations() as $ca ) {
+				if ( ! is_array( $ca ) || empty( $ca['id'] ) ) { continue; }
+				$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $ca['id'] );
+				if ( $id === '' || ! isset( $map[ $id ] ) || $map[ $id ] !== $want ) { continue; }
+				$css = isset( $ca['css'] ) ? (string) $ca['css'] : '';
+				if ( trim( $css ) === '' ) { return ''; }
+				$css = preg_replace( '#</?(style|script)[^>]*>#i', '', $css );
+				$css = str_replace( array( '<', '>' ), '', $css );
+				$css = preg_replace( '/@import\b/i', '', $css );
+				$css = preg_replace( '/javascript\s*:/i', '', $css );
+				$css = preg_replace( '/expression\s*\(/i', '', $css );
+				// keyframes name = the button's (identical @keyframes emitted twice is harmless).
+				return str_replace( array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ), array( $target, $target, "btnfxc-{$want}" ), $css );
+			}
+			return '';
+		}
+
+		// BUILT-IN → clone from hover-fx.css (parsed once per request).
+		if ( $parsed === null ) {
+			$file   = dirname( __DIR__ ) . '/extensions/shortcodes/shortcodes/button/static/css/hover-fx.css';
+			$parsed = is_file( $file ) ? unysonplus_hover_fx_parse_css( (string) file_get_contents( $file ) ) : array( 'rules' => array(), 'keyframes' => array() );
+		}
+		$cls_re = '/\.' . preg_quote( $fx, '/' ) . '(?![a-zA-Z0-9_-])/';
+		$out = ''; $anims = array(); $by_media = array();
+		foreach ( $parsed['rules'] as $r ) {
+			$sels = array();
+			foreach ( $r['selectors'] as $sel ) { if ( preg_match( $cls_re, $sel ) ) { $sels[] = preg_replace( $cls_re, $target, $sel ); } }
+			if ( ! $sels ) { continue; }
+			$by_media[ $r['media'] ][] = implode( ',', $sels ) . '{' . $r['body'] . '}';
+			if ( preg_match_all( '/animation(?:-name)?\s*:\s*([a-zA-Z0-9_-]+)/', $r['body'], $am ) ) { foreach ( $am[1] as $an ) { $anims[ $an ] = true; } }
+		}
+		if ( ! $by_media ) { return ''; }
+		foreach ( $by_media as $media => $rules ) { $out .= ( $media !== '' ? $media . '{' . implode( '', $rules ) . '}' : implode( '', $rules ) ); }
+		foreach ( array_keys( $anims ) as $an ) { if ( isset( $parsed['keyframes'][ $an ] ) ) { $out .= $parsed['keyframes'][ $an ]; } }
+		// hover-fx.css guards reduced motion with a generic `[class*=btnfx-]` selector the clone above can't
+		// carry (the box has no btnfx- class) — so neutralise the cloned motion for those users here.
+		$out .= '@media (prefers-reduced-motion:reduce){' . $target . ',' . $target . ':hover{transition:none !important;transform:none !important;animation:none !important;}}';
+		return $out;
+	}
+endif;

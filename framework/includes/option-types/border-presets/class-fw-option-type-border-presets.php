@@ -120,9 +120,18 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 				'desc'            => __( 'Animates the hover change. Milliseconds, e.g. 200.', 'fw' ),
 				'dynamic_content' => false,
 			),
+			'hover_animation' => array(
+				'type'         => 'button-hover-animation',
+				'label'        => __( 'Hover Animation', 'fw' ),
+				'desc'         => __( 'A motion effect from the shared Hover Animations library — the built-in effects plus your own (Theme Settings → Components → Hover Animations) — the same list the Button shortcode offers. Motion only: the Default / Hover states above keep the colours. Hover a swatch to preview.', 'fw' ),
+				'choices'      => function_exists( 'sc_get_hover_animation_choices' ) ? sc_get_hover_animation_choices() : array( '' => __( 'None', 'fw' ) ),
+				'preview_base' => 'btn btn-primary',
+				'fx_css'       => ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) && function_exists( 'fw_min_uri' ) ) ? fw_min_uri( fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/css/hover-fx.css' ) ) : '',
+				'value'        => '',
+			),
 			'hover_fx' => array(
 				'type'       => 'multi-select',
-				'label'      => __( 'Hover Effects', 'fw' ),
+				'label'      => __( 'Extra Hover Effects', 'fw' ),
 				'desc'       => __( 'Special animated hover effects, layered on top of the Hover state above — combine freely. Lift raises the card, Zoom Media scales an inner image (box clips), Tilt adds a subtle 3D tilt, Glow adds a colored halo, Shine sweeps a sheen across it. Honors reduced-motion.', 'fw' ),
 				'population' => 'array',
 				'choices'    => array(

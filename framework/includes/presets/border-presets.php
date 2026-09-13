@@ -61,7 +61,7 @@ if ( ! function_exists( 'unysonplus_default_border_presets' ) ) :
 			);
 		};
 
-		/** Filters the built-in default column border presets (Card, Outline, Soft Shadow, Hover Lift) before user overrides apply. */
+		/** Filters the built-in default column border presets (Card, Outline, Soft Shadow, Hover Lift, Hover Grow) before user overrides apply. */
 		return apply_filters( 'unysonplus_default_border_presets', array(
 			// Card — hairline border + small radius + soft shadow; lifts on hover.
 			array(
@@ -119,6 +119,23 @@ if ( ! function_exists( 'unysonplus_default_border_presets' ) ) :
 				'states'        => array(
 					'default' => array( 'border_style' => 'solid', 'border_width' => $u( 1 ), 'border_color' => $col( 'light-gray' ) ),
 					'hover'   => array( 'border_color' => $col( 'primary' ), 'box_shadow' => $sh( 10, 24, '0.14' ) ),
+				),
+			),
+			// Hover Grow — a soft card that GROWS on hover via the shared Hover Animations library
+			// (`hover_animation` = the built-in Grow effect, the same one a button can pick), so the
+			// seeded set shows the library working on a box, not only `hover_fx` composites.
+			array(
+				'id'              => 'b000000005',
+				'preset_name'     => 'Hover Grow',
+				'border_sides'    => 'all',
+				'border_radius'   => $u( 12 ),
+				'padding'         => $pad( 'p-4' ),
+				'transition'      => '200',
+				'hover_animation' => 'btnfx-grow',
+				'custom_css'      => '',
+				'states'          => array(
+					'default' => array( 'border_style' => 'solid', 'border_width' => $u( 1 ), 'border_color' => $col( 'light-gray' ), 'box_shadow' => $sh( 2, 8, '0.06' ) ),
+					'hover'   => array( 'border_color' => $col( 'primary' ) ),
 				),
 			),
 		) );

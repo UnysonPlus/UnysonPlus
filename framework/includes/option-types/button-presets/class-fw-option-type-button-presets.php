@@ -131,7 +131,7 @@ class FW_Option_Type_Button_Presets extends FW_Option_Type {
 				'label'       => __( 'Custom CSS (advanced)', 'fw' ),
 				'mode'        => 'css',
 				'height'      => 140,
-				'placeholder' => "{{SELECTOR}} {\n    /* your rules */\n}\n{{SELECTOR}}:hover {\n    letter-spacing: 1px;\n}",
+				'placeholder' => "{{SELECTOR}} {\n    /* your rules */\n}\n{{SELECTOR}}:hover {\n    /* hover rules */\n}",
 				'desc'        => __( 'Use {{SELECTOR}} for this preset (becomes .btn-<id>).', 'fw' ),
 			),
 		);
@@ -246,6 +246,11 @@ class FW_Option_Type_Button_Presets extends FW_Option_Type {
 			fw()->manifest->get_version(),
 			true
 		);
+
+		// A LIGHT preview button vanishes into the light row header — this measures each preview's
+		// effective surface and flips that header dark (`.is-light-preview`). Shared with addable-box.
+		wp_enqueue_style( 'fw-preset-preview-contrast', fw_get_framework_asset_uri( '/static/css/preset-preview-contrast.css' ), array(), fw()->manifest->get_version() );
+		wp_enqueue_script( 'fw-preset-preview-contrast', fw_get_framework_asset_uri( '/static/js/preset-preview-contrast.js' ), array( 'jquery' ), fw()->manifest->get_version(), true );
 	}
 
 	/**

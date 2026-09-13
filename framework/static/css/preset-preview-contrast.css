@@ -1,0 +1,31 @@
+/* Preset preview contrast — a row header whose preview button is LIGHT flips to a dark surface
+   (class set by preset-preview-contrast.js), so a white / cream / pale-gradient / translucent
+   outline preview stays visible instead of vanishing into the #f6f7f7 header. */
+
+/* Button Presets rows */
+.fw-option-type-button-presets-item-header.is-light-preview {
+	background: #2c3338;
+	border-bottom-color: #1d2327;
+}
+.fw-option-type-button-presets-item-header.is-light-preview .fw-option-type-button-presets-item-handle {
+	background: radial-gradient(#8c8f94 1.2px, transparent 1.2px) 0 0/6px 6px;
+}
+.fw-option-type-button-presets-item-header.is-light-preview .fw-option-type-button-presets-item-toggle,
+.fw-option-type-button-presets-item-header.is-light-preview .fw-option-type-button-presets-item-remove,
+.fw-option-type-button-presets-item-header.is-light-preview .fw-option-type-button-presets-item-duplicate,
+.fw-option-type-button-presets-item-header.is-light-preview .dashicons {
+	color: #c3c4c7;
+}
+
+/* Addable-box rows (Sizes, Hover Animations, …) */
+.fw-option-type-addable-box .postbox-header.is-light-preview {
+	background: #2c3338;
+	border-color: #1d2327;
+}
+.fw-option-type-addable-box .postbox-header.is-light-preview .hndle,
+.fw-option-type-addable-box .postbox-header.is-light-preview .handle-actions,
+.fw-option-type-addable-box .postbox-header.is-light-preview .toggle-indicator,
+.fw-option-type-addable-box .postbox-header.is-light-preview .dashicons,
+.fw-option-type-addable-box .postbox-header.is-light-preview .handlediv {
+	color: #c3c4c7;
+}
