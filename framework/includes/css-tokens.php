@@ -303,14 +303,18 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					$base[] = "transition:all {$tv} ease";
 				}
 				$base = array_merge( $base, $state_decls( $def ) );
-				if ( $base ) { $utility_rules[ ".btn-{$slug}" ] = implode( ';', $base ) . ';'; }
+				// The preset selector is DOUBLED (`.btn-x.btn-x`, specificity 0,2,0): the shortcodes' static `.btn` skin
+				// (font-weight:400, the grey hairline) loads after the generated tokens and, at equal specificity, its
+				// order won — a preset's 700 weight rendered 400 (a finding filed on three converted sites).
+				$ps = ".btn-{$slug}.btn-{$slug}";
+				if ( $base ) { $utility_rules[ $ps ] = implode( ';', $base ) . ';'; }
 
 				/* ---- interaction states (diffs) ---- */
 				$state_sel = array(
-					'hover'    => ".btn-{$slug}:hover",
-					'active'   => ".btn-{$slug}:active",
-					'focus'    => ".btn-{$slug}:focus",
-					'disabled' => ".btn-{$slug}:disabled,.btn-{$slug}.disabled",
+					'hover'    => "{$ps}:hover",
+					'active'   => "{$ps}:active",
+					'focus'    => "{$ps}:focus",
+					'disabled' => "{$ps}:disabled,{$ps}.disabled",
 				);
 				foreach ( $state_sel as $state => $sel ) {
 					$sv = isset( $states[ $state ] ) ? $states[ $state ] : array();
@@ -335,7 +339,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( trim( $custom_css ) !== '' ) {
 					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
 					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
-					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".btn-{$slug}", $custom_css );
+					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $ps, $custom_css );
 				}
 			}
 		}
@@ -1006,7 +1010,9 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$utility_rules[ "{$sel} > table" ] = implode( ';', $tbl ) . ';';
 
 				/* ---- cell base: padding + grid lines ---- */
-				$cell = array();
+				// The preset OWNS the cell rules: zero the shortcode's base borders (td border-top / th 2px
+				// bottom) first, so a "none" preset shows no lines and a horizontal preset draws only its own.
+				$cell = array( 'border:0 !important' );
 				$py = $tp_len( $tp['cell_padding_y'] ?? '' );
 				$px = $tp_len( $tp['cell_padding_x'] ?? '' );
 				if ( $py !== '' || $px !== '' ) {
@@ -1021,7 +1027,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 						if ( $grid_lines === 'vertical'   || $grid_lines === 'both' ) { $cell[] = "border-right:{$gline} !important"; }
 					}
 				}
-				if ( $cell ) { $utility_rules[ "{$sel} th,{$sel} td" ] = implode( ';', $cell ) . ';'; }
+				$utility_rules[ "{$sel} th,{$sel} td" ] = implode( ';', $cell ) . ';';
 
 				/* ---- header ---- */
 				$hd = array();

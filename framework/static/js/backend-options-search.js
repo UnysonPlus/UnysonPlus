@@ -23,6 +23,37 @@
 	var INDEX = cfg.index || [];
 	var L10N = cfg.l10n || {};
 
+	/**
+	 * Deep link: ?page=fw-settings&fw-open-tab=<tab>[,<inner>…] opens that tab chain
+	 * on load. Used by the Live Editor's header/footer "Edit …" badges, which link
+	 * here to drop the user straight on the Header / Footer settings tab. Registered
+	 * ABOVE the empty-index return so it works even with no search index; `openChain`
+	 * is a hoisted declaration below, so it is in scope when this ready-callback runs.
+	 */
+	$( function () {
+		var m = /[?&]fw-open-tab=([^&#]+)/.exec( window.location.search || '' );
+		if ( ! m ) {
+			return;
+		}
+		var chain;
+		try { chain = decodeURIComponent( m[ 1 ] ); } catch ( e ) { chain = m[ 1 ]; }
+		chain = String( chain ).split( ',' ).map( function ( s ) { return s.trim(); } ).filter( Boolean );
+		if ( ! chain.length ) {
+			return;
+		}
+		( function wait( tries ) {
+			tries = tries || 0;
+			var $nav = $( '.fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-list' ).first();
+			if ( $nav.length ) {
+				openChain( chain, function () {} );
+				return;
+			}
+			if ( tries < 60 ) {
+				window.setTimeout( function () { wait( tries + 1 ); }, 150 );
+			}
+		} )();
+	} );
+
 	if ( ! INDEX.length ) {
 		return;
 	}

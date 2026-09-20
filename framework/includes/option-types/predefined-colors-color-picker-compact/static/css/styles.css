@@ -207,3 +207,20 @@
 	padding: 1px 6px;
 	border-radius: 3px;
 }
+
+/* ----- Fit narrow containers (e.g. a half-width 2-column preset row) ----------
+ * Default layout is a nowrap row of [ trigger | radio | custom input ]. In a HALF
+ * column (Button Presets: Background/Text Color and Border Color/Width each share a
+ * row) the fixed-width trigger + full-width colour input overflow and the custom
+ * input runs under the next field's label. Keep everything INLINE (one line) — just
+ * let the picker fill its column, shrink the trigger, and narrow the custom text
+ * input so the whole row fits. Harmless in a full-width row (there's room to spare). */
+.fw-option-type-predefined-colors-color-picker-compact { display: block; max-width: 100%; }
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__row { gap: 6px; }
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__trigger { flex: 1 1 auto; }
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__custom { flex: 0 1 auto; min-width: 0; }
+.fw-option-type-predefined-colors-color-picker-compact .pccpc__custom input {
+	width: 84px;
+	max-width: 100%;
+	box-sizing: border-box;
+}

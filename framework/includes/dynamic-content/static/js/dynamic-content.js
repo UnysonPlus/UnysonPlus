@@ -338,20 +338,15 @@
 		var type = $descriptor.attr('data-fw-option-type');
 
 		// Rich Editor: relocate the icon into the editor's media-buttons row,
-		// next to "Add Media", styled as a WP button (icon + label).
+		// next to "Add Media", styled as a WP button (icon + label). The row may
+		// not be in the DOM yet at fw:options:init — e.g. the header/footer element
+		// popup inserts (and `reinit`s) the wp_editor markup AFTER the event fires,
+		// so a one-shot check would give up and leave the bare icon pinned top-right.
+		// Try now, and if the row isn't there yet, watch the descriptor until it is
+		// (and re-relocate if a `reinit` rebuilds the tools row).
 		if (type === 'wp-editor') {
-			var $mediaButtons = $descriptor.find('.wp-media-buttons').first();
-			if ($mediaButtons.length) {
-				$trigger
-					.removeClass('dashicons dashicons-database')
-					.addClass('button fw-dc-editor-button')
-					.html(
-						'<span class="dashicons dashicons-database"></span>' +
-						'<span class="fw-dc-label">' +
-						escapeHtml(L10N.editor_button || 'Dynamic Content') +
-						'</span>'
-					);
-				$mediaButtons.append($trigger);
+			if (!relocateEditorTrigger($descriptor, $trigger)) {
+				watchForMediaButtons($descriptor, $trigger);
 			}
 		}
 
@@ -361,14 +356,83 @@
 		});
 	}
 
+	/**
+	 * Move the Dynamic Content trigger into the wp-editor's media-buttons row and
+	 * re-skin it as a WP button (icon + label). Idempotent — a no-op once the
+	 * trigger already sits inside the current media-buttons row. Returns true when
+	 * a row exists (so the caller knows whether to keep watching).
+	 */
+	function relocateEditorTrigger($descriptor, $trigger) {
+		var $mediaButtons = $descriptor.find('.wp-media-buttons').first();
+		if (!$mediaButtons.length) {
+			return false;
+		}
+		// Already living in this row? nothing to do.
+		if ($trigger.hasClass('fw-dc-editor-button') &&
+			$trigger.closest('.wp-media-buttons').is($mediaButtons)) {
+			return true;
+		}
+		$trigger
+			.removeClass('dashicons dashicons-database')
+			.addClass('button fw-dc-editor-button')
+			.html(
+				'<span class="dashicons dashicons-database"></span>' +
+				'<span class="fw-dc-label">' +
+				escapeHtml(L10N.editor_button || 'Dynamic Content') +
+				'</span>'
+			);
+		$mediaButtons.append($trigger);
+		return true;
+	}
+
+	/**
+	 * Watch a wp-editor descriptor for its media-buttons row appearing (lazy insert
+	 * or a `reinit` rebuild) and relocate the trigger into it as soon as it does.
+	 * Keeps the (detached) trigger alive so a rebuild that drops it re-adopts it.
+	 */
+	function watchForMediaButtons($descriptor, $trigger) {
+		var node = $descriptor.get(0);
+		if (!node || typeof MutationObserver === 'undefined') {
+			// Fallback: bounded polling (~4s) for very old browsers.
+			var tries = 0;
+			var iv = setInterval(function () {
+				if (relocateEditorTrigger($descriptor, $trigger) || ++tries > 40) {
+					clearInterval(iv);
+				}
+			}, 100);
+			return;
+		}
+		var obs = new MutationObserver(function () {
+			// Relocate whenever a row exists and the trigger isn't inside one.
+			if ($descriptor.find('.wp-media-buttons').length &&
+				!$trigger.closest('.wp-media-buttons').length) {
+				relocateEditorTrigger($descriptor, $trigger);
+			}
+		});
+		obs.observe(node, { childList: true, subtree: true });
+		$trigger.data('fwDcObserver', obs);
+	}
+
 	fwEvents.on('fw:options:init', function (data) {
 		if (!data || !data.$elements) {
 			return;
 		}
+		// Iterate the TRIGGERS, not the descriptors. `.has('.fw-dynamic-content-trigger')`
+		// also matches every ANCESTOR descriptor that merely contains the trigger — e.g.
+		// in the header/footer element popup a `wp-editor` sits inside the Element
+		// `multi-picker` descriptor, so both match. The outer (multi-picker) descriptor
+		// would then run initDescriptor first, claim the trigger (set fwDcInit) with
+		// type !== 'wp-editor', and the real wp-editor descriptor would early-return
+		// before it could relocate the icon into the media-buttons row. Mapping each
+		// trigger to its OWN closest descriptor runs the wp-editor branch correctly.
 		data.$elements
-			.find('.fw-backend-option-descriptor')
-			.has('.fw-dynamic-content-trigger')
-			.each(initDescriptor);
+			.find('.fw-dynamic-content-trigger')
+			.each(function () {
+				var $descriptor = $(this).closest('.fw-backend-option-descriptor');
+				if ($descriptor.length) {
+					initDescriptor.call($descriptor.get(0));
+				}
+			});
 	});
 
 	/**

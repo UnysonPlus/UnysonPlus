@@ -6,6 +6,33 @@
 
 var fwForm = {
 	/**
+	 * Serialize a form for POST with every `fw_options[...]` field PACKED into one `fw_options_json` field
+	 * (a JSON list of [name, value] pairs, in form order). A lazy-tab settings form posts thousands of option
+	 * fields on submit and a host's `max_input_vars = 1000` silently drops the ones past the limit — the tabs
+	 * rendered last (Footer, Miscellaneous) came back empty on every save. Packed, they count as ONE input
+	 * variable; the framework unpacks it server-side (includes/options-post-pack.php) before any save handler.
+	 * @param {jQuery} $form
+	 * @returns {string} url-encoded body
+	 */
+	/**
+	 * Every field packs EXCEPT the form's own control fields (the form id, nonce, referer, the submit / reset buttons,
+	 * an ajax `action`): the option types' helper inputs (an upload's `_fake[url]`, one per picker) count against the
+	 * limit just like `fw_options[...]` — a footer with a few dozen items overran it through them alone.
+	 * @param {string} name
+	 * @returns {boolean}
+	 */
+	isPackable: function(name) {
+		return !/^(fwf|action|_nonce[_a-z0-9]*|_wp_http_referer|_wpnonce|_fw_[a-z0-9_]+)$/.test(String(name || ''));
+	},
+	packOptions: function($form) {
+		var fields = $form.serializeArray(), rest = [], packed = [];
+		for (var i = 0; i < fields.length; i++) {
+			if (fwForm.isPackable(fields[i].name)) { packed.push([fields[i].name, fields[i].value]); } else { rest.push(fields[i]); }
+		}
+		if (!packed.length) { return $form.serialize(); }
+		return jQuery.param(rest) + '&fw_options_json=' + encodeURIComponent(JSON.stringify(packed));
+	},
+	/**
 	 * Make forms ajax submittable
 	 * @param {Object} [opts] You can overwrite any
 	 */
@@ -153,7 +180,7 @@ var fwForm = {
 				jQuery.ajax({
 					type: "POST",
 					url: opts.ajaxUrl,
-					data: $form.serialize() + (
+					data: fwForm.packOptions($form) + ( // (packed past max_input_vars — see packOptions)
 						$submitButton.length
 						? '&'+ $submitButton.attr('name') +'='+ $submitButton.attr('value')
 						: ''

@@ -81,6 +81,9 @@ if (defined('FW')) {
 			 * the tab is opened, so a DOM query would only ever see the current tab.
 			 */
 			require $dir . '/includes/options-search.php';
+			// Packed options transport: the settings form posts every `fw_options[...]` field as ONE JSON field so a
+			// host's `max_input_vars = 1000` can no longer drop the tabs rendered last (Footer / Misc came back empty).
+			require $dir . '/includes/options-post-pack.php';
             // Shared post-type choice list (fw_upw_post_type_choices()) used by the
             // Post Types + Custom Fields extensions.
             require $dir . '/includes/post-type-choices.php';

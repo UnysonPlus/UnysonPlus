@@ -89,6 +89,17 @@ body.rtl .fw-force-xs [class*="fw-option-type-typography"] .fw-option-typography
 	height: 32px;
 }
 
+/* Vertically centre the selected font name. fw-select renders the single value as an
+ * `.item` chip (~28px); the shared skin forces 4px top/bottom padding on any
+ * `.fw-select-control:has(.item)` (meant for MULTI-select chip rows), which leaves too
+ * little room in this short font-face control, so the chip pins to the top. Trim that
+ * padding here so the chip fits and the flex `align-items:center` can centre it.
+ * Needs `!important` + higher specificity to beat the skin's `!important` padding. */
+[class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input .fw-select-control:has(.item) {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
 [class*="fw-option-type-typography"] .fw-option-typography-v2-option-family-input .fw-select-control.dropdown-active::before {
 	background: none;
 	height: 0;

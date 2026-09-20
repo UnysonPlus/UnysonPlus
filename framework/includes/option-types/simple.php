@@ -33,7 +33,13 @@ class FW_Option_Type_Hidden extends FW_Option_Type {
 	 * @internal
 	 */
 	protected function _render( $id, $option, $data ) {
-		$option['attr']['value'] = (string) $data['value'];
+		$value = $data['value'];
+		// keep_array: an array value rides through the hidden input as JSON so it
+		// survives a re-save of the form intact (see _get_value_from_input()).
+		if ( ! empty( $option['keep_array'] ) && is_array( $value ) ) {
+			$value = wp_json_encode( $value );
+		}
+		$option['attr']['value'] = is_scalar( $value ) ? (string) $value : '';
 
 		return '<input ' . fw_attr_to_html( $option['attr'] ) . ' type="hidden" />';
 	}
@@ -48,6 +54,25 @@ class FW_Option_Type_Hidden extends FW_Option_Type {
 	 */
 	protected function _get_value_from_input( $option, $input_value ) {
 		$value = is_null( $input_value ) ? $option['value'] : $input_value;
+		/*
+		 * 'keep_array' => true lets a hidden option carry an ARRAY value (e.g. a
+		 * retired colour picker's {predefined, custom} pair kept for legacy content).
+		 * Needed because the page builder re-derives an item's atts from its declared
+		 * options on render, so a retired key must stay declared to survive - and a
+		 * plain hidden option would flatten its array to ''. The array is accepted as
+		 * is (page-builder JSON) or as the JSON string _render() put in the input.
+		 */
+		if ( ! empty( $option['keep_array'] ) ) {
+			if ( is_array( $value ) ) {
+				return $value;
+			}
+			if ( is_string( $value ) && $value !== '' && $value[0] === '{' ) {
+				$decoded = json_decode( $value, true );
+				if ( is_array( $decoded ) ) {
+					return $decoded;
+				}
+			}
+		}
 		// Coerce non-scalars (stale array/object data) to '' instead of casting
 		// an array to string (which warns and yields the useless "Array").
 		return is_scalar( $value ) ? (string) $value : '';
@@ -455,6 +480,25 @@ class FW_Option_Type_Html extends FW_Option_Type {
 	 */
 	protected function _get_value_from_input( $option, $input_value ) {
 		$value = is_null( $input_value ) ? $option['value'] : $input_value;
+		/*
+		 * 'keep_array' => true lets a hidden option carry an ARRAY value (e.g. a
+		 * retired colour picker's {predefined, custom} pair kept for legacy content).
+		 * Needed because the page builder re-derives an item's atts from its declared
+		 * options on render, so a retired key must stay declared to survive - and a
+		 * plain hidden option would flatten its array to ''. The array is accepted as
+		 * is (page-builder JSON) or as the JSON string _render() put in the input.
+		 */
+		if ( ! empty( $option['keep_array'] ) ) {
+			if ( is_array( $value ) ) {
+				return $value;
+			}
+			if ( is_string( $value ) && $value !== '' && $value[0] === '{' ) {
+				$decoded = json_decode( $value, true );
+				if ( is_array( $decoded ) ) {
+					return $decoded;
+				}
+			}
+		}
 		// Coerce non-scalars (stale array/object data) to '' instead of casting
 		// an array to string (which warns and yields the useless "Array").
 		return is_scalar( $value ) ? (string) $value : '';

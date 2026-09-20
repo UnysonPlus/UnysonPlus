@@ -841,6 +841,7 @@ return array(
 	'/extensions/shortcodes/shortcodes/modal-popup/static/css/styles.css',
 	'/extensions/shortcodes/shortcodes/modal-popup/static/js/scripts.js',
 	'/extensions/shortcodes/shortcodes/newsletter/static/css/design/boxed.css',
+	'/extensions/shortcodes/shortcodes/newsletter/static/css/design/capsule.css',
 	'/extensions/shortcodes/shortcodes/newsletter/static/css/design/inline.css',
 	'/extensions/shortcodes/shortcodes/newsletter/static/css/design/stacked.css',
 	'/extensions/shortcodes/shortcodes/newsletter/static/css/styles.css',

@@ -133,10 +133,22 @@ jQuery(document).ready(function($){
 				$tabs
 					.closest('form')
 					.off('submit.fw-tabs')
-					.on('submit.fw-tabs', function () {
+					.on('submit.fw-tabs', function (e) {
 						if (!$(this).hasClass('prevent-all-tabs-init')) {
 							// All options needs to be present in html to be sent in POST on submit
 							initAllTabs($(this));
+						}
+						// A NATIVE (non-ajax) submit (an ajax form carries `prevent-all-tabs-init` and packs in fw-form-helpers.js) packs the option fields into one `fw_options_json` input and disables the
+						// originals — thousands of fields past a host's `max_input_vars` were silently dropped (the ajax path
+						// packs in fw-form-helpers.js; the server unpacks either — includes/options-post-pack.php).
+						if (!$(this).hasClass('prevent-all-tabs-init') && !e.isDefaultPrevented() && !$(this).data('fw-packed') && typeof window.fwForm === 'object' && typeof window.fwForm.packOptions === 'function') {
+							var $f = $(this), $opts = $f.find('[name]').filter(function () { return !this.disabled && window.fwForm.isPackable(this.name); });
+							if ($opts.length) {
+								var pairs = $opts.serializeArray().map(function (fld) { return [fld.name, fld.value]; });
+								$f.append($('<input type="hidden" name="fw_options_json">').val(JSON.stringify(pairs)));
+								$opts.prop('disabled', true);
+								$f.data('fw-packed', true);
+							}
 						}
 					});
 			} else {
