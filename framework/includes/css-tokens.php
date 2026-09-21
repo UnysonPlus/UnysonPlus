@@ -1467,10 +1467,17 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				// from their width (a flex-wrap row of `50%` items + a gap would otherwise overflow and wrap
 				// to one-per-row). Inherited by children; defaults to 0 where no gap class is present.
 				$utility_rules[ ".fw-gap-{$slug}, .sc-cgap-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
+				// …and publish it to the DIRECT CHILDREN as `--fw-parent-gap`: the span-width calc must read the ROW's gap,
+				// but a cell that carries its own `fw-gap-*` (its column gap) redefined the inherited `--fw-flex-gap` on
+				// itself — a 2-col row with 32px between 16px-gap cells subtracted 16, overflowed, and stacked to one
+				// column (a real-site audit). A child-only var is never shadowed by the cell's own gap class.
+				$utility_rules[ ".fw-gap-{$slug} > *, .sc-cgap-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
 				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
 				$responsive_spacing[768][ ".fw-gap-md-{$slug}, .sc-cgap-md-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
+				$responsive_spacing[768][ ".fw-gap-md-{$slug} > *, .sc-cgap-md-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 				$responsive_spacing[992][ ".fw-gap-lg-{$slug}, .sc-cgap-lg-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
+				$responsive_spacing[992][ ".fw-gap-lg-{$slug} > *, .sc-cgap-lg-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 
 				// Per-section modifier classes — scope the gap to every .row
 				// inside a section. No !important: specificity (0,2,0) beats

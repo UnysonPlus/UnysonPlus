@@ -490,6 +490,21 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No',  'fw' ) ),
 						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 					), $id_prefix, $name_prefix );
+
+					// Positioning — the value the Site Converter stores for a page-wide backdrop (`fixed`) and the
+					// theme's site-background renderer keys on. It MUST have a control: without one the form never
+					// posted `video[position]`, get_value_from_input() fell back to `scroll` on EVERY save, and the
+					// converted site's background video vanished the moment Theme Settings was saved.
+					$this->_render_sub( 'video/position', array(
+						'type'    => 'select',
+						'label'   => __( 'Position', 'fw' ),
+						'desc'    => __( 'Scroll = a contained background that moves with its box. Fixed = a viewport-pinned backdrop the whole page scrolls over (for the Site Background: the page-wide video behind all content).', 'fw' ),
+						'value'   => fw_akg( 'video/position', $value, 'scroll' ),
+						'choices' => array(
+							'scroll' => __( 'Scroll', 'fw' ),
+							'fixed'  => __( 'Fixed (page backdrop)', 'fw' ),
+						),
+					), $id_prefix, $name_prefix );
 					?>
 				</div>
 
@@ -675,7 +690,11 @@ class Fw_Option_Type_Background_Pro extends FW_Option_Type {
 		}
 		foreach ( array( 'loop', 'autoplay', 'mute', 'playsinline', 'allow_interaction' ) as $k ) {
 			if ( isset( $input_value['video'][ $k ] ) ) {
-				$out['video'][ $k ] = $input_value['video'][ $k ] === 'yes' ? 'yes' : 'no';
+				// The `switch` sub-control posts its choice JSON-encoded (`"yes"` / `"no"`, quotes included), so a raw
+				// `=== 'yes'` was never true and Loop saved as `no` on every submit — decode like the switch type does.
+				$raw = $input_value['video'][ $k ];
+				if ( is_string( $raw ) && strlen( $raw ) > 1 && '"' === $raw[0] ) { $dec = json_decode( $raw, true ); if ( is_string( $dec ) ) { $raw = $dec; } }
+				$out['video'][ $k ] = ( 'yes' === $raw ) ? 'yes' : 'no';
 			}
 		}
 		// Keep `enabled` HONEST: there is no UI enable toggle any more — the video layer is "on" whenever a
