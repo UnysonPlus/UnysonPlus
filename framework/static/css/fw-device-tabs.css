@@ -10,9 +10,12 @@
 	display: inline-flex;
 	gap: 2px;
 	padding: 2px;
-	border: 1px solid #dcdcde;
+	/* Token-backed with the old literals as fallbacks: this chrome appears on
+	   every responsive option, so a hardcoded light pill is a bright chip on
+	   each row once the admin runs a dark skin. */
+	border: 1px solid var(--fw-border, #dcdcde);
 	border-radius: 5px;
-	background: #f6f7f7;
+	background: var(--fw-surface-alt, #f6f7f7);
 }
 
 .fw-device-tabs .fw-device-tab {
@@ -26,18 +29,18 @@
 	border: 0;
 	border-radius: 3px;
 	background: transparent;
-	color: #646970;
+	color: var(--fw-text-muted, #646970);
 	cursor: pointer;
 	transition: background-color .12s ease, color .12s ease;
 }
 
 .fw-device-tabs .fw-device-tab:hover {
-	color: #1d2327;
-	background: #ececed;
+	color: var(--fw-text, #1d2327);
+	background: var(--fw-surface, #ececed);
 }
 
 .fw-device-tabs .fw-device-tab.is-active {
-	color: #fff;
+	color: var(--fw-accent-contrast, #fff);
 	background: var(--fw-accent, #2271b1);
 }
 
@@ -117,8 +120,8 @@
 	visibility: hidden;
 	transform: translateY(-2px);
 	transition: opacity .15s ease, transform .15s ease, background-color .12s ease, border-color .12s ease;
-	border-color: #dcdcde;
-	background: #f6f7f7;
+	border-color: var(--fw-border, #dcdcde);
+	background: var(--fw-surface-alt, #f6f7f7);
 }
 
 /* Reveal below the label only on THIS option's own hover/focus (the `>` to its own
@@ -145,7 +148,7 @@
 
 .fw-device-head .fw-device-tab.is-active {
 	display: inline-flex;
-	color: #fff;
+	color: var(--fw-accent-contrast, #fff);
 	background: var(--fw-accent, #2271b1);
 }
 

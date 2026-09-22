@@ -5,8 +5,8 @@
  */
 
 .fw-option-type-background-pro {
-	background: #fff;
-	border: 1px solid #dcdcde;
+	background: var(--fw-surface, #fff);
+	border: 1px solid var(--fw-border, #dcdcde);
 	border-radius: 4px;
 	font-size: 13px;
 }
@@ -18,8 +18,8 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	background: #f6f7f7;
-	border-bottom: 1px solid #dcdcde;
+	background: var(--fw-surface-alt, #f6f7f7);
+	border-bottom: 1px solid var(--fw-border, #dcdcde);
 	border-top-left-radius: 4px;
 	border-top-right-radius: 4px;
 }
@@ -36,8 +36,8 @@
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	text-transform: uppercase;
-	color: #646970;
-	border-right: 1px solid #dcdcde;
+	color: var(--fw-text-muted, #646970);
+	border-right: 1px solid var(--fw-border, #dcdcde);
 	background: transparent;
 	transition: background-color 0.15s ease, color 0.15s ease;
 	user-select: none;
@@ -50,12 +50,12 @@
 }
 
 .fw-option-type-background-pro .bg-pro__tab:hover {
-	background: #f0f0f1;
-	color: #1d2327;
+	background: var(--fw-surface-alt, #f0f0f1);
+	color: var(--fw-text, #1d2327);
 }
 
 .fw-option-type-background-pro .bg-pro__tab.is-active {
-	background: #fff;
+	background: var(--fw-surface, #fff);
 	color: var(--fw-accent, #2271b1);
 }
 
@@ -74,7 +74,7 @@
 	height: 8px;
 	border-radius: 50%;
 	background: transparent;
-	border: 1px solid #c3c4c7;
+	border: 1px solid var(--fw-border-strong, #c3c4c7);
 	flex: 0 0 8px;
 	transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
@@ -111,7 +111,7 @@
 	grid-template-columns: 180px 1fr;
 	gap: 18px;
 	padding: 14px 18px;
-	border-bottom: 1px solid #f0f0f1;
+	border-bottom: 1px solid var(--fw-surface-alt, #f0f0f1);
 	align-items: start;
 }
 
@@ -128,7 +128,7 @@
 
 .fw-option-type-background-pro .bg-pro__row-label label {
 	font-weight: 600;
-	color: #1d2327;
+	color: var(--fw-text, #1d2327);
 	font-size: 13px;
 	line-height: 1.4;
 	margin: 0;
@@ -141,8 +141,8 @@
 	width: 16px;
 	height: 16px;
 	border-radius: 50%;
-	background: #dcdcde;
-	color: #50575e;
+	background: var(--fw-border, #dcdcde);
+	color: var(--fw-text-muted, #50575e);
 	font-size: 11px;
 	font-weight: 700;
 	cursor: help;
@@ -153,7 +153,7 @@
 .fw-option-type-background-pro .bg-pro__row-help:hover,
 .fw-option-type-background-pro .bg-pro__row-help:focus {
 	background: var(--fw-accent, #2271b1);
-	color: #fff;
+	color: var(--fw-accent-contrast, #fff);
 	outline: none;
 }
 
@@ -163,7 +163,7 @@
 
 .fw-option-type-background-pro .bg-pro__row-desc {
 	margin: 6px 0 0;
-	color: #646970;
+	color: var(--fw-text-muted, #646970);
 	font-size: 12px;
 	line-height: 1.5;
 	font-style: italic;

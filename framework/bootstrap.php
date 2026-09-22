@@ -60,6 +60,10 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // One-time seed of the extensions that ship ON (currently the Admin
+            // Skin). Runs once and then never again, so a user's later decision
+            // to switch one off is permanent.
+            require $dir . '/includes/default-extensions.php';
             // Shared rate limiter for the framework's wp_ajax_nopriv_* endpoints.
             // Loaded here (not per-extension) because the public endpoints live in
             // several extensions and must all count against one implementation.

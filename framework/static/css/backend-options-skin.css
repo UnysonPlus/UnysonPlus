@@ -45,6 +45,10 @@ body {
 	--u-raised:  #fbfbfc;
 	--u-sunken:  #f2f3f5;
 
+	/* Option-row hover. Deliberately fainter than --u-raised: it fires on
+	   every row the pointer crosses, so anything stronger reads as noise. */
+	--u-row-hover: #fbfbfb;
+
 	--u-ink:      #1f2430;
 	--u-ink-soft: #454c59;
 	--u-muted:    #6b7280;
@@ -149,7 +153,7 @@ body {
 }
 
 .fw-backend-option-design-default:hover:not(:has(.fw-backend-option-design-default)):not(.fw-backend-option-type-wp-editor):not(.fw-backend-option-type-code-editor):not(.fw-backend-option-type-svg-code):not(.fw-backend-option-type-page-builder):not(.fw-backend-option-type-builder):not(.fw-backend-option-type-map):not(.fw-backend-option-type-background-pro):not(.fw-backend-option-type-table):not(.fw-backend-option-type-table-presets):not(.fw-backend-option-type-html-full):not(.fw-backend-option-type-form-builder):not(.fw-backend-option-type-addable-box):not(.fw-backend-option-type-addable-popup):not(.fw-backend-option-type-addable-popup-full):not(.fw-backend-option-type-addable-option):not(.fw-backend-option-type-multi-picker):not(.fw-backend-option-type-popup):not(.fw-backend-option-type-popover):not(.fw-backend-option-type-border-presets) {
-	background: var(--u-raised);
+	background: var(--u-row-hover, var(--u-raised));
 }
 
 /* ---- 3. Label and description --------------------------------------------- */
@@ -497,6 +501,7 @@ body.fw-skin-dark .postbox-with-fw-options > .postbox-header {
 	--u-surface: #22262e;
 	--u-raised:  #282d36;
 	--u-sunken:  #1c2028;
+	--u-row-hover: #252a33;
 
 	--u-ink:      #f0f2f5;
 	--u-ink-soft: #d3d7de;

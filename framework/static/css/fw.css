@@ -3215,7 +3215,10 @@ body.rtl .fw-modal .fw-options-tabs-wrapper > .fw-options-tabs-contents > .fw-in
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	border-bottom: 1px solid #FFFFFF;
+	/* Hides the last option row's hairline by painting the modal's own surface
+	   over it — so it has to BE the surface colour, not a literal white, or it
+	   draws a bright line across the bottom of a dark modal. */
+	border-bottom: 1px solid var(--u-surface, #FFFFFF);
 	z-index: 1;
 }
 body.rtl .fw-modal .media-frame-content > form > .fw-backend-options-last-border-hider,
