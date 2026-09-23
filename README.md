@@ -26,7 +26,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 * **Brizy removed** along with all references to it.
 * **PHP 8.0+ baseline.** Dropped support for PHP 5.6 through 7.4; the plugin declares a standard `Requires PHP: 8.0` header and guards activation on older PHP.
 * **No Bootstrap dependency.** The plugin is fully self-sufficient — the bundled Bootstrap stylesheet was removed and the handful of utilities shortcodes need are now shipped by the plugin itself.
-* **Modern page-builder-first toolkit** — a large library of new shortcodes/elements, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
+* **Modern page-builder-first toolkit** — a Flexbox/Div-first layout model, a large library of new shortcodes/elements (60+), a no-library Animation Engine, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
 * **Active security & modernization track** — see *Updates Done* below.
 * **Community maintained** under the [UnysonPlus](https://github.com/UnysonPlus) GitHub org, with each extension split into its own repository.
 
@@ -36,10 +36,11 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 ### Page builder & layout
 
+* **Flexbox (Div) layout model** — the builder now leads with a single Div primitive you set to Flex, Grid or Block (surfaced as the **Section**, **Block**, **Flexbox** and **Grid** tiles), outputting clean semantic HTML with no row/column wrapper soup. The classic containers (Section / Container / Bleed / Masonry / Column) remain available under a **Classic** tab for backward compatibility.
 * **Section family overhaul** — the Section gains Min Height (40/60/80/100vh) + content vertical-align for full-screen heroes; the bleed layout was extracted into a dedicated **Bleed Section**; a new **Masonry Section** packs columns left-to-right with no gaps. The standalone Hero Section was retired (the upgraded Section supersedes it).
-* **Nested columns** — a column can host other columns one level deep, with Bootstrap-style nested grids synthesized at render time (fully backward-compatible).
+* **Nested columns** — a classic column can host other columns one level deep, with twelve-column nested grids synthesized at render time (fully backward-compatible).
 * **Background Pro** — a single Background control on Sections (and reusable everywhere): stacked color / gradient / image (with position / size / repeat / Fixed-parallax) / looping-video layers, with lossless migration of legacy background fields.
-* **Per-device responsive editing** — Phone / Tablet / Desktop switcher for spacing (mobile-first Bootstrap breakpoints), plus a **Device Preview toggle** (Desktop / Tablet / Phone) that re-previews the canvas at each breakpoint.
+* **Per-device responsive editing** — Phone / Tablet / Desktop switcher for spacing (mobile-first breakpoints), plus a **Device Preview toggle** (Desktop / Tablet / Phone) that re-previews the canvas at each breakpoint.
 * **Per-element Custom CSS + per-page dynamic-CSS pipeline** — each element gets a scoped Custom CSS field (Advanced tab) that rides template export/import; the framework collapses inline `<style>` blocks into one global + one per-page hashed stylesheet for a clean view-source.
 * **Page Builder Templates: Import / Export** — export any saved Full / Sections / Columns template to a portable `.json` and import it on another install.
 * **Bootstrap fully removed** — the bundled Bootstrap 5 stylesheet and its setting are gone; `.btn`, tabs, the testimonials carousel (Splide), and the flex/grid utilities are now provided by the plugin's own CSS.
@@ -48,7 +49,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 Reusable, plugin-owned preset libraries — **Colors, Typography / Font Sizes, Spacing, Gaps, Buttons, Borders / Boxes, and Tables** — each producing a named CSS class and editable from a dedicated **Component Presets** page under the Unyson+ menu. Presets are stored theme-independently so they work under any active theme. A **Styling Presets** master switch can turn the entire styling layer off for a bare, structure-only builder (for developers bringing their own CSS).
 
-### New shortcodes / elements (40+)
+### New shortcodes / elements (60+)
 
 A large library of new elements was added, including:
 
@@ -56,7 +57,8 @@ A large library of new elements was added, including:
 * **Media** — Gallery, Lottie, Audio Player, Video Popup, Before/After, Image Box, Image Hotspots, Flip Box, Carousel.
 * **Marketing** — Pricing Table, Comparison Table, Logo Grid, Business Info, Newsletter, Modal Popup, Social Share, Star Rating, Call to Action.
 * **Dynamic post elements** — Post Title / Excerpt / Content / Meta / Date / Author / Terms, Post Carousel, Author Box, Avatar, Featured Image.
-* **Layout & utility** — Container, Flexbox, Progress, Scroll-to-Top.
+* **Layout & utility** — the Flexbox (Div) tiles (Section / Block / Flexbox / Grid), Container, Progress, Scroll-to-Top.
+* **Animation & motion** — a no-library Animation Engine: scroll reveal / parallax / pin / text effects, plus interactive elements such as Rive and a 3D Model Viewer.
 
 The Table shortcode was rebuilt around a real **spreadsheet editor** (inline-editable cells, drag-reorder, merge/unmerge, HTML/Word/CSV import, Excel paste, CSV/TSV export) with a dependency-free front-end enhancer for **sorting / search / pagination**.
 
