@@ -172,6 +172,25 @@ if ( ! function_exists( 'unysonplus_default_button_color_presets' ) ) :
 			),
 			// Link (text only, no bg/border, darkens on hover)
 			$link( '0000000021', 'Link', 'primary', 'indigo' ),
+			// EDITORIAL: a full-width "list-row" CTA — hairline top+bottom rule, uppercase tracking,
+			// a trailing "+" glyph (label left, + right), dark-invert on hover. The whole look rides
+			// on custom_css ({{SELECTOR}} = the doubled .btn-editorial selector) because border-top/
+			// bottom-only + a ::after glyph + the flex split can't be expressed by the state fields.
+			// Great on a product grid's Add-to-Cart slot (Products element → Card → Button Style preset).
+			array(
+				'id'         => '0000000041',
+				'color_name' => 'Editorial',
+				'states'     => array(
+					'default'  => array( 'text_color' => $empty, 'bg_color' => $empty, 'border_color' => $empty, 'border_style' => 'none' ),
+					'hover'    => array(),
+					'active'   => array(),
+					'focus'    => array(),
+					'disabled' => array(),
+				),
+				'custom_css' => '{{SELECTOR}}{display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%;padding:.75rem 1rem;border:0;border-top:1px solid #d5cbc0;border-bottom:1px solid #d5cbc0;border-radius:0;background:transparent;color:#222;font-size:.72rem;font-weight:600;letter-spacing:.2em;line-height:1.2;text-transform:uppercase;transition:background .25s ease,color .25s ease,border-color .25s ease}
+{{SELECTOR}}::after{content:"+";font-size:1.2em;font-weight:400;line-height:1}
+{{SELECTOR}}:hover,{{SELECTOR}}:focus-visible{background:#121212;color:#fff;border-color:#121212}',
+			),
 		) );
 	}
 endif;
@@ -452,3 +471,37 @@ if ( ! function_exists( 'unysonplus_maybe_migrate_button_colors' ) ) :
 	}
 endif;
 add_action( 'admin_init', 'unysonplus_maybe_migrate_button_colors' );
+
+if ( ! function_exists( 'unysonplus_maybe_add_editorial_button_preset' ) ) :
+	/**
+	 * Non-destructive: ensure the "Editorial" button preset exists in a site's SAVED button
+	 * colours (added to the defaults in this version). Sites on defaults already have it; this
+	 * only backfills sites with a saved set. Runs once on admin_init, guarded by an option.
+	 */
+	function unysonplus_maybe_add_editorial_button_preset() {
+		if ( get_option( 'unysonplus_button_editorial_added' ) ) { return; }
+		if ( ! function_exists( 'unysonplus_preset_store_get' ) || ! function_exists( 'unysonplus_preset_store_set' ) ) { return; }
+		$saved = unysonplus_preset_store_get( 'button_colors', null );
+		// No saved set → defaults (which include Editorial) are in effect; nothing to do.
+		if ( ! is_array( $saved ) || empty( $saved ) ) {
+			update_option( 'unysonplus_button_editorial_added', '1' );
+			return;
+		}
+		foreach ( $saved as $e ) {
+			if ( is_array( $e ) && ( ( isset( $e['id'] ) && '0000000041' === $e['id'] ) || ( isset( $e['color_name'] ) && 'editorial' === strtolower( (string) $e['color_name'] ) ) ) ) {
+				update_option( 'unysonplus_button_editorial_added', '1' );
+				return; // already present (user may have added their own)
+			}
+		}
+		$ed = null;
+		foreach ( unysonplus_default_button_color_presets() as $d ) {
+			if ( isset( $d['id'] ) && '0000000041' === $d['id'] ) { $ed = $d; break; }
+		}
+		if ( is_array( $ed ) ) {
+			$saved[] = $ed;
+			unysonplus_preset_store_set( 'button_colors', $saved );
+		}
+		update_option( 'unysonplus_button_editorial_added', '1' );
+	}
+endif;
+add_action( 'admin_init', 'unysonplus_maybe_add_editorial_button_preset' );
