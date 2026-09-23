@@ -10,12 +10,12 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 
 | Component | Version |
 | --- | --- |
-| Framework | **2.12.83** |
-| Shortcodes extension | **1.8.22** |
-| Page Builder extension | **1.6.55** |
-| Unyson+ Theme | **2.2.32** |
+| Framework | **3.0.29** |
+| Shortcodes extension | **1.15.26** |
+| Page Builder extension | **1.7.6** |
+| Unyson+ Theme | **2.6.10** |
 | Requires WordPress | **5.8+** (tested up to 6.7) |
-| Requires PHP | **7.4+** |
+| Requires PHP | **8.0+** |
 
 > Versions follow an independent per-component sequence. Site owners receive automatic updates from GitHub releases via **Plugin Update Checker v5** — no WP.org required.
 
@@ -24,7 +24,7 @@ This project continues where the original Unyson (by [ThemeFuse](http://themefus
 ## 🔹 Key Differences from the Original Unyson
 
 * **Brizy removed** along with all references to it.
-* **PHP 7.4+ / 8.x baseline.** Dropped support for PHP 5.6 / 7.0 / 7.1 / 7.2 / 7.3.
+* **PHP 8.0+ baseline.** Dropped support for PHP 5.6 through 7.4; the plugin declares a standard `Requires PHP: 8.0` header and guards activation on older PHP.
 * **No Bootstrap dependency.** The plugin is fully self-sufficient — the bundled Bootstrap stylesheet was removed and the handful of utilities shortcodes need are now shipped by the plugin itself.
 * **Modern page-builder-first toolkit** — a large library of new shortcodes/elements, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
 * **Active security & modernization track** — see *Updates Done* below.
@@ -161,9 +161,15 @@ Unyson+ supports the same modular extension system as the original Unyson — ex
 | Asset Optimizer | [`UnysonPlus-Asset-Optimizer-Extension`](https://github.com/UnysonPlus/UnysonPlus-Asset-Optimizer-Extension) |
 | WooCommerce | [`UnysonPlus-WooCommerce-Extension`](https://github.com/UnysonPlus/UnysonPlus-WooCommerce-Extension) |
 | Live Editor | [`UnysonPlus-Live-Editor-Extension`](https://github.com/UnysonPlus/UnysonPlus-Live-Editor-Extension) |
+| Animation Engine | [`UnysonPlus-Animation-Engine-Extension`](https://github.com/UnysonPlus/UnysonPlus-Animation-Engine-Extension) |
+| Animated Icons | [`UnysonPlus-Animated-Icons-Extension`](https://github.com/UnysonPlus/UnysonPlus-Animated-Icons-Extension) |
+| Blocks (Gutenberg) | [`UnysonPlus-Blocks-Extension`](https://github.com/UnysonPlus/UnysonPlus-Blocks-Extension) |
+| SEO | [`UnysonPlus-SEO-Extension`](https://github.com/UnysonPlus/UnysonPlus-SEO-Extension) |
+| Template Library | [`UnysonPlus-Template-Library-Extension`](https://github.com/UnysonPlus/UnysonPlus-Template-Library-Extension) |
+| Site Migration | [`UnysonPlus-Site-Migration-Extension`](https://github.com/UnysonPlus/UnysonPlus-Site-Migration-Extension) |
 | Update | [`UnysonPlus-Update-Extension`](https://github.com/UnysonPlus/UnysonPlus-Update-Extension) |
 
-Additional extensions (Sliders, Social, SEO, Analytics, Translation, Events, Feedback, Backups, Learning, …) are also tracked under the [UnysonPlus](https://github.com/UnysonPlus) org.
+Additional extensions (Sliders, Social, Analytics, Translation, Events, Feedback, Backups, Learning, …) are also tracked under the [UnysonPlus](https://github.com/UnysonPlus) org.
 
 ## Contributing
 

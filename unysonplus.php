@@ -3,13 +3,15 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 3.0.28
+ * Version: 3.0.29
+ * Requires at least: 5.8
+ * Requires PHP: 8.0
  * Author: Lastimosa.com.ph
  * Author URI: http://lastimosa.com.ph
- * License: GPL2+
+ * License: GPLv3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: fw
  * Domain Path: /framework/languages
- * PHP Version: 7.4 or higher
  */
 
 if ( defined( 'FW' ) ) {
@@ -17,6 +19,18 @@ if ( defined( 'FW' ) ) {
          * The plugin was already loaded (maybe as another plugin with different directory name)
          */
 } else {
+        // Unyson+ requires PHP 8.0+. On older PHP, bail with an admin notice instead of
+        // loading the framework (which uses 8.x-only syntax and would fatal).
+        if ( version_compare( PHP_VERSION, '8.0', '<' ) ) {
+                add_action( 'admin_notices', function () {
+                        echo '<div class="notice notice-error"><p>'
+                                . esc_html__( 'Unyson+ requires PHP 8.0 or higher — the framework was not loaded.', 'fw' )
+                                . ' ' . esc_html( sprintf( 'This server is running PHP %s.', PHP_VERSION ) )
+                                . '</p></div>';
+                } );
+                return;
+        }
+
         require __DIR__ . '/framework/bootstrap.php';
 
         /**

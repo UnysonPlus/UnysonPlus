@@ -2,10 +2,18 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.28';
+$manifest['version']    = '3.0.29';
 
 /**
  * Changelog
+ * 3.0.29 - PHP baseline raised to 8.0. The plugin now declares the standard
+ *          `Requires PHP: 8.0` header (previously it carried only a non-standard
+ *          "PHP Version:" note, so WordPress never enforced a minimum), and a
+ *          runtime guard shows an admin notice and skips loading the framework on
+ *          PHP below 8.0 instead of risking a fatal from 8.x-only syntax. The
+ *          bundled licence is GPLv3 (see framework/LICENSE); the plugin header and
+ *          readme.txt, which still said GPL2/GPLv2, were corrected to match.
+ *
  * 3.0.13 - Release milestone: delivers Theme Builder 1.1.49. The Theme Builder's
  *          admin surface is rebuilt around a Divi-style canvas of Template cards
  *          with actionable Header/Body/Footer slots, alongside a Tree view of the

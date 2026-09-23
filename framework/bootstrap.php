@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit('Forbidden');
 }
 /**
- * PHP Version: 7.4 or higher
+ * PHP Version: 8.0 or higher
  */
 
 if (defined('WP_CLI') && WP_CLI && !isset($_SERVER['HTTP_HOST'])) {
