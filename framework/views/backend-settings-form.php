@@ -387,7 +387,23 @@
 				}
 			},
 			afterSubmitDelay: function (elements) {
-				fwEvents.trigger('fw:options:init:tabs', {$elements: elements.$form});
+				/**
+				 * DO NOT force every lazy tab open after a save.
+				 *
+				 * Each lazy tab carries its whole rendered option markup in `data-fw-tab-html`, and the
+				 * screen ships one per tab whether or not it is ever opened — measured at 27MB across 74
+				 * tabs on a real site (13MB in ONE tab), and 34MB on a stock install with no conversion.
+				 * `fw:options:init:tabs` parses all of it synchronously, and a single 13MB tab is one long
+				 * task that no amount of chunking can split: measured 28.9s of blocked main thread, so
+				 * Chrome raised "Page Unresponsive" on EVERY save. Reported from two installs
+				 * independently, and reproducible on a stock install too.
+				 *
+				 * Nothing needs it. The save has already happened by this point, and its values were packed
+				 * from the DOM and merged server-side — which is exactly how the FIRST save works while the
+				 * tabs are still lazy. Leaving them lazy afterwards simply returns the page to the state it
+				 * was in before the save, where it is responsive and each tab still materialises on demand
+				 * when the user opens it.
+				 */
 			},
 			onErrors: function( elements, data ) {
 				var message = $.map( data.errors, function( mssg ) { return '<p class="fw-text-danger">' + mssg + '</p>' } ) + fw.soleModal.renderFlashMessages( data.flash_messages );

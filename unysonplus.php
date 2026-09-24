@@ -3,7 +3,7 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 3.0.29
+ * Version: 3.0.30
  * Requires at least: 5.8
  * Requires PHP: 8.0
  * Author: Lastimosa.com.ph

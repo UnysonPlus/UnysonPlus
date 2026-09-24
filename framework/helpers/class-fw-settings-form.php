@@ -391,6 +391,72 @@ abstract class FW_Settings_Form {
 		} else { // The "Save" button was pressed
 			$new_values = fw_get_options_values_from_input( $this->get_options() );
 
+			/**
+			 * A SAVE MUST ONLY TOUCH THE TABS THAT WERE ACTUALLY SUBMITTED.
+			 *
+			 * The settings screen renders its tabs LAZILY: each one ships its markup in a
+			 * `data-fw-tab-html` attribute and is only parsed into the DOM when opened. A tab that was
+			 * never opened therefore has no inputs in the form and sends nothing — and
+			 * fw_get_options_values_from_input() answers "absent input" with the option's DEFAULT. Saving
+			 * then wrote those defaults over every stored value the user could not see.
+			 *
+			 * Measured on a converted site: one save from the Header tab replaced the 2 generated button
+			 * presets with the 15 stock defaults (its Primary lost its background, so every primary button
+			 * rendered as an unstyled white box with an invisible label), dropped a palette entry, and reset
+			 * the container width from 1280px to 1232px. Nothing warned, because from the form's point of
+			 * view those options simply were not there.
+			 *
+			 * So: for any top-level tab that submitted NOTHING AT ALL, keep what is already stored. A tab
+			 * the user did open submits its whole set, so clearing a field inside it still clears normally
+			 * — the distinction is per TAB, not per option, which is what makes that safe.
+			 *
+			 * (The "Reset Tab Options" branch above already works this way: it starts from $old_values and
+			 * replaces only the target tab. Save now matches it.)
+			 */
+			$input = FW_Request::POST( fw()->backend->get_options_name_attr_prefix() );
+
+			if ( is_array( $input ) && ! empty( $old_values ) ) {
+				/**
+				 * The POST is NESTED by container (`fw_options[general_layout][site_width_mode]`) while the
+				 * stored values are FLAT by leaf id, so the two cannot be compared directly. Collect every
+				 * key that appears anywhere in the submitted tree — container ids and leaf ids alike — and
+				 * match against that.
+				 */
+				$submitted_keys = array();
+				$collect        = function ( $node ) use ( &$collect, &$submitted_keys ) {
+					if ( ! is_array( $node ) ) {
+						return;
+					}
+					foreach ( $node as $k => $v ) {
+						if ( is_string( $k ) ) {
+							$submitted_keys[ $k ] = true;
+						}
+						$collect( $v );
+					}
+				};
+				$collect( $input );
+
+				/**
+				 * Preserve EVERY option the form did not submit. Tabs nest (a top-level tab holds sub-tabs,
+				 * each lazy in its own right), so "was this tab open?" is too coarse: opening General →
+				 * Layout submits that container, while General → Buttons beside it stays lazy and its
+				 * options would still come back as defaults. Per option is the granularity that matches how
+				 * the markup is actually withheld.
+				 *
+				 * An option the user DID see submits a key, so clearing a field still clears it. An option
+				 * whose markup never reached the page submits nothing, and for those "absent" has always
+				 * meant "use the default" — which is the bug. Keep what is stored instead.
+				 */
+				foreach ( $new_values as $option_id => $__v ) {
+					if ( isset( $submitted_keys[ $option_id ] ) ) {
+						continue; // the user had this one on screen
+					}
+					if ( array_key_exists( $option_id, $old_values ) ) {
+						$new_values[ $option_id ] = $old_values[ $option_id ];
+					}
+				}
+			}
+
 			$this->set_values( $new_values );
 
 			FW_Flash_Messages::add(
