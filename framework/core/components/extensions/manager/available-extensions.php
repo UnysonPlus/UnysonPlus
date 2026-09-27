@@ -139,6 +139,20 @@ $extensions = [
         ],
     ],
 
+    'ai-assistant' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('AI Assistant (Beta)', 'fw'),
+        'description' => __('Lets an AI model build and edit page-builder pages through safe, schema-checked actions — from an AI Assistant panel in the builder, or from any MCP-capable AI agent — and adds an optional AI channel to the Chat button that answers visitors from your published pages. Beta; ships inactive.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/ai-assistant.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-AI-Assistant-Extension',
+            ],
+        ],
+    ],
+
     'blocks' => [
         'display'     => true,
         'parent'      => null,

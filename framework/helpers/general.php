@@ -2286,7 +2286,7 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 
 			// Exact px crop -> fw_resize 1x, plus a 2x density srcset when the
 			// source is big enough (retina) without upscaling. Skipped in focal-crop
-			// mode (aspect_ratio), which crops responsively via CSS instead.
+			// mode (aspect_ratio), which uses the responsive crops below.
 			if ( $w_px && $h_px && ! $has_ratio ) {
 				$src1 = fw_resize( $id, $w_px, $h_px, true );
 				$meta = wp_get_attachment_metadata( $id );
@@ -2299,6 +2299,39 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 				}
 				$attr['src'] = esc_url( $src1 );
 				return fw_html_tag( 'img', $attr );
+			}
+
+			// Ratio box + Cover: serve real pre-cropped files at several widths instead of
+			// the full original cropped by CSS, so each device downloads only what it shows.
+			// The CSS (aspect-ratio + object-fit) stays as a safety net. Falls through to the
+			// plain responsive image when the crop can't be made (SVG, no image editor…).
+			$fit_cover = ( 'contain' !== $args['object_fit'] );
+			if ( $has_ratio && $fit_cover && function_exists( 'fw_image_crop_renditions' ) ) {
+				$crops = fw_image_crop_renditions(
+					$id,
+					fw_image_parse_ratio( $ar ),
+					fw_image_parse_focal( '' !== trim( (string) $args['object_position'] ) ? $args['object_position'] : 'center center' )
+				);
+				if ( $crops ) {
+					$set = array();
+					foreach ( $crops as $c ) {
+						/** Filters the URL of a cropped rendition, e.g. to swap in a WebP copy. */
+						$set[] = esc_url( apply_filters( 'fw_image_src_url', $c['url'] ) ) . ' ' . $c['width'] . 'w';
+					}
+					$largest = end( $crops );
+					// Default src: the rendition closest to 800px wide (a typical column at 1.5-2x).
+					$pick = reset( $crops );
+					foreach ( $crops as $w => $c ) { if ( $w <= 800 ) { $pick = $c; } }
+					$attr['src']    = esc_url( apply_filters( 'fw_image_src_url', $pick['url'] ) );
+					$attr['srcset'] = implode( ', ', $set );
+					// Lazy images can use the browser's real layout width (sizes="auto").
+					$attr['sizes']  = '' !== $args['sizes'] ? $args['sizes'] : ( 'lazy' === $attr['loading'] ? 'auto, 100vw' : '100vw' );
+					if ( ! $w_px ) {
+						$attr['width']  = $largest['width'];
+						$attr['height'] = $largest['height'];
+					}
+					return fw_html_tag( 'img', $attr );
+				}
 			}
 
 			// Width-only (or height-only): derive the OTHER dimension from the image's real

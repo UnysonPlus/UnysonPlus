@@ -60,6 +60,8 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // Responsive server-side crops for ratio-boxed images (fw_image_tag()).
+            require $dir . '/includes/image-crops.php';
             // One-time seed of the extensions that ship ON (currently the Admin
             // Skin). Runs once and then never again, so a user's later decision
             // to switch one off is permanent.

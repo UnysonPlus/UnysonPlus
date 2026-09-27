@@ -939,28 +939,47 @@
 				modal.content.packTypes = packTypes
 				modal.content.packTitles = packTitles
 
-				$packSelect.fwSelect({
-					controlInput: null,   // non-editable control (was the hidden_textfield plugin)
-					options: szOptions,
-					optgroups: szGroups,
-					optgroupField: 'group',
-					optgroupValueField: 'value',
-					optgroupLabelField: 'label',
-					labelField: 'text',
-					valueField: 'value',
-					searchField: ['text', 'value'],
-					items: defaultPack ? [defaultPack] : [],
-					onChange: modal.content.renderIconsTab.bind(modal.content),
-				})
-				packSelectEl = $packSelect[0]
+				// fw-select (Tom Select) enhances the pack dropdown, but it isn't
+				// guaranteed to be loaded in every context (e.g. the front-end Live
+				// Editor shell on some pages). Calling $.fn.fwSelect when it's absent
+				// throws — which aborts prepareForPick() before renderIconsTab() runs,
+				// leaving the whole grid BLANK. Guard it: if fwSelect is present,
+				// enhance; otherwise fall back to the native <select> (which already
+				// carries the same options/optgroups) and wire its change event so the
+				// grid still re-renders on pack switch.
+				if (typeof $packSelect.fwSelect === 'function') {
+					$packSelect.fwSelect({
+						controlInput: null,   // non-editable control (was the hidden_textfield plugin)
+						options: szOptions,
+						optgroups: szGroups,
+						optgroupField: 'group',
+						optgroupValueField: 'value',
+						optgroupLabelField: 'label',
+						labelField: 'text',
+						valueField: 'value',
+						searchField: ['text', 'value'],
+						items: defaultPack ? [defaultPack] : [],
+						onChange: modal.content.renderIconsTab.bind(modal.content),
+					})
+					packSelectEl = $packSelect[0]
+				} else {
+					$packSelect.off('change.fwiconv3pack').on(
+						'change.fwiconv3pack',
+						modal.content.renderIconsTab.bind(modal.content)
+					)
+				}
 			}
 
 			// Pre-select the pack for the stored value (its font pack or SVG pack)
 			// so re-opening lands on the right library; else the server default
 			// (Font Awesome). Render silently now so the grid is ready on open.
 			var initPack = modal.content.packForState(modal.get('current_state'))
-			if (initPack && packSelectEl && packSelectEl.fwSelect) {
-				packSelectEl.fwSelect.setValue(initPack, true)
+			if (initPack && packSelectEl) {
+				if (packSelectEl.fwSelect) {
+					packSelectEl.fwSelect.setValue(initPack, true)
+				} else {
+					packSelectEl.value = initPack   // native <select> fallback
+				}
 			}
 			modal.content.renderIconsTab()
 
@@ -1101,9 +1120,10 @@
 				'.fw-icon-v3-icons-library .fw-icon-v3-toolbar select'
 			)[0]
 
+			var iconsData = this.getIconsData()
 			var pack = packSelect
 				? packSelect.value
-				: Object.keys(this.getIconsData())[0]
+				: ( iconsData ? Object.keys( iconsData )[ 0 ] : '' )
 
 			var search = this.frame.$el
 				.find(
@@ -1136,6 +1156,14 @@
 		getFilteredPacks: function(filters) {
 			var self = this
 
+			// Data not loaded yet (or the one boot request failed): render nothing
+			// rather than throwing on null[pack] — the load's done-handler re-renders
+			// once the data arrives, and a failed load is retried on the next open.
+			var data = this.getIconsData()
+			if ( ! data ) {
+				return []
+			}
+
 			filters = Object.assign(
 				{},
 				{
@@ -1147,29 +1175,26 @@
 
 			var packs = []
 
-			/*
-			if (filters.pack.trim() === '' || filters.pack === 'all') {
-				packs = [ Object.values(this.getIconsData())[0] ];
-			} else {
-				packs = [this.getIconsData()[filters.pack]];
-			}
-			*/
-
 			if (filters.search.trim() === '') {
-				packs = [this.getIconsData()[filters.pack]]
+				packs = [ data[ filters.pack ] ]
 			} else {
-				packs = Object.values(this.getIconsData())
+				packs = Object.values( data )
 			}
 
-			packs = packs.map(function(pack) {
-				var newPack = Object.assign({}, pack)
-
-				newPack.icons = pack.icons.filter(function(icon) {
-					return self.fuzzyConsecutive(filters.search, icon)
+			packs = packs
+				.filter(function(pack) {
+					// A missing/unknown pack key yields undefined — drop it.
+					return pack && pack.icons
 				})
+				.map(function(pack) {
+					var newPack = Object.assign({}, pack)
 
-				return newPack
-			})
+					newPack.icons = pack.icons.filter(function(icon) {
+						return self.fuzzyConsecutive(filters.search, icon)
+					})
+
+					return newPack
+				})
 
 			return packs.filter(function(pack) {
 				return pack.icons.length !== 0
@@ -1181,12 +1206,31 @@
 				return this.iconsDataPromise
 			}
 
+			var self = this
+
 			this.iconsDataPromise = jQuery.post(ajaxurl, {
 				action: 'fw_icon_v3_get_icons',
 				nonce: ( window.fwIconV3 && window.fwIconV3.pickerNonce ) || '',
 			})
 
 			this.iconsDataPromise.then(this.preloadFonts.bind(this))
+
+			// The grid's first applyFilters() usually runs BEFORE this request
+			// resolves (getIconsData() is null until then), so it renders empty.
+			// Re-render once the data lands. And if the request fails or comes back
+			// non-success, drop the cached promise so the NEXT open retries instead
+			// of the grid staying blank for the whole session.
+			this.iconsDataPromise
+				.done(function(resp) {
+					if (resp && resp.success) {
+						try { self.applyFilters() } catch (e) {}
+					} else {
+						self.iconsDataPromise = null
+					}
+				})
+				.fail(function() {
+					self.iconsDataPromise = null
+				})
 
 			return this.iconsDataPromise
 		},
