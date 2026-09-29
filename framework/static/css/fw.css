@@ -2982,18 +2982,80 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
  *    .fw-content-ready (once the fields are in the DOM); the animation reveals it at 0.6s as a
  *    pure-CSS safety net, so the box can never be left invisible even if that JS never runs.
  */
-.fw-opt-dialog:focus {
+.fw-opt-dialog:focus,
+.fw-opt-dialog:focus-visible {
 	outline: none;
 }
 
-.fw-opt-dialog > .media-modal-content {
-	opacity: 0;
-	animation: fwOptReveal 1ms linear .6s forwards;
+/*
+ * The admin skin draws a global accent focus ring — `body.upa :focus-visible { outline:2px solid
+ * var(--upa-accent); box-shadow:none }` — which lands on the programmatically-focused dialog as the
+ * unwanted "blue border" (and strips the panel's drop shadow). Beat it with higher specificity
+ * (body.upa + .fw-opt-dialog = 0,3,0 > 0,2,0): drop the outline and restore the panel shadow.
+ */
+body.upa .fw-opt-dialog:focus,
+body.upa .fw-opt-dialog:focus-visible {
+	outline: none;
+	box-shadow: var(--upa-shadow, 0 12px 36px rgba(20, 20, 30, .1));
 }
 
-.fw-opt-dialog > .media-modal-content.fw-content-ready {
-	opacity: 1;
-	animation: none;
+/*
+ * No empty-white flash on open/close. The modal box is shown before its options mount, so it would
+ * otherwise flash as an empty white rounded panel while opening (and again, emptied, on close).
+ *
+ * Gate it PURELY in CSS with :has(), so it does not depend on any JS timing (a stale/slow
+ * fw-modal-frame.js would otherwise lose the race on a heavy page and reveal the box blank): the
+ * whole panel stays invisible until it actually CONTAINS rendered option fields (or, for a media
+ * library frame, attachments) — i.e. real content is in the DOM. On close the content is emptied,
+ * :has() stops matching, and the panel hides again. A last-resort animation reveals it by 3s so a
+ * genuinely-empty modal (or a browser without :has()) can never be left invisible.
+ */
+.fw-opt-dialog {
+	opacity: 0;
+	animation: fwOptReveal 1ms linear 3s forwards;
+}
+
+/*
+ * Soft fade-in via an ANIMATION (not a transition): a CSS transition only plays if the browser
+ * first painted the opacity:0 baseline, which a fast content render skips — so the modal would pop
+ * in with no fade on some machines. An animation always plays its keyframes from the start.
+ */
+.fw-opt-dialog:has(.fw-backend-option),
+.fw-opt-dialog:has(.fw-options-tabs-wrapper),
+.fw-opt-dialog:has(.attachments) {
+	animation: fwOptFadeIn .2s ease forwards;
+}
+
+@keyframes fwOptFadeIn {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+/*
+ * Fade-OUT on close. fw.js's closeEffect() tags the wrapper .fw-modal-closing and waits for a
+ * close animation to end before hiding — normally fwGrowOut on .media-modal-content, but we killed
+ * that animation above, so drive the fade from here instead: fade the whole dialog out, and
+ * fw.js listens for fwOptFadeOut's animationend to finish the close.
+ */
+.fw-modal-closing .media-modal.fw-opt-dialog {
+	animation: fwOptFadeOut .15s ease forwards !important;
+}
+
+@keyframes fwOptFadeOut {
+	from { opacity: 1; }
+	to   { opacity: 0; }
+}
+
+/*
+ * Kill the grow-in on the options dialog. fwGrowIn scales + fades the .media-modal-content from
+ * scale(.7)/opacity:0 — but the backend opens the modal BEFORE its fields render, so that animation
+ * plays on the still-EMPTY box: the empty white panel visibly grows in before content (the Live
+ * Editor doesn't flash because it fetches the options first, then opens with them already in hand).
+ * The :has() opacity gate above already reveals the panel — with a soft fade — only once its fields
+ * exist, so the scale animation is pure downside here. Remove it for fw-opt-dialog modals.
+ */
+.fw-opt-dialog > .media-modal-content {
+	animation: none !important;
 }
 
 @keyframes fwOptReveal {

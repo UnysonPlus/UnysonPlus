@@ -339,6 +339,18 @@ var fw = fw || {};
 		this.$modalEl.show();
 		$(document.body).addClass('modal-open');
 
+		// For our (non-blocking, draggable) option modals, undo WP's scroll lock IMMEDIATELY —
+		// at the same instant as `modal-open` — rather than a beat later. `body.modal-open`
+		// applies `overflow:hidden`, which removes the page scrollbar and widens the viewport;
+		// fw.js re-adds `fw-nonblocking-modal-open` (overflow:visible) only on its later `open`
+		// handler, so in the gap the panel gets centred WITHOUT the scrollbar, then the scrollbar
+		// returns and the settle re-centres it — a visible leftward nudge on any page tall enough
+		// to have a scrollbar. Adding the class here keeps the scrollbar (and viewport width)
+		// constant across the whole open, so the panel opens dead-centre and stays put.
+		if (this.$modalEl.find('.media-modal.fw-opt-dialog').length) {
+			$(document.body).addClass('fw-nonblocking-modal-open');
+		}
+
 		if (openFrames.indexOf(this) === -1) {
 			openFrames.push(this);
 		}
@@ -350,39 +362,8 @@ var fw = fw || {};
 
 		this.trigger('open');
 
-		// Suppress the empty-white flash: the modal box is shown before its options mount, so it
-		// would otherwise flash as a big empty white panel while opening. Keep the box invisible
-		// (CSS defaults .media-modal-content to opacity:0 on .fw-opt-dialog) until its fields are
-		// in the DOM, then reveal. A CSS animation also reveals it at 0.6s as a safety net, so the
-		// box can never be left invisible even if this never runs.
-		(function (frame) {
-			var $box  = frame.$modalEl.find('.media-modal-content');
-			var scope = frame.$modalEl.find('.media-modal')[0];
-			if (!$box.length || !scope) { return; }
-
-			var reveal = function () { $box.addClass('fw-content-ready'); };
-			var populated = function () {
-				return !!scope.querySelector(
-					'.fw-backend-option, .fw-options-tabs-wrapper, .media-frame-content > *, .attachments, .media-frame-router > *'
-				);
-			};
-
-			if (populated()) { reveal(); return; }
-
-			$box.removeClass('fw-content-ready');
-
-			var done = false, finish = function () {
-				if (done) { return; }
-				done = true;
-				try { mo.disconnect(); } catch (e) {}
-				reveal();
-			};
-			var mo = new (window.MutationObserver || function () { this.observe = function () {}; this.disconnect = function () {}; })(
-				function () { if (populated()) { finish(); } }
-			);
-			try { mo.observe(scope, { childList: true, subtree: true }); } catch (e) { reveal(); return; }
-			setTimeout(finish, 500);
-		})(this);
+		// The empty-white-flash guard is now pure CSS: fw.css keeps .fw-opt-dialog invisible until it
+		// :has() rendered option fields, so there is no JS timing to lose here (see fw.css).
 
 		return this;
 	};

@@ -1532,12 +1532,16 @@ fw.getQueryString = function(name) {
 						// (or a safety cap is hit). Skipped entirely once the user drags.
 						var settleLeft = -1, settleTicks = 0;
 						var settle = function () {
-							if (userMoved || settleTicks++ > 40) { return; }
+							if (userMoved || settleTicks++ > 80) { return; }
 							var left = applyPosition();
 							fwDbg('settle#' + settleTicks + ' nativeLeft=' + left);
 							if (left < 0 || left === settleLeft) { return; } // stable → done
 							settleLeft = left;
-							setTimeout(settle, 150);
+							// Poll FAST (50ms) so any re-center after content loads lands within the
+							// modal's ~0.2s fade-in instead of as a visible nudge a moment after it
+							// has already appeared. Cap raised to keep total settle time (slow async
+							// Live Editor modals) roughly as before.
+							setTimeout(settle, 50);
 						};
 						settle();
 						// WP core locks page scroll (body.modal-open { overflow:hidden })
@@ -1645,7 +1649,9 @@ fw.getQueryString = function(name) {
 						 */
 						$modalWrapper.on('animationend'+ eventsNamespace, function (e) {
 							var ev = e.originalEvent || e;
-							if (ev.animationName === 'fwGrowOut') {
+							// fwGrowOut is the default close animation; fw-opt-dialog modals fade out
+							// with fwOptFadeOut instead (their grow animation is disabled — see fw.css).
+							if (ev.animationName === 'fwGrowOut' || ev.animationName === 'fwOptFadeOut') {
 								finishClose();
 							}
 						});
