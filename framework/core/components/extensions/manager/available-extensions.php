@@ -349,6 +349,20 @@ $extensions = [
         ],
     ],
 
+    'security' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Security', 'fw'),
+        'description' => __('Login throttling, two-factor sign-in, XML-RPC and header hardening, a custom login address, and security checks in Site Health. Every measure that changes behaviour is off until you switch it on, and each one says what it does not protect against.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/security.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Security-Extension',
+            ],
+        ],
+    ],
+
     'seo' => [
         'display'     => true,
         'parent'      => null,
