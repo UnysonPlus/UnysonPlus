@@ -399,11 +399,25 @@ final class _FW_Component_Backend {
 			 * The note below still stands for the SCRIPT side: fw.OptionsModal needs
 			 * the media JS, which only wp_enqueue_media() provides.
 			 */
+			// Version fw.css / fw-modal-frame.js with the SERVED file's mtime on top of the manifest
+			// version, so an edit to these core assets busts the browser cache between releases (the
+			// manifest version alone stays fixed until a release — which left the old min served after
+			// a fix). Prod serves the .min; keep the max mtime of source + min so editing either busts.
+			$fw_dir  = fw_get_framework_directory( '/static' );
+			$fw_ver  = fw()->manifest->get_version();
+			$fw_mt   = function ( $rel ) use ( $fw_dir, $fw_ver ) {
+				$mt = 0;
+				foreach ( array( $rel, preg_replace( '/\.(css|js)$/', '.min.$1', $rel ) ) as $p ) {
+					if ( is_file( $fw_dir . $p ) ) { $mt = max( $mt, (int) filemtime( $fw_dir . $p ) ); }
+				}
+				return $mt ? $fw_ver . '.' . $mt : $fw_ver;
+			};
+
 			wp_register_style(
 				'fw',
 				fw_get_framework_asset_uri('/static/css/fw.css'),
 				['fw-tooltip', 'media-views'],
-				fw()->manifest->get_version()
+				$fw_mt( '/css/fw.css' )
 			);
 
 			wp_register_script(
@@ -459,7 +473,7 @@ final class _FW_Component_Backend {
 				'fw-modal-frame',
 				fw_get_framework_asset_uri('/static/js/fw-modal-frame.js'),
 				array( 'jquery', 'fw-oo' ),
-				fw()->manifest->get_version(),
+				$fw_mt( '/js/fw-modal-frame.js' ),
 				false
 			);
 

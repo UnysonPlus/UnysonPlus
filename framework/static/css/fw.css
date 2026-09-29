@@ -2969,6 +2969,37 @@ body.wp-customizer > div:not(.fw-modal) > .media-modal-backdrop {
 	box-shadow: none;
 }
 
+/*
+ * Options modal polish (fw-opt-dialog is stamped on the dialog by fw-modal-frame.js):
+ *
+ * 1) No blue focus ring on the panel. The dialog container is given tabindex and focused on open
+ *    only to move keyboard focus into the modal; when no field auto-focuses (e.g. Flexbox) it
+ *    keeps focus and the browser draws its blue focus outline around the whole panel, which reads
+ *    as an unwanted border. The real controls inside keep their own focus styles.
+ *
+ * 2) No empty-white flash on open. The box is shown before its options mount, so it would flash as
+ *    a big empty white panel while opening. Keep it invisible until fw-modal-frame.js adds
+ *    .fw-content-ready (once the fields are in the DOM); the animation reveals it at 0.6s as a
+ *    pure-CSS safety net, so the box can never be left invisible even if that JS never runs.
+ */
+.fw-opt-dialog:focus {
+	outline: none;
+}
+
+.fw-opt-dialog > .media-modal-content {
+	opacity: 0;
+	animation: fwOptReveal 1ms linear .6s forwards;
+}
+
+.fw-opt-dialog > .media-modal-content.fw-content-ready {
+	opacity: 1;
+	animation: none;
+}
+
+@keyframes fwOptReveal {
+	to { opacity: 1; }
+}
+
 /* open animation */
 
 .fw-modal > .media-modal-backdrop {

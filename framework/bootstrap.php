@@ -60,6 +60,10 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // The AI-suggestion queue. In CORE rather than in the AI Assistant extension because a
+            // suggestion has to survive being made while that extension is switched off -- see the
+            // file's docblock.
+            require $dir . '/includes/ai-suggestions.php';
             // Responsive server-side crops for ratio-boxed images (fw_image_tag()).
             require $dir . '/includes/image-crops.php';
             // One-time seed of the extensions that ship ON (currently the Admin

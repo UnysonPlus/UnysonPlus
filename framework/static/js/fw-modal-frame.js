@@ -153,7 +153,7 @@ var fw = fw || {};
 	ModalFrame.prototype.build = function () {
 		this.$modalEl = $(
 			'<div>' +
-				'<div class="media-modal wp-core-ui" role="dialog" aria-modal="true">' +
+				'<div class="media-modal wp-core-ui fw-opt-dialog" role="dialog" aria-modal="true">' +
 					'<button type="button" class="media-modal-close">' +
 						'<span class="media-modal-icon" aria-hidden="true"></span>' +
 						'<span class="screen-reader-text">' + this.closeLabel() + '</span>' +
@@ -349,6 +349,40 @@ var fw = fw || {};
 		if ($first.length) { $first[0].focus(); }
 
 		this.trigger('open');
+
+		// Suppress the empty-white flash: the modal box is shown before its options mount, so it
+		// would otherwise flash as a big empty white panel while opening. Keep the box invisible
+		// (CSS defaults .media-modal-content to opacity:0 on .fw-opt-dialog) until its fields are
+		// in the DOM, then reveal. A CSS animation also reveals it at 0.6s as a safety net, so the
+		// box can never be left invisible even if this never runs.
+		(function (frame) {
+			var $box  = frame.$modalEl.find('.media-modal-content');
+			var scope = frame.$modalEl.find('.media-modal')[0];
+			if (!$box.length || !scope) { return; }
+
+			var reveal = function () { $box.addClass('fw-content-ready'); };
+			var populated = function () {
+				return !!scope.querySelector(
+					'.fw-backend-option, .fw-options-tabs-wrapper, .media-frame-content > *, .attachments, .media-frame-router > *'
+				);
+			};
+
+			if (populated()) { reveal(); return; }
+
+			$box.removeClass('fw-content-ready');
+
+			var done = false, finish = function () {
+				if (done) { return; }
+				done = true;
+				try { mo.disconnect(); } catch (e) {}
+				reveal();
+			};
+			var mo = new (window.MutationObserver || function () { this.observe = function () {}; this.disconnect = function () {}; })(
+				function () { if (populated()) { finish(); } }
+			);
+			try { mo.observe(scope, { childList: true, subtree: true }); } catch (e) { reveal(); return; }
+			setTimeout(finish, 500);
+		})(this);
 
 		return this;
 	};
