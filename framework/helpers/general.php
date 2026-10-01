@@ -2357,7 +2357,15 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 
 		// Plain URL (no attachment) — display sizing only, no srcset possible.
 		$attr['alt'] = $alt;
-		$attr['src'] = esc_url( (string) $source );
+		$src         = (string) $source;
+		// An inline payload has no scheme esc_url() recognises ('data' is not in
+		// wp_allowed_protocols()), so esc_url() returns '' and the src goes empty.
+		// Sanitise the payload's own character set instead of dropping it.
+		if ( 0 === stripos( $src, 'data:image/' ) ) {
+			$attr['src'] = preg_replace( '/[^A-Za-z0-9;,:\/=+._%-]/', '', $src );
+		} else {
+			$attr['src'] = esc_url( $src );
+		}
 		return fw_html_tag( 'img', $attr );
 	}
 }

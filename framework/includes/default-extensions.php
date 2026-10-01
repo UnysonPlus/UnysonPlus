@@ -25,7 +25,17 @@ if ( ! function_exists( 'fw_upw_seed_default_extensions' ) ) :
 		// never fight the user's own choice.
 		update_option( 'unysonplus_default_extensions_v1', 1, true );
 
-		$defaults = apply_filters( 'fw_upw_default_extensions', array( 'admin-skin' ) );
+		$defaults = array( 'admin-skin' );
+
+		// SEO joins the seed only when nothing else is already doing the job.
+		// Switching it on beside Yoast would put two titles, two descriptions
+		// and two canonicals on every page — and two canonicals is worse than
+		// either alone, because a search engine may ignore both.
+		if ( function_exists( 'fw_upw_seo_plugin_active' ) && ! fw_upw_seo_plugin_active() ) {
+			$defaults[] = 'seo';
+		}
+
+		$defaults = apply_filters( 'fw_upw_default_extensions', $defaults );
 
 		$active = get_option( 'fw_active_extensions', array() );
 		if ( ! is_array( $active ) ) {

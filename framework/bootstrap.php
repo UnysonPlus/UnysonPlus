@@ -69,6 +69,7 @@ if (defined('FW')) {
             // One-time seed of the extensions that ship ON (currently the Admin
             // Skin). Runs once and then never again, so a user's later decision
             // to switch one off is permanent.
+            require $dir . '/includes/seo-plugin-detect.php';
             require $dir . '/includes/default-extensions.php';
             // Shared rate limiter for the framework's wp_ajax_nopriv_* endpoints.
             // Loaded here (not per-extension) because the public endpoints live in
