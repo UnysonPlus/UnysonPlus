@@ -385,3 +385,37 @@ class FW_Option_Type_Icon extends FW_Option_Type
         return 'full';
     }
 }
+
+/**
+ * BACK-COMPAT: the retired `icon-v2` / `icon-v3` option-type IDS.
+ *
+ * There is one icon option type now (`icon`); the v2/v3 folders and ids were consolidated into it. Retiring
+ * the IDs was safe for everything that ships inside this plugin — nothing in it declares `icon-v2` any more —
+ * and unsafe for everything that does not.
+ *
+ * Downloaded extensions live in `framework-customizations/`, which a plugin update deliberately never
+ * touches, so a site that installed one BEFORE the consolidation keeps a copy that still declares
+ * `'type' => 'icon-v2'` for ever. Against a newer core that no longer registers that id, Unyson renders
+ * "Undefined option type: icon-v2" at the top of every admin screen and the option does not render at all.
+ * Child themes and any third-party code that used the documented id break the same way.
+ *
+ * So both ids stay resolvable. They are thin subclasses that override nothing but `get_type()`, which is what
+ * the originals were, so an old declaration renders through the one engine and stores the identical value
+ * shape — and the engine's normalize_value() still bridges a legacy scalar. New code declares `'type' =>
+ * 'icon'`; these exist only so that never-updated code keeps working.
+ */
+class FW_Option_Type_Icon_V2 extends FW_Option_Type_Icon
+{
+    public function get_type(): string
+    {
+        return 'icon-v2';
+    }
+}
+
+class FW_Option_Type_Icon_V3 extends FW_Option_Type_Icon
+{
+    public function get_type(): string
+    {
+        return 'icon-v3';
+    }
+}

@@ -61,6 +61,14 @@
 		// Animated / Favorites). Legacy scalar values are bridged to the array shape
 		// by the engine's normalize_value().
 		FW_Option_Type::register( 'FW_Option_Type_Icon' );
+		// …and the retired `icon-v2` / `icon-v3` IDS, as thin aliases of it. Nothing in this plugin declares
+		// them any more, but a downloaded extension in `framework-customizations/` is never touched by a
+		// plugin update, so a site that installed one before the consolidation keeps a copy declaring
+		// `icon-v2` for ever. Without these the new core answers "Undefined option type: icon-v2" on every
+		// admin screen and the option does not render. Same for a child theme or any third-party code that
+		// used the documented id.
+		FW_Option_Type::register( 'FW_Option_Type_Icon_V2' );
+		FW_Option_Type::register( 'FW_Option_Type_Icon_V3' );
 		FW_Option_Type::register( 'FW_Option_Type_Image_Picker' );
 		FW_Option_Type::register( 'FW_Option_Type_Map' );
 		FW_Option_Type::register( 'FW_Option_Type_Multi' );
