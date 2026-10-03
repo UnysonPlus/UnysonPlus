@@ -60,6 +60,11 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // Theme override detection. In CORE because the override rule itself is core
+            // (FW_Shortcode::locate_path walks the theme's framework-customizations before
+            // the framework's own files), and because a theme may override other extensions
+            // the same way. The shortcodes loader reads the per-shortcode opt-out from here.
+            require $dir . '/includes/theme-overrides.php';
             // The AI-suggestion queue. In CORE rather than in the AI Assistant extension because a
             // suggestion has to survive being made while that extension is switched off -- see the
             // file's docblock.

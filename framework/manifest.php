@@ -2,7 +2,7 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.40';
+$manifest['version']    = '3.0.41';
 
 /**
  * Changelog
