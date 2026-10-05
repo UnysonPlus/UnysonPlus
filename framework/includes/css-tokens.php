@@ -237,7 +237,10 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				: ( isset( $st['border_width'] ) && ! is_array( $st['border_width'] ) ? (string) $st['border_width'] : '' );
 
 			if ( $text !== '' ) { $d[] = "color:{$text}"; }
-			if ( $bg !== '' )   { $d[] = "background-color:{$bg}"; }
+			// The fill colour is published as a property as well, so a LAYERED background can follow the picker:
+			// a gradient-border button paints its inner fill as a background-image layer that sits ON TOP of
+			// background-color, which made the Background Color control look dead.
+			if ( $bg !== '' )   { $d[] = "background-color:{$bg}"; $d[] = "--btn-bg:{$bg}"; }
 			// Optional gradient layers OVER the solid color (background-image), so the
 			// resolved bg_color above remains a fallback. Empty value emits nothing.
 			if ( isset( $st['gradient'] ) && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
@@ -256,12 +259,16 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$d[] = "border-style:{$bs}";
 				$w = $len( $bw );
 				if ( $w !== '' )   { $d[] = "border-width:{$w}"; }
-				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr}"; }
+				// A gradient-border button keeps `border-color: transparent` so its ring shows through the edge;
+				// hardcoding that disabled the Border Color control, so the colour is published as a property too.
+				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr}"; $d[] = "--btn-border:{$bdr}"; }
 			} elseif ( $bs === 'none' ) {
 				$d[] = 'border:0';
 			} else {
 				if ( $bw !== '' )  { $d[] = 'border-width:' . $len( $bw ); }
-				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr}"; }
+				// A gradient-border button keeps `border-color: transparent` so its ring shows through the edge;
+				// hardcoding that disabled the Border Color control, so the colour is published as a property too.
+				if ( $bdr !== '' ) { $d[] = "border-color:{$bdr}"; $d[] = "--btn-border:{$bdr}"; }
 			}
 
 			if ( class_exists( 'FW_Option_Type_Box_Shadow' ) && isset( $st['box_shadow'] ) ) {
