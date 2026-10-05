@@ -2,10 +2,17 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.41';
+$manifest['version']    = '3.0.42';
 
 /**
  * Changelog
+ * 3.0.42 - Short Links joins the Extensions catalog. A core-only install can
+ *          now download it from Unyson+ → Extensions like the other add-ons:
+ *          branded short links on the site's own domain with click tracking,
+ *          reports, CSV / JSON import and export, and a REST API with API keys
+ *          and signed webhooks. The extension itself lives in its own
+ *          repository; core only gains its catalog entry and card icon.
+ *
  * 3.0.29 - PHP baseline raised to 8.0. The plugin now declares the standard
  *          `Requires PHP: 8.0` header (previously it carried only a non-standard
  *          "PHP Version:" note, so WordPress never enforced a minimum), and a

@@ -97,6 +97,20 @@ $extensions = [
         ],
     ],
 
+    'short-links' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Short Links', 'fw'),
+        'description' => __('Short, branded links on your own domain (yoursite.com/deal) with 301, 302, 307 or 308 redirects, privacy-first click and unique-visitor tracking, reports, categories, CSV / JSON import and export, and a REST API with API keys and signed webhooks for other apps.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/short-links.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Short-Links-Extension',
+            ],
+        ],
+    ],
+
     'animated-icons' => [
         'display'     => true,
         'parent'      => null,

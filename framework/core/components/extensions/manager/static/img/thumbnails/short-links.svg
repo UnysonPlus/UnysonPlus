@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+	<!--
+		Extension thumbnail. House convention: 256x256, no background plate,
+		monochrome #ffffff only (the Extensions manager paints the tile), glyph
+		centred at about half the tile, ~12px effective stroke.
+
+		Two chain links on a diagonal joined by a short bar: the link icon
+		everyone already reads as "URL".
+	-->
+	<g transform="translate(128,128) scale(0.82) translate(-128,-128)" fill="none" stroke="#ffffff"
+	   stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+		<path d="M112 144 L144 112"/>
+		<path d="M128 80 L148 60 a34 34 0 0 1 48 48 L176 128"/>
+		<path d="M128 176 L108 196 a34 34 0 0 1 -48 -48 L80 128"/>
+	</g>
+</svg>
