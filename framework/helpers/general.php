@@ -1455,6 +1455,18 @@ function fw_is_editor_context() {
 		return true;
 	}
 
+	/**
+	 * Lets another editor say "this request renders a preview for an author" — a page
+	 * builder whose preview is an ordinary front-end request (the Elementor widgets
+	 * extension answers true in Elementor's preview frame), so empty elements show their
+	 * hint there instead of rendering nothing.
+	 *
+	 * @param bool $is_editor Default false.
+	 */
+	if ( apply_filters( 'fw_is_editor_context', false ) ) {
+		return true;
+	}
+
 	if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 		return true;
 	}

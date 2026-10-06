@@ -174,6 +174,23 @@ class UnysonPlus_Theme_Suggestion {
 	 * @return true|WP_Error
 	 */
 	private static function install_and_activate() {
+		$installed = self::install();
+		if ( is_wp_error( $installed ) ) { return $installed; }
+
+		if ( ! current_user_can( 'switch_themes' ) ) {
+			return new WP_Error( 'unysonplus_theme_cap', __( 'You do not have permission to switch themes.', 'fw' ) );
+		}
+		switch_theme( self::THEME_SLUG );
+		return true;
+	}
+
+	/**
+	 * Download + install the Unyson+ theme if it is missing, WITHOUT activating it. Used by the Site
+	 * Converter, which then generates and activates a child theme of it.
+	 *
+	 * @return true|WP_Error
+	 */
+	public static function install() {
 		@set_time_limit( 300 );
 
 		if ( ! self::is_installed() ) {
@@ -202,11 +219,6 @@ class UnysonPlus_Theme_Suggestion {
 				return new WP_Error( 'unysonplus_theme_install_failed', __( 'The Unyson+ Theme could not be installed from GitHub.', 'fw' ) );
 			}
 		}
-
-		if ( ! current_user_can( 'switch_themes' ) ) {
-			return new WP_Error( 'unysonplus_theme_cap', __( 'You do not have permission to switch themes.', 'fw' ) );
-		}
-		switch_theme( self::THEME_SLUG );
 		return true;
 	}
 

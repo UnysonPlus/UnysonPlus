@@ -83,6 +83,34 @@ $extensions = [
         ],
     ],
 
+    'builder-sync' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Builder Sync', 'fw'),
+        'description' => __('Keeps your Theme Settings colours, fonts and layout defaults in sync with the global design settings of another page builder, in both directions.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/builder-sync.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Builder-Sync-Extension',
+            ],
+        ],
+    ],
+
+    'elementor' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Elementor Widgets', 'fw'),
+        'description' => __('Exposes Unyson+ elements as native Elementor widgets, edited in Elementor\'s own side panel. Widgets are rendered by the same code as the page builder, so the front-end output is identical.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/elementor.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Elementor-Extension',
+            ],
+        ],
+    ],
+
     'newsletter-crm' => [
         'display'     => true,
         'parent'      => null,

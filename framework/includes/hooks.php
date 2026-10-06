@@ -320,6 +320,15 @@ add_filter( 'fw_github_api_url', '_fw_filter_github_api_url' );
 					jQuery(function ($) {
 						var $container;
 
+						// A form's result belongs next to the form, not at the top of the page
+						// where a fixed header can cover it.
+						var $form = $('input[name="fw_ext_forms_form_id"]').first().closest('form');
+
+						if ($form.length) {
+							$(".fw-flash-messages").insertBefore($form);
+							return;
+						}
+
 						// Try to find the content element
 						{
 							var selector, selectors = [
@@ -329,6 +338,8 @@ add_filter( 'fw_github_api_url', '_fw_filter_github_api_url' );
 								'#content',
 								'#content-container',
 								'#container',
+								// A page built in Elementor (no theme content wrapper).
+								'.elementor[data-elementor-type="wp-page"]',
 								'.container:first'
 							];
 
