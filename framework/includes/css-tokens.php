@@ -1321,8 +1321,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		// the responsive layers (md ≥768px, lg ≥992px) are stashed in
 		// $responsive_spacing keyed by min-width and emitted inside @media blocks
 		// further down. The spacing option type's per-device tabs save
-		// breakpoint-infixed class names (`m-md-3`, `pt-lg-2`) that these rules
-		// back. Only md/lg are emitted (the tiers the control exposes); sm/xl/xxl
+		// breakpoint-infixed class names (`m-md-3`, `pt-lg-2`, `m-xl-3`) that these
+		// rules back. md/lg/xl are emitted (the tiers the control exposes); sm/xxl
 		// can be added here if the UI ever grows them.
 		$responsive_spacing = array();
 		$spacing_scale = function_exists( 'unysonplus_get_spacing_scale' ) ? unysonplus_get_spacing_scale() : array();
@@ -1398,8 +1398,9 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			// so the emitter can sort ascending (md before lg) — at equal
 			// specificity + !important, the later (larger) breakpoint wins where
 			// both queries match, giving the correct mobile-first cascade.
-			$responsive_spacing[768] = $build_spacing( 'md' );
-			$responsive_spacing[992] = $build_spacing( 'lg' );
+			$responsive_spacing[768]  = $build_spacing( 'md' );
+			$responsive_spacing[992]  = $build_spacing( 'lg' );
+			$responsive_spacing[1200] = $build_spacing( 'xl' );
 		}
 
 		// --- Gap scale -> CSS variables + row gutter override machinery ---
@@ -1481,10 +1482,13 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$utility_rules[ ".fw-gap-{$slug} > *, .sc-cgap-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
 				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
+				if ( ! isset( $responsive_spacing[1200] ) ) { $responsive_spacing[1200] = array(); }
 				$responsive_spacing[768][ ".fw-gap-md-{$slug}, .sc-cgap-md-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
 				$responsive_spacing[768][ ".fw-gap-md-{$slug} > *, .sc-cgap-md-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 				$responsive_spacing[992][ ".fw-gap-lg-{$slug}, .sc-cgap-lg-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
 				$responsive_spacing[992][ ".fw-gap-lg-{$slug} > *, .sc-cgap-lg-{$slug} > *" ] = "--fw-parent-gap:{$var};";
+				$responsive_spacing[1200][ ".fw-gap-xl-{$slug}, .sc-cgap-xl-{$slug}" ] = "gap:{$var} !important;--fw-flex-gap:{$var};";
+				$responsive_spacing[1200][ ".fw-gap-xl-{$slug} > *, .sc-cgap-xl-{$slug} > *" ] = "--fw-parent-gap:{$var};";
 
 				// Per-section modifier classes — scope the gap to every .row
 				// inside a section. No !important: specificity (0,2,0) beats
@@ -1500,13 +1504,17 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				// their breakpoint they win on source order without needing !important.
 				if ( ! isset( $responsive_spacing[768] ) ) { $responsive_spacing[768] = array(); }
 				if ( ! isset( $responsive_spacing[992] ) ) { $responsive_spacing[992] = array(); }
+				if ( ! isset( $responsive_spacing[1200] ) ) { $responsive_spacing[1200] = array(); }
 				$responsive_spacing[768][ ".section--gap-md-{$slug} .row, .section--gap-md-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
 				$responsive_spacing[992][ ".section--gap-lg-{$slug} .row, .section--gap-lg-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
-				// Per-device Gap X / Y overrides (single-axis) — mirror the both-axis md/lg above.
+				$responsive_spacing[1200][ ".section--gap-xl-{$slug} .row, .section--gap-xl-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};--bs-gutter-y:{$var};";
+				// Per-device Gap X / Y overrides (single-axis) — mirror the both-axis md/lg/xl above.
 				$responsive_spacing[768][ ".section--gap-x-md-{$slug} .row, .section--gap-x-md-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
 				$responsive_spacing[992][ ".section--gap-x-lg-{$slug} .row, .section--gap-x-lg-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
+				$responsive_spacing[1200][ ".section--gap-x-xl-{$slug} .row, .section--gap-x-xl-{$slug} .fw-row" ] = "--bs-gutter-x:{$var};";
 				$responsive_spacing[768][ ".section--gap-y-md-{$slug} .row, .section--gap-y-md-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
 				$responsive_spacing[992][ ".section--gap-y-lg-{$slug} .row, .section--gap-y-lg-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
+				$responsive_spacing[1200][ ".section--gap-y-xl-{$slug} .row, .section--gap-y-xl-{$slug} .fw-row" ] = "--bs-gutter-y:{$var};";
 			}
 
 			// Site-wide default gutter on every .row. Resolve the three fields

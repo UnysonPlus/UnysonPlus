@@ -47,6 +47,7 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 		'base' => '',
 		'md'   => 'md',
 		'lg'   => 'lg',
+		'xl'   => 'xl',
 	);
 
 	public function get_type() {
@@ -173,10 +174,11 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 				// Base / phone layer — Bootstrap min-width:0 utilities (all widths).
 				'margin'   => $empty,
 				'padding'  => $empty,
-				// Per-device overrides (mobile-first): md ≥768px, lg ≥992px.
+				// Per-device overrides (mobile-first): md ≥768px, lg ≥992px, xl ≥1200px.
 				'advanced' => array(
 					'md' => array( 'margin' => $empty, 'padding' => $empty ),
 					'lg' => array( 'margin' => $empty, 'padding' => $empty ),
+					'xl' => array( 'margin' => $empty, 'padding' => $empty ),
 				),
 			),
 		);
@@ -199,7 +201,7 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 		}
 
 		$saved_adv = ( isset( $saved['advanced'] ) && is_array( $saved['advanced'] ) ) ? $saved['advanced'] : array();
-		foreach ( array( 'md', 'lg' ) as $dev ) {
+		foreach ( array( 'md', 'lg', 'xl' ) as $dev ) {
 			foreach ( array( 'margin', 'padding' ) as $section ) {
 				if ( isset( $saved_adv[ $dev ][ $section ] ) && is_array( $saved_adv[ $dev ][ $section ] ) ) {
 					$value['advanced'][ $dev ][ $section ] = array_merge(
@@ -438,9 +440,9 @@ class Fw_Option_Type_Spacing extends FW_Option_Type {
 			}
 		}
 
-		// Per-device overrides (md / lg).
+		// Per-device overrides (md / lg / xl).
 		$input_adv = ( isset( $input_value['advanced'] ) && is_array( $input_value['advanced'] ) ) ? $input_value['advanced'] : array();
-		foreach ( array( 'md', 'lg' ) as $dev ) {
+		foreach ( array( 'md', 'lg', 'xl' ) as $dev ) {
 			foreach ( $sections as $section ) {
 				if ( isset( $input_adv[ $dev ][ $section ] ) ) {
 					$out['advanced'][ $dev ][ $section ] = $this->parse_section( $input_adv[ $dev ][ $section ] );

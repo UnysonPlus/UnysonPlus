@@ -20,22 +20,24 @@
  *   base → no breakpoint infix, applies at all widths (the "phone"/base layer)
  *   md   → @media (min-width:768px)   (tablet override)
  *   lg   → @media (min-width:992px)   (desktop override)
- * The global device slugs (lg|md|sm) map to keys via sm→base, md→md, lg→lg.
+ *   xl   → @media (min-width:1200px)  (large-desktop override)
+ * The global device slugs (xl|lg|md|sm) map to keys via sm→base, md→md, lg→lg, xl→xl.
  */
 
 if ( ! function_exists( 'fw_device_tabs_definition' ) ) :
 	/**
-	 * The three device tabs, displayed Desktop → Tablet → Phone (the familiar
-	 * Elementor order). This is display order only — the cascade stays mobile-
-	 * first / Bootstrap-native: `key` 'base' (Phone) is the min-width:0 layer that
-	 * applies at all widths, 'md'/'lg' are the ≥768 / ≥992 overrides. `device` is
-	 * the builder's global device slug this tab maps to.
+	 * The device tabs, displayed Large Desktop → Desktop → Tablet → Phone (the
+	 * familiar Elementor order). This is display order only — the cascade stays
+	 * mobile-first / Bootstrap-native: `key` 'base' (Phone) is the min-width:0 layer
+	 * that applies at all widths, 'md'/'lg'/'xl' are the ≥768 / ≥992 / ≥1200
+	 * overrides. `device` is the builder's global device slug this tab maps to.
 	 *
 	 * @return array
 	 */
 	function fw_device_tabs_definition() {
 		return array(
-			array( 'key' => 'lg',   'device' => 'lg', 'icon' => 'desktop',    'label' => __( 'Desktop (≥ 992px)', 'fw' ) ),
+			array( 'key' => 'xl',   'device' => 'xl', 'icon' => 'desktop',    'label' => __( 'Large Desktop (≥ 1200px)', 'fw' ) ),
+			array( 'key' => 'lg',   'device' => 'lg', 'icon' => 'laptop',     'label' => __( 'Desktop (≥ 992px)', 'fw' ) ),
 			array( 'key' => 'md',   'device' => 'md', 'icon' => 'tablet',     'label' => __( 'Tablet (≥ 768px)',  'fw' ) ),
 			array( 'key' => 'base', 'device' => 'sm', 'icon' => 'smartphone', 'label' => __( 'Phone (base — applies to all unless overridden)', 'fw' ) ),
 		);

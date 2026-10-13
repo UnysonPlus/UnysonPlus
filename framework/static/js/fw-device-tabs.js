@@ -4,8 +4,8 @@
  * A host is any element with the `fw-device-host` class that contains:
  *   - one `.fw-device-tabs` group of `.fw-device-tab` buttons (rendered by the
  *     PHP helper fw_render_device_tabs()), each carrying:
- *       data-fw-device-key = "base" | "md" | "lg"   (the panel/breakpoint token)
- *       data-device        = "sm"   | "md" | "lg"   (the builder's global slug)
+ *       data-fw-device-key = "base" | "md" | "lg" | "xl"   (panel/breakpoint token)
+ *       data-device        = "sm"   | "md" | "lg" | "xl"   (builder's global slug)
  *   - per-device panels marked `[data-fw-device-panel="{key}"]`.
  *
  * This module:
@@ -24,8 +24,8 @@
 (function ($, fwe) {
 	'use strict';
 
-	var DEVICE_TO_KEY = { sm: 'base', md: 'md', lg: 'lg' };
-	var KEY_TO_DEVICE = { base: 'sm', md: 'md', lg: 'lg' };
+	var DEVICE_TO_KEY = { sm: 'base', md: 'md', lg: 'lg', xl: 'xl' };
+	var KEY_TO_DEVICE = { base: 'sm', md: 'md', lg: 'lg', xl: 'xl' };
 
 	// Resolve the key the builder is currently previewing (defaults to desktop,
 	// matching device-preview.js's own 'lg' default).

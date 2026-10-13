@@ -446,8 +446,27 @@ final class _FW_Extensions_Manager
 		if ( $install_result === true ) {
 			wp_send_json_success();
 		} else {
-			wp_send_json_error( $install_result );
+			wp_send_json_error( $this->ajax_error_messages( $install_result ) );
 		}
+	}
+
+	/**
+	 * Install/uninstall results as a list of { message } for the Extensions screen, which shows the last one.
+	 *
+	 * @param WP_Error|array $result A WP_Error, or extension => true|WP_Error.
+	 *
+	 * @return array
+	 */
+	private function ajax_error_messages( $result ) {
+		$out = array();
+
+		foreach ( is_wp_error( $result ) ? array( $result ) : (array) $result as $item ) {
+			if ( is_wp_error( $item ) ) {
+				$out[] = array( 'message' => $item->get_error_message() );
+			}
+		}
+
+		return $out ? $out : array( array( 'message' => __( 'The extension could not be installed.', 'fw' ) ) );
 	}
 
 	/**
@@ -481,7 +500,7 @@ final class _FW_Extensions_Manager
 		if ($install_result === true) {
 			wp_send_json_success();
 		} else {
-			wp_send_json_error($install_result);
+			wp_send_json_error($this->ajax_error_messages($install_result));
 		}
 	}
 

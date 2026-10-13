@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+	<!--
+		Extension thumbnail. House convention: 256x256, no background plate,
+		monochrome #ffffff only (the Extensions manager paints the tile), glyph
+		centred at about half the tile, ~12px effective stroke.
+
+		A pointer over three concentric rings: a click and the heat around it.
+	-->
+	<g transform="translate(128,128) scale(0.82) translate(-128,-128)" fill="none" stroke="#ffffff"
+	   stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+		<circle cx="112" cy="112" r="22"/>
+		<path d="M112 46 a66 66 0 0 1 66 66"/>
+		<path d="M46 112 a66 66 0 0 1 66 -66"/>
+		<path d="M46 112 a66 66 0 0 0 42 61"/>
+		<path d="M132 132 L204 156 L172 172 L156 204 Z"/>
+	</g>
+</svg>

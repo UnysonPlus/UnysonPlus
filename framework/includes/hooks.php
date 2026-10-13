@@ -310,60 +310,70 @@ add_filter( 'fw_github_api_url', '_fw_filter_github_api_url' );
 				return;
 			}
 
+			// The form that was just sent: still in the request after a validation error, or in a
+			// short-lived cookie after the redirect that follows a successful submission.
+			$fw_sent_form = isset( $_POST['fw_ext_forms_form_id'] ) ? wp_unslash( $_POST['fw_ext_forms_form_id'] ) // phpcs:ignore WordPress.Security.NonceVerification
+				: ( isset( $_COOKIE['fw_ext_forms_last'] ) ? wp_unslash( $_COOKIE['fw_ext_forms_last'] ) : '' );
+			$fw_sent_form = is_string( $fw_sent_form ) && preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $fw_sent_form ) ? $fw_sent_form : '';
+
 			?>
 			<script type="text/javascript">
 				(function () {
-					if (typeof jQuery === "undefined") {
-						return;
-					}
+					// Plain JavaScript: themes often leave jQuery off the front end, and a script that
+					// waited for it never ran, leaving every message at the bottom of the page.
+					function place() {
+						var box = document.querySelector('.fw-flash-messages');
 
-					jQuery(function ($) {
-						var $container;
-
-						// A form's result belongs next to the form, not at the top of the page
-						// where a fixed header can cover it.
-						var $form = $('input[name="fw_ext_forms_form_id"]').first().closest('form');
-
-						if ($form.length) {
-							$(".fw-flash-messages").insertBefore($form);
+						if (!box) {
 							return;
 						}
 
-						// Try to find the content element
-						{
-							var selector, selectors = [
-								'#main #content',
-								'#content #main',
-								'#main',
-								'#content',
-								'#content-container',
-								'#container',
-								// A page built in Elementor (no theme content wrapper).
-								'.elementor[data-elementor-type="wp-page"]',
-								'.container:first'
-							];
+						// A form's result belongs next to the form that was sent, not at the top of the
+						// page where a fixed header can cover it, nor beside another form.
+						var sent = <?php echo wp_json_encode( $fw_sent_form ); ?>;
+						var inputs = document.querySelectorAll('input[name="fw_ext_forms_form_id"]');
+						var form = null, i;
 
-							while (selector = selectors.shift()) {
-								$container = $(selector);
-
-								if ($container.length) {
-									break;
-								}
+						for (i = 0; i < inputs.length && sent; i++) {
+							if (inputs[i].value === sent) {
+								form = inputs[i].closest('form');
+								break;
 							}
 						}
 
-						if (!$container.length) {
-							// Try to find main page H1 container
-							$container = $('h1:first').parent();
+						if (!form && inputs.length) {
+							form = inputs[0].closest('form');
 						}
 
-						if (!$container.length) {
-							// If nothing found, just add to body
-							$container = $(document.body);
+						document.cookie = 'fw_ext_forms_last=; max-age=0; path=<?php echo esc_js( COOKIEPATH ? COOKIEPATH : '/' ); ?>';
+
+						if (form && form.parentNode) {
+							form.parentNode.insertBefore(box, form);
+							return;
 						}
 
-						$(".fw-flash-messages").prependTo($container);
-					});
+						// No form on the page: show the message at the top of the content.
+						var selectors = ['#main #content', '#content #main', '#main', '#content', '#content-container', '#container',
+							'.elementor[data-elementor-type="wp-page"]', '.container'];
+						var target = null;
+
+						for (i = 0; i < selectors.length && !target; i++) {
+							target = document.querySelector(selectors[i]);
+						}
+
+						if (!target) {
+							var h1 = document.querySelector('h1');
+							target = h1 ? h1.parentNode : document.body;
+						}
+
+						target.insertBefore(box, target.firstChild);
+					}
+
+					if (document.readyState === 'loading') {
+						document.addEventListener('DOMContentLoaded', place);
+					} else {
+						place();
+					}
 				})();
 			</script>
 			<style type="text/css">

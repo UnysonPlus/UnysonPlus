@@ -91,6 +91,17 @@ if ( ! function_exists( 'unysonplus_collect_element_css' ) ) :
 				}
 			}
 
+			// Per-element responsive Position / Overflow (Advanced tab) → scoped @media rules for the
+			// md/lg/xl layers in THIS page's CSS file (the base layer stays inline on the markup). A no-op
+			// for every element that isn't positioned responsively. Same view-and-aggregator contract.
+			if ( ! empty( $vals['unique_id'] ) && function_exists( 'sc_position_responsive_css' ) ) {
+				$scope = sc_element_scope_class( $vals );
+				if ( $scope !== '' ) {
+					$pos_css = sc_position_responsive_css( $vals, $scope );
+					if ( $pos_css !== '' ) { $parts[] = $pos_css; }
+				}
+			}
+
 			if ( ! empty( $node['_items'] ) && is_array( $node['_items'] ) ) {
 				unysonplus_collect_element_css( $node['_items'], $parts );
 			}

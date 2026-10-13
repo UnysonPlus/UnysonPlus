@@ -47,9 +47,9 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 
 	/**
 	 * Per-device layers. key = device-tabs panel token; the Bootstrap infix a
-	 * consumer would use is '' (base), 'md', 'lg'.
+	 * consumer would use is '' (base), 'md', 'lg', 'xl' (≥768 / ≥992 / ≥1200).
 	 */
-	const DEVICES = array( 'base', 'md', 'lg' );
+	const DEVICES = array( 'base', 'md', 'lg', 'xl' );
 
 	public function get_type() {
 		return 'responsive';
@@ -79,20 +79,22 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 	 */
 	protected function _get_defaults() {
 		return array(
-			'value' => array( 'base' => '', 'md' => '', 'lg' => '' ),
+			'value' => array( 'base' => '', 'md' => '', 'lg' => '', 'xl' => '' ),
 			'inner' => array( 'type' => 'short-select', 'choices' => array() ),
 		);
 	}
 
 	/**
-	 * Merge a saved value over the {base,md,lg} shape. Tolerates a legacy scalar
+	 * Merge a saved value over the {base,md,lg,xl} shape. Tolerates a legacy scalar
 	 * (folds it into `base`) so converting an existing option to this type never
-	 * errors on a pre-existing value.
+	 * errors on a pre-existing value. A pre-xl saved value simply has no `xl` key,
+	 * which stays '' here and inherits `lg` downstream — no migration needed.
 	 */
 	private function normalize_value( $saved ) {
-		$out = array( 'base' => '', 'md' => '', 'lg' => '' );
+		$out = array( 'base' => '', 'md' => '', 'lg' => '', 'xl' => '' );
 
 		if ( is_array( $saved ) ) {
+			$has_device_key = false;
 			foreach ( self::DEVICES as $k ) {
 				// Keep the per-device value as-is — a SCALAR (select / image-picker /
 				// short-select) OR an ARRAY (a composite inner such as unit-input, whose
@@ -100,7 +102,16 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 				// the inner control's own get_value_from_input().
 				if ( isset( $saved[ $k ] ) ) {
 					$out[ $k ] = $saved[ $k ];
+					$has_device_key = true;
 				}
+			}
+			// Legacy COMPOSITE array fold: a value saved before this option became responsive
+			// (e.g. a multi-picker { position, relative:{…} } or a unit-input { value, unit })
+			// has none of the device keys — fold the whole array into `base` so the existing
+			// pick is preserved, exactly as a legacy scalar folds. (The array analog of the
+			// string branch below.)
+			if ( ! $has_device_key && ! empty( $saved ) ) {
+				$out['base'] = $saved;
 			}
 		} elseif ( is_string( $saved ) && $saved !== '' ) {
 			$out['base'] = $saved; // legacy scalar → base layer
@@ -172,7 +183,7 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 
 		$inner     = $this->inner_option( $option );
 		$inner_opt = array_merge( $inner, array( 'value' => '' ) );
-		$out       = array( 'base' => '', 'md' => '', 'lg' => '' );
+		$out       = array( 'base' => '', 'md' => '', 'lg' => '', 'xl' => '' );
 
 		foreach ( self::DEVICES as $k ) {
 			if ( isset( $input_value[ $k ] ) ) {

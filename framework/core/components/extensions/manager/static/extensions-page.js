@@ -62,12 +62,25 @@ jQuery(function($){
 							if (r.success) {
 								window.location.reload();
 							} else {
-								var error = r.data ? r.data.pop().message : 'Error';
+								// The server sends a list of { message }; older responses carried a
+								// serialized WP_Error. Read either, so a failure is always shown.
+								var error = 'Error', d = r.data;
+
+								if (Array.isArray(d) && d.length && d[d.length - 1].message) {
+									error = d[d.length - 1].message;
+								} else if (d && d.message) {
+									error = d.message;
+								} else if (d && d.errors) {
+									var code = Object.keys(d.errors)[0];
+									if (code && d.errors[code][0]) error = d.errors[code][0];
+								}
 
 								fw.soleModal.show(
 									'fw-extension-install-error',
-									'<p class="fw-text-danger">Error: '+ error +'</p>'
+									'<p class="fw-text-danger">Error: '+ $('<div>').text(error).html() +'</p>'
 								);
+								inst.isBusy = false;
+								inst.loading($form, false);
 							}
 						}).fail(function(jqXHR, textStatus, errorThrown){
 							fw.soleModal.show(
