@@ -314,7 +314,10 @@ class FW_Form {
 				'value' => $this->get_id(),
 			) );
 
-		wp_nonce_field( $this->get_nonce_action(), $this->get_nonce_name( $render_data ) );
+		// wp_nonce_field() gives the input an id equal to its name, which repeats when the same form
+		// is placed twice on a page; the nonce needs no id, so print it without one.
+		echo '<input type="hidden" name="' . esc_attr( $this->get_nonce_name( $render_data ) ) . '" value="' . esc_attr( wp_create_nonce( $this->get_nonce_action() ) ) . '" />';
+		wp_referer_field();
 
 		if ( ! empty( $render_data['attr']['action'] ) && $render_data['attr']['method'] == 'get' ) {
 			/**

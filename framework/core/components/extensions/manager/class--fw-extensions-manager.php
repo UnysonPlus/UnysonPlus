@@ -602,28 +602,24 @@ final class _FW_Extensions_Manager
 
 		$error = false;
 
-		do {
-			if ($wp_filesystem->exists($extensions_dir)) {
-				/**
-				 * Make sure to remove framework initial extensions
-				 * The user do not need them because he already used the framework and has in backup the extensions he uses
-				 */
-				if (!$wp_filesystem->delete( $extensions_dir, true, 'd' )) {
-					$error = __( 'Cannot clear the extensions directory', 'fw' );
-					break;
-				}
-
-				if ( ! FW_WP_Filesystem::mkdir_recursive( $extensions_dir ) ) {
-					$error = __( 'Cannot recreate the extensions directory', 'fw' );
-					break;
-				}
+		/**
+		 * Put back only the extensions the new package does not ship (the ones downloaded from the
+		 * Extensions manager). An extension the update just delivered (blog, update) stays at its new
+		 * version: restoring the whole old folder over it would undo that part of the update.
+		 */
+		foreach ( (array) $wp_filesystem->dirlist( $tmp_dir, false ) as $name => $item ) {
+			if ( 'd' !== ( $item['type'] ?? '' ) || $wp_filesystem->exists( $extensions_dir . '/' . $name ) ) {
+				continue;
 			}
 
-			if (true !== copy_dir($tmp_dir, $extensions_dir)) {
-				$error = __('Cannot recover the extensions', 'fw');
+			if (
+				! FW_WP_Filesystem::mkdir_recursive( $extensions_dir . '/' . $name )
+				|| true !== copy_dir( $tmp_dir . '/' . $name, $extensions_dir . '/' . $name )
+			) {
+				$error = sprintf( __( 'Cannot recover the %s extension', 'fw' ), $name );
 				break;
 			}
-		} while(false);
+		}
 
 		if ($error) {
 			trigger_error($error, E_USER_WARNING);

@@ -33,6 +33,16 @@ if ( ! function_exists( '_fw_dynamic_content_register_unysonplus_tags' ) ) :
 				if ( function_exists( 'fw_get_db_post_option' ) ) {
 					$value = fw_get_db_post_option( $post_id, $key, null );
 
+					if ( is_array( $value ) ) {
+						if ( isset( $value['value'] ) && ! is_array( $value['value'] ) ) {
+							// A measurement field: { value, unit }.
+							$value = trim( $value['value'] . ' ' . ( isset( $value['unit'] ) && ! is_array( $value['unit'] ) ? $value['unit'] : '' ) );
+						} else {
+							// A list or choice field: the plain values, skipping nested data such as uploads.
+							$value = implode( ', ', array_filter( array_map( function ( $v ) { return is_scalar( $v ) ? (string) $v : ''; }, $value ), 'strlen' ) );
+						}
+					}
+
 					if ( null !== $value && '' !== $value && is_scalar( $value ) ) {
 						return (string) $value;
 					}

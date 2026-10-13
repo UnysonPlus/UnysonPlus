@@ -3,7 +3,7 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 3.0.45
+ * Version: 3.0.46
  * Requires at least: 5.8
  * Requires PHP: 8.0
  * Author: Lastimosa.com.ph
@@ -174,8 +174,12 @@ if ( defined( 'FW' ) ) {
 
                 /** @internal */
                 final class _FW_Update_Hooks {
+                        /** @var bool An uploaded zip is replacing this plugin (Plugins → Add New → Upload). */
+                        private static $upload_update = false;
+
                         public static function _init(): void {
                                 add_filter( 'upgrader_pre_install',  [ __CLASS__, '_filter_fw_check_if_plugin_pre_update' ],  9999, 2 );
+                                add_filter( 'upgrader_source_selection', [ __CLASS__, '_filter_fw_check_if_upload_update' ], 9999, 4 );
                                 add_filter( 'upgrader_post_install', [ __CLASS__, '_filter_fw_check_if_plugin_post_update' ], 9999, 2 );
                                 add_action( 'automatic_updates_complete', [ __CLASS__, '_action_fw_automatic_updates_complete' ] );
                         }
@@ -197,11 +201,35 @@ if ( defined( 'FW' ) ) {
                                 return $result;
                         }
 
+                        /**
+                         * Replacing the plugin with an uploaded zip is an "install", which carries no plugin
+                         * basename, so the check above never sees it and downloaded extensions were deleted
+                         * with the old folder. Recognise it by the package's folder name instead; this runs
+                         * before the old folder is cleared.
+                         */
+                        public static function _filter_fw_check_if_upload_update( $source, $remote_source = '', $upgrader = null, $hook_extra = array() ) {
+                                if (
+                                        ! is_wp_error( $source )
+                                        && is_array( $hook_extra )
+                                        && 'plugin' === ( $hook_extra['type'] ?? '' )
+                                        && 'install' === ( $hook_extra['action'] ?? '' )
+                                        && basename( untrailingslashit( (string) $source ) ) === basename( __DIR__ )
+                                        && is_dir( __DIR__ . '/framework/extensions' )
+                                ) {
+                                        self::$upload_update = true;
+                                        do_action( 'fw_plugin_pre_update' );
+                                }
+
+                                return $source;
+                        }
+
                         public static function _filter_fw_check_if_plugin_post_update( $result, array $data ) {
+                                $upload_update       = self::$upload_update;
+                                self::$upload_update = false;
+
                                 if (
                                         ! is_wp_error( $result )
-                                        && isset( $data['plugin'] )
-                                        && plugin_basename( __FILE__ ) === $data['plugin']
+                                        && ( $upload_update || ( isset( $data['plugin'] ) && plugin_basename( __FILE__ ) === $data['plugin'] ) )
                                 ) {
                                         /**
                                          * After plugin successfully updated
