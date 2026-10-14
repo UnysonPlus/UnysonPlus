@@ -337,7 +337,7 @@ final class _FW_Extensions_Manager
 	 * Each manifest already declares $manifest['github_update'] = 'user/repo',
 	 * which is precisely the download source the manager needs, so nothing has
 	 * to be guessed from the folder name (several repos are irregular:
-	 * newsletter-crm -> UnysonPlus-Newsletter-CRM-Extension).
+	 * crm -> UnysonPlus-CRM-Extension).
 	 *
 	 * @return array {name => data}
 	 *

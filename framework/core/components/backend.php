@@ -505,7 +505,7 @@ final class _FW_Component_Backend {
 				// The lesson, now enforced: ANY script that uses `_` must declare
 				// 'underscore' in its OWN dependency array. Never rely on inheriting it
 				// through 'fw'. (The remaining Underscore users — the builder canvas,
-				// page-builder, forms, newsletter-crm, megamenu — each declare it.)
+				// page-builder, forms, crm, megamenu — each declare it.)
 				['jquery', 'jquery-ui-draggable', 'fw-events', 'fw-oo', 'fw-modal-frame', 'fw-tooltip'],
 				fw()->manifest->get_version(),
 				false // false fixes https://github.com/ThemeFuse/Unyson/issues/1625#issuecomment-224219454

@@ -16,7 +16,8 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 	 *
 	 * No GitHub release/tag is required — the repository's default branch
 	 * (master / main / ...) archive is downloaded, so pushing to that branch
-	 * is enough to publish an extension or an extension update.
+	 * is enough to publish an extension or an extension update. No GitHub
+	 * REST API call is made (see below).
 	 *
 	 * @param array $set {user_repo: 'UnysonPlus/UnysonPlus-Backups-Extension'}
 	 * @param string $zip_path
@@ -58,52 +59,16 @@ class FW_Ext_Download_Source_Github extends FW_Ext_Download_Source {
 			 */
 			$branch = apply_filters( 'fw_ext_mngr_github_branch', '', $set['user_repo'] );
 
-			if ( empty( $branch ) ) {
-				$response = wp_remote_get(
-					/** Filters the GitHub API base URL used when the extensions manager resolves a repository's default branch (default https://api.github.com). */
-					apply_filters( 'fw_github_api_url', 'https://api.github.com' )
-					. '/repos/' . $set['user_repo'],
-					[ 'timeout' => 25 ]
-				);
-
-				$response_code = intval( wp_remote_retrieve_response_code( $response ) );
-
-				if ( $response_code !== 200 ) {
-					if ( $response_code === 403 && ( $json_response = json_decode( wp_remote_retrieve_body( $response ), true ) ) ) {
-						return new WP_Error(
-							$wp_error_id,
-							__( 'Github error:', 'fw' ) . ' ' . $json_response['message']
-						);
-					} elseif ( $response_code ) {
-						return new WP_Error(
-							$wp_error_id,
-							sprintf(
-								__( 'Failed to access Github repository "%s". (Response code: %d)', 'fw' ),
-								$set['user_repo'], $response_code
-							)
-						);
-					} elseif ( is_wp_error( $response ) ) {
-						return new WP_Error(
-							$wp_error_id,
-							sprintf(
-								__( 'Failed to access Github repository "%s". (%s)', 'fw' ),
-								$set['user_repo'], $response->get_error_message()
-							)
-						);
-					}
-
-					return new WP_Error(
-						$wp_error_id,
-						sprintf( __( 'Failed to access Github repository "%s".', 'fw' ), $set['user_repo'] )
-					);
-				}
-
-				$repo = json_decode( wp_remote_retrieve_body( $response ), true );
-
-				$branch = ( ! empty( $repo['default_branch'] ) ) ? $repo['default_branch'] : 'master';
-			}
-
-			$download_link = 'https://github.com/' . $set['user_repo'] . '/archive/refs/heads/' . $branch . '.zip';
+			/**
+			 * No branch given: download the default branch as `archive/HEAD.zip`. That plain github.com
+			 * address redirects to codeload and is NOT the REST API, so it does not count against the
+			 * API's 60-requests-per-hour limit for unauthenticated callers (which shared hosts share per
+			 * IP). It used to ask api.github.com for the default branch name first — one API call per
+			 * extension, enough to exhaust the allowance when a whole set is installed at once.
+			 */
+			$download_link = empty( $branch )
+				? 'https://github.com/' . $set['user_repo'] . '/archive/HEAD.zip'
+				: 'https://github.com/' . $set['user_repo'] . '/archive/refs/heads/' . $branch . '.zip';
 
 			$cache[ $set['user_repo'] ] = [ 'zipball_url' => $download_link ];
 

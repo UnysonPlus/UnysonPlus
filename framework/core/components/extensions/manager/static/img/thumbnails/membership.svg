@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+	<!--
+		Extension thumbnail. House convention: 256x256, NO background plate,
+		monochrome #ffffff only (the Extensions manager paints the tile behind it),
+		glyph centred at roughly half the tile, ~12px effective stroke once scaled.
+
+		A member card: a person on the left, two lines of details, and a star
+		badge on the corner for the plan. The badge is masked OUT of the card so
+		the two shapes stay legible at thumbnail size.
+	-->
+	<mask id="fw-mbr-badge-cutout">
+		<rect x="0" y="0" width="256" height="256" fill="#ffffff"/>
+		<circle cx="204" cy="70" r="42" fill="#000000"/>
+	</mask>
+
+	<g transform="translate(128,128) scale(0.68) translate(-131,-125)">
+		<g mask="url(#fw-mbr-badge-cutout)" fill="none" stroke="#ffffff" stroke-width="18"
+		   stroke-linecap="round" stroke-linejoin="round">
+			<rect x="30" y="76" width="170" height="124" rx="18"/>
+			<circle cx="80" cy="124" r="18"/>
+			<path d="M54 176 a26 22 0 0 1 52 0"/>
+			<path d="M128 122 H170"/>
+			<path d="M128 156 H160"/>
+		</g>
+
+		<path fill="#ffffff"
+		      d="M204 36 l9.4 19.1 21.1 3.1 -15.3 14.9 3.6 21 -18.8 -9.9 -18.8 9.9 3.6 -21 -15.3 -14.9 21.1 -3.1 z"/>
+	</g>
+</svg>

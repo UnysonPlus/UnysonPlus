@@ -113,16 +113,30 @@ $extensions = [
         ],
     ],
 
-    'newsletter-crm' => [
+    'crm' => [
         'display'     => true,
         'parent'      => null,
-        'name'        => __('Newsletter / Subscriber CRM', 'fw'),
-        'description' => __('Collect and manage subscribers, organise them into lists, tags and saved segments, then compose and send campaigns with a drag-and-drop email builder that compiles to HTML which survives Outlook and Gmail. Double opt-in, one-click unsubscribe, CSV import/export and a REST endpoint included.', 'fw'),
-        'thumbnail'   => $thumbnails_uri . '/newsletter-crm.svg',
+        'name'        => __('CRM', 'fw'),
+        'description' => __('Contacts, lists, tags and saved segments, plus email campaigns with a drag-and-drop email builder, double opt-in, one-click unsubscribe, CSV import and export and a REST API. Growing into a full CRM: companies, a sales pipeline, automations and scoring.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/crm.svg',
         'download'    => [
             'source' => 'github',
             'opts'   => [
-                'user_repo' => $github_account . '/UnysonPlus-Newsletter-CRM-Extension',
+                'user_repo' => $github_account . '/UnysonPlus-CRM-Extension',
+            ],
+        ],
+    ],
+
+    'membership' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Membership', 'fw'),
+        'description' => __('Members-only content: plans, membership records and one access engine for pages, elements and menus, a member area designed in the page builder, and switchable modules for payments, drip, groups, retention and courses. Connects to the CRM when it is on.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/membership.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Membership-Extension',
             ],
         ],
     ],
@@ -472,20 +486,6 @@ $extensions = [
             'source' => 'github',
             'opts'   => [
                 'user_repo' => $github_account . '/UnysonPlus-Feedback-Extension',
-            ],
-        ],
-    ],
-
-    'learning' => [
-        'display'     => true,
-        'parent'      => null,
-        'name'        => __('Learning', 'fw'),
-        'description' => __('This extension adds a Learning module to your theme. Using this extension you can add courses, lessons and tests for your users to take.', 'fw'),
-        'thumbnail'   => $thumbnails_uri . '/learning.svg',
-        'download'    => [
-            'source' => 'github',
-            'opts'   => [
-                'user_repo' => $github_account . '/UnysonPlus-Learning-Extension',
             ],
         ],
     ],
