@@ -104,6 +104,16 @@ if (defined('FW')) {
             // Post Types + Custom Fields extensions.
             require $dir . '/includes/post-type-choices.php';
             require $dir . '/includes/hooks.php';
+            // The admin app shell (FW_Admin_App): the sidebar + top bar frame an
+            // extension opts into for a screen that is an application rather than
+            // a settings page. Admin-only — it draws admin chrome and nothing else.
+            if ( is_admin() ) {
+                require $dir . '/includes/admin-app/class-fw-admin-app.php';
+                // Registered here, not from an app's attach(): attach() runs on
+                // `admin_menu`, which admin-ajax.php never fires, so the focus
+                // toggle would post to a handler that was not listening.
+                FW_Admin_App::boot();
+            }
             // Admin-only: confirm dialog before a manual plugin update (back-up reminder).
             if ( is_admin() ) {
                 require $dir . '/includes/update-guard/update-guard.php';

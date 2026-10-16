@@ -1,0 +1,436 @@
+/**
+ * The admin app shell (FW_Admin_App): left sidebar, top bar, content column.
+ *
+ * One frame for every Unyson+ screen that is an application rather than a
+ * settings page, so they read as one admin rather than as several plugins.
+ * Only the shell lives here — everything inside the content column belongs to
+ * whichever app opened the frame, and styles itself.
+ *
+ * Colours come from the Unyson+ admin skin's tokens when it is active (so light
+ * and dark modes follow it) and fall back to WordPress admin values without it.
+ * Accent is used for the current place, primary actions and focus only.
+ */
+
+/* The tokens are declared on the BODY, not on the app container, so an app can
+ * alias them for its own screens (`--crm-text: var(--app-text)`) from a
+ * body-scoped rule — which is where an app's CSS is scoped from. Declared on
+ * `.fw-app` they would not exist on the body, and every alias would silently
+ * resolve to nothing. */
+body.fw-app-screen {
+	--app-bg: var(--upa-bg, #f4f5f7);
+	--app-side: var(--upa-panel2, #eef0f3);
+	--app-panel: var(--upa-panel, #fff);
+	--app-text: var(--upa-text, #1d2327);
+	--app-text2: var(--upa-text2, #3c434a);
+	--app-muted: var(--upa-text3, #5f656d);
+	--app-border: var(--upa-border, #dfe2e7);
+	--app-border2: var(--upa-border2, #c3c4c7);
+	--app-accent: var(--upa-accent, var(--wp-admin-theme-color, #2271b1));
+	--app-accent-soft: var(--upa-accent-soft, color-mix(in srgb, var(--app-accent) 10%, transparent));
+	--app-danger: var(--upa-red, #b32d2e);
+	--app-radius: 10px;
+	--app-bar: var(--wp-admin--admin-bar--height, 32px);
+}
+
+.fw-app {
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr);
+	min-height: calc(100vh - var(--app-bar));
+	background: var(--app-bg);
+	color: var(--app-text);
+	font-size: 13px;
+}
+
+/* --- WordPress chrome around the app ------------------------------------- */
+
+body.fw-app-screen #wpcontent {
+	padding-left: 0;
+}
+
+/* The sidebar sits flush against the WordPress menu. The admin skin pads
+ * the content area on both sides, which left a strip of empty space there. */
+body.fw-app-screen #wpbody-content {
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+	padding-bottom: 0;
+}
+
+body.fw-app-screen #wpfooter {
+	display: none;
+}
+
+/* Nothing here uses Screen Options; the tab would be an empty strip. */
+body.fw-app-screen #wpbody-content > #screen-meta-links {
+	display: none;
+}
+
+/* Focus mode: the WordPress menu steps aside entirely. */
+body.fw-app-focus #adminmenumain {
+	display: none;
+}
+
+body.fw-app-focus #wpcontent,
+body.fw-app-focus #wpfooter {
+	margin-left: 0 !important;
+}
+
+/* --- Sidebar ------------------------------------------------------------- */
+
+.fw-app-side {
+	position: sticky;
+	top: var(--app-bar);
+	align-self: start;
+	height: calc(100vh - var(--app-bar));
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	padding: 12px 8px;
+	overflow-y: auto;
+	background: var(--app-side);
+	border-right: 1px solid var(--app-border);
+}
+
+.fw-app-side ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.fw-app-side li {
+	margin: 0;
+}
+
+.fw-app-side__brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 8px 12px;
+	color: var(--app-text);
+	text-decoration: none;
+}
+
+.fw-app-side__brand:focus-visible {
+	outline: 2px solid var(--app-accent);
+	outline-offset: 2px;
+	border-radius: 6px;
+	box-shadow: none;
+}
+
+.fw-app-side__mark {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 7px;
+	background: var(--app-accent);
+	color: var(--upa-accent-fg, #fff);
+}
+
+.fw-app-side__mark .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+}
+
+.fw-app-side__name {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.fw-app-side__groups {
+	flex: 1;
+}
+
+.fw-app-side__label {
+	margin: 16px 10px 4px;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--app-muted);
+}
+
+.fw-app-side__link {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	box-sizing: border-box;
+	margin: 1px 0;
+	padding: 7px 10px;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+	color: var(--app-text2);
+	font: inherit;
+	font-weight: 500;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color .15s ease-out, color .15s ease-out;
+}
+
+.fw-app-side__link .dashicons {
+	flex: none;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	color: var(--app-muted);
+}
+
+.fw-app-side__link:hover {
+	background: color-mix(in srgb, var(--app-text) 6%, transparent);
+	color: var(--app-text);
+}
+
+.fw-app-side__link:focus-visible {
+	outline: 2px solid var(--app-accent);
+	outline-offset: -2px;
+	box-shadow: none;
+	color: var(--app-text);
+}
+
+.fw-app-side__link.is-active {
+	background: var(--app-accent-soft);
+	color: var(--app-accent);
+	font-weight: 600;
+}
+
+.fw-app-side__link.is-active .dashicons {
+	color: var(--app-accent);
+}
+
+.fw-app-side__link.is-soon {
+	color: var(--app-muted);
+}
+
+.fw-app-side__soon {
+	margin-left: auto;
+	padding: 0 7px;
+	line-height: 18px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--app-text) 7%, transparent);
+	color: var(--app-muted);
+	font-size: 10.5px;
+	font-weight: 600;
+}
+
+.fw-app-side__foot {
+	margin-top: 10px;
+	padding-top: 8px;
+	border-top: 1px solid var(--app-border);
+}
+
+.fw-app-focus-toggle[aria-pressed="true"] .dashicons::before {
+	content: "\f506"; /* editor-expand */
+}
+
+/* --- Top bar ------------------------------------------------------------- */
+
+.fw-app-main {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.fw-app-top {
+	position: sticky;
+	top: var(--app-bar);
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-height: 60px;
+	padding: 8px 24px;
+	box-sizing: border-box;
+	background: var(--app-panel);
+	border-bottom: 1px solid var(--app-border);
+}
+
+.fw-app-top__menu {
+	display: none;
+	padding: 6px;
+	border: 1px solid var(--app-border);
+	border-radius: 6px;
+	background: none;
+	color: var(--app-text);
+	cursor: pointer;
+}
+
+.fw-app-top__title {
+	min-width: 0;
+}
+
+.fw-app-top__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.fw-app-top__title h1 {
+	margin: 0;
+	padding: 0;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--app-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fw-app-crumbs {
+	display: flex;
+	margin: 0 0 1px;
+	padding: 0;
+	list-style: none;
+	font-size: 12px;
+}
+
+.fw-app-crumbs li {
+	margin: 0;
+}
+
+.fw-app-crumbs li + li::before {
+	content: "/";
+	margin: 0 6px;
+	color: var(--app-muted);
+}
+
+.fw-app-crumbs a {
+	color: var(--app-muted);
+	text-decoration: none;
+}
+
+.fw-app-crumbs a:hover {
+	color: var(--app-accent);
+	text-decoration: underline;
+}
+/* --- Content column ------------------------------------------------------ */
+
+.wrap.fw-app-body {
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 24px;
+	box-sizing: border-box;
+}
+
+.fw-app-body > .notice,
+.fw-app-body > div.updated,
+.fw-app-body > div.error {
+	margin: 0 0 16px;
+}
+
+.fw-app-body #screen-meta-links {
+	float: none;
+	display: flex;
+	justify-content: flex-end;
+	margin: -12px 0 8px;
+}
+
+.fw-app-body #screen-meta {
+	margin: 0 0 16px;
+	border-radius: var(--app-radius);
+}
+
+/* --- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 960px) {
+	.fw-app {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.fw-app-side {
+		position: fixed;
+		left: 0;
+		z-index: 100000;
+		width: 260px;
+		box-shadow: 0 0 40px rgba(0, 0, 0, .2);
+		transform: translateX(-105%);
+		transition: transform .2s cubic-bezier(.25, 1, .5, 1);
+	}
+
+	.fw-app.is-menu-open .fw-app-side {
+		transform: none;
+	}
+
+	.fw-app-top {
+		flex-wrap: wrap;
+		padding: 8px 16px;
+	}
+
+	.fw-app-top__menu {
+		display: inline-grid;
+		place-items: center;
+	}
+
+	.fw-app-top__title {
+		flex: 1;
+	}
+
+	.wrap.fw-app-body {
+		padding: 16px;
+	}
+}
+
+/* WordPress already hides its menu behind a toggle at phone widths. */
+@media (max-width: 782px) {
+	.fw-app-focus-toggle {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-app *,
+	.fw-app-side {
+		transition: none !important;
+	}
+}
+
+/* --- With the Unyson+ admin skin ----------------------------------------- *
+ *
+ * The skin draws its own, taller admin bar and colours every link with the
+ * accent: `body.upa a:not([class*="button"]):not([class*="btn"])`. Inside an
+ * app, navigation is not a page of links — the accent marks where you ARE, so
+ * everything else keeps ordinary text colour.
+ *
+ * That skin selector carries four class-level parts (the class plus two
+ * attribute `:not()`s), so these have to be scoped from the body to outrank it.
+ * The obvious `.fw-app a.fw-app-side__link` loses, silently and only when the
+ * skin is active, which is how both the CRM and Membership ended up with an
+ * accent-coloured sidebar their own CSS had tried to prevent. */
+
+body.upa.fw-app-screen {
+	--app-bar: var(--upa-bar-h, 52px);
+}
+
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__brand,
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__brand:hover {
+	color: var(--app-text);
+}
+
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link {
+	color: var(--app-text2);
+}
+
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link:hover,
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link:focus {
+	color: var(--app-text);
+}
+
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link.is-active,
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link.is-active:hover {
+	color: var(--app-accent);
+}
+
+body.fw-app-screen .fw-app .fw-app-side a.fw-app-side__link.is-soon {
+	color: var(--app-muted);
+}
+
+body.fw-app-screen .fw-app .fw-app-crumbs li a {
+	color: var(--app-muted);
+}
+
+body.fw-app-screen .fw-app .fw-app-crumbs li a:hover {
+	color: var(--app-accent);
+}
