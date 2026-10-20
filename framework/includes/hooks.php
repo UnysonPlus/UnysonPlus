@@ -291,6 +291,29 @@ add_filter( 'fw_github_api_url', '_fw_filter_github_api_url' );
 				! ( defined( 'DOING_AJAX' ) && DOING_AJAX )
 				&&
 				! session_id()
+				&&
+				/**
+				 * RESUME an existing session only - never mint a new one here.
+				 *
+				 * This hook exists so a flash message read during rendering does not hit
+				 * "headers already sent". Starting a session unconditionally achieved that,
+				 * but session_start() emits Set-Cookie on EVERY front-end response, and a
+				 * response carrying Set-Cookie is one that Cloudflare, LiteSpeed, Varnish
+				 * and WordPress page caches all refuse to store. Measured on a live site:
+				 * every page came back `Set-Cookie: PHPSESSID`, `Cache-Control: no-store`
+				 * and `cf-cache-status: DYNAMIC`, so every click ran PHP and the database
+				 * from scratch - 2.1s to first byte against 0.2s once it is cacheable.
+				 *
+				 * A visitor with no session cookie has no flash message waiting for them,
+				 * so there is nothing to read and no reason to start one. A visitor who
+				 * DOES have the cookie just submitted something (FW_Flash_Messages::add()
+				 * starts the session on `wp_loaded`, long before output, then redirects),
+				 * and for them the session is resumed here, early, exactly as before.
+				 *
+				 * Net effect: forms keep their success/validation messages, and everyone
+				 * else gets a page the edge can cache.
+				 */
+				isset( $_COOKIE[ session_name() ] )
 			) {
 				session_start();
 			}

@@ -2,10 +2,28 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.49';
+$manifest['version']    = '3.0.50';
 
 /**
  * Changelog
+ * 3.0.50 - Front-end PHP sessions are now RESUMED, never minted. The Flash
+ *          Messages hook started a session on every front-end request so that a
+ *          message read during rendering would not hit "headers already sent".
+ *          session_start() emits Set-Cookie, though, and a response carrying
+ *          Set-Cookie is one that Cloudflare, LiteSpeed, Varnish and WordPress
+ *          page caches all refuse to store - so every site running the
+ *          framework was uncacheable at the edge. Measured on a live site:
+ *          every page returned Set-Cookie: PHPSESSID, Cache-Control: no-store
+ *          and cf-cache-status: DYNAMIC, with 2.1s to first byte against 0.2s
+ *          for the same page once cacheable. The hook now starts a session only
+ *          when the visitor already carries the session cookie - which means
+ *          only someone who has just submitted something. Forms are unaffected:
+ *          FW_Flash_Messages::add() starts the session itself on wp_loaded,
+ *          long before output, so the redirect target still finds and prints
+ *          the message. Admin is unchanged. FW_Session::start_session() also
+ *          bails when headers_sent(), so a future caller in the wrong place
+ *          loses a message rather than printing a PHP warning on a live page.
+ *
  * 3.0.42 - Short Links joins the Extensions catalog. A core-only install can
  *          now download it from Unyson+ → Extensions like the other add-ons:
  *          branded short links on the site's own domain with click tracking,

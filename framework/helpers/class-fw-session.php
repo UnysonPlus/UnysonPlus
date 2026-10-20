@@ -12,9 +12,27 @@ if (!defined('FW')) die('Forbidden');
 class FW_Session {
 	private static function start_session() {
 		/** Filters whether PHP sessions may be started (default true), letting a site disable session_start() usage. */
-		if ( apply_filters( 'fw_use_sessions', true ) && ! session_id() ) {
-			session_start();
+		if ( ! apply_filters( 'fw_use_sessions', true ) || session_id() ) {
+			return;
 		}
+
+		/**
+		 * session_start() sends Set-Cookie, so it cannot run once output has begun.
+		 *
+		 * This could not happen while the front-end hook started a session on every
+		 * request; now that it only RESUMES an existing one (see includes/hooks.php),
+		 * a write with no session already going and output already sent would raise
+		 * "headers already sent". Skip quietly instead: the only front-end writer is
+		 * the contact form, which runs on wp_loaded long before anything is printed,
+		 * so in practice this guard never fires - it is here so that a future caller
+		 * in the wrong place degrades to a lost message rather than a PHP warning on
+		 * a live page.
+		 */
+		if ( headers_sent() ) {
+			return;
+		}
+
+		session_start();
 	}
 
 	public static function get( $key, $default_value = null ) {
