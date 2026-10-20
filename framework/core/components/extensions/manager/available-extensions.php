@@ -141,6 +141,20 @@ $extensions = [
         ],
     ],
 
+    'bookings' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Bookings', 'fw'),
+        'description' => __('Reservations for rooms, rentals, tables and appointments, by the night or by time slot: a live booking field for Forms, confirm or decline from the email, a booking calendar, iCal sync with other booking sites, a page where guests manage their booking, deposits paid online and the CRM connection.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/bookings.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Bookings-Extension',
+            ],
+        ],
+    ],
+
     'short-links' => [
         'display'     => true,
         'parent'      => null,
