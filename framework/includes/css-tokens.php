@@ -211,15 +211,6 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 		$font_decls = function ( $f ) use ( $len ) {
 			$d = array();
 			if ( ! is_array( $f ) ) { return $d; }
-			// A preset saved before its Font field had an empty default carries the
-			// typography field's untouched default (Arial, 400, normal, no spacing).
-			// Nobody chose it, so it is left out and the button keeps the site font.
-			if ( ( $f['family'] ?? '' ) === 'Arial' && empty( $f['google_font'] )
-				&& in_array( (string) ( $f['weight'] ?? '' ), array( '', '400' ), true )
-				&& in_array( (string) ( $f['style'] ?? 'normal' ), array( '', 'normal' ), true )
-				&& in_array( (string) ( $f['letter-spacing'] ?? '' ), array( '', '0', '0px' ), true ) ) {
-				return $d;
-			}
 			if ( ! empty( $f['family'] ) )                              { $d[] = 'font-family:' . $f['family']; }
 			if ( ! empty( $f['weight'] ) )                             { $d[] = 'font-weight:' . $f['weight']; }
 			if ( isset( $f['letter-spacing'] ) && $f['letter-spacing'] !== '' ) { $d[] = 'letter-spacing:' . $len( (string) $f['letter-spacing'] ); }
@@ -1156,7 +1147,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			$button_extra_css .= "\n.pattern-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}"
 				. "\n.pattern-layer--fixed{position:fixed;z-index:-1;}" // whole-site background (behind everything)
 				. "\n.upw-has-pattern{position:relative;}"
-				. "\n.upw-has-pattern>:not(.pattern-layer){position:relative;z-index:1;}";
+				. "\n.upw-has-pattern>:not(.pattern-layer):not(.sc-shape-divider){position:relative;z-index:1;}";
 
 			foreach ( $patterns as $p ) {
 				if ( ! is_array( $p ) || empty( $p['id'] ) ) { continue; }

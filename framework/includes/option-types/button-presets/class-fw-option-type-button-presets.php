@@ -102,15 +102,6 @@ class FW_Option_Type_Button_Presets extends FW_Option_Type {
 				// size + line-height belong to the SIZE axis (Theme Settings →
 				// Buttons → Sizes), so they're hidden here; Color and
 				// Script/subset (variation) are hidden per design.
-				// Empty by default so a preset inherits the site's font: without this the
-				// typography field's own default (Arial 400) was saved into every preset
-				// and forced Arial on every button.
-				'value'      => array(
-					'family'         => '',
-					'weight'         => '',
-					'style'          => 'normal',
-					'letter-spacing' => '',
-				),
 				'components' => array(
 					'family'         => true,
 					'size'           => false,
