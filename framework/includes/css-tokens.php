@@ -1633,6 +1633,13 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 			'gap_def_y' => function_exists( 'unysonplus_get_default_gap_y' )        ? unysonplus_get_default_gap_y()        : '',
 			'patterns'  => function_exists( 'unysonplus_get_pattern_presets' )      ? unysonplus_get_pattern_presets()      : array(),
 			'imgstyles' => function_exists( 'unysonplus_get_image_style_presets' ) ? unysonplus_get_image_style_presets() : array(),
+			// Section Styles BUILD the .section--{slug} rules below (see the Section Style presets block),
+			// so they must also be hashed here. While they were missing, editing a Section Style in Theme
+			// Settings left the hash unchanged, unysonplus_ensure_preset_css_file() short-circuited on
+			// file_exists(), and the front end kept serving the previous colours indefinitely - and a
+			// RENAME was worse than a recolour, because the emitted selector changed while the cached file
+			// did not, so sections fell back to the theme's hardcoded .section--alt|light|dark defaults.
+			'sections'  => function_exists( 'unysonplus_get_section_style_presets' ) ? unysonplus_get_section_style_presets() : array(),
 		);
 		return substr( md5( wp_json_encode( $inputs ) ), 0, 12 );
 	}

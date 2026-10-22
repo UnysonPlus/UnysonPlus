@@ -3,7 +3,7 @@
  * Plugin Name: Unyson+
  * Plugin URI: https://github.com/UnysonPlus/UnysonPlus
  * Description: A free drag & drop framework that comes with a bunch of built in extensions that will help you develop premium themes fast & easy.
- * Version: 3.0.53
+ * Version: 3.0.54
  * Requires at least: 5.8
  * Requires PHP: 8.0
  * Author: Lastimosa.com.ph
@@ -88,11 +88,11 @@ if ( defined( 'FW' ) ) {
                 require_once __DIR__ . '/framework/includes/class-unysonplus-theme-suggestion.php';
                 UnysonPlus_Theme_Suggestion::init();
 
-                // Unyson+ → Connect AI: one-click setup for building the site from an AI app (needs the
-                // theme installer above, so it loads only alongside it).
-                if ( file_exists( __DIR__ . '/framework/includes/class-unysonplus-connect-ai.php' ) ) {
-                        require_once __DIR__ . '/framework/includes/class-unysonplus-connect-ai.php';
-                        UnysonPlus_Connect_AI::init();
+                // "Build this site with an AI app?" — points to the AI Assistant on the Extensions screen
+                // while it is not active.
+                if ( file_exists( __DIR__ . '/framework/includes/class-unysonplus-ai-notice.php' ) ) {
+                        require_once __DIR__ . '/framework/includes/class-unysonplus-ai-notice.php';
+                        UnysonPlus_AI_Notice::init();
                 }
         }
 

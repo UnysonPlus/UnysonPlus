@@ -2,11 +2,19 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.53';
+$manifest['version']    = '3.0.54';
 
 /**
  * Changelog
- * 3.0.50 - Front-end PHP sessions are now RESUMED, never minted. The Flash
+ * 3.0.54 - The one-click "Connect AI" setup page is removed. It switched the
+ *          theme and turned on a fixed set of ten extensions, which most sites
+ *          do not need, and it repeated the AI Assistant's own settings. Its
+ *          connection check now lives in AI Assistant -> Settings -> Outside AI
+ *          programs (AI Assistant 1.0.45). Core keeps a dismissible "Build this
+ *          site with an AI app?" notice that links to the Extensions screen while
+ *          the AI Assistant is not active (class-unysonplus-ai-notice.php).
+ *
+ * 3.0.50 -Front-end PHP sessions are now RESUMED, never minted. The Flash
  *          Messages hook started a session on every front-end request so that a
  *          message read during rendering would not hit "headers already sent".
  *          session_start() emits Set-Cookie, though, and a response carrying
