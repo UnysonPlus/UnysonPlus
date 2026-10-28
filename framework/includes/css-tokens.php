@@ -18,6 +18,72 @@
  * during wp_head / admin_head.
  */
 
+if ( ! function_exists( 'unysonplus_scope_preset_css' ) ) :
+	/**
+	 * Resolves a preset's selector tokens and scopes any rule that would otherwise be global.
+	 *
+	 * Saved preset / hover-animation CSS is written against {{SELECTOR}} ({{BTN}} is the legacy
+	 * alias). A token in another case or spacing ({{ selector }}), a Sass-style `&:hover`, or a
+	 * hand-written `:hover { … }` used to reach the sheet as a BARE `:hover` rule, which matches
+	 * <html> and <body>: every page, wp-admin included, lifted, scaled and animated on hover.
+	 * Here every token variant resolves to $scope, and every selector that starts with `:` or `&`
+	 * is prefixed with it. @media / @supports blocks are walked; @keyframes are left as they are.
+	 *
+	 * @param string $css   The saved CSS.
+	 * @param string $scope The preset's selector, e.g. `.btnfx-c-lift`.
+	 * @param array  $extra Further token => value pairs, e.g. array( '{{ANIM}}' => 'btnfxc-lift' ).
+	 * @return string
+	 */
+	function unysonplus_scope_preset_css( $css, $scope, $extra = array() ) {
+		$css = preg_replace( '/\{\{\s*(SELECTOR|BTN)\s*\}\}/i', $scope, (string) $css );
+		foreach ( $extra as $token => $value ) {
+			$name = trim( $token, '{} ' );
+			$css  = preg_replace( '/\{\{\s*' . preg_quote( $name, '/' ) . '\s*\}\}/i', $value, $css );
+		}
+
+		$out   = '';
+		$buf   = '';
+		$stack = array(); // one entry per open block: 'rule' | 'group' (@media, @supports) | 'raw' (@keyframes …)
+		$len   = strlen( $css );
+		for ( $i = 0; $i < $len; $i++ ) {
+			$ch = $css[ $i ];
+			if ( '{' === $ch ) {
+				$parent = $stack ? end( $stack ) : 'group';
+				$head   = trim( $buf );
+				if ( 'group' !== $parent ) {
+					$stack[] = 'raw';
+				} elseif ( '' !== $head && '@' === $head[0] ) {
+					$stack[] = preg_match( '/^@(media|supports|layer|container)\b/i', $head ) ? 'group' : 'raw';
+				} else {
+					$parts = array();
+					foreach ( explode( ',', $head ) as $sel ) {
+						$sel = trim( $sel );
+						if ( '' === $sel || '&' === $sel ) {
+							$sel = $scope;
+						} elseif ( '&' === $sel[0] ) {
+							$sel = $scope . ltrim( substr( $sel, 1 ) );
+						} elseif ( ':' === $sel[0] ) {
+							$sel = $scope . $sel;
+						}
+						$parts[] = $sel;
+					}
+					$buf     = implode( ', ', $parts );
+					$stack[] = 'rule';
+				}
+				$out .= $buf . '{';
+				$buf  = '';
+			} elseif ( '}' === $ch ) {
+				$out .= $buf . '}';
+				$buf  = '';
+				array_pop( $stack );
+			} else {
+				$buf .= $ch;
+			}
+		}
+		return $out . $buf;
+	}
+endif;
+
 if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 	/**
 	 * Builds the preset CSS as a string (no echo, no file write).
@@ -137,7 +203,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 						if ( strpos( $ccss, '{' ) === false ) {
 							$text_style_extra_css .= "\n{$selector}{" . rtrim( $ccss, "; \t\n\r" ) . ";}";
 						} else {
-							$text_style_extra_css .= "\n" . str_replace( array( '{{SELECTOR}}', 'selector' ), $selector, $ccss );
+							$text_style_extra_css .= "\n" . unysonplus_scope_preset_css( str_replace( 'selector', '{{SELECTOR}}', $ccss ), $selector );
 						}
 					}
 				}
@@ -346,7 +412,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( trim( $custom_css ) !== '' ) {
 					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
 					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
-					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $ps, $custom_css );
+					$button_extra_css .= "\n" . unysonplus_scope_preset_css( $custom_css, $ps );
 				}
 			}
 		}
@@ -686,7 +752,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( trim( $custom_css ) !== '' ) {
 					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
 					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
-					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".boxp-{$slug}", $custom_css );
+					$button_extra_css .= "\n" . unysonplus_scope_preset_css( $custom_css, ".boxp-{$slug}" );
 				}
 			}
 		}
@@ -818,7 +884,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					if ( trim( $custom_css ) !== '' ) {
 						$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
 						$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
-						$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $sel, $custom_css );
+						$button_extra_css .= "\n" . unysonplus_scope_preset_css( $custom_css, $sel );
 					}
 				}
 			}
@@ -1090,7 +1156,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( trim( $custom_css ) !== '' ) {
 					$custom_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $custom_css );
 					$custom_css = str_replace( array( '<', '>' ), '', $custom_css );
-					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', $sel, $custom_css );
+					$button_extra_css .= "\n" . unysonplus_scope_preset_css( $custom_css, $sel );
 				}
 			}
 		}
@@ -1121,11 +1187,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$anim_css = preg_replace( '/expression\s*\(/i', '', $anim_css );
 
 				// Tokens -> concrete, per-entry namespaced selectors ({{BTN}} = legacy alias of {{SELECTOR}}).
-				$anim_css = str_replace(
-					array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ),
-					array( ".btnfx-c-{$slug}", ".btnfx-c-{$slug}", "btnfxc-{$slug}" ),
-					$anim_css
-				);
+				$anim_css = unysonplus_scope_preset_css( $anim_css, ".btnfx-c-{$slug}", array( '{{ANIM}}' => "btnfxc-{$slug}" ) );
 
 				$button_extra_css .= "\n" . $anim_css;
 			}
@@ -1296,7 +1358,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( trim( $imgs_css ) !== '' ) {
 					$imgs_css = preg_replace( '#</?(style|script)[^>]*>#i', '', $imgs_css );
 					$imgs_css = str_replace( array( '<', '>' ), '', $imgs_css );
-					$button_extra_css .= "\n" . str_replace( '{{SELECTOR}}', ".imgs-{$slug}", $imgs_css );
+					$button_extra_css .= "\n" . unysonplus_scope_preset_css( $imgs_css, ".imgs-{$slug}" );
 				}
 			}
 		}
@@ -1855,7 +1917,7 @@ if ( ! function_exists( 'unysonplus_hover_fx_css_for' ) ) :
 				$css = preg_replace( '/javascript\s*:/i', '', $css );
 				$css = preg_replace( '/expression\s*\(/i', '', $css );
 				// keyframes name = the button's (identical @keyframes emitted twice is harmless).
-				return str_replace( array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ), array( $target, $target, "btnfxc-{$want}" ), $css );
+				return unysonplus_scope_preset_css( $css, $target, array( '{{ANIM}}' => "btnfxc-{$want}" ) );
 			}
 			return '';
 		}
