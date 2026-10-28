@@ -192,7 +192,19 @@ class FW_Admin_App {
 
 	/** @return bool Whether this user is hiding the WordPress menu on app screens. */
 	public static function is_focus() {
-		return (bool) get_user_meta( get_current_user_id(), self::FOCUS_META, true );
+		$on = get_user_meta( get_current_user_id(), self::FOCUS_META, true );
+
+		if ( '' === $on ) {
+			/**
+			 * Whether app screens hide the WordPress menu for someone who has not
+			 * chosen yet. A workspace (FW_Workspaces) turns this on.
+			 *
+			 * @param bool $on
+			 */
+			return (bool) apply_filters( 'fw_admin_app_focus_default', false );
+		}
+
+		return (bool) $on;
 	}
 
 	/* ---------------------------------------------------------------------- *

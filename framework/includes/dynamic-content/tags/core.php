@@ -193,6 +193,27 @@ if ( ! function_exists( '_fw_dynamic_content_register_core_tags' ) ) :
 			},
 		);
 
+		// The author's own profile fields — the counterpart of post_meta for the person, not the post.
+		// A site that keeps an author's role, expertise or social handles in profile fields can print them
+		// anywhere: {{author_meta|key=title}}. Protected keys (passwords, sessions, capabilities) are never read.
+		$tags['author_meta'] = array(
+			'label'   => __( 'Author Profile Field', 'fw' ),
+			'group'   => $g_author,
+			'params'  => array(
+				array( 'id' => 'key', 'label' => __( 'Profile field key', 'fw' ), 'type' => 'text', 'default' => '' ),
+			),
+			'resolve' => function ( $params, $context ) use ( $author_id ) {
+				$key = isset( $params['key'] ) ? sanitize_key( $params['key'] ) : '';
+				$uid = $author_id( $context );
+				if ( '' === $key || ! $uid || preg_match( '/^(user_pass|user_activation_key|session_tokens)$|capabilities$|user_level$/', $key ) ) {
+					return '';
+				}
+				$value = get_the_author_meta( $key, $uid );
+
+				return is_scalar( $value ) ? (string) $value : '';
+			},
+		);
+
 		// --- Date & Time ----------------------------------------------------
 		$tags['current_date'] = array(
 			'label'   => __( 'Current Date', 'fw' ),

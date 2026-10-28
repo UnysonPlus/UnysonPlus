@@ -42,17 +42,30 @@ class FW_Session {
 
 		self::start_session();
 
+		// No session could be started (output already sent): there is nothing to read.
+		if ( ! isset( $_SESSION ) ) {
+			return $default_value;
+		}
+
 		return fw_akg( $key, $_SESSION, $default_value );
 	}
 
 	public static function set( $key, $value ) {
 		self::start_session();
 
+		if ( ! isset( $_SESSION ) ) {
+			return;
+		}
+
 		fw_aks( $key, $value, $_SESSION );
 	}
 
 	public static function del( $key ) {
 		self::start_session();
+
+		if ( ! isset( $_SESSION ) ) {
+			return;
+		}
 
 		fw_aku( $key, $_SESSION );
 	}

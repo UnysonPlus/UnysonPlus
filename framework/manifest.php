@@ -2,11 +2,27 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.54';
+$manifest['version']    = '3.0.55';
 
 /**
  * Changelog
- * 3.0.54 - The one-click "Connect AI" setup page is removed. It switched the
+ * 3.0.55 - Admin Menu (Unyson+ -> Admin Menu), with two tabs. Menus: per role,
+ *          drag the WordPress menu into a new order, rename items, change their
+ *          icons, hide items and sub-items, reorder sub-items, and drag a sub-item
+ *          (an extension screen such as SEO) out to a top-level item of its own,
+ *          with a live preview, copy from another role and reset. Applied on the
+ *          server, so it works with or without the Admin Skin, whose groups become
+ *          drop targets (its own skin-only layout is imported once). Roles: what
+ *          each role opens to. Apps register a workspace (fw_register_workspace();
+ *          the CRM and Membership do), and a role that opens to one lands on it
+ *          after login, gets a trimmed menu and admin bar and the app in focus
+ *          mode; administrators switch back from the admin bar. A role can also be
+ *          kept out of wp-admin (members: sent to their account page, no toolbar),
+ *          and apps offer one-click set-ups ("Run the site as a CRM", "Run a
+ *          members' site"). Hiding a menu is not access control; roles are.
+ *          Code: framework/includes/workspaces/.
+ *
+ * 3.0.54 -The one-click "Connect AI" setup page is removed. It switched the
  *          theme and turned on a fixed set of ten extensions, which most sites
  *          do not need, and it repeated the AI Assistant's own settings. Its
  *          connection check now lives in AI Assistant -> Settings -> Outside AI

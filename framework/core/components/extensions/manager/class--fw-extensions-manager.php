@@ -389,6 +389,18 @@ final class _FW_Extensions_Manager
 		// gone keep their last known entry, which is the whole point.
 		$catalog = array_merge( $remembered, $found );
 
+		/**
+		 * Slugs RENAMED or REMOVED from the product itself (not user-deleted)
+		 * must be pruned, or the remembered catalog keeps offering a ghost card
+		 * that points at a repo which no longer exists and shows the default
+		 * placeholder (blank) thumbnail. `newsletter-crm` was renamed to `crm`.
+		 */
+		$retired = array( 'newsletter-crm' );
+
+		foreach ( $retired as $retired_slug ) {
+			unset( $catalog[ $retired_slug ] );
+		}
+
 		if ( $catalog !== $remembered ) {
 			update_option( self::$bundled_catalog_option, $catalog, false );
 		}

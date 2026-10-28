@@ -114,6 +114,10 @@ if (defined('FW')) {
                 // toggle would post to a handler that was not listening.
                 FW_Admin_App::boot();
             }
+            // Workspaces: a role can open to one app (the CRM, Membership) instead of the
+            // WordPress dashboard. Not admin-only: the login redirect runs on wp-login.php.
+            require $dir . '/includes/workspaces/class-fw-workspaces.php';
+            FW_Workspaces::init();
             // Admin-only: confirm dialog before a manual plugin update (back-up reminder).
             if ( is_admin() ) {
                 require $dir . '/includes/update-guard/update-guard.php';

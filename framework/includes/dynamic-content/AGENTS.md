@@ -109,3 +109,6 @@ not at file load — that keeps the group invisible when the integration is inac
 - Resolution is scoped to the shortcode render path. To resolve a token elsewhere
   (a theme template), call `fw_dynamic_content()->resolve($text, array('post_id' => $id))`
   directly.
+
+## Author profile fields
+`author_meta` (core tags, group Author): `{{author_meta|key=<field>}}` reads one field of the current post author's profile via `get_the_author_meta()` — the person-level counterpart of `post_meta`. Keys matching passwords, activation keys, session tokens, capabilities and user level return empty.
