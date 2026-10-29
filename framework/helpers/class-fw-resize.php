@@ -33,13 +33,24 @@ if ( ! class_exists( 'FW_Resize' ) ) {
 
 		private function get_attachment_info( $attachment ) {
 
-			$row  = $this->get_attachment( $attachment );
+			$row = $this->get_attachment( $attachment );
+			if ( empty( $row['ID'] ) ) {
+				return false;
+			}
 			$path = get_attached_file( $row['ID'] );
+			if ( ! $path ) {
+				return false;
+			}
 
-			return ( ! isset( $row ) || ! $path ) ? false : array(
+			// The guid keeps the domain the file was uploaded on, so after a site move it points at the
+			// old site; the attachment URL is built from the current uploads URL.
+			$url = wp_get_attachment_url( $row['ID'] );
+			$url = $url ? $url : $row['guid'];
+
+			return array(
 				'id'   => intval( $row['ID'] ),
 				'path' => $path,
-				'url'  => is_ssl() ? preg_replace( "/^http:/i", "https:", $row['guid'] ) : $row['guid']
+				'url'  => is_ssl() ? preg_replace( "/^http:/i", "https:", $url ) : $url
 			);
 		}
 
@@ -52,6 +63,12 @@ if ( ! class_exists( 'FW_Resize' ) ) {
 			if ( is_numeric( $attachment ) ) {
 				return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID=%d LIMIT 1", $attachment ), ARRAY_A );
 			} else {
+
+				// By URL first: a moved site's guids still carry the old domain, so a guid match would miss.
+				$id = attachment_url_to_postid( $attachment );
+				if ( $id ) {
+					return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID=%d LIMIT 1", $id ), ARRAY_A );
+				}
 
 				$attachment = str_replace( array( 'http:', 'https:' ), '', $attachment );
 

@@ -97,26 +97,86 @@
 	border-radius: 0 0 8px 8px;
 }
 
+/* The whole header drags. The grip sits in the row's own left padding and only
+ * shows on hover or focus, so a resting row has no extra left gutter. */
 .fw-me-line {
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	min-height: 44px;
-	padding: 4px 12px 4px 6px;
-}
-
-.fw-me-handle {
-	flex: none;
-	width: 28px;
-	height: 32px;
-	line-height: 32px;
-	color: #8c8f94;
+	padding: 4px 12px 4px 22px;
 	cursor: grab;
-	text-align: center;
 }
 
-.fw-me-handle:active {
+.fw-me-line:active {
 	cursor: grabbing;
+}
+
+.fw-me-handle,
+.fw-me-subhandle {
+	position: absolute;
+	top: 50%;
+	left: 3px;
+	width: 16px;
+	height: 20px;
+	margin-top: -10px;
+	font-size: 16px;
+	line-height: 20px;
+	color: #8c8f94;
+	text-align: center;
+	opacity: 0;
+	transition: opacity .15s ease-out;
+	pointer-events: none;
+}
+
+/* The Admin Menu editor sub-item is locked on (the way back to this screen): a lock
+   glyph sits where the drag grip would, always visible, and its checkbox is disabled. */
+.fw-me-sublock {
+	position: absolute;
+	top: 50%;
+	left: 3px;
+	width: 16px;
+	height: 20px;
+	margin-top: -10px;
+	font-size: 14px;
+	line-height: 20px;
+	color: #8c8f94;
+	text-align: center;
+	opacity: 1;
+	pointer-events: none;
+}
+
+.fw-me-subs li.is-locked {
+	cursor: default;
+}
+
+.fw-me-subs li.is-locked .fw-me-sub {
+	cursor: not-allowed;
+}
+
+.fw-me-row:hover > .fw-me-line > .fw-me-handle,
+.fw-me-line:focus-within > .fw-me-handle,
+.fw-me-row.ui-sortable-helper .fw-me-handle,
+.fw-me-subs li:hover > .fw-me-subhandle,
+.fw-me-subs li:focus-within > .fw-me-subhandle,
+.fw-me-subs li.ui-sortable-helper > .fw-me-subhandle {
+	opacity: 1;
+}
+
+/* No hover on touch screens: keep the grip in view there. */
+@media (hover: none) {
+	.fw-me-handle,
+	.fw-me-subhandle {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-me-handle,
+	.fw-me-subhandle {
+		transition: none;
+	}
 }
 
 .fw-me-icon {
@@ -160,25 +220,28 @@
 }
 
 .fw-me-subs li {
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	min-height: 30px;
-	padding: 2px 4px;
+	padding: 2px 8px 2px 22px;
 	border-radius: 4px;
 	background: var(--fw-me-soft);
-}
-
-.fw-me-subhandle {
-	flex: none;
-	width: 20px;
-	color: #8c8f94;
 	cursor: grab;
 }
 
-.fw-me-subhandle.is-pinned {
+.fw-me-subs li:active {
+	cursor: grabbing;
+}
+
+/* The item's own first entry does not move. */
+.fw-me-subs li.is-pinned {
 	cursor: default;
-	opacity: .6;
+}
+
+.fw-me-subs li label {
+	cursor: inherit;
 }
 
 .fw-me-subs .fw-me-placeholder {
@@ -198,31 +261,55 @@
 	outline-offset: 2px;
 }
 
-.fw-me-lift,
-.fw-me-back {
+/* The arrow that opens an item's sub-items, like the WordPress Menus screen. */
+.fw-me-more,
+.fw-me-more-space {
 	flex: none;
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--fw-me-accent);
-	cursor: pointer;
-	font-size: 12px;
-	text-decoration: underline;
-	text-underline-offset: 2px;
-}
-
-.fw-me-subs .fw-me-lift {
-	margin-left: auto;
+	width: 32px;
+	height: 32px;
 }
 
 .fw-me-more {
-	flex: none;
+	display: grid;
+	place-items: center;
+	padding: 0;
 	border: 0;
+	border-radius: 6px;
 	background: none;
-	color: var(--fw-me-accent);
+	color: var(--fw-me-muted);
 	cursor: pointer;
-	text-decoration: underline;
-	text-underline-offset: 2px;
+}
+
+.fw-me-more:hover,
+.fw-me-more:focus-visible {
+	background: var(--fw-me-soft);
+	color: var(--fw-me-ink);
+}
+
+.fw-me-more .dashicons {
+	transition: transform .2s ease-out;
+}
+
+.fw-me-more[aria-expanded="true"] .dashicons {
+	transform: rotate(180deg);
+}
+
+.fw-me-row:has(> .fw-me-subs) > .fw-me-line {
+	cursor: pointer;
+}
+
+.fw-me-row:has(> .fw-me-subs) > .fw-me-line :is(input, label, button) {
+	cursor: auto;
+}
+
+.fw-me-row:has(> .fw-me-subs) > .fw-me-line button {
+	cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-me-more .dashicons {
+		transition: none;
+	}
 }
 
 .fw-me-toggle,
@@ -250,7 +337,7 @@
 	display: grid;
 	gap: 4px;
 	min-height: 30px;
-	margin: 0 12px 10px 78px;
+	margin: 0 12px 10px 66px;
 	padding: 6px;
 	border: 1px solid var(--fw-me-line);
 	border-radius: 6px;
@@ -396,4 +483,9 @@
 	.fw-me-subs {
 		margin-left: 12px;
 	}
+}
+
+/* `hidden` wins over every display rule above (closed sub-item lists, sub-items moved out). */
+.fw-me [hidden] {
+	display: none !important;
 }

@@ -125,9 +125,11 @@
 		}
 
 		function bindSubs( $subs ) {
+			// Drag from anywhere on a sub-item; only its checkbox keeps its own click.
 			$subs.sortable( {
-				handle: '.fw-me-subhandle',
-				items: '> li:not(.is-pinned):not(.is-lifted)',
+				cancel: 'input',
+				distance: 4,
+				items: '> li:not(.is-pinned):not(.is-locked):not(.is-lifted)',
 				connectWith: '.fw-me-list',
 				placeholder: 'fw-me-placeholder fw-me-subplaceholder',
 				forcePlaceholderSize: true,
@@ -159,8 +161,12 @@
 			} );
 		}
 
+		// Drag from anywhere on an item's header, like a postbox. A press that does not
+		// move (distance) stays a click, which opens the item; the fields keep theirs.
 		$root.find( '.fw-me-list' ).sortable( {
-			handle: '.fw-me-handle',
+			handle: '> .fw-me-line',
+			cancel: 'input, button, select, textarea, .fw-me-toggle',
+			distance: 4,
 			connectWith: '.fw-me-list, .fw-me-subs',
 			items: '> .fw-me-row',
 			placeholder: 'fw-me-placeholder',
@@ -207,11 +213,31 @@
 			}
 		} );
 
-		$root.on( 'click', '.fw-me-more', function () {
-			var $subs = $( this ).closest( '.fw-me-row' ).find( '> .fw-me-subs' );
+		function toggleSubs( $row ) {
+			var $subs = $row.find( '> .fw-me-subs' );
+			var $btn = $row.find( '> .fw-me-line .fw-me-more' );
+
+			if ( ! $subs.length || ! $btn.length ) {
+				return;
+			}
+
 			var open = $subs.prop( 'hidden' );
 			$subs.prop( 'hidden', ! open );
-			$( this ).attr( 'aria-expanded', open ? 'true' : 'false' );
+			$btn.attr( 'aria-expanded', open ? 'true' : 'false' );
+			$row.toggleClass( 'is-open', open );
+		}
+
+		// The arrow opens an item, and so does a click on the item's empty space,
+		// the way the WordPress Menus screen opens a menu item.
+		$root.on( 'click', '.fw-me-more', function () {
+			toggleSubs( $( this ).closest( '.fw-me-row' ) );
+		} );
+
+		$root.on( 'click', '.fw-me-line', function ( e ) {
+			if ( $( e.target ).closest( 'button, input, label' ).length ) {
+				return;
+			}
+			toggleSubs( $( this ).closest( '.fw-me-row' ) );
 		} );
 
 		// A sub-item moved to the top level becomes a row of its own, right after
@@ -235,10 +261,10 @@
 				.append( $( '<span class="dashicons" aria-hidden="true"></span>' ).addClass( icon ) )
 				.appendTo( $line );
 			$( '<input type="text" class="fw-me-label" />' ).attr( { placeholder: title, 'aria-label': title } ).appendTo( $line );
-			$( '<button type="button" class="fw-me-back"></button>' ).text( cfg.i18n.moveBack || 'Move back' ).appendTo( $line );
 			$( '<label class="fw-me-toggle"><input type="checkbox" class="fw-me-shown" checked /> <span></span></label>' )
 				.find( 'span' ).text( cfg.i18n.shown || 'Shown' ).end()
 				.appendTo( $line );
+			$( '<span class="fw-me-more-space" aria-hidden="true"></span>' ).appendTo( $line );
 
 			return $row;
 		}
@@ -252,8 +278,7 @@
 				'data-icon': $row.attr( 'data-icon' )
 			} )
 				.append( '<span class="fw-me-subhandle dashicons dashicons-menu" aria-hidden="true"></span>' )
-				.append( $( '<label></label>' ).append( $( '<input type="checkbox" class="fw-me-sub" checked />' ).val( $row.attr( 'data-lift-slug' ) ) ).append( ' ' + $row.attr( 'data-title' ) ) )
-				.append( $( '<button type="button" class="fw-me-lift"></button>' ).text( cfg.i18n.moveUp || 'Move to top level' ) );
+				.append( $( '<label></label>' ).append( $( '<input type="checkbox" class="fw-me-sub" checked />' ).val( $row.attr( 'data-lift-slug' ) ) ).append( ' ' + $row.attr( 'data-title' ) ) );
 		}
 
 		// Turn a sub-item into a top-level row at $at (a sibling to insert before),
@@ -278,14 +303,28 @@
 			} ).first();
 		}
 
-		$root.on( 'click', '.fw-me-lift', function () {
-			var $row = lift( $( this ).closest( 'li' ) );
-			$row.find( '.fw-me-label' ).trigger( 'focus' );
+		// Keyboard equivalents of dragging a sub-item out (Alt + Left) and back in
+		// (Alt + Right); a mouse just drags.
+		$root.on( 'keydown', '.fw-me-sub-row', function ( e ) {
+			if ( ! e.altKey || 'ArrowLeft' !== e.key || $( this ).hasClass( 'is-pinned' ) || $( this ).hasClass( 'is-locked' ) ) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			lift( $( this ) ).find( '.fw-me-label' ).trigger( 'focus' );
 			preview();
 		} );
 
-		$root.on( 'click', '.fw-me-back', function () {
-			var $row = $( this ).closest( '.fw-me-row' );
+		$root.on( 'keydown', '.fw-me-row[data-lift-parent]', function ( e ) {
+			if ( ! e.altKey || 'ArrowRight' !== e.key ) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			moveBack( $( this ) );
+		} );
+
+		function moveBack( $row ) {
 			var $sub = $row.data( 'sub' );
 			var $parent = parentOf( $row );
 
@@ -304,7 +343,7 @@
 			( $parent.length ? $parent.find( '> .fw-me-line .fw-me-label' ) : $() ).trigger( 'focus' );
 			$row.remove();
 			preview();
-		} );
+		}
 
 		$root.on( 'change', '.fw-me-shown', function () {
 			$( this ).closest( '.fw-me-row' ).toggleClass( 'is-hidden', ! this.checked );
@@ -315,11 +354,11 @@
 
 		// Keyboard reordering: Alt + Arrow Up / Down from anywhere in a row.
 		$root.on( 'keydown', '.fw-me-sub-row', function ( e ) {
-			if ( ! e.altKey || ( 'ArrowUp' !== e.key && 'ArrowDown' !== e.key ) || $( this ).hasClass( 'is-pinned' ) ) {
+			if ( ! e.altKey || ( 'ArrowUp' !== e.key && 'ArrowDown' !== e.key ) || $( this ).hasClass( 'is-pinned' ) || $( this ).hasClass( 'is-locked' ) ) {
 				return;
 			}
 			var $sub = $( this );
-			var $prev = $sub.prevAll( '.fw-me-sub-row:not(.is-pinned):not(.is-lifted)' ).first();
+			var $prev = $sub.prevAll( '.fw-me-sub-row:not(.is-pinned):not(.is-locked):not(.is-lifted)' ).first();
 			var $next = $sub.nextAll( '.fw-me-sub-row:not(.is-lifted)' ).first();
 			e.preventDefault();
 			e.stopPropagation();

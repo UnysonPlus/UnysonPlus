@@ -259,6 +259,9 @@ class FW_Admin_Menu_Editor {
 			$subs = array_values( array_filter( array_map( function ( $s ) {
 				return substr( trim( wp_strip_all_tags( (string) $s ) ), 0, 200 );
 			}, (array) $subs ) ) );
+			// The Admin Menu editor is the way back to this screen - never let it be saved
+			// as hidden, whatever the posted layout claims (the disabled checkbox is only UI).
+			$subs = array_values( array_diff( $subs, array( FW_Workspaces::PAGE_SLUG ) ) );
 			if ( '' !== $key( $k ) && $subs ) {
 				$out['sub_hidden'][ $key( $k ) ] = $subs;
 			}
@@ -677,7 +680,13 @@ class FW_Admin_Menu_Editor {
 
 				if ( ! empty( $l['sub_hidden'][ $key ] ) && isset( $submenu[ $slug ] ) ) {
 					$submenu[ $slug ] = array_values( array_filter( $submenu[ $slug ], function ( $sub ) use ( $l, $key ) {
-						return ! in_array( (string) ( $sub[2] ?? '' ), $l['sub_hidden'][ $key ], true );
+						$sub_slug = (string) ( $sub[2] ?? '' );
+						// The Admin Menu editor is the only way back - never hide it, even if a
+						// layout saved before this guard recorded it under sub_hidden.
+						if ( FW_Workspaces::PAGE_SLUG === $sub_slug ) {
+							return true;
+						}
+						return ! in_array( $sub_slug, $l['sub_hidden'][ $key ], true );
 					} ) );
 					if ( ! $submenu[ $slug ] ) {
 						unset( $submenu[ $slug ] );
@@ -990,7 +999,9 @@ class FW_Admin_Menu_Editor {
 			$items[ $i ]['protected']  = $protected;
 			$items[ $i ]['label']      = $l['labels'][ $key ] ?? '';
 			$items[ $i ]['new_icon']   = $l['icons'][ $key ] ?? '';
-			$items[ $i ]['sub_hidden'] = $l['sub_hidden'][ $key ] ?? array();
+			// The Admin Menu editor can never be hidden (it is the way back), so never show
+			// it as unchecked even if an older saved layout recorded it under sub_hidden.
+			$items[ $i ]['sub_hidden'] = array_values( array_diff( $l['sub_hidden'][ $key ] ?? array(), array( FW_Workspaces::PAGE_SLUG ) ) );
 			$items[ $i ]['group']      = $groups['groups'] ? ( $l['map'][ $key ] ?? self::default_group( $item, $groups ) ) : '';
 		}
 
@@ -1020,8 +1031,6 @@ class FW_Admin_Menu_Editor {
 		wp_localize_script( 'fw-admin-menu-editor', 'fwMenuEditor', array(
 			'icons' => self::icon_choices(),
 			'i18n'  => array(
-				'moveBack'  => __( 'Move back', 'fw' ),
-				'moveUp'    => __( 'Move to top level', 'fw' ),
 				'noDrop'    => __( 'A sub-item can only go back to its own menu or out to the top level.', 'fw' ),
 				'shown'     => __( 'Shown', 'fw' ),
 				'hide'      => __( 'Hide', 'fw' ),
@@ -1105,7 +1114,9 @@ class FW_Admin_Menu_Editor {
 
 				<div class="fw-me-cols">
 					<div class="fw-me-edit">
-						<p class="description"><?php esc_html_e( 'Drag to reorder. Open an item to drag its sub-items into a new order, or drag a sub-item out to give it its own place in the menu (and back in to return it). Rename items, change their icons and hide what this role does not need.', 'fw' ); ?></p>
+						<p class="description" id="fw-me-help"><?php esc_html_e( 'Drag items to reorder them. Click an item to open its sub-items: drag them into a new order, or drag one out into the menu to give it a place of its own, and back in to return it. Rename items, change their icons and hide what this role does not need.', 'fw' ); ?>
+							<span class="screen-reader-text"><?php esc_html_e( 'With the keyboard: Alt and the up or down arrow moves an item or sub-item; Alt and the left arrow moves a sub-item out into the menu, Alt and the right arrow moves it back.', 'fw' ); ?></span>
+						</p>
 
 						<?php foreach ( $by_group as $group => $list ) : ?>
 							<section class="fw-me-group" data-group="<?php echo esc_attr( $group ); ?>">
@@ -1168,19 +1179,6 @@ class FW_Admin_Menu_Editor {
 						aria-label="<?php /* translators: %s: menu item name */ echo esc_attr( sprintf( __( 'Name for %s', 'fw' ), $row['title'] ) ); ?>" />
 				<?php endif; ?>
 
-				<?php if ( $row['subs'] ) : ?>
-					<button type="button" class="fw-me-more" aria-expanded="false">
-						<?php
-						/* translators: %d: number of sub-items. */
-						echo esc_html( sprintf( _n( '%d sub-item', '%d sub-items', count( $row['subs'] ), 'fw' ), count( $row['subs'] ) ) );
-						?>
-					</button>
-				<?php endif; ?>
-
-				<?php if ( ! empty( $row['lift'] ) ) : ?>
-					<button type="button" class="fw-me-back"><?php esc_html_e( 'Move back', 'fw' ); ?></button>
-				<?php endif; ?>
-
 				<?php if ( $row['protected'] ) : ?>
 					<span class="fw-me-lock" title="<?php esc_attr_e( 'Always shown for this role', 'fw' ); ?>"><span class="dashicons dashicons-lock" aria-hidden="true"></span><span class="screen-reader-text"><?php esc_html_e( 'Always shown for this role', 'fw' ); ?></span></span>
 				<?php else : ?>
@@ -1189,27 +1187,40 @@ class FW_Admin_Menu_Editor {
 						<span><?php esc_html_e( 'Shown', 'fw' ); ?></span>
 					</label>
 				<?php endif; ?>
+
+				<?php if ( $row['subs'] ) : ?>
+					<button type="button" class="fw-me-more" aria-expanded="false"
+						aria-label="<?php /* translators: %s: menu item name */ echo esc_attr( sprintf( __( 'Sub-items of %s', 'fw' ), $row['title'] ) ); ?>">
+						<span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span>
+					</button>
+				<?php else : ?>
+					<span class="fw-me-more-space" aria-hidden="true"></span>
+				<?php endif; ?>
 			</div>
 
 			<?php if ( $row['subs'] ) : ?>
 				<ul class="fw-me-subs" hidden>
 					<?php foreach ( $row['subs'] as $sub ) : ?>
-						<?php $pinned = $row['slug'] === $sub['slug']; ?>
-						<li class="fw-me-sub-row<?php echo $pinned ? ' is-pinned' : ''; ?>" data-slug="<?php echo esc_attr( $sub['slug'] ); ?>" data-title="<?php echo esc_attr( $sub['title'] ); ?>"
+						<?php
+						$pinned = $row['slug'] === $sub['slug'];
+						// The Admin Menu editor is the only way back to this screen, so it can
+						// never be hidden: its checkbox is forced on and locked (see the save /
+						// runtime guards that enforce the same thing server-side).
+						$locked = FW_Workspaces::PAGE_SLUG === $sub['slug'];
+						?>
+						<li class="fw-me-sub-row<?php echo $pinned ? ' is-pinned' : ''; ?><?php echo $locked ? ' is-locked' : ''; ?>" data-slug="<?php echo esc_attr( $sub['slug'] ); ?>" data-title="<?php echo esc_attr( $sub['title'] ); ?>"
 							data-key="<?php echo esc_attr( self::lift_key( $sub['slug'] ) ); ?>" data-url="<?php echo esc_attr( self::sub_url( $row['slug'], $sub['slug'] ) ); ?>"
 							data-icon="<?php $app = self::workspace_for_page( $sub['slug'] ); echo esc_attr( $app ? $app['icon'] : 'dashicons-admin-generic' ); ?>">
-							<?php if ( $pinned ) : ?>
-								<span class="fw-me-subhandle is-pinned dashicons dashicons-admin-links" title="<?php esc_attr_e( 'The item itself: it stays first', 'fw' ); ?>" aria-hidden="true"></span>
-							<?php else : ?>
+							<?php if ( $locked ) : ?>
+								<span class="fw-me-sublock dashicons dashicons-lock" aria-hidden="true" title="<?php esc_attr_e( 'Always shown - the way back to this screen', 'fw' ); ?>"></span>
+							<?php elseif ( ! $pinned ) : ?>
 								<span class="fw-me-subhandle dashicons dashicons-menu" aria-hidden="true"></span>
 							<?php endif; ?>
 							<label>
-								<input type="checkbox" class="fw-me-sub" value="<?php echo esc_attr( $sub['slug'] ); ?>" <?php checked( ! in_array( $sub['slug'], $row['sub_hidden'], true ) ); ?> />
+								<input type="checkbox" class="fw-me-sub" value="<?php echo esc_attr( $sub['slug'] ); ?>" <?php if ( $locked ) : ?>checked disabled<?php else : ?><?php checked( ! in_array( $sub['slug'], $row['sub_hidden'], true ) ); ?><?php endif; ?> />
 								<?php echo esc_html( $sub['title'] ); ?>
+								<?php if ( $locked ) : ?><span class="screen-reader-text"><?php esc_html_e( '(always shown)', 'fw' ); ?></span><?php endif; ?>
 							</label>
-							<?php if ( ! $pinned ) : // The parent's own first entry IS the parent. ?>
-								<button type="button" class="fw-me-lift"><?php esc_html_e( 'Move to top level', 'fw' ); ?></button>
-							<?php endif; ?>
 						</li>
 					<?php endforeach; ?>
 				</ul>
