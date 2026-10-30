@@ -482,6 +482,37 @@ final class _FW_Extensions_Manager
 	}
 
 	/**
+	 * Run an extension's own uninstall.php just before its folder is deleted,
+	 * the way WordPress runs a plugin's. The extension may be inactive (and so
+	 * never loaded), which is why this is a file rather than a hook: it is the
+	 * last moment its code exists. The file decides for itself whether to delete
+	 * anything (e.g. only when the site owner asked for it), and a failure in it
+	 * never stops the uninstall.
+	 *
+	 * @param string $extension_name
+	 * @param string $path Absolute path to the extension folder.
+	 */
+	protected function run_extension_uninstall_file( $extension_name, $path ) {
+		$file = rtrim( (string) $path, '/\\' ) . '/uninstall.php';
+
+		if ( ! is_file( $file ) ) {
+			return;
+		}
+
+		if ( ! defined( 'FW_EXTENSION_UNINSTALL' ) ) {
+			define( 'FW_EXTENSION_UNINSTALL', true );
+		}
+
+		try {
+			( static function ( $fw_extension_name, $fw_uninstall_file ) {
+				include $fw_uninstall_file;
+			} )( $extension_name, $file );
+		} catch ( Throwable $e ) {
+			// Leftover data is better than a half-finished uninstall.
+		}
+	}
+
+	/**
 	 * @internal
 	 */
 	public function _action_ajax_uninstall()
@@ -2222,6 +2253,8 @@ final class _FW_Extensions_Manager
 			}
 
 			$this->verbose( sprintf( esc_html__( 'Deleting the "%s" extension...', 'fw' ), $extension_title ), $verbose );
+
+			$this->run_extension_uninstall_file( $extension_name, $installed_extensions[ $extension_name ]['path'] );
 
 			if (!$wp_filesystem->delete($wp_fs_extension_path, true, 'd')) {
 				$result[$extension_name] = new WP_Error(

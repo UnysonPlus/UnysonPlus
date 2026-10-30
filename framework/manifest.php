@@ -2,11 +2,20 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.57';
+$manifest['version']    = '3.0.58';
 
 /**
  * Changelog
- * 3.0.55 - Admin Menu (Unyson+ -> Admin Menu), with two tabs. Menus: per role,
+ * 3.0.58 - Extension uninstall.php. When an extension is deleted from the
+ *          Extensions screen, the manager now runs the extension's own
+ *          uninstall.php just before deleting its folder, the way WordPress runs a
+ *          plugin's, with FW_EXTENSION_UNINSTALL defined. It runs even when the
+ *          extension is inactive (its classes are never loaded then, so the file
+ *          stands alone), never on deactivation or update, and an error in it never
+ *          stops the uninstall. The SEO extension uses it for its opt-in "delete
+ *          all SEO data". Documented under Developers -> Extension uninstall.php.
+ *
+ * 3.0.55 -Admin Menu (Unyson+ -> Admin Menu), with two tabs. Menus: per role,
  *          drag the WordPress menu into a new order, rename items, change their
  *          icons, hide items and sub-items, reorder sub-items, and drag a sub-item
  *          (an extension screen such as SEO) out to a top-level item of its own,
