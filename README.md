@@ -1,147 +1,103 @@
-# [Unyson+](https://github.com/UnysonPlus/UnysonPlus) Framework
+# Unyson+ — a free WordPress framework with a built-in page builder
 
-Unyson+ is a **community-maintained fork** of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](http://wordpress.org/).
+**Unyson+** is a free, open-source **framework for WordPress** — a developer framework (options, settings, custom fields and an extension system) with a **built-in drag-and-drop page builder** and a growing library of modular **extensions**. Build pages visually with no code, style them with reusable presets, and add a theme builder, forms, WooCommerce, SEO, animations and more — all from one plugin, with **no "Pro" tier**.
 
-This project continues where the original Unyson (by [ThemeFuse](http://themefuse.com/)) left off after development was discontinued, with the goal of keeping the framework alive, stable, and more developer-friendly — and of growing it into a modern, page-builder-first website toolkit.
+It is a **community-maintained fork** of the original [Unyson](https://wordpress.org/plugins/unyson/) framework for [WordPress](https://wordpress.org/), continued (and heavily modernized) after the original was discontinued. 📖 **Full documentation: [docs.unysonplus.com](https://docs.unysonplus.com/)**
 
 ---
 
-## 🔹 Current Version
+## What is Unyson+?
+
+Unyson+ is a **framework** for building WordPress sites. At its core is a powerful **options system** — theme and plugin developers define settings panels, meta boxes, custom fields and element options from a plain PHP array, and read the values back with simple helpers. It powers Theme Settings, the Customizer, post meta boxes and every element's options from one API.
+
+Built on that framework, Unyson+ ships everything you need to build a site:
+
+- **A drag-and-drop Page Builder** (the flagship) — drop in a section, then fill it with elements (headings, buttons, galleries, pricing tables, sliders, forms — 60+ in all), all responsive and editable per device, with clean, semantic HTML output (no wrapper-div soup).
+- **A Theme Builder, Custom Fields, Post Types, an Animation Engine, a Site Converter**, and 20+ modular **extensions** — enable only the ones you need, so the base install stays lean.
+
+So a site owner can build pages visually with no code, while a developer gets a mature framework to extend. On top you also get **theme-independent style presets** (colors, typography, spacing, buttons) and **Dynamic Content** tags.
+
+### Who is it for?
+
+- **New site owners & beginners** — build pages visually, no code required.
+- **Designers & freelancers** — ready-made elements, reusable presets and templates to ship sites fast.
+- **Developers** — a mature options framework, custom fields, custom post types, dynamic content and hooks to build on.
+
+---
+
+## Install on WordPress
+
+> **Requirements:** WordPress **5.8+** (tested up to 7.1) · PHP **8.0+**
+
+The easiest and recommended way — install the ready-to-use plugin zip from the WordPress dashboard:
+
+1. **Download the latest release:** **[`unysonplus.zip`](https://github.com/UnysonPlus/UnysonPlus/releases/latest/download/unysonplus.zip)** (always points at the newest release).
+2. In your WordPress admin, go to **Plugins → Add New → Upload Plugin**.
+3. Choose the `unysonplus.zip` you downloaded and click **Install Now**.
+4. Click **Activate**.
+5. A new **Unyson+** menu appears in the sidebar. Open **Unyson+ → Extensions** to switch on the features you want — the base install is intentionally lean, and extensions (Forms, WooCommerce, SEO, Site Converter, Animation Engine, …) **download on demand** from there.
+
+That's it — edit any page and you'll find the **Page Builder** ready to use. New to it? Follow **[Build your first page](https://docs.unysonplus.com/getting-started/build-your-first-page)** in the docs.
+
+> ⚠️ **Already running the original Unyson?** Unyson+ shares the same function names, so running both at once causes fatal errors. **Deactivate and delete the original Unyson first** (back up / use a staging site if unsure).
+
+<details>
+<summary><strong>Installing for development (clone the repo)</strong></summary>
+
+The **`UnysonPlus/UnysonPlus` repository is core-only** (the framework plus the `blog` and `update` extensions). GitHub's "Download ZIP" / "Source code" gives a folder with the wrong name and none of the on-demand extensions, so **don't install a running site from the source zip** — use the `unysonplus.zip` release asset above.
+
+To work on the code, clone into `wp-content/plugins/` and rename the folder to `unysonplus`:
+
+```bash
+cd wp-content/plugins
+git clone https://github.com/UnysonPlus/UnysonPlus.git unysonplus
+```
+
+Then activate it and add extensions through the Extensions manager as usual.
+</details>
+
+---
+
+## Documentation & getting started
+
+- 📖 **Docs site:** **[docs.unysonplus.com](https://docs.unysonplus.com/)** — guides, element reference, options, and developer APIs.
+- 🚀 **Getting started:** [Introduction](https://docs.unysonplus.com/getting-started/intro) · [Installation](https://docs.unysonplus.com/getting-started/installation) · [Build your first page](https://docs.unysonplus.com/getting-started/build-your-first-page) · [Build your first child theme](https://docs.unysonplus.com/getting-started/build-your-first-child-theme)
+- 🧩 **Guides:** step-by-step how-tos at [docs.unysonplus.com/guides](https://docs.unysonplus.com/guides/)
+
+Docs source lives in [`UnysonPlus/UnysonPlus.github.io`](https://github.com/UnysonPlus/UnysonPlus.github.io) — contributions welcome.
+
+---
+
+## What you get
+
+- **Visual page builder** — a Flexbox/Grid-first layout model (Section / Block / Flexbox / Grid tiles) with clean semantic output, nested columns, full-screen heroes, and a per-device responsive editor.
+- **60+ elements** — counters, countdowns, galleries, sliders/carousels, pricing & comparison tables, before/after, flip boxes, image hotspots, testimonials, forms, dynamic post elements, and more.
+- **Component Presets** — reusable, theme-independent libraries for colors, typography, spacing, buttons, borders/boxes and tables; style once, apply everywhere.
+- **Animation Engine** — a no-library motion system: scroll reveal, parallax, pinning, text effects, plus Rive and a 3D model viewer.
+- **Dynamic Content** — insert tokens like `{{site_name}}`, `{{current_year}}` or `{{post_meta|key=subtitle}}` into any text field, resolved at render time.
+- **Site Converter** — rebuild an existing page design as native, editable WordPress pages (with a matching child theme, menus and media).
+- **Custom Fields & Post Types** — a custom field-group builder (text, media, WYSIWYG, repeater, …) and a no-code custom-post-type creator.
+- **Clean, fast frontend** — scoped per-element CSS collapsed into one hashed stylesheet per page, modern responsive images, and an asset build pipeline.
+- **Automatic updates** — delivered straight from GitHub releases via Plugin Update Checker v5 (no WP.org account needed).
+
+### Current versions
 
 | Component | Version |
 | --- | --- |
-| Framework | **3.0.29** |
-| Shortcodes extension | **1.15.26** |
-| Page Builder extension | **1.7.6** |
-| Unyson+ Theme | **2.6.10** |
-| Requires WordPress | **5.8+** (tested up to 6.7) |
+| Framework (core) | **3.0.61** |
+| Shortcodes extension | **1.15.98** |
+| Page Builder extension | **1.7.22** |
+| Unyson+ Theme | **2.6.62** |
+| Requires WordPress | **5.8+** (tested up to 7.1) |
 | Requires PHP | **8.0+** |
 
-> Versions follow an independent per-component sequence. Site owners receive automatic updates from GitHub releases via **Plugin Update Checker v5** — no WP.org required.
+> Each component follows its own version sequence. Updates reach your site automatically from GitHub releases.
 
 ---
-
-## 🔹 Key Differences from the Original Unyson
-
-* **Brizy removed** along with all references to it.
-* **PHP 8.0+ baseline.** Dropped support for PHP 5.6 through 7.4; the plugin declares a standard `Requires PHP: 8.0` header and guards activation on older PHP.
-* **No Bootstrap dependency.** The plugin is fully self-sufficient — the bundled Bootstrap stylesheet was removed and the handful of utilities shortcodes need are now shipped by the plugin itself.
-* **Modern page-builder-first toolkit** — a Flexbox/Div-first layout model, a large library of new shortcodes/elements (60+), a no-library Animation Engine, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
-* **Active security & modernization track** — see *Updates Done* below.
-* **Community maintained** under the [UnysonPlus](https://github.com/UnysonPlus) GitHub org, with each extension split into its own repository.
-
----
-
-## 🔹 Updates Done
-
-### Page builder & layout
-
-* **Flexbox (Div) layout model** — the builder now leads with a single Div primitive you set to Flex, Grid or Block (surfaced as the **Section**, **Block**, **Flexbox** and **Grid** tiles), outputting clean semantic HTML with no row/column wrapper soup. The classic containers (Section / Container / Bleed / Masonry / Column) remain available under a **Classic** tab for backward compatibility.
-* **Section family overhaul** — the Section gains Min Height (40/60/80/100vh) + content vertical-align for full-screen heroes; the bleed layout was extracted into a dedicated **Bleed Section**; a new **Masonry Section** packs columns left-to-right with no gaps. The standalone Hero Section was retired (the upgraded Section supersedes it).
-* **Nested columns** — a classic column can host other columns one level deep, with twelve-column nested grids synthesized at render time (fully backward-compatible).
-* **Background Pro** — a single Background control on Sections (and reusable everywhere): stacked color / gradient / image (with position / size / repeat / Fixed-parallax) / looping-video layers, with lossless migration of legacy background fields.
-* **Per-device responsive editing** — Phone / Tablet / Desktop switcher for spacing (mobile-first breakpoints), plus a **Device Preview toggle** (Desktop / Tablet / Phone) that re-previews the canvas at each breakpoint.
-* **Per-element Custom CSS + per-page dynamic-CSS pipeline** — each element gets a scoped Custom CSS field (Advanced tab) that rides template export/import; the framework collapses inline `<style>` blocks into one global + one per-page hashed stylesheet for a clean view-source.
-* **Page Builder Templates: Import / Export** — export any saved Full / Sections / Columns template to a portable `.json` and import it on another install.
-* **Bootstrap fully removed** — the bundled Bootstrap 5 stylesheet and its setting are gone; `.btn`, tabs, the testimonials carousel (Splide), and the flex/grid utilities are now provided by the plugin's own CSS.
-
-### Component Presets system (theme-independent)
-
-Reusable, plugin-owned preset libraries — **Colors, Typography / Font Sizes, Spacing, Gaps, Buttons, Borders / Boxes, and Tables** — each producing a named CSS class and editable from a dedicated **Component Presets** page under the Unyson+ menu. Presets are stored theme-independently so they work under any active theme. A **Styling Presets** master switch can turn the entire styling layer off for a bare, structure-only builder (for developers bringing their own CSS).
-
-### New shortcodes / elements (60+)
-
-A large library of new elements was added, including:
-
-* **Content** — Animated Counter, Countdown, Animated Heading, Highlight Text, Blockquote, Tag List, Steps, Timeline, Table of Contents, Tooltip, Feature List.
-* **Media** — Gallery, Lottie, Audio Player, Video Popup, Before/After, Image Box, Image Hotspots, Flip Box, Carousel.
-* **Marketing** — Pricing Table, Comparison Table, Logo Grid, Business Info, Newsletter, Modal Popup, Social Share, Star Rating, Call to Action.
-* **Dynamic post elements** — Post Title / Excerpt / Content / Meta / Date / Author / Terms, Post Carousel, Author Box, Avatar, Featured Image.
-* **Layout & utility** — the Flexbox (Div) tiles (Section / Block / Flexbox / Grid), Container, Progress, Scroll-to-Top.
-* **Animation & motion** — a no-library Animation Engine: scroll reveal / parallax / pin / text effects, plus interactive elements such as Rive and a 3D Model Viewer.
-
-The Table shortcode was rebuilt around a real **spreadsheet editor** (inline-editable cells, drag-reorder, merge/unmerge, HTML/Word/CSV import, Excel paste, CSV/TSV export) with a dependency-free front-end enhancer for **sorting / search / pagination**.
-
-### Dynamic Content
-
-Elementor-Pro-style **dynamic tags**: Text / Textarea / Rich-Editor option fields (and the classic post editor) show a searchable picker that inserts tokens like `{{site_name}}`, `{{current_year}}`, `{{post_meta|key=subtitle}}`, live permalinks, "Last Updated", and WooCommerce product fields — resolved at render time through one registry, extensible via the `fw:dynamic-content:tags` filter.
-
-### New option types
-
-`background-pro`, `gradient-v2`, `spacing` (composite, per-device), `popover` (with tabs), `column-split`, `split-slider`, `unit-input`, `medium-text`, `button-style-picker`, `border-style-picker`, `button-hover-animation`, `table` (spreadsheet), and a free **Leaflet / OpenStreetMap** fallback for the `map` picker when no Google Maps key is set.
-
-### New bundled extensions
-
-* **Site Converter** *(Unyson+ → Convert)* — an AI-generated-site → WordPress importer. Imports a **Google Stitch** design deterministically (no AI), captures a source site by URL via a local capture service (the **Site Analyzer**), generates a self-sufficient child/standalone theme reproducing the source's header/footer/fonts/colors, and brings over media, menus, and page content.
-* **Theme Builder** *(foundation)* — the Unyson+ take on Divi's Theme Builder; introduces Body Templates and conditional Templates (Use On / Exclude From rules) and owns the header/footer parts. Replaces the former Header & Footer Builder.
-* **Post Types** — a no-code custom-post-type creator.
-* **Custom Fields** — an ACF-style field-group builder (text, media, WYSIWYG, repeater, …) with location refinements, hide-on-screen, REST exposure, and JSON import/export; read with `fw_get_field()`.
-
-### Options modal & DX modernization
-
-* **Inline + server-side validation** for option modals (`fw.validateOptionsForm`, `get_value_error()`, the `fw_option_value_error` filter).
-* **Non-blocking UI primitives** — `fw.notify()` toasts and the promise-based `fw.confirm()` dialog replaced blocking `alert()` / `confirm()` across the framework.
-* **`fw_image_tag()`** — a shared, modern responsive-image builder (`srcset`/`sizes`, width/height for CLS, `fetchpriority` for LCP).
-* **Asset build pipeline** (`build/`) — esbuild + PostCSS minifies the core backend CSS/JS, served via `fw_get_framework_asset_uri()` with a safe unminified fallback.
-
-### Security hardening (multi-phase)
-
-* **Pre-fork CVE backlog addressed** (AI-assisted review): **CVE-2023-44472** (Missing Authorization), **CVE-2024-34814** (CSRF), **CVE-2022-2219** (Reflected XSS).
-* SQL identifiers wrapped in `esc_sql()`, `SHOW TABLES LIKE` converted to `$wpdb->prepare()`, legacy unserialize hardened (`allowed_classes = false`), and `$atts` escaped across shortcode views.
-* Public Calendar AJAX locked down (provider whitelist + `is_callable()` guard); CSRF nonces added to the Mailer test and ~14 mutating Builder / Sidebars / Backend-options AJAX handlers.
-* `fw_rand_md5()` weak randomness replaced with CSPRNG-backed `random_bytes()`; unescaped echoes fixed with `wp_kses_post` / `esc_html` per context; text-domain and `esc_url()` cleanups for WP.org readiness.
-
-### Modernization & carry-over
-
-* `uniqid()` DOM IDs replaced with `wp_unique_id()`; strict return types on activation hooks.
-* **Plugin Update Checker v5** wired to GitHub releases (automatic updates without WP.org).
-* Full **PHP 8.x** compatibility sweeps (`create_function`, `each()`, `$arr{0}`, `implode()` arg order); Bootstrap 3 → 5 migration of admin/option UIs; deprecated patterns and heavy jQuery dependencies retired incrementally.
-
----
-
-## 🔹 Plans for This Project
-
-* **jQuery cleanup** — incrementally retire `jquery.fs.wallpaper.js` and other heavy jQuery dependencies in shortcode JS.
-* **Theme Builder front-end wiring** — land the admin grid, conditions UI, and `template_include` body rendering on top of the resolver foundation.
-* **Continued PHP 8.x sweep** — systematic pass for any remaining legacy patterns outside core.
-* **Ongoing shortcode improvements** — more elements, flexibility, and developer-friendly APIs.
-* **Gutenberg integration** — improve Block Editor compatibility while keeping Classic Editor support.
-* **Options Framework DX** — make the admin options system even more developer-friendly (inspired by ACF / Carbon Fields).
-* **Migration tools** — help existing Unyson users transition smoothly without breaking sites.
-* **Automated testing** — PHPUnit + WordPress test suite for long-term stability.
-* **Semantic versioning + tagged releases** — formalize the release cadence (already in motion via Plugin Update Checker v5).
-* **Extension registry** — an open system for community-driven add-ons and modules.
-* **Multisite compatibility audit** — ensure full compatibility in multisite environments.
-
----
-
-## Table of Contents
-
-* [Installation](#installation)
-* [Documentation](#documentation)
-* [Extensions](#extensions)
-* [Contributing](#contributing)
-* [Bug Reports](#bug-reports)
-* [License](#license)
-
-## Installation
-
-1. Download or clone the repository into your WordPress `plugins` directory.
-2. Activate **Unyson+** from the WordPress dashboard under **Plugins**.
-3. Configure the framework by going to the **Unyson+ menu**.
-
-⚠ **Warning:** If you currently have the original Unyson plugin installed, create a staging site or backup your site first. Unyson+ shares the same function names as Unyson, so running both at the same time will cause fatal errors. Uninstall Unyson before installing Unyson+.
-
-## Documentation
-
-The original Unyson manual at `manual.unyson.io` has been taken down. Historical Unyson documentation can still be accessed via the Internet Archive:
-👉 [Archived Unyson Documentation Manual](https://web.archive.org/web/20221130053349/http://manual.unyson.io/)
-
-Unyson+-specific documentation is published at 👉 [unysonplus.github.io](https://docs.unysonplus.com/) (source: [`UnysonPlus/UnysonPlus.github.io`](https://github.com/UnysonPlus/UnysonPlus.github.io)). Contributions are welcome.
 
 ## Extensions
 
-Unyson+ supports the same modular extension system as the original Unyson — extensions can be enabled/disabled as needed — and ships a growing set of modernized, independently-versioned extensions, each in its own repository:
+Unyson+ keeps the original Unyson's modular extension system — enable or disable each one as needed — and ships a growing set of modernized, independently-versioned extensions, each in its own repository:
 
 | Extension | Repository |
 | --- | --- |
@@ -173,34 +129,134 @@ Unyson+ supports the same modular extension system as the original Unyson — ex
 
 Additional extensions (Sliders, Social, Analytics, Translation, Events, Feedback, Backups, Learning, …) are also tracked under the [UnysonPlus](https://github.com/UnysonPlus) org.
 
+---
+
+## What's changed from the original Unyson
+
+<details>
+<summary><strong>Key differences</strong> (click to expand)</summary>
+
+* **Brizy removed** along with all references to it.
+* **PHP 8.0+ baseline.** Dropped support for PHP 5.6 through 7.4; the plugin declares a standard `Requires PHP: 8.0` header and guards activation on older PHP.
+* **No Bootstrap dependency.** The plugin is fully self-sufficient — the bundled Bootstrap stylesheet was removed and the handful of utilities shortcodes need are now shipped by the plugin itself.
+* **Modern page-builder-first toolkit** — a Flexbox/Div-first layout model, a large library of new shortcodes/elements (60+), a no-library Animation Engine, a reusable Component Presets system, Dynamic Content tags, responsive per-device editing, and a clean, un-bloated frontend DOM.
+* **Active security & modernization track** — see *Updates done* below.
+* **Community maintained** under the [UnysonPlus](https://github.com/UnysonPlus) GitHub org, with each extension split into its own repository.
+
+</details>
+
+<details>
+<summary><strong>Updates done</strong> (click to expand)</summary>
+
+### Page builder & layout
+
+* **Flexbox (Div) layout model** — the builder now leads with a single Div primitive you set to Flex, Grid or Block (surfaced as the **Section**, **Block**, **Flexbox** and **Grid** tiles), outputting clean semantic HTML with no row/column wrapper soup. The classic containers (Section / Container / Bleed / Masonry / Column) remain available under a **Classic** tab for backward compatibility.
+* **Section family overhaul** — the Section gains Min Height (40/60/80/100vh) + content vertical-align for full-screen heroes; the bleed layout was extracted into a dedicated **Bleed Section**; a new **Masonry Section** packs columns left-to-right with no gaps. The standalone Hero Section was retired (the upgraded Section supersedes it).
+* **Nested columns** — a classic column can host other columns one level deep, with twelve-column nested grids synthesized at render time (fully backward-compatible).
+* **Background Pro** — a single Background control on Sections (and reusable everywhere): stacked color / gradient / image (with position / size / repeat / Fixed-parallax) / looping-video layers, with lossless migration of legacy background fields.
+* **Per-device responsive editing** — Phone / Tablet / Desktop switcher for spacing (mobile-first breakpoints), plus a **Device Preview toggle** (Desktop / Tablet / Phone) that re-previews the canvas at each breakpoint.
+* **Per-element Custom CSS + per-page dynamic-CSS pipeline** — each element gets a scoped Custom CSS field (Advanced tab) that rides template export/import; the framework collapses inline `<style>` blocks into one global + one per-page hashed stylesheet for a clean view-source.
+* **Page Builder Templates: Import / Export** — export any saved Full / Sections / Columns template to a portable `.json` and import it on another install.
+* **Bootstrap fully removed** — the bundled Bootstrap 5 stylesheet and its setting are gone; `.btn`, tabs, the testimonials carousel (Splide), and the flex/grid utilities are now provided by the plugin's own CSS.
+
+### Component Presets system (theme-independent)
+
+Reusable, plugin-owned preset libraries — **Colors, Typography / Font Sizes, Spacing, Gaps, Buttons, Borders / Boxes, and Tables** — each producing a named CSS class and editable from a dedicated **Component Presets** page under the Unyson+ menu. Presets are stored theme-independently so they work under any active theme. A **Styling Presets** master switch can turn the entire styling layer off for a bare, structure-only builder (for developers bringing their own CSS).
+
+### New shortcodes / elements (60+)
+
+A large library of new elements was added, including:
+
+* **Content** — Animated Counter, Countdown, Animated Heading, Highlight Text, Blockquote, Tag List, Steps, Timeline, Table of Contents, Tooltip, Feature List.
+* **Media** — Gallery, Lottie, Audio Player, Video Popup, Before/After, Image Box, Image Hotspots, Flip Box, Carousel.
+* **Marketing** — Pricing Table, Comparison Table, Logo Grid, Business Info, Newsletter, Modal Popup, Social Share, Star Rating, Call to Action.
+* **Dynamic post elements** — Post Title / Excerpt / Content / Meta / Date / Author / Terms, Post Carousel, Author Box, Avatar, Featured Image.
+* **Layout & utility** — the Flexbox (Div) tiles (Section / Block / Flexbox / Grid), Container, Progress, Scroll-to-Top.
+* **Animation & motion** — a no-library Animation Engine: scroll reveal / parallax / pin / text effects, plus interactive elements such as Rive and a 3D Model Viewer.
+
+The Table shortcode was rebuilt around a real **spreadsheet editor** (inline-editable cells, drag-reorder, merge/unmerge, HTML/Word/CSV import, Excel paste, CSV/TSV export) with a dependency-free front-end enhancer for **sorting / search / pagination**.
+
+### Dynamic Content
+
+Pro-style **dynamic tags**: Text / Textarea / Rich-Editor option fields (and the classic post editor) show a searchable picker that inserts tokens like `{{site_name}}`, `{{current_year}}`, `{{post_meta|key=subtitle}}`, live permalinks, "Last Updated", and WooCommerce product fields — resolved at render time through one registry, extensible via the `fw:dynamic-content:tags` filter.
+
+### New option types
+
+`background-pro`, `gradient-v2`, `spacing` (composite, per-device), `popover` (with tabs), `column-split`, `split-slider`, `unit-input`, `medium-text`, `button-style-picker`, `border-style-picker`, `button-hover-animation`, `table` (spreadsheet), and a free **Leaflet / OpenStreetMap** fallback for the `map` picker when no Google Maps key is set.
+
+### New bundled extensions
+
+* **Site Converter** *(Unyson+ → Convert)* — a page-design → WordPress importer. Captures a source page by URL via a local capture service, generates a self-sufficient child/standalone theme reproducing its header/footer/fonts/colors, and brings over media, menus, and page content as native, editable builder pages.
+* **Theme Builder** *(foundation)* — Body Templates and conditional Templates (Use On / Exclude From rules) that own the header/footer parts. Replaces the former Header & Footer Builder.
+* **Post Types** — a no-code custom-post-type creator.
+* **Custom Fields** — a custom field-group builder (text, media, WYSIWYG, repeater, …) with location refinements, hide-on-screen, REST exposure, and JSON import/export; read with `fw_get_field()`.
+
+### Options modal & DX modernization
+
+* **Inline + server-side validation** for option modals (`fw.validateOptionsForm`, `get_value_error()`, the `fw_option_value_error` filter).
+* **Non-blocking UI primitives** — `fw.notify()` toasts and the promise-based `fw.confirm()` dialog replaced blocking `alert()` / `confirm()` across the framework.
+* **`fw_image_tag()`** — a shared, modern responsive-image builder (`srcset`/`sizes`, width/height for CLS, `fetchpriority` for LCP).
+* **Asset build pipeline** (`build/`) — esbuild + PostCSS minifies the core backend CSS/JS, served via `fw_get_framework_asset_uri()` with a safe unminified fallback.
+
+### Security hardening (multi-phase)
+
+* **Pre-fork CVE backlog addressed** (AI-assisted review): **CVE-2023-44472** (Missing Authorization), **CVE-2024-34814** (CSRF), **CVE-2022-2219** (Reflected XSS).
+* SQL identifiers wrapped in `esc_sql()`, `SHOW TABLES LIKE` converted to `$wpdb->prepare()`, legacy unserialize hardened (`allowed_classes = false`), and `$atts` escaped across shortcode views.
+* Public Calendar AJAX locked down (provider whitelist + `is_callable()` guard); CSRF nonces added to the Mailer test and ~14 mutating Builder / Sidebars / Backend-options AJAX handlers.
+* `fw_rand_md5()` weak randomness replaced with CSPRNG-backed `random_bytes()`; unescaped echoes fixed with `wp_kses_post` / `esc_html` per context; text-domain and `esc_url()` cleanups.
+
+### Modernization & carry-over
+
+* `uniqid()` DOM IDs replaced with `wp_unique_id()`; strict return types on activation hooks.
+* **Plugin Update Checker v5** wired to GitHub releases (automatic updates without WP.org).
+* Full **PHP 8.x** compatibility sweeps (`create_function`, `each()`, `$arr{0}`, `implode()` arg order); Bootstrap 3 → 5 migration of admin/option UIs; deprecated patterns and heavy jQuery dependencies retired incrementally.
+
+</details>
+
+<details>
+<summary><strong>Roadmap</strong> (click to expand)</summary>
+
+* **jQuery cleanup** — incrementally retire `jquery.fs.wallpaper.js` and other heavy jQuery dependencies in shortcode JS.
+* **Theme Builder front-end wiring** — land the admin grid, conditions UI, and `template_include` body rendering on top of the resolver foundation.
+* **Continued PHP 8.x sweep** — systematic pass for any remaining legacy patterns outside core.
+* **Ongoing shortcode improvements** — more elements, flexibility, and developer-friendly APIs.
+* **Gutenberg integration** — improve Block Editor compatibility while keeping Classic Editor support.
+* **Options Framework DX** — make the admin options system even more developer-friendly.
+* **Migration tools** — help existing Unyson users transition smoothly without breaking sites.
+* **Automated testing** — PHPUnit + WordPress test suite for long-term stability.
+* **Semantic versioning + tagged releases** — formalize the release cadence (already in motion via Plugin Update Checker v5).
+* **Extension registry** — an open system for community-driven add-ons and modules.
+* **Multisite compatibility audit** — ensure full compatibility in multisite environments.
+
+</details>
+
+---
+
 ## Contributing
 
-You can help keep Unyson+ alive and growing!
+You can help keep Unyson+ alive and growing! Ways to contribute:
 
-Ways to contribute:
 - **Code contributions** via Pull Requests
 - **Documentation improvements**
 - **Bug fixes** and reporting
 - **New or modernized extensions**
 
-Contributor guidelines will be published soon in `CONTRIBUTING.md`.
+Contributor guidelines will be published in `CONTRIBUTING.md`.
 
-## Bug Reports
+## Bug reports
 
-Please submit issues here:
-👉 [Unyson+ Issues](https://github.com/UnysonPlus/UnysonPlus/issues)
+Please open an issue 👉 [Unyson+ Issues](https://github.com/UnysonPlus/UnysonPlus/issues). When reporting a bug, include:
 
-When reporting a bug:
-- Provide detailed steps to reproduce the issue
-- Include WordPress version, PHP version, and theme/plugin details
-- Share error logs or screenshots if possible
+- Detailed steps to reproduce
+- Your WordPress version, PHP version, and active theme/plugins
+- Error logs or screenshots if possible
 
 ## License
 
 Unyson+ is released under the [GPL-3.0 License](https://github.com/UnysonPlus/UnysonPlus/blob/master/framework/LICENSE).
 
-Original code copyright © 2014 ThemeFuse LTD.
-Fork maintained and extended by the Unyson+ community.
+Original code copyright © 2014 ThemeFuse LTD. Fork maintained and extended by the Unyson+ community.
 
 ---
+
 > ⚡ *Unyson+ — carrying on the legacy of Unyson for modern WordPress development.*
