@@ -44,7 +44,7 @@ class UnysonPlus_AI_Notice {
 			<p>
 				<strong><?php esc_html_e( 'Build this site with an AI app?', 'fw' ); ?></strong>
 				<?php esc_html_e( 'Install the AI Assistant extension: it adds a chat that builds and edits pages, and lets the AI apps you use work on this site.', 'fw' ); ?>
-				<a class="button button-primary" style="margin-left:.4rem;vertical-align:baseline" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PARENT_SLUG ) ); ?>"><?php esc_html_e( 'Open Extensions', 'fw' ); ?></a>
+				<a class="button button-primary" style="margin-left:.4rem;vertical-align:baseline" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PARENT_SLUG ) . '#fw-ext-ai-assistant' ); ?>"><?php esc_html_e( 'Open Extensions', 'fw' ); ?></a>
 			</p>
 		</div>
 		<script>
