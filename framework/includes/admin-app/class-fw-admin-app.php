@@ -190,8 +190,19 @@ class FW_Admin_App {
 		wp_send_json_success( array( 'on' => $on ) );
 	}
 
+	/** @return bool Whether this person is in a workspace (FW_Workspaces) right now. */
+	public static function in_workspace() {
+		return class_exists( 'FW_Workspaces' ) && '' !== FW_Workspaces::active();
+	}
+
 	/** @return bool Whether this user is hiding the WordPress menu on app screens. */
 	public static function is_focus() {
+		// In a workspace the WordPress menu is already trimmed to the app, and the way
+		// out is the workspace switch in the top bar, so the app always fills the screen.
+		if ( self::in_workspace() ) {
+			return true;
+		}
+
 		$on = get_user_meta( get_current_user_id(), self::FOCUS_META, true );
 
 		if ( '' === $on ) {
@@ -355,6 +366,12 @@ class FW_Admin_App {
 					<?php endforeach; ?>
 				</div>
 
+				<?php
+				// In a workspace both links lead nowhere: the menu they would show is the
+				// app itself, and the dashboard opens back to the app. The top-bar switch
+				// is the way out there.
+				if ( ! self::in_workspace() ) :
+					?>
 				<div class="fw-app-side__foot">
 					<button type="button" class="fw-app-side__link fw-app-focus-toggle" aria-pressed="<?php echo $focus ? 'true' : 'false'; ?>"
 						data-on="<?php esc_attr_e( 'Show the WordPress menu', 'fw' ); ?>"
@@ -367,6 +384,7 @@ class FW_Admin_App {
 						<span class="fw-app-side__text"><?php echo esc_html( $this->args['back'] ); ?></span>
 					</a>
 				</div>
+				<?php endif; ?>
 			</nav>
 
 			<div class="fw-app-main">

@@ -650,6 +650,27 @@ fw.md5 = (function(){
 			});
 	}
 
+	// Snap a step-mismatched number/range input to its nearest valid step.
+	// Returns true when the field is valid afterwards.
+	function snapToStep(el) {
+		var v = el.validity;
+		if (!v || !v.stepMismatch || v.badInput || v.valueMissing
+			|| (el.type !== 'number' && el.type !== 'range')) { return false; }
+
+		var step = parseFloat(el.step), base = parseFloat(el.min), val = parseFloat(el.value);
+		if (!(step > 0) || isNaN(val)) { return false; }
+		if (isNaN(base)) { base = 0; }
+
+		var decimals = (String(el.step).split('.')[1] || '').length,
+			// The epsilon rounds 0.35 / 0.1 (= 3.4999…) up, like the server-side check.
+			snapped = base + Math.round((val - base) / step + 1e-9) * step;
+
+		el.value = snapped.toFixed(decimals);
+		$(el).trigger('input').trigger('change');
+
+		return el.checkValidity();
+	}
+
 	function notifyCount(n) {
 		fw.notify(
 			n === 1
@@ -674,6 +695,11 @@ fw.md5 = (function(){
 			if (!el.willValidate) { return; }
 			if ($(el).hasClass('hidden-submit')) { return; }
 			if (el.checkValidity()) { return; }
+
+			// A number that is only off the field's step (0.35 on a 0.1 slider, e.g. a value
+			// written by an older version or an import) is not worth blocking a save over:
+			// snap it to the nearest valid step instead.
+			if (snapToStep(el)) { return; }
 
 			invalid.push(el);
 		});
@@ -751,6 +777,16 @@ fw.md5 = (function(){
 			if (!panel.id) { return; }
 			var $link = ($form.length ? $form : $(document))
 				.find('.fw-options-tabs-list a[href="#'+ panel.id +'"]').first();
+			if ($link.length) { $link.trigger('click'); }
+		});
+
+		// Any other tab container the field sits in (the options modal's own
+		// Content / Styling / Animations / Advanced tabs, nested tab sets): open
+		// the panel whose id a tab link points at, outermost first.
+		$.each($el.parents('[id]').get().reverse(), function (i, panel) {
+			if ($(panel).is(':visible')) { return; }
+			var $link = ($form.length ? $form : $(document))
+				.find('a[href="#'+ panel.id +'"]').first();
 			if ($link.length) { $link.trigger('click'); }
 		});
 

@@ -10,3 +10,14 @@
 .fw-option-type-responsive .fw-option-responsive-panel {
 	width: 100%;
 }
+
+/* A device this option does not edit (the 'devices' subset): a quiet note instead of a control. */
+.fw-option-type-responsive .fw-option-responsive-note {
+	margin: 0;
+	padding: 8px 10px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
+}

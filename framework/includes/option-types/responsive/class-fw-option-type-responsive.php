@@ -75,6 +75,18 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 	}
 
 	/**
+	 * The devices this option edits: $option['devices'] (a subset of base/md/lg/xl),
+	 * or all four. Unknown keys are ignored; an empty or invalid list means all.
+	 *
+	 * @param array $option
+	 * @return string[]
+	 */
+	private function devices( $option ) {
+		$want = ( isset( $option['devices'] ) && is_array( $option['devices'] ) ) ? array_values( array_intersect( self::DEVICES, $option['devices'] ) ) : array();
+		return $want ? $want : self::DEVICES;
+	}
+
+	/**
 	 * @internal
 	 */
 	protected function _get_defaults() {
@@ -145,8 +157,24 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 				<?php echo fw_render_device_tabs( $option['attr']['id'] ); ?>
 			</div>
 			<div class="fw-option-responsive-panels">
-				<?php foreach ( self::DEVICES as $key ) :
+				<?php
+				// Optional device subset ('devices' => array( 'md', 'base' )): the other
+				// devices keep their tab (so the switcher stays in step with the builder's
+				// global device toggle) but show a short note instead of a control, and
+				// always save ''. Used where one device is owned by another field, e.g.
+				// the main Image field owns desktop and this option only overrides smaller
+				// screens.
+				$devices = $this->devices( $option );
+				foreach ( self::DEVICES as $key ) :
 					$panel_val = isset( $value[ $key ] ) ? $value[ $key ] : '';
+					if ( ! in_array( $key, $devices, true ) ) :
+						?>
+						<div class="fw-option-responsive-panel fw-option-responsive-panel--off<?php echo ( $key === 'base' ) ? ' is-active' : ''; ?>" data-fw-device-panel="<?php echo esc_attr( $key ); ?>">
+							<p class="fw-option-responsive-note"><?php echo esc_html( isset( $option['off_note'] ) && '' !== $option['off_note'] ? $option['off_note'] : __( 'Not set per device on this screen size.', 'fw' ) ); ?></p>
+						</div>
+						<?php
+						continue;
+					endif;
 					?>
 					<div class="fw-option-responsive-panel<?php echo ( $key === 'base' ) ? ' is-active' : ''; ?>" data-fw-device-panel="<?php echo esc_attr( $key ); ?>">
 						<?php echo fw()->backend->option_type( $inner['type'] )->render(
@@ -184,9 +212,10 @@ class Fw_Option_Type_Responsive extends FW_Option_Type {
 		$inner     = $this->inner_option( $option );
 		$inner_opt = array_merge( $inner, array( 'value' => '' ) );
 		$out       = array( 'base' => '', 'md' => '', 'lg' => '', 'xl' => '' );
+		$devices   = $this->devices( $option );
 
 		foreach ( self::DEVICES as $k ) {
-			if ( isset( $input_value[ $k ] ) ) {
+			if ( isset( $input_value[ $k ] ) && in_array( $k, $devices, true ) ) {
 				$out[ $k ] = fw()->backend->option_type( $inner['type'] )
 					->get_value_from_input( $inner_opt, $input_value[ $k ] );
 			}

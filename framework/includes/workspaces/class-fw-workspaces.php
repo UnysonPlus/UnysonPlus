@@ -71,6 +71,11 @@ class FW_Workspaces {
 		// Late: a workspace chosen for the role outranks an extension's own landing page (Membership's account page).
 		add_filter( 'login_redirect', array( __CLASS__, '_filter_login_redirect' ), 99, 3 );
 		add_filter( 'show_admin_bar', array( __CLASS__, '_filter_show_admin_bar' ), 99 );
+		// No public website: the front end leads to the login screen, and search engines are kept out.
+		add_action( 'template_redirect', array( __CLASS__, '_action_private_site' ), 0 );
+		add_filter( 'wp_robots', array( __CLASS__, '_filter_robots' ), 99 );
+		add_filter( 'robots_txt', array( __CLASS__, '_filter_robots_txt' ), 99 );
+		add_filter( 'fw_seo_site_private', array( __CLASS__, 'is_private' ) );
 
 		if ( ! is_admin() ) {
 			add_action( 'admin_bar_menu', array( __CLASS__, '_action_admin_bar' ), 999 );
@@ -163,7 +168,7 @@ class FW_Workspaces {
 	 * Settings
 	 * ---------------------------------------------------------------------- */
 
-	/** @return array { roles: role => { workspace }, menu: id => 1, members: { roles[], page } } */
+	/** @return array { roles: role => { workspace }, menu: id => 1, members: { roles[], page }, private: bool } */
 	public static function settings() {
 		$s = get_option( self::OPTION, array() );
 		$s = is_array( $s ) ? $s : array();
@@ -176,6 +181,7 @@ class FW_Workspaces {
 				'roles' => isset( $m['roles'] ) && is_array( $m['roles'] ) ? array_values( $m['roles'] ) : array(),
 				'page'  => isset( $m['page'] ) ? (int) $m['page'] : 0,
 			),
+			'private' => ! empty( $s['private'] ),
 		);
 	}
 
@@ -188,7 +194,7 @@ class FW_Workspaces {
 	 */
 	public static function save( array $input ) {
 		$roles = wp_roles()->get_names();
-		$out   = array( 'roles' => array(), 'menu' => array(), 'members' => array( 'roles' => array(), 'page' => 0 ) );
+		$out   = array( 'roles' => array(), 'menu' => array(), 'members' => array( 'roles' => array(), 'page' => 0 ), 'private' => false );
 
 		if ( ! isset( $input['menu'] ) ) {
 			$input['menu'] = self::settings()['menu'];
@@ -196,6 +202,10 @@ class FW_Workspaces {
 		if ( ! isset( $input['members'] ) ) {
 			$input['members'] = self::settings()['members'];
 		}
+		if ( ! isset( $input['private'] ) ) {
+			$input['private'] = self::settings()['private'];
+		}
+		$out['private'] = ! empty( $input['private'] ) && 'no' !== $input['private'];
 
 		foreach ( (array) ( $input['members']['roles'] ?? array() ) as $role ) {
 			$role = sanitize_key( $role );
@@ -622,10 +632,23 @@ class FW_Workspaces {
 			$title = $off ? __( 'Use my menu', 'fw' ) : __( 'Show the full menu', 'fw' );
 		}
 
+		$label = esc_html( $title );
+		$count = 0;
+
+		// The workspace hides WordPress's updates item, so the way back says how many are waiting.
+		if ( $mine && ! $off && current_user_can( 'update_plugins' ) && function_exists( 'wp_get_update_data' ) ) {
+			$count = (int) ( wp_get_update_data()['counts']['total'] ?? 0 );
+		}
+		if ( $count ) {
+			/* translators: %s: number of updates. */
+			$waiting = sprintf( _n( '%s update waiting', '%s updates waiting', $count, 'fw' ), number_format_i18n( $count ) );
+			$label  .= ' <span class="fw-ws-updates" title="' . esc_attr( $waiting ) . '" style="display:inline-block;min-width:18px;height:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:#d63638;color:#fff;font-size:11px;line-height:18px;text-align:center">' . esc_html( number_format_i18n( $count ) ) . '<span class="screen-reader-text"> ' . esc_html( $waiting ) . '</span></span>';
+		}
+
 		$bar->add_node( array(
 			'id'     => 'fw-workspace-switch',
 			'parent' => 'top-secondary',
-			'title'  => esc_html( $title ),
+			'title'  => $label,
 			'href'   => wp_nonce_url( add_query_arg( 'fw_workspace', $off ? 'on' : 'wordpress', admin_url() ), 'fw_workspace_switch' ),
 		) );
 	}
@@ -671,7 +694,7 @@ class FW_Workspaces {
 	 *
 	 * @return bool
 	 */
-	public static function setup( $id ) {
+	public static function setup( $id, array $extra_roles = array() ) {
 		$ws = self::get( $id );
 
 		if ( ! $ws ) {
@@ -681,7 +704,7 @@ class FW_Workspaces {
 		$s     = self::settings();
 		$roles = wp_roles()->get_names();
 
-		foreach ( (array) $ws['roles'] as $role ) {
+		foreach ( array_merge( (array) $ws['roles'], $extra_roles ) as $role ) {
 			if ( isset( $roles[ $role ] ) ) {
 				$s['roles'][ $role ] = array( 'workspace' => $id );
 			}
@@ -693,6 +716,116 @@ class FW_Workspaces {
 		FW_Admin_Menu_Editor::lift_for_admins( self::PARENT_SLUG, $ws['page'] );
 
 		return true;
+	}
+
+	/**
+	 * Undo an app's set-up: no role opens to it any more, and the member roles it
+	 * suggested are no longer kept out. Roles given another app are left alone.
+	 *
+	 * @param string $id Workspace id.
+	 *
+	 * @return bool
+	 */
+	public static function teardown( $id ) {
+		$ws = self::get( $id );
+
+		if ( ! $ws ) {
+			return false;
+		}
+
+		$s = self::settings();
+
+		foreach ( $s['roles'] as $role => $row ) {
+			if ( ( $row['workspace'] ?? '' ) === $id ) {
+				unset( $s['roles'][ $role ] );
+			}
+		}
+
+		$s['members']['roles'] = array_values( array_diff( $s['members']['roles'], (array) $ws['members'] ) );
+		self::save( $s );
+
+		return true;
+	}
+
+	/** @return bool Whether any role opens to this workspace. */
+	public static function in_use( $id ) {
+		foreach ( self::settings()['roles'] as $row ) {
+			if ( ( $row['workspace'] ?? '' ) === $id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/* ---------------------------------------------------------------------- *
+	 * No public website
+	 * ---------------------------------------------------------------------- */
+
+	/** @return bool Whether the site has no public website (an app such as the CRM only). */
+	public static function is_private() {
+		return self::settings()['private'];
+	}
+
+	/** @param bool $on */
+	public static function set_private( $on ) {
+		$s            = self::settings();
+		$s['private'] = (bool) $on;
+		self::save( $s );
+	}
+
+	/**
+	 * @internal With no public website, a visitor is sent to the login screen and a
+	 * signed-in person to their app (or wp-admin).
+	 *
+	 * Runs on template_redirect, so what is answered earlier stays open: REST, admin-ajax,
+	 * admin-post, cron, wp-login.php, and the links an extension answers on `init` (the
+	 * CRM's confirm, unsubscribe and tracking links, which must keep working in emails).
+	 * robots.txt and the favicon are served too. Members kept out of wp-admin still see
+	 * the front end, since it is the only place they have.
+	 */
+	public static function _action_private_site() {
+		if ( ! self::is_private() || is_robots() || is_favicon() || is_admin() ) {
+			return;
+		}
+
+		/**
+		 * Lets a request through to the front end although the site has no public website.
+		 *
+		 * @param bool $allow
+		 */
+		if ( apply_filters( 'fw_workspaces_private_allow', false ) ) {
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			wp_safe_redirect( wp_login_url() );
+			exit;
+		}
+
+		if ( self::is_kept_out() ) {
+			return;
+		}
+
+		$id = self::active();
+		wp_safe_redirect( $id ? self::url( $id ) : admin_url() );
+		exit;
+	}
+
+	/** @internal No public website: ask search engines not to index anything. */
+	public static function _filter_robots( $robots ) {
+		if ( self::is_private() ) {
+			$robots['noindex']  = true;
+			$robots['nofollow'] = true;
+			unset( $robots['index'], $robots['follow'], $robots['max-image-preview'] );
+		}
+
+		return $robots;
+	}
+
+	/** @internal */
+	public static function _filter_robots_txt( $txt ) {
+		return self::is_private() ? "User-agent: *\nDisallow: /\n" : $txt;
 	}
 
 	/** @internal */
@@ -885,6 +1018,23 @@ class FW_Workspaces {
 								'option_none_value' => 0,
 							) );
 							?>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Website', 'fw' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Public website', 'fw' ); ?></th>
+						<td>
+							<input type="hidden" name="fw_workspaces[private]" value="no" />
+							<label>
+								<input type="checkbox" name="fw_workspaces[private]" value="yes" <?php checked( $settings['private'] ); ?> />
+								<?php esc_html_e( 'No public website: this site is only an app, such as a CRM', 'fw' ); ?>
+							</label>
+							<p class="description" style="max-width:70ch">
+								<?php esc_html_e( 'Visitors who open the site are sent to the login screen, and signed-in people to their app. Search engines are asked not to index the site, and the SEO warning about it is not shown. Links in emails (confirm, unsubscribe), forms and the REST API keep working.', 'fw' ); ?>
+							</p>
 						</td>
 					</tr>
 				</table>

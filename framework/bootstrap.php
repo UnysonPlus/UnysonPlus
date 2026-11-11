@@ -60,6 +60,10 @@ if (defined('FW')) {
             // one-time consolidation migration. Loaded early so every dir helper
             // below can route through fw_upw_uploads_dir().
             require $dir . '/includes/uploads-dir.php';
+            // Drops this plugin's per-site `fw_*` tables when a site is deleted from a
+            // network. WordPress drops only its OWN tables, so without this every
+            // extension that makes tables orphans them permanently.
+            require $dir . '/includes/multisite-drop-tables.php';
             // Theme override detection. In CORE because the override rule itself is core
             // (FW_Shortcode::locate_path walks the theme's framework-customizations before
             // the framework's own files), and because a theme may override other extensions

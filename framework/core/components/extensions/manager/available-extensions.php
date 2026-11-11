@@ -365,6 +365,20 @@ $extensions = [
         ],
     ],
 
+    'headless-wordpress' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Headless WordPress', 'fw'),
+        'description' => __('Use WordPress only to manage your content and show it on a separate website or app (Next.js, plain JavaScript, a mobile app). Adds ready-to-use images, a menus endpoint and a site settings endpoint to the REST API.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/headless-wordpress.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Headless-WordPress-Extension',
+            ],
+        ],
+    ],
+
     'sidebars' => [
         'display'     => true,
         'parent'      => null,

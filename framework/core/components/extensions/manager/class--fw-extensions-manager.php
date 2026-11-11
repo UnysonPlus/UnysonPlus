@@ -590,7 +590,8 @@ final class _FW_Extensions_Manager
 			fw_get_framework_directory('/extensions')
 		);
 
-		$error = false;
+		$error  = false;
+		$failed = array(); // declared here: a `break` above the loop must still leave it defined
 
 		do {
 			if ($wp_filesystem->exists($tmp_dir)) {
@@ -605,16 +606,54 @@ final class _FW_Extensions_Manager
 				break;
 			}
 
-			if (true !== copy_dir($extensions_dir, $tmp_dir)) {
-				$error = __('Cannot backup the extensions', 'fw');
-				break;
+			/**
+			 * Copy one extension at a time rather than the whole folder in one call.
+			 *
+			 * copy_dir() over the entire tree is all-or-nothing: a single unreadable file,
+			 * or a tree large enough to exhaust the request, loses the backup for EVERY
+			 * extension - and the old code then reported a bare "Cannot backup the
+			 * extensions" with no indication of which one or why, which is not enough to
+			 * act on. Per-extension, one failure costs only that extension, the rest stay
+			 * protected, and the warning can name the ones at risk.
+			 */
+			foreach ((array) $wp_filesystem->dirlist($extensions_dir, false) as $name => $item) {
+				if ('d' !== (isset($item['type']) ? $item['type'] : '')) {
+					continue;
+				}
+
+				$copied = FW_WP_Filesystem::mkdir_recursive($tmp_dir .'/'. $name)
+					? copy_dir($extensions_dir .'/'. $name, $tmp_dir .'/'. $name)
+					: new WP_Error('mkdir', __('cannot create the backup directory', 'fw'));
+
+				if (true !== $copied) {
+					$failed[$name] = is_wp_error($copied) ? $copied->get_error_message() : __('unknown reason', 'fw');
+					$wp_filesystem->delete($tmp_dir .'/'. $name, true, 'd');
+				}
+			}
+
+			if ($failed) {
+				$reasons = array();
+
+				foreach ($failed as $name => $reason) {
+					$reasons[] = $name .' ('. $reason .')';
+				}
+
+				$error = sprintf(
+					/* translators: %s: comma-separated list of extension names, each with the reason it failed. */
+					__('Cannot backup these extensions before the update: %s. If the update package does not ship them, they will have to be reinstalled from UnysonPlus -> Extensions afterwards; extensions the package does ship are unaffected.', 'fw'),
+					implode(', ', $reasons)
+				);
 			}
 		} while(false);
 
 		if ($error) {
 			trigger_error($error, E_USER_WARNING);
 
-			$wp_filesystem->delete($tmp_dir, true, 'd');
+			// Only a wholesale failure leaves nothing worth keeping. A partial backup still
+			// protects every extension that DID copy, so it must survive for the restore.
+			if (empty($failed)) {
+				$wp_filesystem->delete($tmp_dir, true, 'd');
+			}
 		}
 	}
 

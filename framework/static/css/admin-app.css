@@ -74,6 +74,11 @@ body.fw-app-focus #wpfooter {
 	margin-left: 0 !important;
 }
 
+/* The admin skin indents the top bar by the WordPress menu's width; with the menu gone, that is an empty gap. */
+body.fw-app-focus #wpadminbar {
+	padding-left: 0 !important;
+}
+
 /* --- Sidebar ------------------------------------------------------------- */
 
 .fw-app-side {

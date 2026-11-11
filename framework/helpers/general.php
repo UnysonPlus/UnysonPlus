@@ -2194,9 +2194,291 @@ if ( ! function_exists( 'fw_resize' ) ) {
 	}
 }
 
+if ( ! function_exists( 'fw_img_attachment_id_from_url' ) ) {
+	/**
+	 * The attachment id behind an uploaded image URL, or 0.
+	 *
+	 * Memoized, because attachment_url_to_postid() is a database query and a page
+	 * can render the same image many times. Also retries with the other scheme: a
+	 * site that moved to https after its images were uploaded stores http URLs
+	 * that otherwise resolve to nothing.
+	 *
+	 * @param string $url
+	 * @return int
+	 */
+	function fw_img_attachment_id_from_url( $url ) {
+		static $cache = array();
+
+		$url = trim( (string) $url );
+		if ( '' === $url ) {
+			return 0;
+		}
+		if ( isset( $cache[ $url ] ) ) {
+			return $cache[ $url ];
+		}
+
+		$try = $url;
+		if ( 0 === strpos( $try, '//' ) ) {
+			$try = ( is_ssl() ? 'https:' : 'http:' ) . $try;
+		}
+
+		$id = (int) attachment_url_to_postid( $try );
+		if ( ! $id ) {
+			if ( 0 === stripos( $try, 'https://' ) ) {
+				$id = (int) attachment_url_to_postid( 'http://' . substr( $try, 8 ) );
+			} elseif ( 0 === stripos( $try, 'http://' ) ) {
+				$id = (int) attachment_url_to_postid( 'https://' . substr( $try, 7 ) );
+			}
+		}
+
+		$cache[ $url ] = $id;
+
+		return $id;
+	}
+}
+
+if ( ! function_exists( 'fw_img_responsive_atts' ) ) {
+	/**
+	 * The attributes that make a hand-built <img> responsive: srcset, sizes,
+	 * width and height.
+	 *
+	 * Why this is shared rather than per-element: an element that builds its own
+	 * <img> from an image option gets only a URL, so it emits a single fixed file
+	 * at whatever size happens to be stored - one width for a phone and a 5K
+	 * monitor alike. Measured on a real page, a card rendered about 420 CSS px
+	 * wide was downloading a 768px file, and the element offered the browser no
+	 * smaller alternative because it emitted no srcset at all. Most of the
+	 * bundled elements had the same gap.
+	 *
+	 * It also returns width/height, which is what stops the layout jumping while
+	 * the image loads - the "image elements do not have explicit width and
+	 * height" audit.
+	 *
+	 * Returns an EMPTY array when the URL is not a local attachment (an external
+	 * image, or an SVG with no intrinsic size WordPress tracks), so a caller can
+	 * merge it unconditionally and simply get nothing extra.
+	 *
+	 * @param string $url    The image URL as stored by the option.
+	 * @param int    $att_id Optional known attachment id, to skip the lookup.
+	 * @param string $sizes  Optional `sizes` value; otherwise WordPress's default.
+	 * @return array<string,string|int>
+	 */
+	function fw_img_responsive_atts( $url, $att_id = 0, $sizes = '' ) {
+		$att_id = (int) $att_id;
+		if ( $att_id <= 0 ) {
+			$att_id = fw_img_attachment_id_from_url( $url );
+		}
+		if ( $att_id <= 0 ) {
+			return array();
+		}
+
+		$src = wp_get_attachment_image_src( $att_id, 'full' );
+		if ( ! is_array( $src ) || empty( $src[1] ) || empty( $src[2] ) ) {
+			return array();
+		}
+
+		$out = array(
+			'width'  => (int) $src[1],
+			'height' => (int) $src[2],
+		);
+
+		$srcset = wp_get_attachment_image_srcset( $att_id, 'full' );
+		if ( $srcset ) {
+			$out['srcset'] = $srcset;
+			$out['sizes']  = '' !== $sizes ? $sizes : wp_get_attachment_image_sizes( $att_id, 'full' );
+			if ( empty( $out['sizes'] ) ) {
+				unset( $out['sizes'] );
+			}
+		}
+
+		/**
+		 * Filters the responsive attributes for a hand-built image tag.
+		 *
+		 * @param array  $out
+		 * @param int    $att_id
+		 * @param string $url
+		 */
+		return apply_filters( 'fw_img_responsive_atts', $out, $att_id, $url );
+	}
+}
+
+if ( ! function_exists( 'fw_img_responsive_attr_html' ) ) {
+	/**
+	 * fw_img_responsive_atts() rendered as escaped attribute text, ready to drop
+	 * into an existing <img>. Returns '' when there is nothing to add, and always
+	 * carries its own leading space so it can be concatenated directly.
+	 *
+	 * @param string $url
+	 * @param int    $att_id
+	 * @param string $sizes
+	 * @return string
+	 */
+	function fw_img_responsive_attr_html( $url, $att_id = 0, $sizes = '' ) {
+		$atts = fw_img_responsive_atts( $url, $att_id, $sizes );
+		if ( empty( $atts ) ) {
+			return '';
+		}
+
+		$html = '';
+		foreach ( $atts as $k => $v ) {
+			if ( '' === $v || null === $v ) {
+				continue;
+			}
+			$html .= ' ' . $k . '="' . esc_attr( $v ) . '"';
+		}
+
+		return $html;
+	}
+}
+
 if ( ! function_exists( 'fw_image_tag' ) ) {
 	/**
+	 * Builds the image markup for an attachment ID or image URL: one responsive <img>,
+	 * or a <picture> when the image changes per device.
+	 *
+	 * Takes every argument fw_image_tag_basic() takes, plus:
+	 *  - art         Per-device crops/images, from fw_image_art_resolve():
+	 *                array( 'base'|'md'|'lg' => array( 'source' => attachment id,
+	 *                'ratio' => '3/4', 'focal' => '50% 30%', 'sizes' => '' ) ).
+	 *                When a device differs from the main image, the result is a
+	 *                <picture> with a <source> per breakpoint (phone < 768,
+	 *                tablet < 992, desktop < 1200); the <img> stays the main
+	 *                (large-desktop) picture and the fallback.
+	 *  - lazy_attrs  true = write src/srcset as data-fw-lazy-src / data-fw-lazy-srcset
+	 *                (on the <img> and every <source>), for a script that loads the
+	 *                image itself just before it is shown (e.g. a slider's later
+	 *                slides). Nothing loads until the script swaps them back.
+	 *  - preload     true (with fetchpriority 'high') = also print one
+	 *                <link rel="preload" as="image"> per device range, marked
+	 *                data-fw-hoist so the Asset Optimizer moves them into <head>.
+	 *                Each link carries its own media query, so a phone preloads the
+	 *                phone crop and never the desktop one.
+	 *  - inline_style false = no inline width/aspect-ratio/object-fit style; for
+	 *                elements whose own CSS sizes the image (e.g. a cover background).
+	 *
+	 * @param int|string $source Attachment ID OR an image URL (art needs an ID).
+	 * @param array      $args
+	 * @return string
+	 */
+	function fw_image_tag( $source, $args = array() ) {
+		$args = array_merge( array( 'art' => array(), 'lazy_attrs' => false, 'preload' => false ), (array) $args );
+		$art  = is_array( $args['art'] ) ? $args['art'] : array();
+		$lazy = ! empty( $args['lazy_attrs'] );
+		$pre  = ! empty( $args['preload'] ) && 'high' === ( isset( $args['fetchpriority'] ) ? $args['fetchpriority'] : '' ) && ! $lazy;
+		$base = $args;
+		unset( $base['art'], $base['lazy_attrs'], $base['preload'] );
+
+		$is_id = is_numeric( $source ) && (int) $source > 0;
+		$main  = array(
+			'source' => $is_id ? (int) $source : 0,
+			'ratio'  => isset( $args['aspect_ratio'] ) ? (string) $args['aspect_ratio'] : '',
+			'focal'  => isset( $args['object_position'] ) && '' !== trim( (string) $args['object_position'] ) ? (string) $args['object_position'] : 'center center',
+		);
+		$same = function ( $a ) use ( $main ) {
+			return (int) $a['source'] === $main['source'] && (string) $a['ratio'] === $main['ratio']
+				&& ( '' === $main['ratio'] || 'original' === $main['ratio'] || (string) $a['focal'] === $main['focal'] );
+		};
+
+		// Which device layers differ from the main picture? Sources are emitted for every
+		// layer from phone up to the largest one that differs, so the ranges stay
+		// contiguous and the <img> owns everything above them.
+		$layers = array();
+		if ( $is_id && $art && function_exists( 'fw_image_art_breakpoints' ) ) {
+			$top = '';
+			foreach ( fw_image_art_breakpoints() as $k => $max ) {
+				if ( isset( $art[ $k ] ) && is_array( $art[ $k ] ) ) {
+					$spec = array_merge( $main, array_filter( $art[ $k ], function ( $v ) { return '' !== $v && null !== $v; } ) );
+					$spec['source'] = (int) $spec['source'] > 0 ? (int) $spec['source'] : $main['source'];
+					$art[ $k ] = $spec;
+					if ( ! $same( $spec ) ) {
+						$top = $k;
+					}
+				}
+			}
+			if ( '' !== $top ) {
+				foreach ( fw_image_art_breakpoints() as $k => $max ) {
+					$layers[ $k ] = isset( $art[ $k ] ) && is_array( $art[ $k ] ) ? $art[ $k ] : $main;
+					if ( $k === $top ) {
+						break;
+					}
+				}
+			}
+		}
+
+		$img = fw_image_tag_basic( $source, $base );
+		if ( '' === $img ) {
+			return '';
+		}
+		$sizes_default = ( isset( $args['sizes'] ) && '' !== $args['sizes'] ) ? $args['sizes'] : '100vw';
+		$sizes_default = trim( preg_replace( '/^\s*auto\s*,\s*/i', '', $sizes_default ) ); // 'auto' is only valid on a lazy <img>
+		$links         = array();
+		$sources       = '';
+		$min           = 0;
+		// NOTE: the preload links below must keep starting `<link rel="preload" as="image"`
+		// exactly. The Asset Optimizer (preload_lcp_image) hoists every data-fw-hoist link
+		// into <head> and then skips its own LCP guess only because that substring is
+		// present; if the wording changed, the guess would come back and phones would
+		// preload the desktop file again.
+
+		foreach ( $layers as $k => $spec ) {
+			$data = fw_image_srcset_data( $spec['source'], $spec['ratio'], $spec['focal'] );
+			$bps  = fw_image_art_breakpoints();
+			$max  = $bps[ $k ];
+			if ( ! $data ) {
+				$min = $max + 0.02;
+				continue;
+			}
+			$sizes = isset( $spec['sizes'] ) && '' !== $spec['sizes'] ? $spec['sizes'] : $sizes_default;
+			$sources .= '<source media="(max-width: ' . $max . 'px)" '
+				. ( $lazy ? 'data-fw-lazy-srcset' : 'srcset' ) . '="' . esc_attr( $data['srcset'] ) . '"'
+				. ' sizes="' . esc_attr( $sizes ) . '"'
+				. ' width="' . (int) $data['width'] . '" height="' . (int) $data['height'] . '">';
+			if ( $pre ) {
+				$media   = ( $min > 0 ? '(min-width: ' . $min . 'px) and ' : '' ) . '(max-width: ' . $max . 'px)';
+				$links[] = '<link rel="preload" as="image" href="' . esc_attr( $data['src'] ) . '" imagesrcset="' . esc_attr( $data['srcset'] ) . '" imagesizes="' . esc_attr( $sizes ) . '" media="' . esc_attr( $media ) . '" fetchpriority="high" data-fw-hoist>';
+			}
+			$min = $max + 0.02;
+		}
+
+		if ( $pre ) {
+			// The main <img> covers every width above the last source.
+			$src    = preg_match( '#\ssrc="([^"]*)"#', $img, $m ) ? $m[1] : '';
+			$srcset = preg_match( '#\ssrcset="([^"]*)"#', $img, $m ) ? $m[1] : '';
+			$isizes = preg_match( '#\ssizes="([^"]*)"#', $img, $m ) ? trim( preg_replace( '/^\s*auto\s*,\s*/i', '', $m[1] ) ) : '';
+			if ( '' !== $src ) {
+				$links[] = '<link rel="preload" as="image" href="' . esc_attr( html_entity_decode( $src ) ) . '"'
+					. ( '' !== $srcset ? ' imagesrcset="' . esc_attr( html_entity_decode( $srcset ) ) . '"' : '' )
+					. ( '' !== $isizes ? ' imagesizes="' . esc_attr( $isizes ) . '"' : '' )
+					. ( $min > 0 ? ' media="(min-width: ' . $min . 'px)"' : '' )
+					. ' fetchpriority="high" data-fw-hoist>';
+			}
+		}
+
+		if ( '' !== $sources ) {
+			// A fixed inline aspect-ratio would force the desktop shape on every device.
+			// Each <source> carries the width/height of its own crop, so drop the inline
+			// ratio and let the chosen file set the box (height:auto keeps it in proportion).
+			$img = preg_replace_callback( '#\sstyle="([^"]*)"#', function ( $m ) {
+				$s = preg_replace( '/\baspect-ratio\s*:[^;]*;?/i', '', $m[1] );
+				return '' === trim( $s ) ? '' : ' style="' . $s . '"';
+			}, $img );
+		}
+
+		if ( $lazy ) {
+			// Nothing loads until a script copies these back (sources first, then the img).
+			$img = preg_replace( '#\s(srcset|src)="#', ' data-fw-lazy-$1="', $img );
+		}
+
+		$html = '' !== $sources ? '<picture class="fw-picture">' . $sources . $img . '</picture>' : $img;
+		return implode( '', $links ) . $html;
+	}
+}
+
+if ( ! function_exists( 'fw_image_tag_basic' ) ) {
+	/**
 	 * Builds a responsive img tag for an attachment ID or image URL with sizing, srcset and loading hints.
+	 * Called by fw_image_tag(), which adds per-device <picture> output on top; call
+	 * fw_image_tag() in element views.
 	 *
 	 * Modern <img> builder shared across shortcodes (media-image, reviews-table …).
 	 *
@@ -2216,8 +2498,9 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 	 *                            extra_attr (assoc array merged onto the tag).
 	 * @return string
 	 */
-	function fw_image_tag( $source, $args = array() ) {
+	function fw_image_tag_basic( $source, $args = array() ) {
 		$args = array_merge( array(
+			'inline_style'    => true, // false = no inline width/aspect-ratio/object-fit (the element's CSS sizes it)
 			'width'           => '',
 			'height'          => '',
 			'class'           => 'img-fluid',
@@ -2284,7 +2567,7 @@ if ( ! function_exists( 'fw_image_tag' ) ) {
 		}
 		if ( $w_px ) { $attr['width'] = $w_px; }
 		if ( $h_px ) { $attr['height'] = $h_px; }
-		if ( '' !== $style ) { $attr['style'] = $style; }
+		if ( '' !== $style && false !== $args['inline_style'] ) { $attr['style'] = $style; }
 
 		$is_id = is_numeric( $source ) && (int) $source > 0;
 		$alt   = (string) $args['alt'];
