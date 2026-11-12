@@ -439,3 +439,6 @@ body.fw-app-screen .fw-app .fw-app-crumbs li a {
 body.fw-app-screen .fw-app .fw-app-crumbs li a:hover {
 	color: var(--app-accent);
 }
+
+/* App links above the WordPress links: one divider for both. */
+.fw-app-side__links+.fw-app-side__foot{margin-top:0;padding-top:0;border-top:0}

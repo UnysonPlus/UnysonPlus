@@ -72,13 +72,17 @@ class FW_Admin_App {
 	 *     @type string          $page       The admin page slug, used to build view URLs.
 	 *     @type string          $arg        The query arg that picks the view. Default 'view'.
 	 *     @type string          $default    The view a bare page URL lands on, whose URL carries no arg.
-	 *     @type array|callable  $nav        Groups: key => { label, items: view => { label, icon, cap, soon, url } }.
+	 *     @type array|callable  $nav        Groups: key => { label, items: view => { label, icon, cap, soon, badge, url } }.
+	 *                                       `soon` greys the item and badges it "Soon"; `badge` replaces that word
+	 *                                       (e.g. "Off" for a module that is built but switched off).
 	 *                                       A callable is called with no arguments and must return the same shape,
 	 *                                       which is how an app whose menu depends on runtime state (modules
 	 *                                       switched off, a schema read at render time) stays in step.
 	 *     @type string          $capability Required to use the app. Default 'manage_options'.
 	 *     @type string          $back       Label for the "leave the app" link. Default "Back to WordPress".
 	 *     @type string          $back_url   Where that link goes. Default the dashboard.
+	 *     @type array|callable  $links      Extra sidebar-footer links: list of { label, icon, url }. A callable
+	 *                                       returns the same list at render time. Shown in a workspace too.
 	 * }
 	 */
 	public function __construct( $id, array $args = array() ) {
@@ -93,6 +97,7 @@ class FW_Admin_App {
 			'capability' => 'manage_options',
 			'back'       => __( 'Back to WordPress', 'fw' ),
 			'back_url'   => '',
+			'links'      => array(),
 		), $args );
 	}
 
@@ -356,7 +361,7 @@ class FW_Admin_App {
 											<span class="dashicons <?php echo esc_attr( $item['icon'] ?? 'dashicons-marker' ); ?>" aria-hidden="true"></span>
 											<span class="fw-app-side__text"><?php echo esc_html( $item['label'] ?? $slug ); ?></span>
 											<?php if ( ! empty( $item['soon'] ) ) : ?>
-												<span class="fw-app-side__soon"><?php esc_html_e( 'Soon', 'fw' ); ?></span>
+												<span class="fw-app-side__soon"><?php echo esc_html( '' !== (string) ( $item['badge'] ?? '' ) ? $item['badge'] : __( 'Soon', 'fw' ) ); ?></span>
 											<?php endif; ?>
 										</a>
 									</li>
@@ -365,6 +370,21 @@ class FW_Admin_App {
 						</div>
 					<?php endforeach; ?>
 				</div>
+
+				<?php
+				$links = is_callable( $this->args['links'] ) ? call_user_func( $this->args['links'] ) : (array) $this->args['links'];
+				$links = array_filter( (array) $links, function ( $l ) { return is_array( $l ) && ! empty( $l['url'] ) && ! empty( $l['label'] ); } );
+				if ( $links ) :
+					?>
+				<div class="fw-app-side__foot fw-app-side__links">
+					<?php foreach ( $links as $l ) : ?>
+						<a class="fw-app-side__link" href="<?php echo esc_url( $l['url'] ); ?>">
+							<span class="dashicons <?php echo esc_attr( $l['icon'] ?? 'dashicons-external' ); ?>" aria-hidden="true"></span>
+							<span class="fw-app-side__text"><?php echo esc_html( $l['label'] ); ?></span>
+						</a>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
 
 				<?php
 				// In a workspace both links lead nowhere: the menu they would show is the
