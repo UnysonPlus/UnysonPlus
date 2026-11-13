@@ -1298,7 +1298,7 @@ fw.getQueryString = function(name) {
 			modalCustomClass: '',
 			emptyHtmlOnClose: true,
 			disableLazyTabs: false,
-			size: 'small' // small, medium, large
+			size: 'small' // small, medium, large, full
 		},
 		ContentView: fw.View.extend({
 			tagName: 'form',
@@ -1416,7 +1416,7 @@ fw.getQueryString = function(name) {
 					$modalWrapper.addClass(modalCustomClass);
 				}
 
-				if (['large', 'medium', 'small'].indexOf(size) !== -1) {
+				if (['full', 'large', 'medium', 'small'].indexOf(size) !== -1) {
 					$modalWrapper.addClass('fw-modal-' + size);
 				} else {
 					$modalWrapper.addClass('fw-modal-' + modal.defaults.size);
@@ -1438,6 +1438,9 @@ fw.getQueryString = function(name) {
 					var hasDraggable = !!jQuery.fn.draggable;
 					var $box = $modalWrapper.find('.media-modal');
 					if (!$box.length) { return; }
+					// A full-size panel fills the window and follows it as it resizes: dragging would pin it
+					// to one size and position, so it stays a plain (blocking) modal.
+					if (size === 'full') { return; }
 
 					// ---- Debug instrumentation (opt-in, zero cost when off) -------------
 					// Enable with ANY of: ?fw-modal-debug=1 in the URL, localStorage

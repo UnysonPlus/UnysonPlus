@@ -2,11 +2,21 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.66';
+$manifest['version']    = '3.0.67';
 
 /**
  * Changelog
- * 3.0.58 - Extension uninstall.php. When an extension is deleted from the
+ * 3.0.67 - Full-size popups and option columns. A shortcode can now set
+ *          'popup_size' => 'full' (also allowed as a popup container's
+ *          modal-size): the modal fills the window, 30px in from each edge,
+ *          and is not draggable. New 'column' container type: adjacent column
+ *          containers render side by side as one row (width as "n/d", optional
+ *          sticky, stack_first for the narrow layout, stack_below in px), and
+ *          their options save flat, exactly as if no column wrapped them. The
+ *          Motion Gallery uses both: its Design tab shows the settings on the
+ *          left and the live preview on the right.
+ *
+ * 3.0.58 -Extension uninstall.php. When an extension is deleted from the
  *          Extensions screen, the manager now runs the extension's own
  *          uninstall.php just before deleting its folder, the way WordPress runs a
  *          plugin's, with FW_EXTENSION_UNINSTALL defined. It runs even when the

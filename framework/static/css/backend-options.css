@@ -1487,3 +1487,40 @@ body.rtl .fw-backend-option-design-default.with-help>.fw-backend-option-label>.f
 	max-width: 100%;
 	vertical-align: top;
 }
+
+/* -----------------------------------------------------------------------------
+ * "column" container type — options side by side (includes/container-types/column).
+ *
+ * Adjacent `column` containers render as one .fw-backend-columns row. The row is
+ * STACKED by default (one column under another) and its own render emits a
+ * container-query rule that turns it into side-by-side columns once the row is
+ * at least `stack_below` px wide — so it stays stacked in a narrow modal or the
+ * Live Editor's side panel. Each column's share rides in --fw-col-flex, applied
+ * only side by side. A sticky column stays in view while the options scroll.
+ * -------------------------------------------------------------------------- */
+.fw-backend-columns {
+	container: fw-columns / inline-size;
+	--fw-col-gap: 24px;
+}
+.fw-backend-columns__row {
+	display: flex;
+	flex-direction: column;
+	gap: 0 var(--fw-col-gap);
+}
+.fw-backend-column {
+	box-sizing: border-box;
+	min-width: 0;
+}
+.fw-backend-column--sticky {
+	z-index: 5;
+	align-self: flex-start;
+}
+.fw-backend-column--stack-first {
+	order: -1; /* stacked only: the row rule resets order side by side */
+}
+/* A sticky column that leads the stack stays pinned when stacked too (e.g. a preview above long
+   controls); side by side, the row's own rule pins it. */
+.fw-backend-column--sticky.fw-backend-column--stack-first {
+	position: sticky;
+	top: 0;
+}

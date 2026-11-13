@@ -234,6 +234,9 @@ if ( ! function_exists( '_fw_includes_container_types_autoload' ) ) {
 			case 'FW_Container_Type_Tab':
 				require_once __DIR__ . '/includes/container-types/tab/class-fw-container-type-tab.php';
 				break;
+			case 'FW_Container_Type_Column':
+				require_once __DIR__ . '/includes/container-types/column/class-fw-container-type-column.php';
+				break;
 		}
 	}
 }

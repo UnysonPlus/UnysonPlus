@@ -3193,6 +3193,19 @@ body.wp-core-ui .fw-modal.fw-modal-closing > .media-modal > .media-modal-content
 	max-height: 800px;
 }
 
+/* full: the whole window less a 30px margin all round, like the media uploader. It follows the
+   window as it resizes and is not draggable (fw.js skips the drag set-up for this size). */
+.fw-modal.fw-modal-full > .media-modal {
+	top: 30px;
+	right: 30px;
+	bottom: 30px;
+	left: 30px;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	box-sizing: border-box;
+}
+
 .fw-sole-modal.fw-sole-confirm-modal {
 	text-align: center;
 }

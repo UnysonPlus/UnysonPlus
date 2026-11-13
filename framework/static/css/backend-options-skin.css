@@ -364,7 +364,10 @@ body {
 }
 
 /* Active: bordered on three sides, bottom edge painted out so the tab and its
- * panel read as one surface. */
+ * panel read as one surface. The active tab is distinguished by its surface,
+ * border and ink colour — NOT by a heavier font-weight: every state (rest,
+ * hover, focus, active) holds the SAME weight as the resting tab (550) so the
+ * tab row never gets wider and "jumps" on hover or when switching tabs. */
 .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
 .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab,
 .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab:hover {
@@ -372,7 +375,15 @@ body {
 	border-color: var(--u-border);
 	border-bottom-color: var(--u-surface);
 	color: var(--u-ink);
-	font-weight: 650;
+	font-weight: 550;
+}
+
+/* Hold the resting weight on every interactive state too, so no stylesheet
+   (an older cached copy, WordPress core, or jQuery UI) can bold a tab on hover
+   / focus and reflow the row. */
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:hover,
+.fw-options-tabs-wrapper > .fw-options-tabs-list ul li a.nav-tab:focus {
+	font-weight: 550;
 }
 
 /* backend-options.css scopes two of these under `.postbox`, which outranks the

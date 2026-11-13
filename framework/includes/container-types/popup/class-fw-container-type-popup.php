@@ -7,7 +7,7 @@ class FW_Container_Type_Popup extends FW_Container_Type {
 
 	protected function _get_defaults() {
 		return array(
-			'modal-size' => 'small', // small, medium, large
+			'modal-size' => 'small', // small, medium, large, full
 			'desc' => '',
 		);
 	}
@@ -43,7 +43,7 @@ class FW_Container_Type_Popup extends FW_Container_Type {
 
 				$attr['data-modal-title'] = $option['title'];
 
-				if (in_array($option['modal-size'], array('small', 'medium', 'large'))) {
+				if (in_array($option['modal-size'], array('small', 'medium', 'large', 'full'))) {
 					$attr['data-modal-size'] = $option['modal-size'];
 				} else {
 					$attr['data-modal-size'] = $defaults['modal-size'];

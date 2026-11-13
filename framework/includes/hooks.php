@@ -168,6 +168,7 @@
 		FW_Container_Type::register( 'FW_Container_Type_Box' );
 		FW_Container_Type::register( 'FW_Container_Type_Popup' );
 		FW_Container_Type::register( 'FW_Container_Type_Tab' );
+		FW_Container_Type::register( 'FW_Container_Type_Column' );
 	}
 
 	add_action( 'fw_container_types_init', '_action_fw_init_container_types' );
