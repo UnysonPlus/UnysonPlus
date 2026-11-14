@@ -1761,6 +1761,8 @@ final class _FW_Extensions_Manager
 		$installed_extensions = $this->get_installed_extensions();
 		$result               = $downloaded_extensions = array();
 		$has_errors           = false;
+		// What was asked for, as opposed to the requirements queued below while installing it.
+		$requested            = array_fill_keys( array_keys( $extensions ), true );
 
 		while ( ! empty( $extensions ) ) {
 			reset( $extensions );
@@ -1768,6 +1770,13 @@ final class _FW_Extensions_Manager
 			unset( $extensions[ $extension_name ] );
 
 			$extensions_before_install = array_keys( $installed_extensions );
+
+			// A queued requirement that arrived in the meantime inside its parent (installing Shortcodes brings its
+			// Page Builder) is done, not an error: as an error it cancelled the rest of the queue, so the Page
+			// Builder's own requirement (Forms) was never fetched and the AI Assistant could not be activated.
+			if ( isset( $installed_extensions[ $extension_name ] ) && ! isset( $requested[ $extension_name ] ) ) {
+				continue;
+			}
 
 			if ( isset( $installed_extensions[ $extension_name ] ) ) {
 				$result[ $extension_name ] = new WP_Error(

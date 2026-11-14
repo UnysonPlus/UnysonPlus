@@ -88,7 +88,13 @@ $wrapper_class = 'fw-col-xs-12 fw-col-lg-6 fw-extensions-list-item';
 if ($installed_data && !$is_active) {
     $wrapper_class .= ' disabled';
 }
-if (!$installed_data && !$is_compatible) {
+/**
+ * Filters the extensions never folded away under "Show other extensions" though the theme does not list them: the AI
+ * Assistant, which the "Build this site with an AI app?" notice sends people here to download (hidden, they could not
+ * find it).
+ */
+$always_shown = (array) apply_filters( 'fw_extensions_always_shown', array( 'ai-assistant' ) );
+if (!$installed_data && !$is_compatible && !in_array( $name ?? '', $always_shown, true )) {
     $wrapper_class .= ' not-compatible';
 }
 ?>
