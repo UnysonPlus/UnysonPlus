@@ -64,6 +64,9 @@ if (defined('FW')) {
             // network. WordPress drops only its OWN tables, so without this every
             // extension that makes tables orphans them permanently.
             require $dir . '/includes/multisite-drop-tables.php';
+            // Switches a hidden shared extension (Payments) on the first time a feature needs it.
+            // In core so the callers can ask before that extension is installed.
+            require $dir . '/includes/extension-on-demand.php';
             // Theme override detection. In CORE because the override rule itself is core
             // (FW_Shortcode::locate_path walks the theme's framework-customizations before
             // the framework's own files), and because a theme may override other extensions

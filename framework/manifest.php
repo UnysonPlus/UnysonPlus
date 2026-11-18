@@ -2,10 +2,18 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.68';
+$manifest['version']    = '3.0.69';
 
 /**
  * Changelog
+ * 3.0.69 - Extensions on demand, and the Shop and Payments extensions in the catalog.
+ *          fw_ext_ensure_active( $name ) (includes/extension-on-demand.php) downloads
+ *          and activates an extension the first time a feature needs it, so a hidden
+ *          shared extension such as Payments is switched on by the feature that takes
+ *          money (Membership, Forms, Shop) instead of by the owner. The Extensions
+ *          catalog lists Shop (products, a cart and checkout, delivery and orders)
+ *          and the hidden Payments core they all use.
+ *
  * 3.0.67 - Full-size popups and option columns. A shortcode can now set
  *          'popup_size' => 'full' (also allowed as a popup container's
  *          modal-size): the modal fills the window, 30px in from each edge,

@@ -141,6 +141,20 @@ $extensions = [
         ],
     ],
 
+    'shop' => [
+        'display'     => true,
+        'parent'      => null,
+        'name'        => __('Shop', 'fw'),
+        'description' => __('A store built into Unyson+: physical, digital and service products with options and variants, stock with a history of every change, a cart and a checkout paid through the shared Payments system, delivery zones, orders and their emails, Import / Export, and a catalog mode that shows products and takes enquiries without selling.', 'fw'),
+        'thumbnail'   => $thumbnails_uri . '/shop.svg',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Shop-Extension',
+            ],
+        ],
+    ],
+
     'bookings' => [
         'display'     => true,
         'parent'      => null,
@@ -642,6 +656,21 @@ $extensions = [
             'source' => 'github',
             'opts'   => [
                 'user_repo' => $github_account . '/UnysonPlus-Styling-Extension',
+            ],
+        ],
+    ],
+    // Hidden shared plumbing: never shown in the list. Installed and activated on demand by
+    // fw_ext_ensure_active( 'payments' ) the first time a feature takes money.
+    'payments' => [
+        'display'     => false,
+        'parent'      => null,
+        'name'        => __('Payments', 'fw'),
+        'description' => __('The shared payments core for Shop, Membership, Forms and Bookings: payment providers and their methods, one ledger of payments and refunds, and the Payments screen.', 'fw'),
+        'thumbnail'   => '',
+        'download'    => [
+            'source' => 'github',
+            'opts'   => [
+                'user_repo' => $github_account . '/UnysonPlus-Payments-Extension',
             ],
         ],
     ],
