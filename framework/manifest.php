@@ -2,10 +2,22 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.69';
+$manifest['version']    = '3.0.70';
 
 /**
  * Changelog
+ * 3.0.70 - Animation Engine: springs everywhere, More properties, Set / Lottie / Rive
+ *          steps and Bursts. Ships Animation Engine 1.5.23, Shortcodes 1.16.18 and
+ *          Live Editor 0.3.17. Interactions, States and Scroll Keyframes use the shared
+ *          easing picker, which gains the Kinetic Scenes Motion design curves, the
+ *          older Classic curves and a custom cubic-bezier; Scroll Motion offers the
+ *          springs too. Interaction steps and states gain More properties (size,
+ *          radius, skew, 3D tilt, colours, filters, a clip reveal) and new actions:
+ *          Set something instantly, Control its Lottie / Rive animation, Burst from it.
+ *          The Lottie element gains a Controlled by Interactions trigger and el.fwLottie;
+ *          Confetti gains a Bursts group; the Rive element no longer logs a console
+ *          error for files without a View Model.
+ *
  * 3.0.69 - Extensions on demand, and the Shop and Payments extensions in the catalog.
  *          fw_ext_ensure_active( $name ) (includes/extension-on-demand.php) downloads
  *          and activates an extension the first time a feature needs it, so a hidden
