@@ -246,6 +246,16 @@
 					var $this = $(this);
 					var largeImageAttr = $this.data('large-img-attr');
 
+					// The thumbnail is sized only by its HTML height attribute, which any page CSS such as
+					// `img { height:auto; max-width:100% }` overrides. On the front end (Live Editor modals)
+					// a theme rule like that collapsed every tile to 0x0, so pin the size inline.
+					var thumbHeight = parseFloat($this.attr('height'));
+					if (thumbHeight > 0) {
+						this.style.setProperty('height', thumbHeight + 'px', 'important');
+						this.style.setProperty('width', 'auto', 'important');
+						this.style.setProperty('max-width', 'none', 'important');
+					}
+
 					if (largeImageAttr) {
 						$this.fwTooltip({
 							content: $('<div></div>').append(

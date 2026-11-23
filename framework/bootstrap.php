@@ -72,6 +72,8 @@ if (defined('FW')) {
             // the framework's own files), and because a theme may override other extensions
             // the same way. The shortcodes loader reads the per-shortcode opt-out from here.
             require $dir . '/includes/theme-overrides.php';
+            // Themes built for the original Unyson (their "required plugin: Unyson" notice).
+            require $dir . '/includes/unyson-compat.php';
             // The AI-suggestion queue. In CORE rather than in the AI Assistant extension because a
             // suggestion has to survive being made while that extension is switched off -- see the
             // file's docblock.
@@ -128,6 +130,10 @@ if (defined('FW')) {
             // Admin-only: confirm dialog before a manual plugin update (back-up reminder).
             if ( is_admin() ) {
                 require $dir . '/includes/update-guard/update-guard.php';
+                // Neutralise any null admin-menu slug before core renders the menu, so
+                // PHP 8's preg_replace(null) deprecation in get_plugin_page_hookname()
+                // can't fire (most visible on the plugin-update screen).
+                require $dir . '/includes/admin-menu-guard.php';
             }
             require $dir . '/includes/presets.php';
             require $dir . '/includes/css-tokens.php';
