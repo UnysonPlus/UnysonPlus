@@ -88,6 +88,7 @@
 		FW_Option_Type::register( 'FW_Option_Type_Split_Slider' );
 		FW_Option_Type::register( 'FW_Option_Type_Switch' );
 		FW_Option_Type::register( 'FW_Option_Type_Code_Editor' );
+		FW_Option_Type::register( 'FW_Option_Type_Vector_Svg' ); // roadmap 7g: drawn shapes as inline SVG
 		FW_Option_Type::register( 'FW_Option_Type_Typography' );
 		FW_Option_Type::register( 'FW_Option_Type_Typography_v2' );
 		FW_Option_Type::register( 'FW_Option_Type_Upload' );

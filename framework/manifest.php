@@ -2,10 +2,22 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.72';
+$manifest['version']    = '3.0.73';
 
 /**
  * Changelog
+ * 3.0.73 - Design tools on the canvas, working together, and motion that converts. Ships
+ *          Shortcodes 1.16.27, Live Editor 0.3.35, AI Assistant 1.0.64, Snippets 1.0.28,
+ *          Site Converter 1.12.13 and Animation Engine 1.5.41. Core adds the vector-svg option
+ *          type: a drawing editor (pen with curve handles, rectangle, ellipse, polygon, star,
+ *          union / subtract / intersect / exclude, undo) whose value is clean, sanitised inline
+ *          SVG, used by the new Vector Shape element. Also in this release: components with
+ *          properties and variants, Save as image, AI layout proposals (make responsive,
+ *          design variations) previewed on the canvas, Freeform sections (place elements by
+ *          dragging, stacked in reading order on small screens), presence, pinned comments and
+ *          staging copies in the Live Editor, and recorded entrance motion in conversions
+ *          (native Interactions with the source's timing).
+ *
  * 3.0.72 - The Animation Engine replaces its third-party scroll library with its own
  *          scroll core and moves every module onto one motion core, and Theme Settings
  *          gains new design controls. Ships Animation Engine 1.5.37, Shortcodes 1.16.25 and Live Editor

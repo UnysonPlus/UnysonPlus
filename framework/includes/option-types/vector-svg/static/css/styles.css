@@ -1,0 +1,50 @@
+/* Vector SVG option type (roadmap 7g). */
+.fw-vsvg__preview {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 120px;
+	padding: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff repeating-conic-gradient( #f3f4f6 0% 25%, #fff 0% 50% ) 0 0 / 16px 16px;
+}
+.fw-vsvg__preview svg { max-width: 100%; max-height: 180px; width: auto; height: auto; }
+.fw-vsvg__empty { color: #8c8f94; }
+.fw-vsvg__bar { margin-top: 8px; }
+.fw-vsvg__code { display: none; width: 100%; margin-top: 8px; font: 12px/1.4 Consolas, Monaco, monospace; }
+.fw-vsvg.is-code .fw-vsvg__code { display: block; }
+
+html.fw-vsvg-open { overflow: hidden; }
+.fw-vsvg-ed {
+	position: fixed;
+	inset: 0;
+	z-index: 2147483647;
+	display: flex;
+	flex-direction: column;
+	background: #1c1e22;
+	color: #e7e8ec;
+	font: 13px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.fw-vsvg-ed__bar { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 10px 12px; background: #23252e; border-bottom: 1px solid #34363f; }
+.fw-vsvg-ed__group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.fw-vsvg-ed__end { margin-left: auto; }
+.fw-vsvg-ed button {
+	padding: 6px 10px;
+	border: 1px solid #3a3d48;
+	border-radius: 5px;
+	background: #2b2e38;
+	color: #e7e8ec;
+	font: inherit;
+	cursor: pointer;
+}
+.fw-vsvg-ed button:hover { background: #343844; }
+.fw-vsvg-ed button.is-on { background: #00b295; border-color: #00b295; color: #fff; }
+.fw-vsvg-ed button.is-primary { background: #00b295; border-color: #00b295; color: #fff; font-weight: 600; }
+.fw-vsvg-ed kbd { margin-left: 4px; padding: 0 4px; border-radius: 3px; background: rgba( 255, 255, 255, .1 ); font: 11px Consolas, monospace; color: #b6b9c2; }
+.fw-vsvg-ed__field { display: inline-flex; gap: 5px; align-items: center; color: #c9ccd4; }
+.fw-vsvg-ed__field input[type="number"] { width: 56px; padding: 4px; border: 1px solid #3a3d48; border-radius: 4px; background: #1c1e22; color: #e7e8ec; }
+.fw-vsvg-ed__field input[type="color"] { width: 30px; height: 26px; padding: 0; border: 1px solid #3a3d48; border-radius: 4px; background: none; }
+.fw-vsvg-ed__hint { padding: 6px 14px; color: #8fd9c8; font-size: 12px; }
+.fw-vsvg-ed__stage { position: relative; flex: 1; min-height: 0; background: #fff repeating-conic-gradient( #f3f4f6 0% 25%, #fff 0% 50% ) 0 0 / 20px 20px; }
+.fw-vsvg-ed__canvas { display: block; width: 100%; height: 100%; outline: none; }

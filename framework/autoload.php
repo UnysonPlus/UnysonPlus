@@ -444,6 +444,9 @@ if ( ! function_exists( '_fw_includes_option_types_autoload' ) ) {
 			case 'FW_Option_Type_Switch':
 				require_once __DIR__ . '/includes/option-types/switch/class-fw-option-type-switch.php';
 				break;
+			case 'FW_Option_Type_Vector_Svg':
+				require_once __DIR__ . '/includes/option-types/vector-svg/class-fw-option-type-vector-svg.php';
+				break;
 			case 'FW_Option_Type_Code_Editor':
 				require_once __DIR__ . '/includes/option-types/code-editor/class-fw-option-type-code-editor.php';
 				break;
