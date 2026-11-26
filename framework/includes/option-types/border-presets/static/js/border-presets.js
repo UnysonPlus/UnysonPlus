@@ -165,6 +165,8 @@
 			if ($bg.length) { d.states[state].background = bgProValue($bg); }
 		});
 
+		// Corner Smoothing (a plain select): the preview draws it like the generated CSS (unysonplus_corner_shape_decl).
+		d.corner_smoothing = $item.find('select[name$="[corner_smoothing]"]').val() || '';
 		return d;
 	}
 
@@ -206,6 +208,8 @@
 		var base = [];
 		var r = unitCss(d.border_radius);
 		if (r) { base.push('border-radius:' + r); }
+		var csK = { soft: '1.5', squircle: '2', strong: '2.5' }[d.corner_smoothing];
+		if (csK) { base.push('corner-shape:superellipse(' + csK + ')'); }
 		// padding: 'all' (shorthand) first, then per-side longhands override it.
 		var padProp = { all: 'padding', top: 'padding-top', right: 'padding-right', bottom: 'padding-bottom', left: 'padding-left' };
 		['all', 'top', 'right', 'bottom', 'left'].forEach(function (slot) {

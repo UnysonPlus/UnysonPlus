@@ -2,10 +2,22 @@
 
 $manifest = array();
 $manifest['name'] = __('Unyson+', 'fw');
-$manifest['version']    = '3.0.71';
+$manifest['version']    = '3.0.72';
 
 /**
  * Changelog
+ * 3.0.72 - The Animation Engine replaces its third-party scroll library with its own
+ *          scroll core and moves every module onto one motion core, and Theme Settings
+ *          gains new design controls. Ships Animation Engine 1.5.37, Shortcodes 1.16.25 and Live Editor
+ *          0.3.30. Scroll Motion, Motion Sequence and gallery chaining run on the
+ *          engine's own scroll core (upwScroll / upwSplit; the third-party library loads only
+ *          for a Motion Snippet), and every module shares one frame loop, one in-view watcher and
+ *          one set of easing curves. Presets with a corner radius gain Corner Smoothing
+ *          (squircle corners); Text Styles gain variable-font axes, OpenType features,
+ *          text decoration and truncation; Color Presets can be vivid on wide-gamut
+ *          screens; every element gains one Effects tab; Interactions gain component
+ *          triggers and a "page starts loading" trigger.
+ *
  * 3.0.70 - Animation Engine: springs everywhere, More properties, Set / Lottie / Rive
  *          steps and Bursts. Ships Animation Engine 1.5.23, Shortcodes 1.16.18 and
  *          Live Editor 0.3.17. Interactions, States and Scroll Keyframes use the shared

@@ -18,6 +18,230 @@
  * during wp_head / admin_head.
  */
 
+if ( ! function_exists( 'unysonplus_corner_smoothing_field' ) ) :
+	/**
+	 * Smooth corners (roadmap 7c): the "Corner smoothing" field every preset with a corner radius carries, next to the
+	 * radius. The value is a name, so a preset reads the same in an export and in the Preset Library.
+	 */
+	function unysonplus_corner_smoothing_field() {
+		return array(
+			'type'    => 'short-select',
+			'label'   => __( 'Corner Smoothing', 'fw' ),
+			'value'   => '',
+			'choices' => array(
+				''         => __( 'Off (round)', 'fw' ),
+				'soft'     => __( 'Soft', 'fw' ),
+				'squircle' => __( 'Squircle', 'fw' ),
+				'strong'   => __( 'Strong', 'fw' ),
+			),
+			'help'    => __( 'Shapes the rounded corners as one continuous curve (a squircle) instead of a quarter circle, as on app icons. It reshapes the corner radius above, so the corners read a little tighter: raise the radius slightly to keep the same softness. Browsers that cannot draw it keep the plain rounded corner.', 'fw' ),
+			'dynamic_content' => false,
+		);
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_corner_shape_decl' ) ) :
+	/**
+	 * The CSS declaration for a Corner Smoothing value, or '' for none. corner-shape: superellipse(k) reshapes the
+	 * corners border-radius already rounds (k 1 = a quarter circle, 2 = a squircle); a browser without corner-shape
+	 * ignores the declaration and keeps the plain radius, so it needs no fallback.
+	 *
+	 * @param string $smoothing ''|soft|squircle|strong
+	 * @param bool   $important Add !important (for preset rules that already carry it on their radius).
+	 * @return string
+	 */
+	function unysonplus_corner_shape_decl( $smoothing, $important = false ) {
+		$k = array( 'soft' => '1.5', 'squircle' => '2', 'strong' => '2.5' );
+		$smoothing = is_string( $smoothing ) ? $smoothing : '';
+		if ( ! isset( $k[ $smoothing ] ) ) {
+			return '';
+		}
+		return 'corner-shape:superellipse(' . $k[ $smoothing ] . ')' . ( $important ? ' !important' : '' );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_text_style_type_decls' ) ) :
+	/**
+	 * Typography controls (roadmap 7b) for a Text Style: variable-font axes, OpenType features, text decoration and
+	 * truncation, as CSS declarations. Every field is optional; a blank one emits nothing, so the element keeps its own.
+	 *
+	 * @param array $e A Text Style entry (font_sizes row).
+	 * @return string[] Declarations without the trailing semicolon.
+	 */
+	function unysonplus_text_style_type_decls( $e ) {
+		$out = array();
+		if ( ! is_array( $e ) ) { return $out; }
+		$num = function ( $v, $min, $max ) {
+			$v = is_array( $v ) ? ( isset( $v['value'] ) ? $v['value'] : '' ) : $v;
+			$v = trim( (string) $v );
+			if ( $v === '' || ! is_numeric( $v ) ) { return null; }
+			return max( $min, min( $max, 0 + $v ) );
+		};
+		$len = function ( $v, $units ) {
+			if ( is_string( $v ) && isset( $v[0] ) && $v[0] === '{' ) { $d = json_decode( $v, true ); if ( is_array( $d ) ) { $v = $d; } }
+			if ( is_array( $v ) ) {
+				$n = isset( $v['value'] ) ? trim( (string) $v['value'] ) : '';
+				if ( $n === '' || ! is_numeric( $n ) ) { return ''; }
+				$u = ( isset( $v['unit'] ) && in_array( $v['unit'], $units, true ) ) ? $v['unit'] : $units[0];
+				return $n . $u;
+			}
+			$v = trim( (string) $v );
+			return ( $v !== '' && is_numeric( $v ) ) ? $v . $units[0] : '';
+		};
+
+		// Variable-font axes. An exact weight (any number 1-1000) beats the Weight select.
+		$w = $num( isset( $e['weight_exact'] ) ? $e['weight_exact'] : '', 1, 1000 );
+		if ( $w !== null ) { $out[] = 'font-weight:' . $w; }
+		$fw = $num( isset( $e['font_width'] ) ? $e['font_width'] : '', 50, 200 );
+		if ( $fw !== null ) { $out[] = 'font-stretch:' . $fw . '%'; }
+		$slant = $num( isset( $e['slant'] ) ? $e['slant'] : '', -90, 90 );
+		$fs    = isset( $e['font_style'] ) ? (string) $e['font_style'] : '';
+		if ( $slant !== null && $slant != 0 ) {
+			$out[] = 'font-style:oblique ' . $slant . 'deg';
+		} elseif ( in_array( $fs, array( 'normal', 'italic' ), true ) ) {
+			$out[] = 'font-style:' . $fs;
+		}
+		$os = isset( $e['optical_size'] ) ? (string) $e['optical_size'] : '';
+		if ( in_array( $os, array( 'auto', 'none' ), true ) ) { $out[] = 'font-optical-sizing:' . $os; }
+
+		// OpenType features (checkboxes: a list of keys, or key => true).
+		$f  = ( isset( $e['opentype'] ) && is_array( $e['opentype'] ) ) ? $e['opentype'] : array();
+		$on = array();
+		foreach ( $f as $k => $v ) {
+			if ( is_int( $k ) ) { $on[ (string) $v ] = true; } elseif ( $v && $v !== 'false' ) { $on[ (string) $k ] = true; }
+		}
+		$numeric = array();
+		foreach ( array( 'tnum' => 'tabular-nums', 'pnum' => 'proportional-nums', 'onum' => 'oldstyle-nums', 'lnum' => 'lining-nums', 'zero' => 'slashed-zero', 'frac' => 'diagonal-fractions', 'ordn' => 'ordinal' ) as $k => $css ) {
+			if ( ! empty( $on[ $k ] ) ) { $numeric[] = $css; }
+		}
+		if ( $numeric ) { $out[] = 'font-variant-numeric:' . implode( ' ', $numeric ); }
+		if ( ! empty( $on['c2sc'] ) ) { $out[] = 'font-variant-caps:all-small-caps'; }
+		elseif ( ! empty( $on['smcp'] ) ) { $out[] = 'font-variant-caps:small-caps'; }
+		$lig = array();
+		if ( ! empty( $on['noliga'] ) ) { $lig[] = 'no-common-ligatures'; }
+		if ( ! empty( $on['dlig'] ) ) { $lig[] = 'discretionary-ligatures'; }
+		if ( $lig ) { $out[] = 'font-variant-ligatures:' . implode( ' ', $lig ); }
+		$ss = array();
+		foreach ( array( 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'swsh', 'salt' ) as $k ) {
+			if ( ! empty( $on[ $k ] ) ) { $ss[] = '"' . $k . '" 1'; }
+		}
+		if ( $ss ) { $out[] = 'font-feature-settings:' . implode( ',', $ss ); }
+
+		// Text decoration.
+		$line = isset( $e['decoration_line'] ) ? (string) $e['decoration_line'] : '';
+		if ( in_array( $line, array( 'none', 'underline', 'overline', 'line-through' ), true ) ) { $out[] = 'text-decoration-line:' . $line; }
+		$ds = isset( $e['decoration_style'] ) ? (string) $e['decoration_style'] : '';
+		if ( in_array( $ds, array( 'solid', 'double', 'dotted', 'dashed', 'wavy' ), true ) ) { $out[] = 'text-decoration-style:' . $ds; }
+		if ( ! empty( $e['decoration_color'] ) ) {
+			$c = function_exists( 'unysonplus_preset_color_to_css' )
+				? unysonplus_preset_color_to_css( $e['decoration_color'] )
+				: ( is_array( $e['decoration_color'] ) ? ( isset( $e['decoration_color']['custom'] ) ? $e['decoration_color']['custom'] : '' ) : (string) $e['decoration_color'] );
+			$c = trim( (string) $c );
+			if ( $c !== '' && preg_match( '/^[#a-z0-9(),.%\s\-]+$/i', $c ) ) { $out[] = 'text-decoration-color:' . $c; }
+		}
+		$th = $len( isset( $e['decoration_thickness'] ) ? $e['decoration_thickness'] : '', array( 'px', 'em' ) );
+		if ( $th !== '' ) { $out[] = 'text-decoration-thickness:' . $th; }
+		$uo = $len( isset( $e['underline_offset'] ) ? $e['underline_offset'] : '', array( 'px', 'em' ) );
+		if ( $uo !== '' ) { $out[] = 'text-underline-offset:' . $uo; }
+
+		// Truncation: one line with an ellipsis, or clamp to N lines.
+		$tr = isset( $e['truncate'] ) ? (string) $e['truncate'] : '';
+		if ( $tr === '1' ) {
+			$out[] = 'overflow:hidden';
+			$out[] = 'white-space:nowrap';
+			$out[] = 'text-overflow:ellipsis';
+		} elseif ( in_array( $tr, array( '2', '3', '4', '5', '6' ), true ) ) {
+			$out[] = 'display:-webkit-box';
+			$out[] = '-webkit-box-orient:vertical';
+			$out[] = '-webkit-line-clamp:' . $tr;
+			$out[] = 'line-clamp:' . $tr;
+			$out[] = 'overflow:hidden';
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_text_style_is_set' ) ) :
+	/** True when a Text Style sets ANY property, so it is offered in the Text Style dropdown. */
+	function unysonplus_text_style_is_set( $e ) {
+		if ( ! is_array( $e ) ) { return false; }
+		$filled = function ( $v ) {
+			if ( is_array( $v ) ) {
+				if ( array_key_exists( 'value', $v ) ) { return trim( (string) $v['value'] ) !== ''; }
+				return ! empty( array_filter( $v, function ( $x ) { return ! is_array( $x ) && trim( (string) $x ) !== ''; } ) );
+			}
+			return trim( (string) $v ) !== '';
+		};
+		foreach ( array( 'size', 'weight', 'line_height', 'letter_spacing', 'transform', 'color' ) as $k ) {
+			if ( isset( $e[ $k ] ) && $filled( $e[ $k ] ) ) { return true; }
+		}
+		return ! empty( unysonplus_text_style_type_decls( $e ) );
+	}
+endif;
+
+if ( ! function_exists( 'unysonplus_p3_color' ) ) :
+	/**
+	 * Wide-gamut colour (roadmap 7d): the Display P3 version of a Color Preset for screens that can show it.
+	 * $mode: 'vivid' keeps the colour's lightness and hue (OKLCH) and raises its chroma to the edge of the P3 gamut;
+	 * 'subtle' goes half way there; 'custom' validates $custom (a color(display-p3 r g b) or oklch(L C H) value).
+	 * Near-greys (chroma under 0.02) are left alone. Returns '' when there is nothing to add.
+	 *
+	 * @param string $hex    The preset's sRGB colour (#rgb / #rrggbb).
+	 * @param string $mode   '' | 'subtle' | 'vivid' | 'custom'
+	 * @param string $custom The custom value for 'custom'.
+	 * @return string A CSS colour, or ''.
+	 */
+	function unysonplus_p3_color( $hex, $mode, $custom = '' ) {
+		if ( 'custom' === $mode ) {
+			$c = strtolower( trim( (string) $custom ) );
+			if ( preg_match( '/^color\(\s*display-p3\s+[0-9.]+%?\s+[0-9.]+%?\s+[0-9.]+%?(\s*\/\s*[0-9.]+%?)?\s*\)$/', $c )
+				|| preg_match( '/^oklch\(\s*[0-9.]+%?\s+[0-9.]+%?\s+[0-9.]+(deg)?(\s*\/\s*[0-9.]+%?)?\s*\)$/', $c ) ) {
+				return preg_replace( '/\s+/', ' ', $c );
+			}
+			return '';
+		}
+		if ( 'vivid' !== $mode && 'subtle' !== $mode ) { return ''; }
+		$h = ltrim( trim( (string) $hex ), '#' );
+		if ( strlen( $h ) === 3 ) { $h = $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2]; }
+		if ( ! preg_match( '/^[0-9a-f]{6}$/i', $h ) ) { return ''; }
+		$lin = function ( $c ) { $c /= 255; return $c <= 0.04045 ? $c / 12.92 : pow( ( $c + 0.055 ) / 1.055, 2.4 ); };
+		$r = $lin( hexdec( substr( $h, 0, 2 ) ) ); $g = $lin( hexdec( substr( $h, 2, 2 ) ) ); $b = $lin( hexdec( substr( $h, 4, 2 ) ) );
+		// linear sRGB -> OKLab -> OKLCH
+		$cb = function ( $x ) { return $x < 0 ? -pow( -$x, 1 / 3 ) : pow( $x, 1 / 3 ); };
+		$l_ = $cb( 0.4122214708 * $r + 0.5363325363 * $g + 0.0514459929 * $b );
+		$m_ = $cb( 0.2119034982 * $r + 0.6806995451 * $g + 0.1073969566 * $b );
+		$s_ = $cb( 0.0883024619 * $r + 0.2817188376 * $g + 0.6299787005 * $b );
+		$L  = 0.2104542553 * $l_ + 0.7936177850 * $m_ - 0.0040720468 * $s_;
+		$A  = 1.9779984951 * $l_ - 2.4285922050 * $m_ + 0.4505937099 * $s_;
+		$B  = 0.0259040371 * $l_ + 0.7827717662 * $m_ - 0.8086757660 * $s_;
+		$C0 = sqrt( $A * $A + $B * $B );
+		if ( $C0 < 0.02 ) { return ''; }
+		$H = atan2( $B, $A );
+		// OKLCH -> linear Display P3 (via linear sRGB).
+		$p3 = function ( $C ) use ( $L, $H ) {
+			$a = $C * cos( $H ); $b = $C * sin( $H );
+			$l = pow( $L + 0.3963377774 * $a + 0.2158037573 * $b, 3 );
+			$m = pow( $L - 0.1055613458 * $a - 0.0638541728 * $b, 3 );
+			$s = pow( $L - 0.0894841775 * $a - 1.2914855480 * $b, 3 );
+			$R = 4.0767416621 * $l - 3.3077115913 * $m + 0.2309699292 * $s;
+			$G = -1.2684380046 * $l + 2.6097574011 * $m - 0.3413193965 * $s;
+			$Bb = -0.0041960863 * $l - 0.7034186147 * $m + 1.7076147010 * $s;
+			return array(
+				0.8224621 * $R + 0.1775380 * $G,
+				0.0331941 * $R + 0.9668058 * $G,
+				0.0170827 * $R + 0.0723974 * $G + 0.9105199 * $Bb,
+			);
+		};
+		$inside = function ( $v ) { foreach ( $v as $x ) { if ( $x < -0.000001 || $x > 1.000001 ) { return false; } } return true; };
+		$lo = $C0; $hi = 0.5;
+		for ( $i = 0; $i < 32; $i++ ) { $mid = ( $lo + $hi ) / 2; if ( $inside( $p3( $mid ) ) ) { $lo = $mid; } else { $hi = $mid; } }
+		$C = 'vivid' === $mode ? $lo : $C0 + ( $lo - $C0 ) / 2;
+		$enc = function ( $x ) { $x = max( 0, min( 1, $x ) ); return $x <= 0.0031308 ? 12.92 * $x : 1.055 * pow( $x, 1 / 2.4 ) - 0.055; };
+		$v = $p3( $C );
+		return sprintf( 'color(display-p3 %s %s %s)', round( $enc( $v[0] ), 4 ), round( $enc( $v[1] ), 4 ), round( $enc( $v[2] ), 4 ) );
+	}
+endif;
+
 if ( ! function_exists( 'unysonplus_scope_preset_css' ) ) :
 	/**
 	 * Resolves a preset's selector tokens and scopes any rule that would otherwise be global.
@@ -189,6 +413,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					$col_css = trim( (string) $col_css );
 					if ( $col_css !== '' ) { $decls[] = 'color:' . $col_css; }
 				}
+				// Typography controls (7b): variable-font axes, OpenType features, decoration, truncation.
+				$decls = array_merge( $decls, unysonplus_text_style_type_decls( $entry ) );
 
 				if ( ! empty( $decls ) ) {
 					$utility_rules[ ":root {$selector}" ] = implode( ';', $decls ) . ';';
@@ -212,6 +438,7 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 
 		// --- Color presets ---
 		$color_slug_to_hex = array();
+		$p3_tokens         = array(); // wide-gamut (7d): --color-{slug} for P3 screens, emitted in its own @media block
 		if ( is_array( $color_presets ) ) {
 			foreach ( $color_presets as $entry ) {
 				if ( empty( $entry['color'] ) || empty( $entry['name'] ) ) { continue; }
@@ -228,6 +455,10 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$utility_rules[ ":root .bg-{$slug}" ]   = "background-color:var(--color-{$slug}) !important;";
 
 				$color_slug_to_hex[ $slug ] = $hex;
+
+				// Wide-gamut colour (7d): a Display P3 version for screens that can show it; the hex stays everywhere else.
+				$p3 = unysonplus_p3_color( $hex, isset( $entry['wide_gamut'] ) ? (string) $entry['wide_gamut'] : '', isset( $entry['p3'] ) ? (string) $entry['p3'] : '' );
+				if ( $p3 !== '' ) { $p3_tokens[ "--color-{$slug}" ] = $p3; }
 			}
 		}
 
@@ -463,6 +694,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 
 				$rad = $size_len( $bs['border_radius'] ?? '' );
 				if ( $rad !== '' ) { $parts[] = "border-radius:{$rad}"; }
+				$cs = unysonplus_corner_shape_decl( $bs['corner_smoothing'] ?? '' );
+				if ( $cs !== '' ) { $parts[] = $cs; }
 
 				$min_w = $size_len( $bs['min_width'] ?? '' );
 				if ( $min_w !== '' ) { $parts[] = "min-width:{$min_w}"; }
@@ -618,6 +851,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					: ( isset( $bp['border_radius'] ) && ! is_array( $bp['border_radius'] ) ? (string) $bp['border_radius'] : '' );
 				$radius = $len( $radius );
 				if ( $radius !== '' ) { $base[] = "border-radius:{$radius} !important"; }
+				$cs = unysonplus_corner_shape_decl( isset( $bp['corner_smoothing'] ) ? $bp['corner_smoothing'] : '', true );
+				if ( $cs !== '' ) { $base[] = $cs; }
 
 				// Padding (spacing value, mode 'padding') -> per-side declarations.
 				// Emitted WITHOUT !important on purpose: the column's own Margin &
@@ -807,6 +1042,11 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					);
 					if ( $size !== '' ) { $base[] = "width:{$size} !important"; $base[] = "height:{$size} !important"; }
 					$base[] = $ib_shape_decl( $shape, $corner );
+					// Smooth corners only where the badge has corners to smooth (square / rounded).
+					if ( 'square' === $shape || 'rounded' === $shape ) {
+						$cs = unysonplus_corner_shape_decl( isset( $bp['corner_smoothing'] ) ? $bp['corner_smoothing'] : '', true );
+						if ( $cs !== '' ) { $base[] = $cs; }
+					}
 					if ( $transition !== '' ) {
 						$tv     = preg_match( '/^[0-9.]+$/', $transition ) ? $transition . 'ms' : $transition;
 						$base[] = "transition:all {$tv} ease";
@@ -995,6 +1235,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					}
 					$br = $unit_len( isset( $sp['border_radius'] ) ? $sp['border_radius'] : '' );
 					if ( $br !== '' ) { $base[] = 'border-radius:' . $br; }
+					$cs = unysonplus_corner_shape_decl( isset( $sp['corner_smoothing'] ) ? $sp['corner_smoothing'] : '' );
+					if ( $cs !== '' ) { $base[] = $cs; }
 					$pad_tree = ( isset( $sp['padding']['padding'] ) && is_array( $sp['padding']['padding'] ) ) ? $sp['padding']['padding'] : array();
 					foreach ( array( 'all', 'top', 'right', 'bottom', 'left' ) as $slot ) {
 						$dec = $resolve_pad_class( isset( $pad_tree[ $slot ] ) ? $pad_tree[ $slot ] : '' );
@@ -1070,6 +1312,8 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				if ( $ob !== '' ) { $frame[] = "border:{$ob} !important"; }
 				$radius = $tp_len( $tp['border_radius'] ?? '' );
 				if ( $radius !== '' ) { $frame[] = "border-radius:{$radius} !important"; $frame[] = 'overflow:hidden !important'; }
+				$cs = unysonplus_corner_shape_decl( $tp['corner_smoothing'] ?? '', true );
+				if ( $cs !== '' ) { $frame[] = $cs; }
 				if ( class_exists( 'FW_Option_Type_Box_Shadow' ) && isset( $tp['outer_shadow'] ) ) {
 					$sh = FW_Option_Type_Box_Shadow::to_css( $tp['outer_shadow'] );
 					if ( $sh !== '' ) { $frame[] = "box-shadow:{$sh} !important"; }
@@ -1256,15 +1500,15 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 			// style relies on the wrapper clip (crop = object-fit, masks shape the <img>). The ONE case
 			// that still needs clipping is a hover-ZOOM crop (`:hover img{transform:scale(...)}`) — set
 			// `--imgs-overflow:hidden` on that image so the zoom stays inside the frame.
-			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:var(--imgs-overflow,visible);border-radius:var(--imgs-radius,0)}"
+			$button_extra_css .= "\n.imgs-wrap{position:relative;display:block;isolation:isolate;overflow:var(--imgs-overflow,visible);border-radius:var(--imgs-radius,0);corner-shape:var(--imgs-corner,round)}"
 				// NOTE: aspect-ratio + object-fit are intentionally NOT here. They are emitted
 				// per-slug below, ONLY for presets that define a crop (an aspect ratio or a square
 				// mask). A blanket `aspect-ratio:var(--imgs-aspect,auto)` mis-sizes a fixed-dimension
 				// <img> (the `auto` fallback made a 560px-wide photo render ~1500px tall), so non-crop
 				// styles (rounded/pill/filters/scrim) must keep the image's natural ratio.
-				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;border-radius:var(--imgs-radius,0);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
-				. "\n.imgs-wrap::before{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-duo,transparent);mix-blend-mode:color;pointer-events:none}"
-				. "\n.imgs-wrap::after{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);background:var(--imgs-scrim,transparent);pointer-events:none}";
+				. "\n.imgs-wrap>img,.imgs-wrap img{display:block;width:100%;height:auto;border-radius:var(--imgs-radius,0);corner-shape:var(--imgs-corner,round);filter:var(--imgs-filter,none);clip-path:var(--imgs-clip,none);-webkit-mask-image:var(--imgs-mask,none);mask-image:var(--imgs-mask,none);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}"
+				. "\n.imgs-wrap::before{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);corner-shape:var(--imgs-corner,round);background:var(--imgs-duo,transparent);mix-blend-mode:color;pointer-events:none}"
+				. "\n.imgs-wrap::after{content:'';position:absolute;inset:0;border-radius:var(--imgs-radius,0);corner-shape:var(--imgs-corner,round);background:var(--imgs-scrim,transparent);pointer-events:none}";
 
 			foreach ( $image_styles as $s ) {
 				if ( ! is_array( $s ) || empty( $s['id'] ) ) { continue; }
@@ -1320,6 +1564,9 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 					if ( $rad !== '' ) { $vars[] = '--imgs-radius:' . $rad; }
 				}
 				if ( $mask_square ) { $vars[] = '--imgs-aspect:1/1'; $aspect_css = '1/1'; }
+				// Corner Smoothing (7c): reshapes whatever rounded corners the radius or a radius mask gave.
+				$imgs_cs = unysonplus_corner_shape_decl( isset( $s['corner_smoothing'] ) ? $s['corner_smoothing'] : '' );
+				if ( $imgs_cs !== '' ) { $vars[] = '--imgs-corner:' . substr( $imgs_cs, strlen( 'corner-shape:' ) ); }
 
 				$filter = isset( $s['filter'] ) ? (string) $s['filter'] : 'none';
 				if ( isset( $imgs_filter[ $filter ] ) ) { $vars[] = '--imgs-filter:' . $imgs_filter[ $filter ]; }
@@ -1629,6 +1876,11 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				foreach ( $tokens as $name => $value ) { $css .= "\t{$name}: {$value};\n"; }
 				$css .= "}\n";
 			}
+			if ( ! empty( $p3_tokens ) ) {
+				$css .= "@media (color-gamut: p3) {\n@supports (color: color(display-p3 1 1 1)) {\n:root {\n";
+				foreach ( $p3_tokens as $name => $value ) { $css .= "\t{$name}: {$value};\n"; }
+				$css .= "}\n}\n}\n";
+			}
 			foreach ( $utility_rules as $sel => $body ) { $css .= "{$sel} { {$body} }\n"; }
 			if ( ! empty( $responsive_spacing ) ) {
 				ksort( $responsive_spacing, SORT_NUMERIC );
@@ -1646,6 +1898,11 @@ if ( ! function_exists( 'unysonplus_build_presets_css_string' ) ) :
 				$css .= ':root{';
 				foreach ( $tokens as $name => $value ) { $css .= $name . ':' . $value . ';'; }
 				$css .= '}';
+			}
+			if ( ! empty( $p3_tokens ) ) {
+				$css .= '@media (color-gamut:p3){@supports (color:color(display-p3 1 1 1)){:root{';
+				foreach ( $p3_tokens as $name => $value ) { $css .= $name . ':' . $value . ';'; }
+				$css .= '}}}';
 			}
 			foreach ( $utility_rules as $sel => $body ) { $css .= $sel . '{' . $body . '}'; }
 			if ( ! empty( $responsive_spacing ) ) {
@@ -1677,7 +1934,7 @@ if ( ! function_exists( 'unysonplus_preset_css_hash' ) ) :
 	 */
 	function unysonplus_preset_css_hash() {
 		$inputs = array(
-			'schema'    => 24, // bumped: image-style crop (aspect-ratio/object-fit) moved off the shared base rule to per-crop-preset rules, so non-crop styles keep the natural ratio
+			'schema'    => 25, // bumped: corner smoothing (7c) on the image-style base rule, Text Style typography controls (7b), wide-gamut colour block (7d)
 			'pretty'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'global'    => (string) apply_filters( 'unysonplus_global_css', '' ),
 			'fonts'     => function_exists( 'unysonplus_get_font_size_presets' )    ? unysonplus_get_font_size_presets()    : array(),

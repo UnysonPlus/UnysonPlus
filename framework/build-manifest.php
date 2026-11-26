@@ -494,6 +494,8 @@ return array(
 	'/extensions/animation-engine/shortcodes/webgl-object/static/css/webgl-object.css',
 	'/extensions/animation-engine/shortcodes/webgl-object/static/js/webgl-object.js',
 	'/extensions/animation-engine/static/js/upw-raf.js',
+	'/extensions/animation-engine/static/js/upw-scroll.js',
+	'/extensions/animation-engine/static/js/upw-split.js',
 	'/extensions/blocks/blocks/accordion/build/index.js',
 	'/extensions/blocks/blocks/animated-heading/build/index.js',
 	'/extensions/blocks/blocks/audio-player/build/index.js',

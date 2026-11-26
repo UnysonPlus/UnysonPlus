@@ -152,6 +152,8 @@
 			if ($bg.length) { d.states[state].background = bgProValue($bg); }
 		});
 
+		// Corner Smoothing (a plain select): the preview draws it like the generated CSS (unysonplus_corner_shape_decl).
+		d.corner_smoothing = $item.find('select[name$="[corner_smoothing]"]').val() || '';
 		return d;
 	}
 
@@ -200,6 +202,8 @@
 			'width:' + size, 'height:' + size
 		];
 		base = base.concat(shapeDecls(d.badge_shape, corner));
+		var csK = { soft: '1.5', squircle: '2', strong: '2.5' }[d.corner_smoothing];
+		if (csK && (d.badge_shape === 'square' || d.badge_shape === 'rounded')) { base.push('corner-shape:superellipse(' + csK + ')'); }
 		if (d.transition) { base.push('transition:all ' + (parseInt(d.transition, 10) || 0) + 'ms ease'); }
 
 		// Pop / Shine need a clipping-safe positioning context (Shine only).

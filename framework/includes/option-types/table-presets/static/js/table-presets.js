@@ -114,6 +114,7 @@
 			}
 			if (/\[preset_name\]$/.test(name))        { d.preset_name        = $el.val(); return; }
 			if (/\[grid_lines\]$/.test(name))         { d.grid_lines         = $el.val(); return; }
+			if (/\[corner_smoothing\]$/.test(name))   { d.corner_smoothing   = $el.val(); return; }
 			if (/\[grid_style\]$/.test(name))         { d.grid_style         = $el.val(); return; }
 			if (/\[outer_border_style\]$/.test(name)) { d.outer_border_style = $el.val(); return; }
 			if (/\[transition\]$/.test(name))         { d.transition         = $el.val(); return; }
@@ -135,6 +136,8 @@
 		if (ob) { frame.push('border:' + ob); }
 		var radius = unitCss(d.border_radius);
 		if (radius) { frame.push('border-radius:' + radius); frame.push('overflow:hidden'); }
+		var csK = { soft: '1.5', squircle: '2', strong: '2.5' }[d.corner_smoothing];
+		if (csK) { frame.push('corner-shape:superellipse(' + csK + ')'); }
 		var sh = boxShadowCss(d.outer_shadow);
 		if (sh) { frame.push('box-shadow:' + sh); }
 		css += rule(sel, frame);

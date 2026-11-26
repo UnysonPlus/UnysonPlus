@@ -107,6 +107,7 @@ class FW_Option_Type_Border_Presets extends FW_Option_Type {
 				'units' => array( 'px', 'em', 'rem', '%' ),
 				'min'   => 0,
 			),
+			'corner_smoothing' => function_exists( 'unysonplus_corner_smoothing_field' ) ? unysonplus_corner_smoothing_field() : array( 'type' => 'hidden', 'value' => '' ),
 			'padding' => array(
 				'type'  => 'spacing',
 				'mode'  => 'padding',

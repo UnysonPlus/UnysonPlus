@@ -166,6 +166,7 @@ class FW_Option_Type_Table_Presets extends FW_Option_Type {
 			'outer_border_width' => self::unit_field( __( 'Outer Border Width', 'fw' ) ),
 			'outer_border_color' => self::color_field( __( 'Outer Border Color', 'fw' ), $choices ),
 			'border_radius' => self::unit_field( __( 'Corner Radius', 'fw' ), array( 'px', 'em', 'rem', '%' ) ),
+			'corner_smoothing' => function_exists( 'unysonplus_corner_smoothing_field' ) ? unysonplus_corner_smoothing_field() : array( 'type' => 'hidden', 'value' => '' ),
 			'outer_shadow' => array(
 				'type'  => 'box-shadow',
 				'label' => __( 'Outer Shadow', 'fw' ),

@@ -129,6 +129,7 @@ class FW_Option_Type_Icon_Badge_Presets extends FW_Option_Type {
 				'min'   => 0,
 				'desc'  => __( 'Applies to the Rounded / Square shapes (Circle is always 50%).', 'fw' ),
 			),
+			'corner_smoothing' => function_exists( 'unysonplus_corner_smoothing_field' ) ? unysonplus_corner_smoothing_field() : array( 'type' => 'hidden', 'value' => '' ),
 			'transition' => array(
 				'type'            => 'short-text',
 				'label'           => __( 'Transition (ms)', 'fw' ),
